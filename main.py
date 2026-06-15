@@ -5,6 +5,8 @@ from typing import Optional
 
 import csv
 import math
+import requests
+import time
 
 app = FastAPI()
 
@@ -15,18 +17,68 @@ templates = Jinja2Templates(
 
 def charger_stations():
 
+    url = (
+        "https://data.economie.gouv.fr/"
+        "api/explore/v2.1/catalog/datasets/"
+        "prix-des-carburants-en-france-flux-instantane-v2/"
+        "records?limit=10000"
+    )
+
+    response = requests.get(
+        url,
+        timeout=30
+    )
+
+    data = response.json()
+
     stations = []
 
-    with open(
-        "stations.csv",
-        encoding="utf-8"
-    ) as fichier:
+    for station in data["results"]:
 
-        lecteur = csv.DictReader(fichier)
+        stations.append({
 
-        for ligne in lecteur:
+            "id":
+                station.get("id", ""),
 
-            stations.append(ligne)
+            "cp":
+                station.get("code_postal", ""),
+
+            "ville":
+                station.get("ville", ""),
+
+            "adresse":
+                station.get("adresse", ""),
+
+            "latitude":
+                station.get("latitude", ""),
+
+            "longitude":
+                station.get("longitude", ""),
+
+            "gazole":
+                station.get(
+                    "prix_gazole",
+                    ""
+                ),
+
+            "e10":
+                station.get(
+                    "prix_e10",
+                    ""
+                ),
+
+            "sp98":
+                station.get(
+                    "prix_sp98",
+                    ""
+                )
+
+        })
+
+    print(
+        "Stations chargées :",
+        len(stations)
+    )
 
     return stations
 

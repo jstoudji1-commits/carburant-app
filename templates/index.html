@@ -246,11 +246,13 @@ if (markers.length > 0) {
 let latitudeUtilisateur = null;
 let longitudeUtilisateur = null;
 
+let utilisateurMarker = null;
+
 document
 .getElementById("btn-position")
 .addEventListener("click", function () {
 
-    navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.watchPosition(
 
         function(position) {
 
@@ -271,32 +273,48 @@ document
             document.getElementById(
                 "position"
             ).innerHTML =
-                "Position trouvée : "
+                "Position : "
                 + latitudeUtilisateur.toFixed(5)
                 + ", "
                 + longitudeUtilisateur.toFixed(5);
 
-            map.setView(
-                [
+            if (utilisateurMarker) {
+
+                utilisateurMarker.setLatLng([
                     latitudeUtilisateur,
                     longitudeUtilisateur
-                ],
-                12
-            );
+                ]);
 
-            L.marker([
-                latitudeUtilisateur,
-                longitudeUtilisateur
-            ])
-            .addTo(map)
-            .bindPopup("Vous êtes ici")
-            .openPopup();
+            } else {
 
-            // Lance automatiquement la recherche
+                utilisateurMarker = L.circleMarker(
+                    [
+                        latitudeUtilisateur,
+                        longitudeUtilisateur
+                    ],
+                    {
+                        radius: 8,
+                        color: "#2563eb",
+                        fillColor: "#2563eb",
+                        fillOpacity: 1
+                    }
+                )
+                .addTo(map)
+                .bindPopup("Vous êtes ici");
 
-            document.querySelector(
-                "form"
-            ).submit();
+                map.setView(
+                    [
+                        latitudeUtilisateur,
+                        longitudeUtilisateur
+                    ],
+                    13
+                );
+
+                document.querySelector(
+                    "form"
+                ).submit();
+
+            }
 
         },
 
@@ -306,6 +324,12 @@ document
                 "Impossible d'obtenir votre position."
             );
 
+        },
+
+        {
+            enableHighAccuracy: true,
+            maximumAge: 1000,
+            timeout: 10000
         }
 
     );
