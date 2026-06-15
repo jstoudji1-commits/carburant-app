@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Comparateur Carburant</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            margin:40px;
+        }
+
+        table{
+            border-collapse: collapse;
+            width:100%;
+        }
+
+        th,td{
+            border:1px solid #ccc;
+            padding:10px;
+        }
+
+        th{
+            background:#f0f0f0;
+        }
+
+        .prix-marker {
+    background: transparent;
+    border: none;
+        }   
+
+        .prix-bulle {
+
+    background: white;
+
+    border: 2px solid #2563eb;
+
+    border-radius: 20px;
+
+    padding: 4px 8px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    text-align: center;
+
+    white-space: nowrap;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+
+}
+    </style>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+</head>
+
+<body>
+
+    <h1>Stations les moins chères</h1>
+
+    <p>
+        Nombre de stations : <strong>{{ nombre_stations }}</strong>
+    </p>
+
+    <p>
+        Prix le plus bas : <strong>{{ prix_min }} €</strong>
+    </p>
+
+    <form method="get">
+
+    <input
+        type="text"
+        name="ville"
+        placeholder="Ville ou code postal">
+
+    <select name="carburant">
+
+        <option value="gazole">
+            Gazole
+        </option>
+
+        <option value="e10">
+            E10
+        </option>
+
+        <option value="sp98">
+            SP98
+        </option>
+
+    </select>
+
+    <select name="rayon">
+
+        <option value="5">
+            5 km
+        </option>
+
+        <option value="10" selected>
+            10 km
+        </option>
+
+        <option value="20">
+            20 km
+        </option>
+
+        <option value="50">
+            50 km
+        </option>
+
+    </select>
+
+    <input
+        type="hidden"
+        id="latitude"
+        name="latitude">
+
+    <input
+        type="hidden"
+        id="longitude"
+        name="longitude">
+
+    <button type="submit">
+        Rechercher
+    </button>
+
+</form>
+
+<br>
+
+<button id="btn-position">
+    📍 Autour de moi
+</button>
+
+<p id="position"></p>
+
+    <h2>Carte des stations</h2>
+
+    <div id="map"></div>
+
+    <style>
+#map {
+    height: 80vh;
+} 
+   </style>
+
+    
+    <script>
+
+// ========================
+// Création de la carte
+// ========================
+
+var map = L.map('map').setView([46.6, 2.4], 6);
+
+L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        attribution: '&copy; OpenStreetMap'
+    }
+).addTo(map);
+
+// ========================
+// Marqueurs stations
+// ========================
+
+var markers = [];
+
+{% for station in stations %}
+
+{% if station.latitude and station.longitude %}
+
+var prixIcon = L.divIcon({
+
+    className: "prix-marker",
+
+    html: `
+        <div class="prix-bulle">
+            {{ station.carburant_selectionne }}€
+        </div>
+    `,
+
+    iconSize: [60, 24],
+    iconAnchor: [30, 12]
+
+});
+
+var marker = L.marker(
+
+    [
+        {{ station.latitude }},
+        {{ station.longitude }}
+    ],
+
+    {
+        icon: prixIcon
+    }
+
+)
+.addTo(map)
+.bindPopup(`
+
+    <strong>{{ station.ville }}</strong><br>
+
+    {{ station.adresse }}<br>
+
+    Prix :
+    {{ station.carburant_selectionne }} €<br>
+
+    {% if station.distance %}
+    Distance :
+    {{ station.distance }} km
+    {% endif %}
+
+`);
+
+markers.push(marker);
+
+{% endif %}
+
+{% endfor %}
+
+// ========================
+// Zoom automatique
+// ========================
+
+if (markers.length > 0) {
+
+    var group = L.featureGroup(markers);
+
+    map.fitBounds(
+        group.getBounds(),
+        {
+            padding: [30, 30]
+        }
+    );
+}
+
+// ========================
+// Géolocalisation utilisateur
+// ========================
+
+let latitudeUtilisateur = null;
+let longitudeUtilisateur = null;
+
+document
+.getElementById("btn-position")
+.addEventListener("click", function () {
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+            latitudeUtilisateur =
+                position.coords.latitude;
+
+            longitudeUtilisateur =
+                position.coords.longitude;
+
+            document.getElementById(
+                "latitude"
+            ).value = latitudeUtilisateur;
+
+            document.getElementById(
+                "longitude"
+            ).value = longitudeUtilisateur;
+
+            document.getElementById(
+                "position"
+            ).innerHTML =
+                "Position trouvée : "
+                + latitudeUtilisateur.toFixed(5)
+                + ", "
+                + longitudeUtilisateur.toFixed(5);
+
+            map.setView(
+                [
+                    latitudeUtilisateur,
+                    longitudeUtilisateur
+                ],
+                12
+            );
+
+            L.marker([
+                latitudeUtilisateur,
+                longitudeUtilisateur
+            ])
+            .addTo(map)
+            .bindPopup("Vous êtes ici")
+            .openPopup();
+
+            // Lance automatiquement la recherche
+
+            document.querySelector(
+                "form"
+            ).submit();
+
+        },
+
+        function(error) {
+
+            alert(
+                "Impossible d'obtenir votre position."
+            );
+
+        }
+
+    );
+
+});
+
+</script>
+</body>
+
+</html>
