@@ -67,13 +67,14 @@ def distance_km(
     return rayon * c
 
 
+from fastapi.responses import RedirectResponse
+
 @app.get("/")
 def home():
 
-    return {
-        "application": "Comparateur Carburant"
-    }
-
+    return RedirectResponse(
+        url="/web"
+    )
 
 @app.get("/stations")
 def get_stations():
