@@ -334,32 +334,55 @@ var marker = L.marker(
             "
         >
 
-<button
+            <button
 
-    onclick="ouvrirWaze(
-        {{ station.latitude }},
-        {{ station.longitude }}
-    )"
+                onclick="ouvrirGoogleMaps(
+                    {{ station.latitude }},
+                    {{ station.longitude }}
+                )"
 
-    style="
-        padding:8px 12px;
-        background:#33CCFF;
-        color:white;
-        border:none;
-        border-radius:6px;
-        cursor:pointer;
-    "
+                style="
+                    padding:8px 12px;
+                    background:#34a853;
+                    color:white;
+                    border:none;
+                    border-radius:6px;
+                    cursor:pointer;
+                "
 
->
+            >
 
-    🚗 Waze
+                🗺 Google Maps
 
-</button>
+            </button>
+
+            <button
+
+                onclick="ouvrirWaze(
+                    {{ station.latitude }},
+                    {{ station.longitude }}
+                )"
+
+                style="
+                    padding:8px 12px;
+                    background:#33CCFF;
+                    color:white;
+                    border:none;
+                    border-radius:6px;
+                    cursor:pointer;
+                "
+
+            >
+
+                🚗 Waze
+
+            </button>
+
+        </div>
 
     </div>
 
 `);
-
 markers.push(marker);
 
 {% endif %}
