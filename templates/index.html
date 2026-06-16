@@ -157,12 +157,15 @@
 var map = L.map('map').setView([46.6, 2.4], 6);
 
 L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {
-        attribution: '&copy; OpenStreetMap'
-    }
-).addTo(map);
 
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+
+    {
+        attribution: "",
+        maxZoom: 19
+    }
+
+).addTo(map);
 // ========================
 // Marqueurs stations
 // ========================
@@ -201,19 +204,49 @@ var marker = L.marker(
 
 )
 .addTo(map)
+
 .bindPopup(`
 
-    <strong>{{ station.ville }}</strong><br>
+    <div
+        style="
+            text-align:center;
+            min-width:180px;
+        "
+    >
 
-    {{ station.adresse }}<br>
+        <strong>
+            {{ station.carburant_selectionne }} €
+        </strong>
 
-    Prix :
-    {{ station.carburant_selectionne }} €<br>
+        <br><br>
 
-    {% if station.distance %}
-    Distance :
-    {{ station.distance }} km
-    {% endif %}
+        {% if station.distance %}
+        📍 {{ station.distance }} km
+        <br><br>
+        {% endif %}
+
+        <a
+
+            href="https://www.google.com/maps/dir/?api=1&destination={{ station.latitude }},{{ station.longitude }}"
+
+            target="_blank"
+
+            style="
+                display:inline-block;
+                padding:8px 12px;
+                background:#007bff;
+                color:white;
+                text-decoration:none;
+                border-radius:6px;
+            "
+
+        >
+
+            🧭 Itinéraire
+
+        </a>
+
+    </div>
 
 `);
 
@@ -254,6 +287,11 @@ document
 .getElementById("btn-position")
 .addEventListener("click", function () {
 
+function demarrerGeolocalisation() {
+
+    var derniereLatitudeRecherche = null;
+    var derniereLongitudeRecherche = null;
+
     navigator.geolocation.watchPosition(
 
         function(position) {
@@ -272,6 +310,52 @@ document
                 "longitude"
             ).value = longitudeUtilisateur;
 
+            if (
+    derniereLatitudeRecherche === null
+) {
+
+    derniereLatitudeRecherche =
+        latitudeUtilisateur;
+
+    derniereLongitudeRecherche =
+        longitudeUtilisateur;
+
+}
+
+var distance =
+    Math.sqrt(
+
+        Math.pow(
+            latitudeUtilisateur
+            -
+            derniereLatitudeRecherche,
+            2
+        )
+
+        +
+
+        Math.pow(
+            longitudeUtilisateur
+            -
+            derniereLongitudeRecherche,
+            2
+        )
+
+    );
+
+if (distance > 0.005) {
+
+    derniereLatitudeRecherche =
+        latitudeUtilisateur;
+
+    derniereLongitudeRecherche =
+        longitudeUtilisateur;
+
+    document
+        .querySelector("form")
+        .submit();
+
+}
             document.getElementById(
                 "position"
             ).innerHTML =
@@ -289,29 +373,60 @@ document
 
             } else {
 
-                marqueurUtilisateur =
-                    L.marker([
-                        latitudeUtilisateur,
-                        longitudeUtilisateur
-                    ])
-                    .addTo(map)
+var userIcon = L.divIcon({
+
+    html:
+        '<div style="width:18px;height:18px;border-radius:50%;background:#007bff;border:3px solid white;box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>',
+
+    className: "",
+
+    iconSize: [24,24]
+
+});
+
+marqueurUtilisateur =
+    L.marker(
+
+        [
+            latitudeUtilisateur,
+            longitudeUtilisateur
+        ],
+
+        {
+            icon: userIcon
+        }
+
+    )
+                        .addTo(map)
                     .bindPopup(
                         "Vous êtes ici"
                     );
 
-            }
+                map.setView(
+                    [
+                        latitudeUtilisateur,
+                        longitudeUtilisateur
+                    ],
+                    12
+                );
 
-            map.panTo([
-                latitudeUtilisateur,
-                longitudeUtilisateur
-            ]);
+                // Recharge automatique la première fois
+                setTimeout(function() {
+
+                    document
+                    .querySelector("form")
+                    .submit();
+
+                }, 1000);
+
+            }
 
         },
 
         function(error) {
 
-            alert(
-                "Impossible d'obtenir votre position."
+            console.log(
+                "GPS refusé ou indisponible"
             );
 
         },
@@ -324,7 +439,25 @@ document
 
     );
 
-});
+}
+
+
+// Bouton "Autour de moi"
+
+document
+.getElementById("btn-position")
+.addEventListener(
+    "click",
+    demarrerGeolocalisation
+);
+
+
+// Lancement automatique au chargement
+
+window.addEventListener(
+    "load",
+    demarrerGeolocalisation
+);
 
 </script>
 </body>
