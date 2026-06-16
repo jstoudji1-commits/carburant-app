@@ -235,27 +235,47 @@ var marker = L.marker(
 
 <button
 
-    onclick="ouvrirNavigation(
+    onclick="ouvrirGoogleMaps(
         {{ station.latitude }},
         {{ station.longitude }}
     )"
 
     style="
-        padding:10px 14px;
-        background:#28a745;
+        padding:8px 12px;
+        background:#4285F4;
         color:white;
         border:none;
         border-radius:6px;
         cursor:pointer;
-        font-size:14px;
     "
 
 >
 
-    🧭 Itinéraire
+    🗺 Google Maps
 
 </button>
-        </div>
+
+<button
+
+    onclick="ouvrirWaze(
+        {{ station.latitude }},
+        {{ station.longitude }}
+    )"
+
+    style="
+        padding:8px 12px;
+        background:#33CCFF;
+        color:white;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+    "
+
+>
+
+    🚗 Waze
+
+</button>
 
     </div>
 
@@ -413,7 +433,8 @@ window.addEventListener(
     "load",
     demarrerGeolocalisation
 );
-function ouvrirNavigation(
+
+function ouvrirGoogleMaps(
     latitudeStation,
     longitudeStation
 ) {
@@ -421,38 +442,38 @@ function ouvrirNavigation(
     const destination =
         latitudeStation + "," + longitudeStation;
 
-    if (
-        latitudeUtilisateur &&
-        longitudeUtilisateur
-    ) {
+    const origine =
+        latitudeUtilisateur + "," + longitudeUtilisateur;
 
-        const origine =
-            latitudeUtilisateur + "," + longitudeUtilisateur;
+    window.open(
 
-        window.open(
+        "https://www.google.com/maps/dir/?api=1"
+        + "&origin=" + encodeURIComponent(origine)
+        + "&destination=" + encodeURIComponent(destination)
+        + "&travelmode=driving",
 
-            "https://www.google.com/maps/dir/?api=1"
-            + "&origin=" + encodeURIComponent(origine)
-            + "&destination=" + encodeURIComponent(destination)
-            + "&travelmode=driving",
+        "_blank"
 
-            "_blank"
+    );
 
-        );
+}
 
-    } else {
+function ouvrirWaze(
+    latitudeStation,
+    longitudeStation
+) {
 
-        window.open(
+    window.open(
 
-            "https://www.google.com/maps/dir/?api=1"
-            + "&destination=" + encodeURIComponent(destination)
-            + "&travelmode=driving",
+        "https://waze.com/ul?ll="
+        + latitudeStation
+        + ","
+        + longitudeStation
+        + "&navigate=yes",
 
-            "_blank"
+        "_blank"
 
-        );
-
-    }
+    );
 
 }
 </script>
