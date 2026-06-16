@@ -289,9 +289,6 @@ document
 
 function demarrerGeolocalisation() {
 
-    var derniereLatitudeRecherche = null;
-    var derniereLongitudeRecherche = null;
-
     navigator.geolocation.watchPosition(
 
         function(position) {
@@ -310,52 +307,6 @@ function demarrerGeolocalisation() {
                 "longitude"
             ).value = longitudeUtilisateur;
 
-            if (
-    derniereLatitudeRecherche === null
-) {
-
-    derniereLatitudeRecherche =
-        latitudeUtilisateur;
-
-    derniereLongitudeRecherche =
-        longitudeUtilisateur;
-
-}
-
-var distance =
-    Math.sqrt(
-
-        Math.pow(
-            latitudeUtilisateur
-            -
-            derniereLatitudeRecherche,
-            2
-        )
-
-        +
-
-        Math.pow(
-            longitudeUtilisateur
-            -
-            derniereLongitudeRecherche,
-            2
-        )
-
-    );
-
-if (distance > 0.005) {
-
-    derniereLatitudeRecherche =
-        latitudeUtilisateur;
-
-    derniereLongitudeRecherche =
-        longitudeUtilisateur;
-
-    document
-        .querySelector("form")
-        .submit();
-
-}
             document.getElementById(
                 "position"
             ).innerHTML =
@@ -371,53 +322,52 @@ if (distance > 0.005) {
                     longitudeUtilisateur
                 ]);
 
+                map.panTo([
+                    latitudeUtilisateur,
+                    longitudeUtilisateur
+                ]);
+
             } else {
 
-var userIcon = L.divIcon({
+                var userIcon = L.divIcon({
 
-    html:
-        '<div style="width:18px;height:18px;border-radius:50%;background:#007bff;border:3px solid white;box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>',
+                    html:
+                        '<div style="width:18px;height:18px;border-radius:50%;background:#007bff;border:3px solid white;box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>',
 
-    className: "",
+                    className: "",
 
-    iconSize: [24,24]
+                    iconSize: [24,24]
 
-});
+                });
 
-marqueurUtilisateur =
-    L.marker(
+                marqueurUtilisateur =
+                    L.marker(
 
-        [
-            latitudeUtilisateur,
-            longitudeUtilisateur
-        ],
+                        [
+                            latitudeUtilisateur,
+                            longitudeUtilisateur
+                        ],
 
-        {
-            icon: userIcon
-        }
+                        {
+                            icon: userIcon
+                        }
 
-    )
-                        .addTo(map)
+                    )
+                    .addTo(map)
                     .bindPopup(
                         "Vous êtes ici"
                     );
 
                 map.setView(
+
                     [
                         latitudeUtilisateur,
                         longitudeUtilisateur
                     ],
+
                     12
+
                 );
-
-                // Recharge automatique la première fois
-                setTimeout(function() {
-
-                    document
-                    .querySelector("form")
-                    .submit();
-
-                }, 1000);
 
             }
 
@@ -441,7 +391,6 @@ marqueurUtilisateur =
 
 }
 
-
 // Bouton "Autour de moi"
 
 document
@@ -450,7 +399,6 @@ document
     "click",
     demarrerGeolocalisation
 );
-
 
 // Lancement automatique au chargement
 
