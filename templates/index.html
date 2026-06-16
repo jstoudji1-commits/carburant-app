@@ -233,48 +233,28 @@ var marker = L.marker(
             "
         >
 
-            <a
+<button
 
-                href="https://www.google.com/maps/dir/?api=1&destination={{ station.latitude }},{{ station.longitude }}"
+    onclick="ouvrirNavigation(
+        {{ station.latitude }},
+        {{ station.longitude }}
+    )"
 
-                target="_blank"
+    style="
+        padding:10px 14px;
+        background:#28a745;
+        color:white;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+        font-size:14px;
+    "
 
-                style="
-                    padding:8px 12px;
-                    background:#4285F4;
-                    color:white;
-                    text-decoration:none;
-                    border-radius:6px;
-                    font-size:14px;
-                "
+>
 
-            >
+    🧭 Itinéraire
 
-                🗺 Google Maps
-
-            </a>
-
-            <a
-
-                href="https://waze.com/ul?ll={{ station.latitude }},{{ station.longitude }}&navigate=yes"
-
-                target="_blank"
-
-                style="
-                    padding:8px 12px;
-                    background:#33CCFF;
-                    color:white;
-                    text-decoration:none;
-                    border-radius:6px;
-                    font-size:14px;
-                "
-
-            >
-
-                🚗 Waze
-
-            </a>
-
+</button>
         </div>
 
     </div>
@@ -433,7 +413,38 @@ window.addEventListener(
     "load",
     demarrerGeolocalisation
 );
+function ouvrirNavigation(
+    latitudeStation,
+    longitudeStation
+) {
 
+    if (
+        latitudeUtilisateur
+        &&
+        longitudeUtilisateur
+    ) {
+
+        window.open(
+
+            `https://www.google.com/maps/dir/?api=1&origin=${latitudeUtilisateur},${longitudeUtilisateur}&destination=${latitudeStation},${longitudeStation}&travelmode=driving`,
+
+            "_blank"
+
+        );
+
+    } else {
+
+        window.open(
+
+            `https://www.google.com/maps/dir/?api=1&destination=${latitudeStation},${longitudeStation}&travelmode=driving`,
+
+            "_blank"
+
+        );
+
+    }
+
+}
 </script>
 </body>
 
