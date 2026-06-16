@@ -210,12 +210,12 @@ var marker = L.marker(
     <div
         style="
             text-align:center;
-            min-width:180px;
+            min-width:220px;
         "
     >
 
         <strong>
-            {{ station.carburant_selectionne }} €
+            ⛽ {{ station.carburant_selectionne }} €
         </strong>
 
         <br><br>
@@ -225,26 +225,57 @@ var marker = L.marker(
         <br><br>
         {% endif %}
 
-        <a
-
-            href="https://www.google.com/maps/dir/?api=1&destination={{ station.latitude }},{{ station.longitude }}"
-
-            target="_blank"
-
+        <div
             style="
-                display:inline-block;
-                padding:8px 12px;
-                background:#007bff;
-                color:white;
-                text-decoration:none;
-                border-radius:6px;
+                display:flex;
+                gap:10px;
+                justify-content:center;
             "
-
         >
 
-            🧭 Itinéraire
+            <a
 
-        </a>
+                href="https://www.google.com/maps/dir/?api=1&destination={{ station.latitude }},{{ station.longitude }}"
+
+                target="_blank"
+
+                style="
+                    padding:8px 12px;
+                    background:#4285F4;
+                    color:white;
+                    text-decoration:none;
+                    border-radius:6px;
+                    font-size:14px;
+                "
+
+            >
+
+                🗺 Google Maps
+
+            </a>
+
+            <a
+
+                href="https://waze.com/ul?ll={{ station.latitude }},{{ station.longitude }}&navigate=yes"
+
+                target="_blank"
+
+                style="
+                    padding:8px 12px;
+                    background:#33CCFF;
+                    color:white;
+                    text-decoration:none;
+                    border-radius:6px;
+                    font-size:14px;
+                "
+
+            >
+
+                🚗 Waze
+
+            </a>
+
+        </div>
 
     </div>
 
