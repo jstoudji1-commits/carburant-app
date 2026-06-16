@@ -59,7 +59,64 @@
 </head>
 
 <body>
+<div
+    style="
+        background:white;
+        text-align:center;
+        padding:10px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.1);
+        position:sticky;
+        top:0;
+        z-index:1000;
+    "
+>
 
+    <img
+        src="/static/logo.png"
+        alt="OptiPlein"
+        style="
+            max-width:250px;
+            width:80%;
+            height:auto;
+        "
+    >
+
+    <div
+        style="
+            margin-top:8px;
+            font-size:14px;
+            color:#666;
+        "
+    >
+
+        Le plein intelligent
+
+    </div>
+
+</div>
+<div
+    style="
+        text-align:center;
+        padding:15px;
+        background:#f8f9fa;
+    "
+>
+
+    <h3>
+        ⛽ {{ nombre_stations }} stations trouvées
+    </h3>
+
+    <h2
+        style="
+            color:#28a745;
+            margin:0;
+        "
+    >
+        🏆 Prix mini :
+        {{ prix_min }} €
+    </h2>
+
+</div>
     <h1>Stations les moins chères</h1>
 
     <p>
