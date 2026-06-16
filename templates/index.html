@@ -544,19 +544,41 @@ function ouvrirGoogleMaps(
     const destination =
         latitudeStation + "," + longitudeStation;
 
-    const origine =
-        latitudeUtilisateur + "," + longitudeUtilisateur;
+    if (
+        latitudeUtilisateur !== null
+        &&
+        longitudeUtilisateur !== null
+    ) {
 
-    window.open(
+        const origine =
+            latitudeUtilisateur
+            + ","
+            + longitudeUtilisateur;
 
-        "https://www.google.com/maps/dir/?api=1"
-        + "&origin=" + encodeURIComponent(origine)
-        + "&destination=" + encodeURIComponent(destination)
-        + "&travelmode=driving",
+        window.open(
 
-        "_blank"
+            "https://www.google.com/maps/dir/?api=1"
+            + "&origin=" + encodeURIComponent(origine)
+            + "&destination=" + encodeURIComponent(destination)
+            + "&travelmode=driving",
 
-    );
+            "_blank"
+
+        );
+
+    } else {
+
+        window.open(
+
+            "https://www.google.com/maps/dir/?api=1"
+            + "&destination=" + encodeURIComponent(destination)
+            + "&travelmode=driving",
+
+            "_blank"
+
+        );
+
+    }
 
 }
 function ouvrirWaze(
