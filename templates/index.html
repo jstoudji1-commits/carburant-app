@@ -248,6 +248,8 @@ let longitudeUtilisateur = null;
 
 let utilisateurMarker = null;
 
+var marqueurUtilisateur = null;
+
 document
 .getElementById("btn-position")
 .addEventListener("click", function () {
@@ -278,43 +280,31 @@ document
                 + ", "
                 + longitudeUtilisateur.toFixed(5);
 
-            if (utilisateurMarker) {
+            if (marqueurUtilisateur) {
 
-                utilisateurMarker.setLatLng([
+                marqueurUtilisateur.setLatLng([
                     latitudeUtilisateur,
                     longitudeUtilisateur
                 ]);
 
             } else {
 
-                utilisateurMarker = L.circleMarker(
-                    [
+                marqueurUtilisateur =
+                    L.marker([
                         latitudeUtilisateur,
                         longitudeUtilisateur
-                    ],
-                    {
-                        radius: 8,
-                        color: "#2563eb",
-                        fillColor: "#2563eb",
-                        fillOpacity: 1
-                    }
-                )
-                .addTo(map)
-                .bindPopup("Vous êtes ici");
-
-                map.setView(
-                    [
-                        latitudeUtilisateur,
-                        longitudeUtilisateur
-                    ],
-                    13
-                );
-
-                document.querySelector(
-                    "form"
-                ).submit();
+                    ])
+                    .addTo(map)
+                    .bindPopup(
+                        "Vous êtes ici"
+                    );
 
             }
+
+            map.panTo([
+                latitudeUtilisateur,
+                longitudeUtilisateur
+            ]);
 
         },
 
@@ -328,8 +318,8 @@ document
 
         {
             enableHighAccuracy: true,
-            maximumAge: 1000,
-            timeout: 10000
+            maximumAge: 0,
+            timeout: 5000
         }
 
     );
