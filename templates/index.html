@@ -50,6 +50,16 @@
 
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
 
+    .dashboard{
+    display:flex;
+    justify-content:space-around;
+    background:white;
+    border-radius:15px;
+    padding:15px;
+    margin:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+height: calc(100vh - 220px);
 }
     </style>
 
@@ -105,6 +115,21 @@
     </div>
 
 </div>
+
+<div class="dashboard">
+
+    <div>
+        📍 {{ nombre_stations }}
+        <br>
+        stations
+    </div>
+
+    <div>
+        🏆 {{ prix_min }} €
+        <br>
+        prix mini
+    </div>
+
     <h1>Stations les moins chères</h1>
 
     <p>
