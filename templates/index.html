@@ -4,64 +4,64 @@
 <head>
     <title>Comparateur Carburant</title>
 
-    <style>
+<style>
 
-        body{
-            font-family: Arial;
-            margin:40px;
-        }
+body{
+    font-family: Arial, sans-serif;
+    margin:0;
+    background:#f5f5f5;
+}
 
-        table{
-            border-collapse: collapse;
-            width:100%;
-        }
+table{
+    border-collapse: collapse;
+    width:100%;
+}
 
-        th,td{
-            border:1px solid #ccc;
-            padding:10px;
-        }
+th,td{
+    border:1px solid #ccc;
+    padding:10px;
+}
 
-        th{
-            background:#f0f0f0;
-        }
+th{
+    background:#f0f0f0;
+}
 
-        .prix-marker {
-    background: transparent;
-    border: none;
-        }   
+.prix-marker{
+    background:transparent;
+    border:none;
+}
 
-        .prix-bulle {
+.prix-bulle{
 
-    background: white;
-
-    border: 2px solid #2563eb;
-
-    border-radius: 20px;
-
-    padding: 4px 8px;
-
-    font-size: 12px;
-
-    font-weight: bold;
-
-    text-align: center;
-
-    white-space: nowrap;
-
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-
-    .dashboard{
-    display:flex;
-    justify-content:space-around;
     background:white;
-    border-radius:15px;
-    padding:15px;
-    margin:10px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+    border:2px solid #2563eb;
+
+    border-radius:20px;
+
+    padding:4px 8px;
+
+    font-size:12px;
+
+    font-weight:bold;
+
+    text-align:center;
+
+    white-space:nowrap;
+
+    box-shadow:0 2px 6px rgba(0,0,0,0.25);
+
 }
-height: calc(100vh - 220px);
+
+#map{
+
+    height:80vh;
+
+    width:100%;
+
 }
-    </style>
+
+</style>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -72,6 +72,7 @@ height: calc(100vh - 220px);
 </head>
 
 <body>
+
 <div
     style="
         display:flex;
@@ -81,6 +82,9 @@ height: calc(100vh - 220px);
         padding:10px 15px;
         border-bottom:1px solid #ddd;
         box-shadow:0 2px 8px rgba(0,0,0,0.05);
+        position:sticky;
+        top:0;
+        z-index:1000;
     "
 >
 
@@ -104,7 +108,7 @@ height: calc(100vh - 220px);
     >
 
         <span>
-            ⛽ {{ nombre_stations }}
+            📍 {{ nombre_stations }}
         </span>
 
         <span
@@ -119,38 +123,32 @@ height: calc(100vh - 220px);
 
 </div>
 
-<div class="dashboard">
-
-    <div>
-        📍 {{ nombre_stations }}
-        <br>
-        stations
-    </div>
-
-    <div>
-        🏆 {{ prix_min }} €
-        <br>
-        prix mini
-    </div>
-
-    <h1>Stations les moins chères</h1>
-
-    <p>
-        Nombre de stations : <strong>{{ nombre_stations }}</strong>
-    </p>
-
-    <p>
-        Prix le plus bas : <strong>{{ prix_min }} €</strong>
-    </p>
-
-    <form method="get">
+<form
+    method="get"
+    style="
+        padding:10px;
+        display:flex;
+        flex-wrap:wrap;
+        gap:8px;
+        align-items:center;
+    "
+>
 
     <input
         type="text"
         name="ville"
-        placeholder="Ville ou code postal">
+        placeholder="Ville ou code postal"
+        style="
+            flex:1;
+            min-width:140px;
+            padding:10px;
+        "
+    >
 
-    <select name="carburant">
+    <select
+        name="carburant"
+        style="padding:10px;"
+    >
 
         <option value="gazole">
             Gazole
@@ -166,54 +164,84 @@ height: calc(100vh - 220px);
 
     </select>
 
-    <select name="rayon">
+    <select
+        name="rayon"
+        style="padding:10px;"
+    >
 
-        <option value="5">
-            5 km
-        </option>
-
-        <option value="10" selected>
-            10 km
-        </option>
-
-        <option value="20">
-            20 km
-        </option>
-
-        <option value="50">
-            50 km
-        </option>
+        <option value="5">5 km</option>
+        <option value="10" selected>10 km</option>
+        <option value="20">20 km</option>
+        <option value="50">50 km</option>
 
     </select>
 
     <input
         type="hidden"
         id="latitude"
-        name="latitude">
+        name="latitude"
+    >
 
     <input
         type="hidden"
         id="longitude"
-        name="longitude">
+        name="longitude"
+    >
 
-    <button type="submit">
+    <button
+        type="submit"
+        style="
+            padding:10px 15px;
+            background:#28a745;
+            color:white;
+            border:none;
+            border-radius:6px;
+        "
+    >
         Rechercher
     </button>
 
 </form>
 
-<br>
+<div
+    style="
+        padding:0 10px 10px 10px;
+    "
+>
 
-<button id="btn-position">
-    📍 Autour de moi
-</button>
+    <button
+        id="btn-position"
+        style="
+            width:100%;
+            padding:12px;
+            background:#007bff;
+            color:white;
+            border:none;
+            border-radius:8px;
+            font-size:16px;
+        "
+    >
+        📍 Autour de moi
+    </button>
 
-<p id="position"></p>
+</div>
 
-    <h2>Carte des stations</h2>
+<p
+    id="position"
+    style="
+        text-align:center;
+        margin:5px 0;
+        font-size:14px;
+    "
+></p>
 
-    <div id="map"></div>
-
+<div
+    id="map"
+    style="
+        height:75vh;
+        width:100%;
+    "
+></div>
     <style>
 #map {
     height: 80vh;
