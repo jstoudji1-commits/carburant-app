@@ -418,15 +418,23 @@ function ouvrirNavigation(
     longitudeStation
 ) {
 
+    const destination =
+        latitudeStation + "," + longitudeStation;
+
     if (
-        latitudeUtilisateur
-        &&
+        latitudeUtilisateur &&
         longitudeUtilisateur
     ) {
 
+        const origine =
+            latitudeUtilisateur + "," + longitudeUtilisateur;
+
         window.open(
 
-            `https://www.google.com/maps/dir/?api=1&origin=${latitudeUtilisateur},${longitudeUtilisateur}&destination=${latitudeStation},${longitudeStation}&travelmode=driving`,
+            "https://www.google.com/maps/dir/?api=1"
+            + "&origin=" + encodeURIComponent(origine)
+            + "&destination=" + encodeURIComponent(destination)
+            + "&travelmode=driving",
 
             "_blank"
 
@@ -436,7 +444,9 @@ function ouvrirNavigation(
 
         window.open(
 
-            `https://www.google.com/maps/dir/?api=1&destination=${latitudeStation},${longitudeStation}&travelmode=driving`,
+            "https://www.google.com/maps/dir/?api=1"
+            + "&destination=" + encodeURIComponent(destination)
+            + "&travelmode=driving",
 
             "_blank"
 
