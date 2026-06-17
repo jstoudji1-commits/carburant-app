@@ -96,6 +96,90 @@ th{
     transform:translateY(-1px);
 }
 
+.favori-bouton{
+    width:100%;
+    margin-bottom:10px;
+    padding:9px 12px;
+    background:white;
+    color:#214053;
+    border:2px solid #49a334;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.favori-bouton.actif{
+    background:#49a334;
+    color:white;
+}
+
+.favoris-info{
+    margin:0 0 10px 0;
+    color:#214053;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.favoris-liste{
+    display:none;
+    margin-top:10px;
+    padding:10px;
+    background:white;
+    border:1px solid #d9e4dc;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+
+.favoris-liste.visible{
+    display:block;
+}
+
+.favoris-titre{
+    margin:0 0 8px 0;
+    color:#214053;
+    font-size:14px;
+    font-weight:bold;
+}
+
+.favori-ligne{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:8px 0;
+    border-top:1px solid #edf2ef;
+}
+
+.favori-ligne:first-of-type{
+    border-top:none;
+}
+
+.favori-nom{
+    color:#214053;
+    font-size:13px;
+    line-height:1.3;
+}
+
+.favori-actions{
+    display:flex;
+    gap:6px;
+    flex-shrink:0;
+}
+
+.favori-action{
+    padding:7px 9px;
+    background:#214053;
+    color:white;
+    border:none;
+    border-radius:6px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.favori-action.retirer{
+    background:#49a334;
+}
+
 #map{
 
     height:80vh;
@@ -285,11 +369,17 @@ th{
         📍 Autour de moi
     </button>
 
+    <div
+        id="favoris-liste"
+        class="favoris-liste"
+    ></div>
+
 </div>
 
 <p
     id="position"
     style="
+        display:none;
         text-align:center;
         margin:5px 0;
         font-size:14px;
@@ -338,6 +428,15 @@ var markers = [];
 
 {% if station.latitude and station.longitude %}
 
+var stationFavori{{ loop.index }} = {
+    id: {{ station.id|tojson }},
+    adresse: {{ station.adresse|tojson }},
+    cp: {{ station.cp|tojson }},
+    ville: {{ station.ville|tojson }},
+    latitude: {{ station.latitude|tojson }},
+    longitude: {{ station.longitude|tojson }}
+};
+
 var prixIcon = L.divIcon({
 
     className: "prix-marker",
@@ -379,6 +478,33 @@ var marker = L.marker(
         <strong>
             ⛽ {{ station.carburant_selectionne }} €
         </strong>
+
+        <br><br>
+
+        <div
+            style="
+                color:#214053;
+                font-size:13px;
+                line-height:1.35;
+            "
+        >
+            {{ station.adresse }}<br>
+            {{ station.cp }} {{ station.ville }}
+        </div>
+
+        <br>
+
+        <button
+            class="favori-bouton"
+            data-station-id="{{ station.id }}"
+            onclick="changerFavori(stationFavori{{ loop.index }})"
+        >
+            Favori
+        </button>
+
+        <p class="favoris-info">
+            0 / 3 favoris
+        </p>
 
         <br><br>
 
@@ -444,11 +570,255 @@ var marker = L.marker(
     </div>
 
 `);
+marker.on(
+    "popupopen",
+    function() {
+
+        actualiserBoutonsFavoris();
+
+    }
+);
 markers.push(marker);
 
 {% endif %}
 
 {% endfor %}
+
+var favorisStationsCle = "optiplein-favoris";
+var nombreMaximumFavoris = 3;
+
+function lireFavoris() {
+
+    try {
+
+        return JSON.parse(
+            localStorage.getItem(
+                favorisStationsCle
+            )
+        ) || [];
+
+    } catch (erreur) {
+
+        return [];
+
+    }
+
+}
+
+function enregistrerFavoris(favoris) {
+
+    localStorage.setItem(
+        favorisStationsCle,
+        JSON.stringify(favoris)
+    );
+
+}
+
+function stationEstFavorite(stationId) {
+
+    return lireFavoris().some(
+        function(favori) {
+
+            return favori.id === stationId;
+
+        }
+    );
+
+}
+
+function retirerFavori(stationId) {
+
+    var favoris = lireFavoris().filter(
+        function(favori) {
+
+            return favori.id !== stationId;
+
+        }
+    );
+
+    enregistrerFavoris(favoris);
+    actualiserBoutonsFavoris();
+
+}
+
+function changerFavori(station) {
+
+    var favoris = lireFavoris();
+    var indexFavori = favoris.findIndex(
+        function(favori) {
+
+            return favori.id === station.id;
+
+        }
+    );
+
+    if (indexFavori >= 0) {
+
+        favoris.splice(
+            indexFavori,
+            1
+        );
+
+    } else {
+
+        if (favoris.length >= nombreMaximumFavoris) {
+
+            alert(
+                "Vous pouvez ajouter 3 stations maximum en favoris."
+            );
+
+            return;
+
+        }
+
+        favoris.push(station);
+
+    }
+
+    enregistrerFavoris(favoris);
+    actualiserBoutonsFavoris();
+
+}
+
+function actualiserBoutonsFavoris() {
+
+    var favoris = lireFavoris();
+    var boutons = document.querySelectorAll(
+        ".favori-bouton"
+    );
+    var textesInfo = document.querySelectorAll(
+        ".favoris-info"
+    );
+
+    boutons.forEach(
+        function(bouton) {
+
+            var actif = favoris.some(
+                function(favori) {
+
+                    return favori.id === bouton.dataset.stationId;
+
+                }
+            );
+
+            bouton.classList.toggle(
+                "actif",
+                actif
+            );
+
+            bouton.textContent = actif
+                ? "Retirer des favoris"
+                : "Ajouter aux favoris";
+
+        }
+    );
+
+    textesInfo.forEach(
+        function(texteInfo) {
+
+            texteInfo.textContent =
+                favoris.length
+                + " / "
+                + nombreMaximumFavoris
+                + " favoris";
+
+        }
+    );
+
+    actualiserListeFavoris(favoris);
+
+}
+
+function actualiserListeFavoris(favoris) {
+
+    var conteneur = document.getElementById(
+        "favoris-liste"
+    );
+
+    if (!conteneur) {
+
+        return;
+
+    }
+
+    conteneur.innerHTML = "";
+    conteneur.classList.toggle(
+        "visible",
+        favoris.length > 0
+    );
+
+    if (favoris.length === 0) {
+
+        return;
+
+    }
+
+    var titre = document.createElement("p");
+    titre.className = "favoris-titre";
+    titre.textContent =
+        "Mes favoris "
+        + favoris.length
+        + " / "
+        + nombreMaximumFavoris;
+    conteneur.appendChild(titre);
+
+    favoris.forEach(
+        function(station) {
+
+            var ligne = document.createElement("div");
+            ligne.className = "favori-ligne";
+
+            var nom = document.createElement("div");
+            nom.className = "favori-nom";
+            nom.textContent =
+                station.adresse
+                + " - "
+                + station.cp
+                + " "
+                + station.ville;
+
+            var actions = document.createElement("div");
+            actions.className = "favori-actions";
+
+            var itineraire = document.createElement("button");
+            itineraire.type = "button";
+            itineraire.className = "favori-action";
+            itineraire.textContent = "Trajet";
+            itineraire.addEventListener(
+                "click",
+                function() {
+
+                    ouvrirGoogleMaps(
+                        station.latitude,
+                        station.longitude
+                    );
+
+                }
+            );
+
+            var retirer = document.createElement("button");
+            retirer.type = "button";
+            retirer.className = "favori-action retirer";
+            retirer.textContent = "Retirer";
+            retirer.addEventListener(
+                "click",
+                function() {
+
+                    retirerFavori(station.id);
+
+                }
+            );
+
+            actions.appendChild(itineraire);
+            actions.appendChild(retirer);
+            ligne.appendChild(nom);
+            ligne.appendChild(actions);
+            conteneur.appendChild(ligne);
+
+        }
+    );
+
+}
 
 // ========================
 // Zoom automatique
@@ -478,6 +848,7 @@ let utilisateurMarker = null;
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
+var zoomNavigation = 17;
 
 function deplacerMarqueurUtilisateur(
     nouvelleLatitude,
@@ -570,11 +941,7 @@ function demarrerGeolocalisation() {
 
             document.getElementById(
                 "position"
-            ).innerHTML =
-                "Position : "
-                + latitudeUtilisateur.toFixed(5)
-                + ", "
-                + longitudeUtilisateur.toFixed(5);
+            ).innerHTML = "";
 
             if (marqueurUtilisateur) {
 
@@ -583,11 +950,12 @@ function demarrerGeolocalisation() {
                     longitudeUtilisateur
                 );
 
-                map.panTo(
+                map.setView(
                     [
                         latitudeUtilisateur,
                         longitudeUtilisateur
                     ],
+                    zoomNavigation,
                     {
                         animate: true,
                         duration: 0.8
@@ -633,7 +1001,11 @@ function demarrerGeolocalisation() {
                         longitudeUtilisateur
                     ],
 
-                    12
+                    zoomNavigation,
+
+                    {
+                        animate: true
+                    }
 
                 );
 
@@ -673,6 +1045,11 @@ document
  window.addEventListener(
     "load",
     demarrerGeolocalisation
+);
+
+window.addEventListener(
+    "load",
+    actualiserBoutonsFavoris
 );
 
 function ouvrirGoogleMaps(
