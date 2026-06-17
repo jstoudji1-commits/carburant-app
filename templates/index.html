@@ -861,6 +861,7 @@ var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
 var zoomNavigation = 16;
+var premierCentrageUtilisateur = true;
 
 function deplacerMarqueurUtilisateur(
     nouvelleLatitude,
@@ -924,6 +925,31 @@ function deplacerMarqueurUtilisateur(
 
 }
 
+function recentrerSurUtilisateur() {
+
+    if (
+        latitudeUtilisateur === null
+        ||
+        longitudeUtilisateur === null
+    ) {
+
+        return;
+
+    }
+
+    map.setView(
+        [
+            latitudeUtilisateur,
+            longitudeUtilisateur
+        ],
+        zoomNavigation,
+        {
+            animate: true
+        }
+    );
+
+}
+
 function demarrerGeolocalisation() {
 
     if (suiviGeolocalisationId !== null) {
@@ -962,17 +988,6 @@ function demarrerGeolocalisation() {
                     longitudeUtilisateur
                 );
 
-                map.panTo(
-                    [
-                        latitudeUtilisateur,
-                        longitudeUtilisateur
-                    ],
-                    {
-                        animate: true,
-                        duration: 0.8
-                    }
-                );
-
             } else {
 
                 var userIcon = L.divIcon({
@@ -1005,20 +1020,12 @@ function demarrerGeolocalisation() {
                         "Vous etes ici"
                     );
 
-                map.setView(
+                if (premierCentrageUtilisateur) {
 
-                    [
-                        latitudeUtilisateur,
-                        longitudeUtilisateur
-                    ],
+                    recentrerSurUtilisateur();
+                    premierCentrageUtilisateur = false;
 
-                    zoomNavigation,
-
-                    {
-                        animate: true
-                    }
-
-                );
+                }
 
             }
 
@@ -1048,7 +1055,12 @@ document
 .getElementById("btn-position")
 .addEventListener(
     "click",
-    demarrerGeolocalisation
+    function() {
+
+        demarrerGeolocalisation();
+        recentrerSurUtilisateur();
+
+    }
 );
 
 // Lancement automatique au chargement
@@ -1130,6 +1142,7 @@ function ouvrirWaze(
 </body>
 
 </html>
+
 
 
 
