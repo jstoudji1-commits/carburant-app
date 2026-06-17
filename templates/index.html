@@ -7,57 +7,190 @@
 
 <style>
 
+:root{
+    --green:#149f38;
+    --green-dark:#087a2c;
+    --green-soft:#e8f7ec;
+    --ink:#102536;
+    --muted:#657485;
+    --line:#dce4ea;
+    --panel:#ffffff;
+    --shadow:0 12px 30px rgba(16,37,54,0.16);
+}
+
+*{
+    box-sizing:border-box;
+}
+
 body{
-    font-family: Arial, sans-serif;
+    font-family:Arial, sans-serif;
     margin:0;
-    background:#f5f5f5;
+    background:#eef3ef;
+    color:var(--ink);
+    overflow:hidden;
 }
 
-table{
-    border-collapse: collapse;
-    width:100%;
+.topbar{
+    position:fixed;
+    top:0;
+    left:14px;
+    right:14px;
+    height:104px;
+    z-index:1200;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 28px;
+    background:rgba(255,255,255,0.95);
+    border:1px solid rgba(220,228,234,0.9);
+    border-radius:0 0 14px 14px;
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(8px);
 }
 
-th,td{
-    border:1px solid #ccc;
-    padding:10px;
+.logo{
+    height:72px;
+    width:auto;
 }
 
-th{
-    background:#f0f0f0;
+.top-actions{
+    display:flex;
+    align-items:center;
+    gap:18px;
 }
 
-.prix-marker{
-    background:transparent;
+.position-button{
+    padding:16px 24px;
+    background:linear-gradient(180deg, #27b33e, #087a2c);
+    color:white;
     border:none;
+    border-radius:9px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(8,122,44,0.25);
 }
 
-.prix-bulle{
-
+.menu-button{
+    width:54px;
+    height:54px;
+    border:1px solid #cad4dc;
+    border-radius:10px;
     background:white;
+    color:var(--ink);
+    font-size:31px;
+    line-height:1;
+    cursor:pointer;
+    box-shadow:0 5px 14px rgba(16,37,54,0.12);
+}
 
-    border:2px solid #2563eb;
+.app-layout{
+    position:fixed;
+    inset:104px 0 0 0;
+    display:grid;
+    grid-template-columns:395px 1fr;
+    min-height:0;
+}
 
-    border-radius:20px;
+.sidebar{
+    z-index:900;
+    padding:24px 18px 18px 18px;
+    overflow:auto;
+    background:rgba(245,248,246,0.78);
+    box-shadow:10px 0 24px rgba(16,37,54,0.10);
+}
 
-    padding:4px 8px;
+.stat-card{
+    background:linear-gradient(145deg, #0b8d35 0%, #071f31 82%);
+    color:white;
+    border-radius:12px;
+    padding:26px 26px 24px 26px;
+    box-shadow:var(--shadow);
+}
 
-    font-size:12px;
+.stat-row{
+    display:grid;
+    grid-template-columns:72px 1fr;
+    gap:18px;
+    align-items:center;
+}
 
+.stat-row + .stat-row{
+    margin-top:22px;
+    padding-top:22px;
+    border-top:1px solid rgba(255,255,255,0.25);
+}
+
+.stat-icon{
+    width:62px;
+    height:62px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(255,255,255,0.14);
+    color:white;
+    font-size:13px;
     font-weight:bold;
-
     text-align:center;
+}
 
-    white-space:nowrap;
+.stat-label{
+    margin:0 0 6px 0;
+    font-size:18px;
+    font-weight:bold;
+}
 
-    box-shadow:0 2px 6px rgba(0,0,0,0.25);
+.stat-value{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+    font-size:50px;
+    line-height:0.95;
+    font-weight:bold;
+}
 
+.stat-value small{
+    padding-bottom:7px;
+    font-size:18px;
+    font-weight:normal;
+}
+
+.best-price{
+    color:#35ec68;
+}
+
+.price-pill{
+    align-self:center;
+    padding:8px 14px;
+    background:#159b31;
+    color:white;
+    border-radius:8px;
+    font-size:15px;
+    font-weight:bold;
+}
+
+.control-card,
+.favoris-liste,
+.update-card{
+    margin-top:16px;
+    padding:18px;
+    background:rgba(255,255,255,0.96);
+    border:1px solid rgba(220,228,234,0.95);
+    border-radius:12px;
+    box-shadow:0 8px 22px rgba(16,37,54,0.10);
+}
+
+.control-title{
+    margin:0 0 14px 0;
+    font-size:18px;
+    font-weight:bold;
 }
 
 .carburant-boutons{
-    display:flex;
-    gap:6px;
-    flex-wrap:wrap;
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:10px;
 }
 
 .carburant-boutons input{
@@ -67,68 +200,82 @@ th{
 }
 
 .carburant-boutons label{
-    min-width:68px;
-    padding:10px 14px;
-    border:2px solid #214053;
-    border-radius:8px;
+    min-height:86px;
+    padding:11px 8px;
+    border:1px solid #cbd5dd;
+    border-radius:9px;
     background:white;
-    color:#214053;
+    color:var(--ink);
     font-weight:bold;
     text-align:center;
     cursor:pointer;
-    box-shadow:0 2px 5px rgba(0,0,0,0.10);
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    box-shadow:0 4px 11px rgba(16,37,54,0.08);
+    transition:all 0.18s ease;
 }
 
-.carburant-boutons label:hover{
-    border-color:#49a334;
-    color:#2f8f28;
+.fuel-dot{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:#0b8d35;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+}
+
+.fuel-dot.blue{
+    background:#1167e8;
+}
+
+.fuel-dot.dark{
+    background:#102536;
 }
 
 .carburant-boutons input:checked + label{
-    background:#49a334;
-    border-color:#49a334;
-    color:white;
-    box-shadow:0 3px 8px rgba(73,163,52,0.35);
+    border-color:var(--green);
+    box-shadow:0 0 0 2px rgba(20,159,56,0.20), 0 8px 18px rgba(16,37,54,0.14);
     transform:translateY(-1px);
 }
 
-.favori-bouton{
-    width:100%;
-    margin-bottom:10px;
-    padding:9px 12px;
-    background:white;
-    color:#214053;
-    border:2px solid #49a334;
-    border-radius:8px;
+.rayon-control{
+    margin-top:18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.rayon-control label{
+    font-size:16px;
+    font-weight:bold;
+}
+
+.rayon-control select{
+    min-width:110px;
+    padding:12px 14px;
+    border:none;
+    border-radius:9px;
+    background:linear-gradient(180deg, #30b943, #138b30);
+    color:white;
+    font-size:16px;
     font-weight:bold;
     cursor:pointer;
 }
 
-.favori-bouton.actif{
-    background:#49a334;
-    color:white;
-}
-
-.favoris-info{
-    margin:0 0 10px 0;
-    color:#214053;
-    font-size:13px;
-    font-weight:bold;
+.rayon-control option{
+    color:var(--ink);
 }
 
 .favoris-liste{
     display:none;
-    margin-top:10px;
-    padding:10px;
-    background:white;
-    border:1px solid #d9e4dc;
-    border-radius:8px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.06);
 }
 
 .favoris-liste.visible{
@@ -137,8 +284,8 @@ th{
 
 .favoris-titre{
     margin:0 0 8px 0;
-    color:#214053;
-    font-size:14px;
+    color:var(--ink);
+    font-size:15px;
     font-weight:bold;
 }
 
@@ -147,7 +294,7 @@ th{
     align-items:center;
     justify-content:space-between;
     gap:8px;
-    padding:8px 0;
+    padding:9px 0;
     border-top:1px solid #edf2ef;
 }
 
@@ -156,7 +303,7 @@ th{
 }
 
 .favori-nom{
-    color:#214053;
+    color:var(--ink);
     font-size:13px;
     line-height:1.3;
 }
@@ -168,25 +315,277 @@ th{
 }
 
 .favori-action{
-    padding:7px 9px;
+    padding:8px 10px;
     background:#214053;
     color:white;
     border:none;
-    border-radius:6px;
+    border-radius:7px;
     font-weight:bold;
     cursor:pointer;
 }
 
+.favori-bouton{
+    width:42px;
+    height:42px;
+    margin:0 auto 10px auto;
+    padding:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:white;
+    color:#d8a100;
+    border:2px solid #d8a100;
+    border-radius:50%;
+    font-size:28px;
+    line-height:1;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 5px 14px rgba(16,37,54,0.14);
+}
+
+.favori-bouton.actif{
+    background:#fff4c7;
+    color:#d8a100;
+    border-color:#d8a100;
+}
+
 .favori-action.retirer{
-    background:#49a334;
+    background:var(--green);
+    color:white;
+}
+
+.favoris-info{
+    margin:0 0 10px 0;
+    color:var(--muted);
+    font-size:13px;
+    font-weight:bold;
+}
+
+.update-card{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    color:#4f5f6c;
+    font-size:14px;
+}
+
+.update-dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:var(--green);
+    flex:0 0 auto;
+}
+
+.map-stage{
+    position:relative;
+    min-width:0;
+    min-height:0;
 }
 
 #map{
-
-    height:80vh;
-
+    position:absolute;
+    inset:0;
+    height:100%;
     width:100%;
+    z-index:1;
+}
 
+.leaflet-control-zoom{
+    margin-top:470px !important;
+    margin-right:22px !important;
+    border:none !important;
+    box-shadow:0 8px 18px rgba(16,37,54,0.16) !important;
+}
+
+.prix-marker{
+    background:transparent;
+    border:none;
+}
+
+.prix-bulle{
+    min-width:120px;
+    background:white;
+    border:2px solid #149f38;
+    border-radius:10px;
+    padding:8px 13px;
+    color:var(--ink);
+    font-size:22px;
+    font-weight:bold;
+    text-align:right;
+    white-space:nowrap;
+    box-shadow:0 8px 18px rgba(16,37,54,0.20);
+}
+
+.prix-bulle span{
+    display:block;
+    color:#04872e;
+    font-size:15px;
+    line-height:1.1;
+}
+
+.auto-badge{
+    position:absolute;
+    top:24px;
+    left:34px;
+    z-index:700;
+    padding:14px 18px;
+    background:rgba(255,255,255,0.94);
+    border-radius:9px;
+    color:var(--ink);
+    font-size:16px;
+    font-weight:bold;
+    box-shadow:var(--shadow);
+}
+
+.auto-badge strong{
+    color:var(--green);
+}
+
+.bottom-card{
+    position:absolute;
+    left:26px;
+    right:26px;
+    bottom:22px;
+    z-index:700;
+    display:grid;
+    grid-template-columns:84px 1fr auto;
+    align-items:center;
+    gap:18px;
+    padding:20px;
+    background:rgba(255,255,255,0.96);
+    border:1px solid rgba(220,228,234,0.9);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+}
+
+.bottom-icon{
+    width:72px;
+    height:72px;
+    border-radius:11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg, #31b943, #10852c);
+    color:white;
+    font-size:30px;
+    font-weight:bold;
+}
+
+.bottom-title{
+    margin:0 0 8px 0;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.bottom-subtitle{
+    margin:0;
+    color:var(--muted);
+    font-size:15px;
+}
+
+.bottom-actions{
+    display:flex;
+    gap:12px;
+}
+
+.route-button{
+    padding:16px 22px;
+    border:none;
+    border-radius:9px;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(16,37,54,0.15);
+}
+
+.route-button.maps{
+    background:linear-gradient(180deg, #27b33e, #087a2c);
+}
+
+.route-button.waze{
+    background:linear-gradient(180deg, #20b8ec, #0b8fc5);
+}
+
+@media (max-width: 900px){
+    body{
+        overflow:auto;
+    }
+
+    .topbar{
+        left:0;
+        right:0;
+        height:82px;
+        border-radius:0;
+        padding:12px 14px;
+    }
+
+    .logo{
+        height:54px;
+    }
+
+    .position-button{
+        padding:12px 14px;
+        font-size:14px;
+    }
+
+    .menu-button{
+        display:none;
+    }
+
+    .app-layout{
+        position:relative;
+        inset:auto;
+        grid-template-columns:1fr;
+        padding-top:82px;
+    }
+
+    .sidebar{
+        order:2;
+        padding:12px;
+        overflow:visible;
+    }
+
+    .map-stage{
+        order:1;
+        height:58vh;
+        min-height:420px;
+    }
+
+    .stat-card{
+        padding:18px;
+    }
+
+    .bottom-card{
+        left:12px;
+        right:12px;
+        bottom:12px;
+        grid-template-columns:1fr;
+        gap:10px;
+        padding:14px;
+    }
+
+    .bottom-icon{
+        display:none;
+    }
+
+    .bottom-actions{
+        width:100%;
+    }
+
+    .route-button{
+        flex:1;
+        padding:13px 10px;
+    }
+
+    .auto-badge{
+        top:12px;
+        left:12px;
+        font-size:13px;
+        padding:10px 12px;
+    }
 }
 
 </style>
@@ -201,207 +600,182 @@ th{
 
 <body>
 
-<div
-    style="
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        background:white;
-        padding:10px 15px;
-        border-bottom:1px solid #ddd;
-        box-shadow:0 2px 8px rgba(0,0,0,0.05);
-        position:sticky;
-        top:0;
-        z-index:1000;
-    "
->
-
+<header class="topbar">
     <img
         src="/static/logo.png"
         alt="OptiPlein"
-        style="
-            height:55px;
-            width:auto;
-        "
+        class="logo"
     >
 
-    <div
-        style="
-            display:flex;
-            gap:15px;
-            font-weight:bold;
-            font-size:16px;
-            align-items:center;
-        "
-    >
-
-        <span>
-            Stations : {{ nombre_stations }}
-        </span>
-
-        <span
-            style="
-                color:#28a745;
-            "
+    <div class="top-actions">
+        <button
+            type="button"
+            id="btn-position"
+            class="position-button"
         >
-            Meilleur prix : {{ prix_min }} &euro;
-        </span>
+            Ma position
+        </button>
 
+        <button
+            type="button"
+            class="menu-button"
+            aria-label="Menu"
+        >
+            &#9776;
+        </button>
     </div>
+</header>
 
-</div>
+<div class="app-layout">
+    <aside class="sidebar">
+        <section class="stat-card">
+            <div class="stat-row">
+                <div class="stat-icon">GPS</div>
+                <div>
+                    <p class="stat-label">Stations autour de vous</p>
+                    <div class="stat-value">
+                        {{ nombre_stations }}
+                        <small>stations trouvees</small>
+                    </div>
+                </div>
+            </div>
 
-<form
-    method="get"
-    style="
-        padding:10px;
-        display:flex;
-        flex-wrap:wrap;
-        gap:8px;
-        align-items:center;
-    "
->
+            <div class="stat-row">
+                <div class="stat-icon">Prix</div>
+                <div>
+                    <p class="stat-label">Prix le plus bas</p>
+                    <div class="stat-value best-price">
+                        {{ prix_min }} &euro;
+                        <span class="price-pill">{{ carburant|upper }}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <input
-        type="text"
-        name="ville"
-        placeholder="Ville ou code postal"
-        style="
-            flex:1;
-            min-width:140px;
-            padding:10px;
-        "
-    >
-
-    <div class="carburant-boutons">
-
-        <input
-            type="radio"
-            id="carburant-gazole"
-            name="carburant"
-            value="gazole"
-            {% if carburant == "gazole" %}checked{% endif %}
+        <form
+            method="get"
+            class="control-card"
         >
-        <label for="carburant-gazole">
-            Gazole
-        </label>
+            <p class="control-title">Carburant</p>
 
-        <input
-            type="radio"
-            id="carburant-e10"
-            name="carburant"
-            value="e10"
-            {% if carburant == "e10" %}checked{% endif %}
-        >
-        <label for="carburant-e10">
-            E10
-        </label>
+            <div class="carburant-boutons">
+                <input
+                    type="radio"
+                    id="carburant-sp98"
+                    name="carburant"
+                    value="sp98"
+                    {% if carburant == "sp98" %}checked{% endif %}
+                >
+                <label for="carburant-sp98">
+                    <span class="fuel-dot">98</span>
+                    SP98
+                </label>
 
-        <input
-            type="radio"
-            id="carburant-sp98"
-            name="carburant"
-            value="sp98"
-            {% if carburant == "sp98" %}checked{% endif %}
-        >
-        <label for="carburant-sp98">
-            SP98
-        </label>
+                <input
+                    type="radio"
+                    id="carburant-e10"
+                    name="carburant"
+                    value="e10"
+                    {% if carburant == "e10" %}checked{% endif %}
+                >
+                <label for="carburant-e10">
+                    <span class="fuel-dot blue">E10</span>
+                    E10
+                </label>
 
-    </div>
+                <input
+                    type="radio"
+                    id="carburant-gazole"
+                    name="carburant"
+                    value="gazole"
+                    {% if carburant == "gazole" %}checked{% endif %}
+                >
+                <label for="carburant-gazole">
+                    <span class="fuel-dot dark">GO</span>
+                    Gazole
+                </label>
+            </div>
 
-    <select
-        name="rayon"
-        style="padding:10px;"
-    >
+            <div class="rayon-control">
+                <label for="rayon-select">Rayon de recherche</label>
+                <select
+                    id="rayon-select"
+                    name="rayon"
+                >
+                    <option value="5" {% if rayon == 5 %}selected{% endif %}>5 km</option>
+                    <option value="10" {% if rayon == 10 %}selected{% endif %}>10 km</option>
+                    <option value="20" {% if rayon == 20 %}selected{% endif %}>20 km</option>
+                    <option value="50" {% if rayon == 50 %}selected{% endif %}>50 km</option>
+                </select>
+            </div>
 
-        <option value="5">5 km</option>
-        <option value="10" selected>10 km</option>
-        <option value="20">20 km</option>
-        <option value="50">50 km</option>
+            <input
+                type="hidden"
+                id="latitude"
+                name="latitude"
+            >
 
-    </select>
+            <input
+                type="hidden"
+                id="longitude"
+                name="longitude"
+            >
+        </form>
 
-    <input
-        type="hidden"
-        id="latitude"
-        name="latitude"
-    >
+        <div
+            id="favoris-liste"
+            class="favoris-liste"
+        ></div>
 
-    <input
-        type="hidden"
-        id="longitude"
-        name="longitude"
-    >
+        <div class="update-card">
+            <span>Derniere mise a jour : {{ texte_verification }}</span>
+            <span class="update-dot"></span>
+        </div>
+    </aside>
 
-    <button
-        type="submit"
-        style="
-            padding:10px 15px;
-            background:#28a745;
-            color:white;
-            border:none;
-            border-radius:6px;
-        "
-    >
-        Rechercher
-    </button>
+    <main class="map-stage">
+        <div id="map"></div>
 
-</form>
+        <div class="auto-badge">
+            Actualisation auto : <strong>ON</strong>
+        </div>
 
-<div
-    style="
-        padding:0 10px 10px 10px;
-    "
->
-
-    <button
-        id="btn-position"
-        style="
-            width:100%;
-            padding:12px;
-            background:#007bff;
-            color:white;
-            border:none;
-            border-radius:8px;
-            font-size:16px;
-        "
-    >
-        Autour de moi
-    </button>
-
-    <div
-        id="favoris-liste"
-        class="favoris-liste"
-    ></div>
-
+        {% if stations and stations[0].latitude and stations[0].longitude %}
+        <div class="bottom-card">
+            <div class="bottom-icon">Prix</div>
+            <div>
+                <p class="bottom-title">Trouver la station la moins chere</p>
+                <p class="bottom-subtitle">
+                    Itineraire direct vers le prix le plus bas autour de vous
+                </p>
+            </div>
+            <div class="bottom-actions">
+                <button
+                    type="button"
+                    class="route-button maps"
+                    onclick="ouvrirGoogleMaps({{ stations[0].latitude }}, {{ stations[0].longitude }})"
+                >
+                    Google Maps
+                </button>
+                <button
+                    type="button"
+                    class="route-button waze"
+                    onclick="ouvrirWaze({{ stations[0].latitude }}, {{ stations[0].longitude }})"
+                >
+                    Waze
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </main>
 </div>
 
 <p
     id="position"
-    style="
-        display:none;
-        text-align:center;
-        margin:5px 0;
-        font-size:14px;
-    "
+    style="display:none;"
 ></p>
 
-<div
-    id="map"
-    style="
-        height:75vh;
-        width:100%;
-    "
-></div>
-    <style>
-#map {
-    height: 80vh;
-} 
-   </style>
-
-    
-    <script>
+<script>
 
 // ========================
 // Creation de la carte
@@ -444,12 +818,13 @@ var prixIcon = L.divIcon({
 
     html: `
         <div class="prix-bulle">
-            {{ station.carburant_selectionne }}&euro;
+            {{ station.carburant_selectionne }} &euro;
+            <span>{{ carburant|upper }}</span>
         </div>
     `,
 
-    iconSize: [60, 24],
-    iconAnchor: [30, 12]
+    iconSize: [120, 62],
+    iconAnchor: [60, 31]
 
 });
 
@@ -508,10 +883,13 @@ var marker = L.marker(
 
         <button
             class="favori-bouton"
+            type="button"
             data-station-id="{{ station.id }}"
+            aria-label="Ajouter aux favoris"
+            title="Ajouter aux favoris"
             onclick="changerFavori(stationFavori{{ loop.index }})"
         >
-            Favori
+            &#9734;
         </button>
 
         <p class="favoris-info">
@@ -718,9 +1096,23 @@ function actualiserBoutonsFavoris() {
                 actif
             );
 
-            bouton.textContent = actif
-                ? "Retirer des favoris"
-                : "Ajouter aux favoris";
+            bouton.innerHTML = actif
+                ? "&#9733;"
+                : "&#9734;";
+
+            bouton.setAttribute(
+                "aria-label",
+                actif
+                    ? "Retirer des favoris"
+                    : "Ajouter aux favoris"
+            );
+
+            bouton.setAttribute(
+                "title",
+                actif
+                    ? "Retirer des favoris"
+                    : "Ajouter aux favoris"
+            );
 
         }
     );
@@ -1049,19 +1441,21 @@ function demarrerGeolocalisation() {
 
 }
 
-// Bouton Autour de moi
+var boutonPosition = document.getElementById("btn-position");
 
-document
-.getElementById("btn-position")
-.addEventListener(
-    "click",
-    function() {
+if (boutonPosition) {
 
-        demarrerGeolocalisation();
-        recentrerSurUtilisateur();
+    boutonPosition.addEventListener(
+        "click",
+        function() {
 
-    }
-);
+            demarrerGeolocalisation();
+            recentrerSurUtilisateur();
+
+        }
+    );
+
+}
 
 // Lancement automatique au chargement
 
@@ -1073,6 +1467,25 @@ document
 window.addEventListener(
     "load",
     actualiserBoutonsFavoris
+);
+
+var controlesAutomatiques = document.querySelectorAll(
+    'input[name="carburant"], select[name="rayon"]'
+);
+
+controlesAutomatiques.forEach(
+    function(controleAutomatique) {
+
+        controleAutomatique.addEventListener(
+            "change",
+            function() {
+
+                controleAutomatique.form.submit();
+
+            }
+        );
+
+    }
 );
 
 function ouvrirGoogleMaps(
