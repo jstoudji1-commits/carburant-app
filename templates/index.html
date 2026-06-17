@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
     <title>Comparateur Carburant</title>
 
 <style>
@@ -235,7 +236,7 @@ th{
     >
 
         <span>
-            ðŸ“ {{ nombre_stations }}
+            Stations : {{ nombre_stations }}
         </span>
 
         <span
@@ -243,7 +244,7 @@ th{
                 color:#28a745;
             "
         >
-            ðŸ† {{ prix_min }} â‚¬
+            Meilleur prix : {{ prix_min }} &euro;
         </span>
 
     </div>
@@ -366,7 +367,7 @@ th{
             font-size:16px;
         "
     >
-        ðŸ“ Autour de moi
+        Autour de moi
     </button>
 
     <div
@@ -403,7 +404,7 @@ th{
     <script>
 
 // ========================
-// CrÃ©ation de la carte
+// Creation de la carte
 // ========================
 
 var map = L.map('map').setView([46.6, 2.4], 6);
@@ -443,7 +444,7 @@ var prixIcon = L.divIcon({
 
     html: `
         <div class="prix-bulle">
-            {{ station.carburant_selectionne }}â‚¬
+            {{ station.carburant_selectionne }}&euro;
         </div>
     `,
 
@@ -476,7 +477,7 @@ var marker = L.marker(
     >
 
         <strong>
-            â›½ {{ station.carburant_selectionne }} â‚¬
+            Carburant : {{ station.carburant_selectionne }} &euro;
         </strong>
 
         <br><br>
@@ -520,7 +521,7 @@ var marker = L.marker(
         <br><br>
 
         {% if station.distance %}
-        ðŸ“ {{ station.distance }} km
+        Distance : {{ station.distance }} km
         <br><br>
         {% endif %}
 
@@ -550,7 +551,7 @@ var marker = L.marker(
 
             >
 
-                ðŸ—º Google Maps
+                Google Maps
 
             </button>
 
@@ -572,7 +573,7 @@ var marker = L.marker(
 
             >
 
-                ðŸš— Waze
+                Waze
 
             </button>
 
@@ -848,7 +849,7 @@ if (markers.length > 0) {
 }
 
 // ========================
-// GÃ©olocalisation utilisateur
+// Geolocalisation utilisateur
 // ========================
 
 let latitudeUtilisateur = null;
@@ -1001,7 +1002,7 @@ function demarrerGeolocalisation() {
                     )
                     .addTo(map)
                     .bindPopup(
-                        "Vous Ãªtes ici"
+                        "Vous etes ici"
                     );
 
                 map.setView(
@@ -1026,7 +1027,7 @@ function demarrerGeolocalisation() {
         function(error) {
 
             console.log(
-                "GPS refusÃ© ou indisponible"
+                "GPS refuse ou indisponible"
             );
 
         },
@@ -1041,7 +1042,7 @@ function demarrerGeolocalisation() {
 
 }
 
-// Bouton "Autour de moi"
+// Bouton Autour de moi
 
 document
 .getElementById("btn-position")
@@ -1129,4 +1130,6 @@ function ouvrirWaze(
 </body>
 
 </html>
+
+
 
