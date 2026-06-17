@@ -53,6 +53,49 @@ th{
 
 }
 
+.carburant-boutons{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+}
+
+.carburant-boutons input{
+    position:absolute;
+    opacity:0;
+    pointer-events:none;
+}
+
+.carburant-boutons label{
+    min-width:68px;
+    padding:10px 14px;
+    border:2px solid #214053;
+    border-radius:8px;
+    background:white;
+    color:#214053;
+    font-weight:bold;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:0 2px 5px rgba(0,0,0,0.10);
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.carburant-boutons label:hover{
+    border-color:#49a334;
+    color:#2f8f28;
+}
+
+.carburant-boutons input:checked + label{
+    background:#49a334;
+    border-color:#49a334;
+    color:white;
+    box-shadow:0 3px 8px rgba(73,163,52,0.35);
+    transform:translateY(-1px);
+}
+
 #map{
 
     height:80vh;
@@ -145,24 +188,42 @@ th{
         "
     >
 
-    <select
-        name="carburant"
-        style="padding:10px;"
-    >
+    <div class="carburant-boutons">
 
-        <option value="gazole">
+        <input
+            type="radio"
+            id="carburant-gazole"
+            name="carburant"
+            value="gazole"
+            {% if carburant == "gazole" %}checked{% endif %}
+        >
+        <label for="carburant-gazole">
             Gazole
-        </option>
+        </label>
 
-        <option value="e10">
+        <input
+            type="radio"
+            id="carburant-e10"
+            name="carburant"
+            value="e10"
+            {% if carburant == "e10" %}checked{% endif %}
+        >
+        <label for="carburant-e10">
             E10
-        </option>
+        </label>
 
-        <option value="sp98">
+        <input
+            type="radio"
+            id="carburant-sp98"
+            name="carburant"
+            value="sp98"
+            {% if carburant == "sp98" %}checked{% endif %}
+        >
+        <label for="carburant-sp98">
             SP98
-        </option>
+        </label>
 
-    </select>
+    </div>
 
     <select
         name="rayon"
@@ -415,10 +476,81 @@ let longitudeUtilisateur = null;
 let utilisateurMarker = null;
 
 var marqueurUtilisateur = null;
+var animationPositionUtilisateur = null;
+var suiviGeolocalisationId = null;
+
+function deplacerMarqueurUtilisateur(
+    nouvelleLatitude,
+    nouvelleLongitude
+) {
+
+    if (animationPositionUtilisateur) {
+
+        cancelAnimationFrame(
+            animationPositionUtilisateur
+        );
+
+    }
+
+    var depart = marqueurUtilisateur.getLatLng();
+    var latitudeDepart = depart.lat;
+    var longitudeDepart = depart.lng;
+    var debutAnimation = performance.now();
+    var dureeAnimation = 900;
+
+    function animerPosition(tempsActuel) {
+
+        var progression = Math.min(
+            (tempsActuel - debutAnimation) / dureeAnimation,
+            1
+        );
+
+        var progressionAdoucie =
+            progression * (2 - progression);
+
+        var latitudeActuelle =
+            latitudeDepart
+            + (nouvelleLatitude - latitudeDepart)
+            * progressionAdoucie;
+
+        var longitudeActuelle =
+            longitudeDepart
+            + (nouvelleLongitude - longitudeDepart)
+            * progressionAdoucie;
+
+        marqueurUtilisateur.setLatLng([
+            latitudeActuelle,
+            longitudeActuelle
+        ]);
+
+        if (progression < 1) {
+
+            animationPositionUtilisateur =
+                requestAnimationFrame(
+                    animerPosition
+                );
+
+        }
+
+    }
+
+    animationPositionUtilisateur =
+        requestAnimationFrame(
+            animerPosition
+        );
+
+}
 
 function demarrerGeolocalisation() {
 
-    navigator.geolocation.watchPosition(
+    if (suiviGeolocalisationId !== null) {
+
+        return;
+
+    }
+
+    suiviGeolocalisationId =
+        navigator.geolocation.watchPosition(
 
         function(position) {
 
@@ -446,26 +578,33 @@ function demarrerGeolocalisation() {
 
             if (marqueurUtilisateur) {
 
-                marqueurUtilisateur.setLatLng([
+                deplacerMarqueurUtilisateur(
                     latitudeUtilisateur,
                     longitudeUtilisateur
-                ]);
+                );
 
-                map.panTo([
-                    latitudeUtilisateur,
-                    longitudeUtilisateur
-                ]);
+                map.panTo(
+                    [
+                        latitudeUtilisateur,
+                        longitudeUtilisateur
+                    ],
+                    {
+                        animate: true,
+                        duration: 0.8
+                    }
+                );
 
             } else {
 
                 var userIcon = L.divIcon({
 
                     html:
-                        '<div style="width:18px;height:18px;border-radius:50%;background:#007bff;border:3px solid white;box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>',
+                        '<div style="width:12px;height:12px;border-radius:50%;background:#007bff;border:2px solid white;box-shadow:0 0 7px rgba(0,0,0,0.28);"></div>',
 
                     className: "",
 
-                    iconSize: [24,24]
+                    iconSize: [16,16],
+                    iconAnchor: [8,8]
 
                 });
 
