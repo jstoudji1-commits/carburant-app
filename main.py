@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+﻿from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 
 from typing import Optional
@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 import csv
 import math
+from update_data import texte_derniere_mise_a_jour
 
 
 app = FastAPI()
@@ -275,8 +276,13 @@ def page_web(
 
             "carburant": carburant,
 
-            "rayon": rayon
+            "rayon": rayon,
+
+            "texte_verification": texte_derniere_mise_a_jour()
 
         }
 
     )    
+
+
+

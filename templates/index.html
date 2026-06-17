@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 
 <head>
@@ -235,7 +235,7 @@ th{
     >
 
         <span>
-            📍 {{ nombre_stations }}
+            ðŸ“ {{ nombre_stations }}
         </span>
 
         <span
@@ -243,7 +243,7 @@ th{
                 color:#28a745;
             "
         >
-            🏆 {{ prix_min }} €
+            ðŸ† {{ prix_min }} â‚¬
         </span>
 
     </div>
@@ -366,7 +366,7 @@ th{
             font-size:16px;
         "
     >
-        📍 Autour de moi
+        ðŸ“ Autour de moi
     </button>
 
     <div
@@ -403,7 +403,7 @@ th{
     <script>
 
 // ========================
-// Création de la carte
+// CrÃ©ation de la carte
 // ========================
 
 var map = L.map('map').setView([46.6, 2.4], 6);
@@ -443,7 +443,7 @@ var prixIcon = L.divIcon({
 
     html: `
         <div class="prix-bulle">
-            {{ station.carburant_selectionne }}€
+            {{ station.carburant_selectionne }}â‚¬
         </div>
     `,
 
@@ -476,7 +476,7 @@ var marker = L.marker(
     >
 
         <strong>
-            ⛽ {{ station.carburant_selectionne }} €
+            â›½ {{ station.carburant_selectionne }} â‚¬
         </strong>
 
         <br><br>
@@ -490,6 +490,17 @@ var marker = L.marker(
         >
             {{ station.adresse }}<br>
             {{ station.cp }} {{ station.ville }}
+        </div>
+
+        <div
+            style="
+                margin-top:8px;
+                color:#49a334;
+                font-size:12px;
+                font-weight:bold;
+            "
+        >
+            {{ texte_verification }}
         </div>
 
         <br>
@@ -509,7 +520,7 @@ var marker = L.marker(
         <br><br>
 
         {% if station.distance %}
-        📍 {{ station.distance }} km
+        ðŸ“ {{ station.distance }} km
         <br><br>
         {% endif %}
 
@@ -539,7 +550,7 @@ var marker = L.marker(
 
             >
 
-                🗺 Google Maps
+                ðŸ—º Google Maps
 
             </button>
 
@@ -561,7 +572,7 @@ var marker = L.marker(
 
             >
 
-                🚗 Waze
+                ðŸš— Waze
 
             </button>
 
@@ -837,7 +848,7 @@ if (markers.length > 0) {
 }
 
 // ========================
-// Géolocalisation utilisateur
+// GÃ©olocalisation utilisateur
 // ========================
 
 let latitudeUtilisateur = null;
@@ -848,7 +859,7 @@ let utilisateurMarker = null;
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
-var zoomNavigation = 17;
+var zoomNavigation = 16;
 
 function deplacerMarqueurUtilisateur(
     nouvelleLatitude,
@@ -950,12 +961,11 @@ function demarrerGeolocalisation() {
                     longitudeUtilisateur
                 );
 
-                map.setView(
+                map.panTo(
                     [
                         latitudeUtilisateur,
                         longitudeUtilisateur
                     ],
-                    zoomNavigation,
                     {
                         animate: true,
                         duration: 0.8
@@ -991,7 +1001,7 @@ function demarrerGeolocalisation() {
                     )
                     .addTo(map)
                     .bindPopup(
-                        "Vous êtes ici"
+                        "Vous Ãªtes ici"
                     );
 
                 map.setView(
@@ -1016,7 +1026,7 @@ function demarrerGeolocalisation() {
         function(error) {
 
             console.log(
-                "GPS refusé ou indisponible"
+                "GPS refusÃ© ou indisponible"
             );
 
         },
@@ -1119,3 +1129,4 @@ function ouvrirWaze(
 </body>
 
 </html>
+
