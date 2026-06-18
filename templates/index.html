@@ -60,7 +60,12 @@ body{
     gap:18px;
 }
 
-.position-button{
+.vehicle-menu{
+    position:relative;
+}
+
+.vehicle-button{
+    max-width:min(260px, 44vw);
     padding:16px 24px;
     background:linear-gradient(180deg, #27b33e, #087a2c);
     color:white;
@@ -69,20 +74,45 @@ body{
     font-size:17px;
     font-weight:bold;
     cursor:pointer;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
     box-shadow:0 8px 18px rgba(8,122,44,0.25);
 }
 
-.menu-button{
-    width:54px;
-    height:54px;
-    border:1px solid #cad4dc;
-    border-radius:10px;
+.vehicle-panel{
+    position:absolute;
+    top:calc(100% + 12px);
+    right:0;
+    width:340px;
+    padding:18px;
     background:white;
-    color:var(--ink);
-    font-size:31px;
-    line-height:1;
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:var(--shadow);
+}
+
+.vehicle-panel[hidden]{
+    display:none;
+}
+
+.vehicle-panel-title{
+    margin:0 0 14px 0;
+    font-size:17px;
+}
+
+.vehicle-save-button{
+    width:100%;
+    margin-top:14px;
+    padding:13px 16px;
+    border:none;
+    border-radius:8px;
+    background:linear-gradient(180deg, #27b33e, #087a2c);
+    color:white;
+    font-size:15px;
+    font-weight:bold;
     cursor:pointer;
-    box-shadow:0 5px 14px rgba(16,37,54,0.12);
+    box-shadow:0 6px 14px rgba(8,122,44,0.22);
 }
 
 .app-layout{
@@ -508,6 +538,31 @@ body{
     cursor:pointer;
 }
 
+.leaflet-control-follow{
+    margin-right:22px !important;
+    margin-bottom:150px !important;
+}
+
+.leaflet-control-follow button{
+    width:44px;
+    height:44px;
+    padding:0;
+    border:1px solid #cad4dc;
+    border-radius:8px;
+    background:white;
+    color:var(--ink);
+    font-size:27px;
+    line-height:42px;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(16,37,54,0.16);
+}
+
+.leaflet-control-follow button.active{
+    background:var(--green);
+    color:white;
+    border-color:var(--green-dark);
+}
+
 .bottom-card{
     position:absolute;
     left:26px;
@@ -594,13 +649,13 @@ body{
         height:54px;
     }
 
-    .position-button{
+    .vehicle-button{
         padding:12px 14px;
         font-size:14px;
     }
 
-    .menu-button{
-        display:none;
+    .vehicle-panel{
+        width:min(340px, calc(100vw - 28px));
     }
 
     .app-layout{
@@ -648,12 +703,18 @@ body{
         padding:13px 10px;
     }
 
+    .leaflet-control-follow{
+        margin-right:12px !important;
+        margin-bottom:225px !important;
+    }
+
 }
 
 </style>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 <meta
     name="viewport"
     content="width=device-width, initial-scale=1"
@@ -670,13 +731,71 @@ body{
     >
 
     <div class="top-actions">
-        <button
-            type="button"
-            class="menu-button"
-            aria-label="Menu"
-        >
-            &#9776;
-        </button>
+        <div class="vehicle-menu" id="vehicle-menu">
+            <button
+                type="button"
+                class="vehicle-button"
+                id="vehicle-button"
+                aria-expanded="false"
+                aria-controls="vehicle-panel"
+                onclick="basculerPanneauVehicule(event)"
+            >
+                Mon v&eacute;hicule
+            </button>
+
+            <section
+                class="vehicle-panel"
+                id="vehicle-panel"
+                aria-labelledby="vehicle-button"
+                hidden
+            >
+                <p class="vehicle-panel-title">
+                    Configurer mon v&eacute;hicule
+                </p>
+
+                <div class="vehicle-fields">
+                    <input
+                        class="vehicle-input"
+                        id="vehicule-nom"
+                        type="text"
+                        autocomplete="off"
+                        maxlength="40"
+                        required
+                        placeholder="Nom du v&eacute;hicule"
+                    >
+
+                    <input
+                        class="vehicle-input"
+                        id="vehicule-reservoir"
+                        type="number"
+                        min="1"
+                        step="1"
+                        inputmode="decimal"
+                        required
+                        placeholder="Taille du r&eacute;servoir (L)"
+                    >
+
+                    <input
+                        class="vehicle-input"
+                        id="vehicule-conso"
+                        type="number"
+                        min="0.1"
+                        step="0.1"
+                        inputmode="decimal"
+                        required
+                        placeholder="Consommation moyenne (L/100 km)"
+                    >
+                </div>
+
+                <button
+                    type="button"
+                    class="vehicle-save-button"
+                    onclick="enregistrerVehicule(event)"
+                >
+                    Enregistrer
+                </button>
+            </section>
+        </div>
     </div>
 </header>
 
@@ -763,40 +882,6 @@ body{
             >
         </form>
 
-        <section class="control-card vehicle-card">
-            <p class="control-title">Mon v&eacute;hicule</p>
-
-            <div class="vehicle-fields">
-                <input
-                    class="vehicle-input"
-                    id="vehicule-nom"
-                    type="text"
-                    autocomplete="off"
-                    placeholder="Nom du v&eacute;hicule"
-                >
-
-                <input
-                    class="vehicle-input"
-                    id="vehicule-reservoir"
-                    type="number"
-                    min="0"
-                    step="1"
-                    inputmode="decimal"
-                    placeholder="Taille du r&eacute;servoir (L)"
-                >
-
-                <input
-                    class="vehicle-input"
-                    id="vehicule-conso"
-                    type="number"
-                    min="0"
-                    step="0.1"
-                    inputmode="decimal"
-                    placeholder="Consommation moyenne (L/100 km)"
-                >
-            </div>
-        </section>
-
         <div
             id="favoris-liste"
             class="favoris-liste"
@@ -825,8 +910,10 @@ body{
         <div class="bottom-card">
             <div class="bottom-icon">Prix</div>
             <div>
-                <p class="bottom-title">Trouver la station la moins chere</p>
-                <p class="bottom-subtitle">
+                <p id="economy-title" class="bottom-title">
+                    Trouver la station la moins chere
+                </p>
+                <p id="economy-subtitle" class="bottom-subtitle">
                     Itin&eacute;raire direct vers le prix le plus bas autour de vous
                 </p>
                 <p
@@ -837,6 +924,7 @@ body{
             <div class="bottom-actions">
                 <button
                     type="button"
+                    id="economy-route-button"
                     class="route-button route"
                     onclick="tracerItineraire({{ stations[0].latitude }}, {{ stations[0].longitude }})"
                 >
@@ -854,6 +942,72 @@ body{
 ></p>
 
 <script>
+
+window.fermerPanneauVehicule = function() {
+
+    var panneau = document.getElementById("vehicle-panel");
+    var bouton = document.getElementById("vehicle-button");
+
+    if (panneau) {
+        panneau.hidden = true;
+    }
+
+    if (bouton) {
+        bouton.setAttribute("aria-expanded", "false");
+    }
+
+};
+
+window.basculerPanneauVehicule = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var panneau = document.getElementById("vehicle-panel");
+    var bouton = document.getElementById("vehicle-button");
+
+    if (!panneau || !bouton) {
+        return;
+    }
+
+    var ouvrir = panneau.hidden;
+    panneau.hidden = !ouvrir;
+    bouton.setAttribute(
+        "aria-expanded",
+        ouvrir ? "true" : "false"
+    );
+
+    if (ouvrir) {
+        document.getElementById("vehicule-nom").focus();
+    }
+
+};
+
+window.addEventListener(
+    "click",
+    function(event) {
+
+        var menu = document.getElementById("vehicle-menu");
+
+        if (menu && !menu.contains(event.target)) {
+            fermerPanneauVehicule();
+        }
+
+    }
+);
+
+window.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Escape") {
+            fermerPanneauVehicule();
+        }
+
+    }
+);
 
 window.afficherPopupTendance = function(event) {
 
@@ -957,7 +1111,14 @@ window.partagerPrixStation = async function(event, station) {
 // Creation de la carte
 // ========================
 
-var map = L.map('map').setView([46.6, 2.4], 6);
+var map = L.map(
+    "map",
+    {
+        rotate: true,
+        rotateControl: false,
+        bearing: 0
+    }
+).setView([46.6, 2.4], 6);
 
 L.tileLayer(
 
@@ -974,6 +1135,8 @@ L.tileLayer(
 // ========================
 
 var markers = [];
+var markersParStation = {};
+var stationsEconomie = [];
 
 {% for station in stations %}
 
@@ -995,6 +1158,16 @@ var stationPartage{{ loop.index }} = {
     cp: {{ station.cp|tojson }},
     ville: {{ station.ville|tojson }}
 };
+
+stationsEconomie.push({
+    id: {{ station.id|tojson }},
+    adresse: {{ station.adresse|tojson }},
+    ville: {{ station.ville|tojson }},
+    latitude: Number({{ station.latitude|tojson }}),
+    longitude: Number({{ station.longitude|tojson }}),
+    prix: Number({{ station.carburant_selectionne|tojson }}),
+    distance: {% if station.distance %}Number({{ station.distance|tojson }}){% else %}null{% endif %}
+});
 
 var prixIcon = L.divIcon({
 
@@ -1131,6 +1304,7 @@ marker.on(
     }
 );
 markers.push(marker);
+markersParStation[{{ station.id|tojson }}] = marker;
 
 {% endif %}
 
@@ -1416,6 +1590,11 @@ var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
 var zoomNavigation = 16;
 var premierCentrageUtilisateur = true;
+var suiviCarteActif = true;
+var capCarte = 0;
+var dernierCapUtilisateur = 0;
+var animationOrientationCarte = null;
+var boutonSuiviCarte = null;
 var parametresPosition = new URLSearchParams(
     window.location.search
 );
@@ -1429,6 +1608,100 @@ var distanceActualisationKm = 0.5;
 var delaiActualisationMs = 30000;
 var derniereActualisationStations = 0;
 var actualisationStationsEnCours = false;
+
+function calculerCapDeplacement(
+    latitudeDepart,
+    longitudeDepart,
+    latitudeArrivee,
+    longitudeArrivee
+) {
+
+    var conversion = Math.PI / 180;
+    var latitude1 = latitudeDepart * conversion;
+    var latitude2 = latitudeArrivee * conversion;
+    var differenceLongitude = (
+        longitudeArrivee - longitudeDepart
+    ) * conversion;
+    var y = Math.sin(differenceLongitude)
+        * Math.cos(latitude2);
+    var x = Math.cos(latitude1)
+        * Math.sin(latitude2)
+        - Math.sin(latitude1)
+        * Math.cos(latitude2)
+        * Math.cos(differenceLongitude);
+
+    return (
+        Math.atan2(y, x) / conversion + 360
+    ) % 360;
+
+}
+
+function orienterCarte(capCible) {
+
+    if (
+        !Number.isFinite(capCible)
+        || typeof map.setBearing !== "function"
+    ) {
+        return;
+    }
+
+    if (animationOrientationCarte) {
+        cancelAnimationFrame(animationOrientationCarte);
+    }
+
+    var capDepart = capCarte;
+    var difference = (
+        (capCible - capDepart + 540) % 360
+    ) - 180;
+    var debut = performance.now();
+    var duree = 700;
+
+    function animerCap(tempsActuel) {
+
+        var progression = Math.min(
+            (tempsActuel - debut) / duree,
+            1
+        );
+        var progressionAdoucie =
+            progression * (2 - progression);
+        capCarte = (
+            capDepart
+            + difference * progressionAdoucie
+            + 360
+        ) % 360;
+        map.setBearing(capCarte);
+
+        if (progression < 1) {
+            animationOrientationCarte =
+                requestAnimationFrame(animerCap);
+        }
+
+    }
+
+    animationOrientationCarte =
+        requestAnimationFrame(animerCap);
+
+}
+
+function actualiserBoutonSuiviCarte() {
+
+    if (!boutonSuiviCarte) {
+        return;
+    }
+
+    boutonSuiviCarte.classList.toggle(
+        "active",
+        suiviCarteActif
+    );
+    boutonSuiviCarte.title = suiviCarteActif
+        ? "Suivi GPS actif"
+        : "Reprendre le suivi GPS";
+    boutonSuiviCarte.setAttribute(
+        "aria-label",
+        boutonSuiviCarte.title
+    );
+
+}
 
 function deplacerMarqueurUtilisateur(
     nouvelleLatitude,
@@ -1473,6 +1746,18 @@ function deplacerMarqueurUtilisateur(
             latitudeActuelle,
             longitudeActuelle
         ]);
+
+        if (suiviCarteActif) {
+            map.panTo(
+                [
+                    latitudeActuelle,
+                    longitudeActuelle
+                ],
+                {
+                    animate: false
+                }
+            );
+        }
 
         if (progression < 1) {
 
@@ -1588,6 +1873,10 @@ function recentrerSurUtilisateur() {
 
     }
 
+    suiviCarteActif = true;
+    actualiserBoutonSuiviCarte();
+    orienterCarte(dernierCapUtilisateur);
+
     map.setView(
         [
             latitudeUtilisateur,
@@ -1600,6 +1889,49 @@ function recentrerSurUtilisateur() {
     );
 
 }
+
+var SuiviCarteControl = L.Control.extend({
+
+    options: {
+        position: "bottomright"
+    },
+
+    onAdd: function() {
+
+        var conteneur = L.DomUtil.create(
+            "div",
+            "leaflet-control leaflet-control-follow"
+        );
+        boutonSuiviCarte = L.DomUtil.create(
+            "button",
+            "active",
+            conteneur
+        );
+        boutonSuiviCarte.type = "button";
+        boutonSuiviCarte.innerHTML = "&#9678;";
+        actualiserBoutonSuiviCarte();
+        L.DomEvent.disableClickPropagation(conteneur);
+        L.DomEvent.on(
+            boutonSuiviCarte,
+            "click",
+            recentrerSurUtilisateur
+        );
+
+        return conteneur;
+
+    }
+
+});
+
+new SuiviCarteControl().addTo(map);
+
+map.on(
+    "dragstart",
+    function() {
+        suiviCarteActif = false;
+        actualiserBoutonSuiviCarte();
+    }
+);
 
 function demarrerGeolocalisation() {
 
@@ -1614,11 +1946,42 @@ function demarrerGeolocalisation() {
 
         function(position) {
 
+            var latitudePrecedente = latitudeUtilisateur;
+            var longitudePrecedente = longitudeUtilisateur;
+
             latitudeUtilisateur =
     position.coords.latitude;
 
             longitudeUtilisateur =
     position.coords.longitude;
+
+            var capGps = Number(position.coords.heading);
+            var distanceDepuisPositionPrecedente = (
+                latitudePrecedente === null
+                || longitudePrecedente === null
+            )
+                ? 0
+                : distanceDeplacementKm(
+                    latitudePrecedente,
+                    longitudePrecedente,
+                    latitudeUtilisateur,
+                    longitudeUtilisateur
+                );
+
+            if (Number.isFinite(capGps) && capGps >= 0) {
+                dernierCapUtilisateur = capGps;
+            } else if (distanceDepuisPositionPrecedente >= 0.003) {
+                dernierCapUtilisateur = calculerCapDeplacement(
+                    latitudePrecedente,
+                    longitudePrecedente,
+                    latitudeUtilisateur,
+                    longitudeUtilisateur
+                );
+            }
+
+            if (suiviCarteActif) {
+                orienterCarte(dernierCapUtilisateur);
+            }
 
             document.getElementById(
                 "latitude"
@@ -1633,6 +1996,7 @@ function demarrerGeolocalisation() {
             ).innerHTML = "";
 
             actualiserStationsSelonPosition();
+            calculerMeilleureStation();
 
             if (marqueurUtilisateur) {
 
@@ -1739,6 +2103,222 @@ var champsVehicule = [
     "vehicule-conso"
 ];
 
+function actualiserNomBoutonVehicule() {
+
+    var bouton = document.getElementById("vehicle-button");
+    var nom = (
+        localStorage.getItem("vehicule-nom") || ""
+    ).trim();
+
+    if (!bouton) {
+        return;
+    }
+
+    bouton.textContent = nom || "Mon v\u00e9hicule";
+    bouton.title = nom
+        ? "Modifier " + nom
+        : "Configurer mon v\u00e9hicule";
+
+}
+
+function nombreVehiculeEnregistre(cle) {
+
+    return Number(
+        (localStorage.getItem(cle) || "")
+            .replace(",", ".")
+    );
+
+}
+
+window.calculerMeilleureStation = function() {
+
+    var reservoir = nombreVehiculeEnregistre(
+        "vehicule-reservoir"
+    );
+    var consommation = nombreVehiculeEnregistre(
+        "vehicule-conso"
+    );
+    var titre = document.getElementById("economy-title");
+    var sousTitre = document.getElementById(
+        "economy-subtitle"
+    );
+    var boutonItineraire = document.getElementById(
+        "economy-route-button"
+    );
+
+    if (
+        !reservoir
+        || !consommation
+        || !titre
+        || !sousTitre
+        || !boutonItineraire
+    ) {
+        return;
+    }
+
+    var latitudeCalcul = latitudeUtilisateur === null
+        ? latitudeDerniereRecherche
+        : latitudeUtilisateur;
+    var longitudeCalcul = longitudeUtilisateur === null
+        ? longitudeDerniereRecherche
+        : longitudeUtilisateur;
+
+    if (
+        Number.isNaN(latitudeCalcul)
+        || Number.isNaN(longitudeCalcul)
+    ) {
+        sousTitre.textContent =
+            "Position GPS en attente pour calculer vos \u00e9conomies.";
+        demarrerGeolocalisation();
+        return;
+    }
+
+    var stationsCalculees = stationsEconomie
+        .filter(
+            function(station) {
+                return station.prix > 0;
+            }
+        )
+        .map(
+            function(station) {
+
+                var distance = distanceDeplacementKm(
+                    latitudeCalcul,
+                    longitudeCalcul,
+                    station.latitude,
+                    station.longitude
+                );
+                var carburantTrajet =
+                    distance * 2 * consommation / 100;
+
+                return Object.assign({}, station, {
+                    distanceCalculee: distance,
+                    coutTotal:
+                        (reservoir + carburantTrajet)
+                        * station.prix
+                });
+
+            }
+        );
+
+    if (!stationsCalculees.length) {
+        return;
+    }
+
+    var stationPlusProche = stationsCalculees.reduce(
+        function(meilleure, station) {
+            return station.distanceCalculee
+                < meilleure.distanceCalculee
+                ? station
+                : meilleure;
+        }
+    );
+    var meilleureStation = stationsCalculees.reduce(
+        function(meilleure, station) {
+            return station.coutTotal < meilleure.coutTotal
+                ? station
+                : meilleure;
+        }
+    );
+    var economie = Math.max(
+        0,
+        stationPlusProche.coutTotal
+            - meilleureStation.coutTotal
+    );
+    var prixFormate = meilleureStation.prix
+        .toLocaleString(
+            "fr-FR",
+            {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            }
+        );
+    var distanceFormatee = meilleureStation.distanceCalculee
+        .toLocaleString(
+            "fr-FR",
+            {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1
+            }
+        );
+    var economieFormatee = economie.toLocaleString(
+        "fr-FR",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    );
+
+    titre.textContent =
+        "Station la plus \u00e9conomique : "
+        + meilleureStation.ville;
+    sousTitre.textContent =
+        meilleureStation.adresse
+        + " \u00b7 "
+        + prixFormate
+        + " \u20ac/L \u00b7 "
+        + distanceFormatee
+        + " km \u00b7 \u00c9conomie estim\u00e9e "
+        + economieFormatee
+        + " \u20ac";
+    boutonItineraire.onclick = function() {
+        tracerItineraire(
+            meilleureStation.latitude,
+            meilleureStation.longitude
+        );
+    };
+
+};
+
+window.enregistrerVehicule = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var champInvalide = champsVehicule
+        .map(
+            function(champId) {
+                return document.getElementById(champId);
+            }
+        )
+        .find(
+            function(champ) {
+                return !champ || !champ.checkValidity();
+            }
+        );
+
+    if (champInvalide) {
+
+        champInvalide.reportValidity();
+        champInvalide.focus();
+
+        return;
+    }
+
+    champsVehicule.forEach(
+        function(champId) {
+
+            var champ = document.getElementById(champId);
+
+            if (champ) {
+                localStorage.setItem(
+                    champId,
+                    champ.value.trim()
+                );
+            }
+
+        }
+    );
+
+    actualiserNomBoutonVehicule();
+    calculerMeilleureStation();
+    fermerPanneauVehicule();
+    document.getElementById("vehicle-button").focus();
+
+};
+
 function chargerVehicule() {
 
     champsVehicule.forEach(
@@ -1754,20 +2334,11 @@ function chargerVehicule() {
 
             champ.value = localStorage.getItem(champId) || "";
 
-            champ.addEventListener(
-                "input",
-                function() {
-
-                    localStorage.setItem(
-                        champId,
-                        champ.value
-                    );
-
-                }
-            );
-
         }
     );
+
+    actualiserNomBoutonVehicule();
+    calculerMeilleureStation();
 
 }
 
@@ -1832,12 +2403,19 @@ function dessinerItineraire(coordonnees) {
         }
     ).addTo(map);
 
-    map.fitBounds(
-        itineraireLayer.getBounds(),
-        {
-            padding: [60, 60]
-        }
-    );
+    if (
+        latitudeUtilisateur !== null
+        && longitudeUtilisateur !== null
+    ) {
+        recentrerSurUtilisateur();
+    } else {
+        map.fitBounds(
+            itineraireLayer.getBounds(),
+            {
+                padding: [60, 60]
+            }
+        );
+    }
 
 }
 
