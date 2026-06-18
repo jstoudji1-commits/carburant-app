@@ -546,6 +546,76 @@ body{
     cursor:pointer;
 }
 
+.navigation-panel{
+    position:absolute;
+    top:18px;
+    left:50%;
+    z-index:1100;
+    width:min(520px, calc(100% - 36px));
+    transform:translateX(-50%);
+    display:grid;
+    grid-template-columns:58px minmax(0, 1fr) 36px;
+    align-items:center;
+    gap:12px;
+    padding:12px;
+    background:rgba(255,255,255,0.97);
+    border:1px solid #dce4ea;
+    border-radius:10px;
+    box-shadow:var(--shadow);
+}
+
+.navigation-panel[hidden]{
+    display:none;
+}
+
+.navigation-arrow{
+    width:58px;
+    height:58px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:8px;
+    background:var(--green);
+    color:white;
+    font-size:36px;
+    font-weight:bold;
+}
+
+.navigation-copy{
+    min-width:0;
+}
+
+.navigation-copy strong,
+.navigation-copy span{
+    display:block;
+}
+
+.navigation-copy strong{
+    color:var(--ink);
+    font-size:18px;
+    line-height:1.2;
+    overflow-wrap:anywhere;
+}
+
+.navigation-copy span{
+    margin-top:5px;
+    color:var(--green-dark);
+    font-size:14px;
+    font-weight:bold;
+}
+
+.navigation-close{
+    width:36px;
+    height:36px;
+    padding:0;
+    border:none;
+    border-radius:8px;
+    background:#edf2ef;
+    color:var(--ink);
+    font-size:24px;
+    cursor:pointer;
+}
+
 .leaflet-control-follow{
     margin-right:22px !important;
     margin-bottom:22px !important;
@@ -717,6 +787,24 @@ body{
     .leaflet-control-follow{
         margin-right:12px !important;
         margin-bottom:12px !important;
+    }
+
+    .navigation-panel{
+        top:12px;
+        width:calc(100% - 24px);
+        grid-template-columns:48px minmax(0, 1fr) 34px;
+        gap:9px;
+        padding:9px;
+    }
+
+    .navigation-arrow{
+        width:48px;
+        height:48px;
+        font-size:30px;
+    }
+
+    .navigation-copy strong{
+        font-size:16px;
     }
 
 }
@@ -905,6 +993,21 @@ body{
                 >&times;</button>
                 Prix v&eacute;rifi&eacute; hier &agrave; 9h00 par rapport au prix
                 v&eacute;rifi&eacute; aujourd'hui &agrave; 9h00.
+            </div>
+
+            <div id="navigation-panel" class="navigation-panel" hidden>
+                <div id="navigation-arrow" class="navigation-arrow">&uarr;</div>
+                <div class="navigation-copy">
+                    <strong id="navigation-instruction">Continuez tout droit</strong>
+                    <span id="navigation-distance"></span>
+                </div>
+                <button
+                    type="button"
+                    class="navigation-close"
+                    onclick="arreterNavigation()"
+                    aria-label="Arr&ecirc;ter la navigation"
+                    title="Arr&ecirc;ter la navigation"
+                >&times;</button>
             </div>
         </div>
 
@@ -2001,6 +2104,7 @@ function demarrerGeolocalisation() {
 
             actualiserStationsSelonPosition();
             calculerMeilleureStation();
+            actualiserGuidageNavigation();
 
             if (marqueurUtilisateur) {
 
@@ -2265,12 +2369,15 @@ window.calculerMeilleureStation = function() {
         + " km \u00b7 \u00c9conomie estim\u00e9e "
         + economieFormatee
         + " \u20ac";
-    boutonItineraire.onclick = function() {
-        tracerItineraire(
-            meilleureStation.latitude,
-            meilleureStation.longitude
-        );
-    };
+    if (!routeNavigation && !navigationActive) {
+        boutonItineraire.textContent = "Itin\u00e9raire";
+        boutonItineraire.onclick = function() {
+            tracerItineraire(
+                meilleureStation.latitude,
+                meilleureStation.longitude
+            );
+        };
+    }
     boutonItineraire.hidden = false;
 
 };
@@ -2353,6 +2460,10 @@ window.addEventListener(
 );
 
 var itineraireLayer = null;
+var routeNavigation = null;
+var etapesNavigation = [];
+var indexEtapeNavigation = 0;
+var navigationActive = false;
 
 function afficherInfoItineraire(message) {
 
@@ -2408,18 +2519,166 @@ function dessinerItineraire(coordonnees) {
         }
     ).addTo(map);
 
+    suiviCarteActif = false;
+    actualiserBoutonSuiviCarte();
+    capCarte = 0;
+    map.setBearing(0);
+    map.fitBounds(
+        itineraireLayer.getBounds(),
+        {
+            padding: [60, 60]
+        }
+    );
+
+}
+
+function formaterDistanceNavigation(distanceMetres) {
+
+    if (distanceMetres < 1000) {
+        return Math.max(
+            10,
+            Math.round(distanceMetres / 10) * 10
+        ) + " m";
+    }
+
+    return (distanceMetres / 1000).toLocaleString(
+        "fr-FR",
+        { maximumFractionDigits: 1 }
+    ) + " km";
+
+}
+
+function symboleManeuvre(maneuvre) {
+
+    var modificateur = maneuvre.modifier || "straight";
+
+    if (modificateur.includes("left")) {
+        return modificateur === "slight left" ? "\u2196" : "\u21b0";
+    }
+    if (modificateur.includes("right")) {
+        return modificateur === "slight right" ? "\u2197" : "\u21b1";
+    }
+    if (modificateur === "uturn") {
+        return "\u21b6";
+    }
+    return "\u2191";
+
+}
+
+function texteManeuvre(etape) {
+
+    var maneuvre = etape.maneuver || {};
+    var voie = etape.name ? " sur " + etape.name : "";
+    var modificateur = maneuvre.modifier || "straight";
+
+    if (maneuvre.type === "arrive") {
+        return "Vous \u00eates arriv\u00e9";
+    }
+    if (maneuvre.type === "roundabout" || maneuvre.type === "rotary") {
+        return "Au rond-point, prenez la sortie "
+            + (maneuvre.exit || "indiqu\u00e9e")
+            + voie;
+    }
+    if (modificateur.includes("left")) {
+        return "Tournez \u00e0 gauche" + voie;
+    }
+    if (modificateur.includes("right")) {
+        return "Tournez \u00e0 droite" + voie;
+    }
+    if (modificateur === "uturn") {
+        return "Faites demi-tour" + voie;
+    }
+    return "Continuez tout droit" + voie;
+
+}
+
+function actualiserGuidageNavigation() {
+
     if (
-        latitudeUtilisateur !== null
-        && longitudeUtilisateur !== null
+        !navigationActive
+        || !etapesNavigation.length
+        || latitudeUtilisateur === null
+        || longitudeUtilisateur === null
     ) {
-        recentrerSurUtilisateur();
-    } else {
-        map.fitBounds(
-            itineraireLayer.getBounds(),
-            {
-                padding: [60, 60]
-            }
+        return;
+    }
+
+    var etape = etapesNavigation[indexEtapeNavigation];
+    var positionManeuvre = etape.maneuver.location;
+    var distanceManeuvre = distanceDeplacementKm(
+        latitudeUtilisateur,
+        longitudeUtilisateur,
+        positionManeuvre[1],
+        positionManeuvre[0]
+    ) * 1000;
+
+    while (
+        distanceManeuvre < 35
+        && indexEtapeNavigation < etapesNavigation.length - 1
+    ) {
+        indexEtapeNavigation += 1;
+        etape = etapesNavigation[indexEtapeNavigation];
+        positionManeuvre = etape.maneuver.location;
+        distanceManeuvre = distanceDeplacementKm(
+            latitudeUtilisateur,
+            longitudeUtilisateur,
+            positionManeuvre[1],
+            positionManeuvre[0]
+        ) * 1000;
+    }
+
+    var dureeRestante = etapesNavigation
+        .slice(indexEtapeNavigation)
+        .reduce(
+            function(total, prochaineEtape) {
+                return total + (prochaineEtape.duration || 0);
+            },
+            0
         );
+
+    document.getElementById("navigation-arrow").textContent =
+        symboleManeuvre(etape.maneuver || {});
+    document.getElementById("navigation-instruction").textContent =
+        texteManeuvre(etape);
+    document.getElementById("navigation-distance").textContent =
+        formaterDistanceNavigation(distanceManeuvre)
+        + " \u00b7 "
+        + formaterDuree(dureeRestante / 60)
+        + " restantes";
+
+}
+
+window.demarrerNavigation = function() {
+
+    if (!routeNavigation) {
+        return;
+    }
+
+    navigationActive = true;
+    suiviCarteActif = true;
+    actualiserBoutonSuiviCarte();
+    document.getElementById("navigation-panel").hidden = false;
+
+    var bouton = document.getElementById("economy-route-button");
+    if (bouton) {
+        bouton.textContent = "Arr\u00eater";
+        bouton.onclick = arreterNavigation;
+    }
+
+    recentrerSurUtilisateur();
+    actualiserGuidageNavigation();
+
+};
+
+window.arreterNavigation = function() {
+
+    navigationActive = false;
+    document.getElementById("navigation-panel").hidden = true;
+
+    var bouton = document.getElementById("economy-route-button");
+    if (bouton && routeNavigation) {
+        bouton.textContent = "D\u00e9marrer";
+        bouton.onclick = demarrerNavigation;
     }
 
 }
@@ -2447,6 +2706,19 @@ async function tracerItineraire(
         "Calcul de l'itineraire..."
     );
 
+    arreterNavigation();
+    routeNavigation = null;
+    etapesNavigation = [];
+    indexEtapeNavigation = 0;
+
+    var boutonItineraire = document.getElementById(
+        "economy-route-button"
+    );
+    if (boutonItineraire) {
+        boutonItineraire.textContent = "Calcul...";
+        boutonItineraire.disabled = true;
+    }
+
     var url =
         "https://router.project-osrm.org/route/v1/driving/"
         + longitudeUtilisateur
@@ -2456,7 +2728,7 @@ async function tracerItineraire(
         + longitudeStation
         + ","
         + latitudeStation
-        + "?overview=full&geometries=geojson";
+        + "?overview=full&geometries=geojson&steps=true";
 
     try {
 
@@ -2481,6 +2753,15 @@ async function tracerItineraire(
             route.geometry.coordinates
         );
 
+        routeNavigation = route;
+        etapesNavigation = (route.legs || []).reduce(
+            function(toutesLesEtapes, trajet) {
+                return toutesLesEtapes.concat(trajet.steps || []);
+            },
+            []
+        );
+        indexEtapeNavigation = 0;
+
         var distanceKm = (
             route.distance / 1000
         ).toFixed(1);
@@ -2492,9 +2773,27 @@ async function tracerItineraire(
             + formaterDuree(dureeMinutes)
         );
 
+        if (boutonItineraire) {
+            boutonItineraire.disabled = false;
+            boutonItineraire.textContent = "D\u00e9marrer";
+            boutonItineraire.onclick = demarrerNavigation;
+            boutonItineraire.hidden = false;
+        }
+
         map.closePopup();
 
     } catch (erreur) {
+
+        if (boutonItineraire) {
+            boutonItineraire.disabled = false;
+            boutonItineraire.textContent = "Itin\u00e9raire";
+            boutonItineraire.onclick = function() {
+                tracerItineraire(
+                    latitudeStation,
+                    longitudeStation
+                );
+            };
+        }
 
         afficherInfoItineraire(
             "Impossible de calculer l'itineraire pour le moment."
