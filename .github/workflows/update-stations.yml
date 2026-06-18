@@ -2,8 +2,15 @@
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "3,13,23,33,43,53 * * * *"
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - update_data.py
+      - update_stations.py
+      - .github/workflows/update-stations.yml
 
 permissions:
   contents: write
@@ -15,6 +22,7 @@ concurrency:
 jobs:
   update-stations:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Recuperer le projet

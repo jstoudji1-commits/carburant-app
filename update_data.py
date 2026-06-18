@@ -3,12 +3,14 @@ import gzip
 import io
 import json
 import os
+import time
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 import zipfile
 import xml.etree.ElementTree as ET
-from urllib.request import urlopen
+from urllib.error import URLError
+from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 
@@ -222,12 +224,30 @@ def _extraire_lignes(contenu):
 
 def telecharger_donnees_officielles():
 
-    with urlopen(
+    requete = Request(
         SOURCE_OFFICIELLE_URL,
-        timeout=90
-    ) as response:
+        headers={
+            "User-Agent": "OptiPlein/1.0"
+        }
+    )
 
-        return response.read()
+    for tentative in range(3):
+
+        try:
+
+            with urlopen(
+                requete,
+                timeout=90
+            ) as response:
+
+                return response.read()
+
+        except (URLError, TimeoutError, OSError):
+
+            if tentative == 2:
+                raise
+
+            time.sleep(5 * (tentative + 1))
 
 
 def _instantane_prix(lignes, date_reference):
