@@ -179,6 +179,13 @@ def page_web(
                     ""
                 )
 
+                station[
+                    "tendance_selectionnee"
+                ] = station.get(
+                    f"tendance_{carburant}",
+                    ""
+                )
+
                 if distance <= rayon:
 
                     stations_valides.append(
@@ -205,6 +212,13 @@ def page_web(
                 "carburant_selectionne"
             ] = station.get(
                 carburant,
+                ""
+            )
+
+            station[
+                "tendance_selectionnee"
+            ] = station.get(
+                f"tendance_{carburant}",
                 ""
             )
 

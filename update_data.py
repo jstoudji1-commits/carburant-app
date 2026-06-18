@@ -1,17 +1,23 @@
 ﻿import csv
+import gzip
 import io
 import json
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 import zipfile
 import xml.etree.ElementTree as ET
 from urllib.request import urlopen
+from zoneinfo import ZoneInfo
 
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIONS_CSV = BASE_DIR / "stations.csv"
 METADATA_JSON = BASE_DIR / "stations_metadata.json"
+REFERENCES_PRIX_JSON = BASE_DIR / "stations_prix_9h.json"
+FUSEAU_PARIS = ZoneInfo("Europe/Paris")
+CARBURANTS = ["gazole", "e10", "sp98"]
 
 SOURCE_OFFICIELLE_URL = (
     "https://www.data.gouv.fr/api/1/datasets/r/"
@@ -28,6 +34,9 @@ ENTETES = [
     "gazole",
     "e10",
     "sp98",
+    "tendance_gazole",
+    "tendance_e10",
+    "tendance_sp98",
 ]
 
 
@@ -160,6 +169,10 @@ def _lignes_depuis_csv(contenu):
 
 def _extraire_lignes(contenu):
 
+    if contenu.startswith(b"\x1f\x8b"):
+
+        contenu = gzip.decompress(contenu)
+
     archive_candidate = io.BytesIO(contenu)
 
     if zipfile.is_zipfile(archive_candidate):
@@ -168,16 +181,32 @@ def _extraire_lignes(contenu):
 
         with zipfile.ZipFile(archive_candidate) as archive:
 
-            nom_xml = next(
+            fichiers_donnees = [
                 nom
                 for nom in archive.namelist()
-                if nom.lower().endswith(".xml")
+                if nom.lower().endswith(
+                    (".xml", ".csv")
+                )
+            ]
+
+            if not fichiers_donnees:
+
+                raise ValueError(
+                    "L'archive officielle ne contient "
+                    "ni fichier XML ni fichier CSV."
+                )
+
+            nom_donnees = next(
+                (
+                    nom
+                    for nom in fichiers_donnees
+                    if nom.lower().endswith(".xml")
+                ),
+                fichiers_donnees[0]
             )
 
-            return list(
-                _lignes_depuis_xml(
-                    archive.read(nom_xml)
-                )
+            return _extraire_lignes(
+                archive.read(nom_donnees)
             )
 
     if contenu.lstrip().startswith(b"<"):
@@ -199,6 +228,143 @@ def telecharger_donnees_officielles():
     ) as response:
 
         return response.read()
+
+
+def _instantane_prix(lignes, date_reference):
+
+    prix = {}
+
+    for station in lignes:
+
+        station_id = station.get("id", "")
+
+        if not station_id:
+
+            continue
+
+        prix[station_id] = [
+            station.get(carburant, "")
+            for carburant in CARBURANTS
+        ]
+
+    return {
+        "date": date_reference.date().isoformat(),
+        "captured_at": date_reference.isoformat(),
+        "prices": prix,
+    }
+
+
+def _lire_references_prix():
+
+    if not REFERENCES_PRIX_JSON.exists():
+
+        return {}
+
+    try:
+
+        return json.loads(
+            REFERENCES_PRIX_JSON.read_text(
+                encoding="utf-8"
+            )
+        )
+
+    except (OSError, ValueError, TypeError):
+
+        return {}
+
+
+def _ecrire_references_prix(references):
+
+    REFERENCES_PRIX_JSON.write_text(
+        json.dumps(
+            references,
+            ensure_ascii=False,
+            separators=(",", ":")
+        ),
+        encoding="utf-8"
+    )
+
+
+def mettre_a_jour_references_9h(lignes):
+
+    maintenant = datetime.now(FUSEAU_PARIS)
+    references = _lire_references_prix()
+    reference_actuelle = references.get("current")
+    date_actuelle = (
+        reference_actuelle or {}
+    ).get("date")
+
+    if (
+        maintenant.hour >= 9
+        and date_actuelle != maintenant.date().isoformat()
+    ):
+
+        if reference_actuelle:
+
+            references["previous"] = reference_actuelle
+
+        references["current"] = _instantane_prix(
+            lignes,
+            maintenant
+        )
+        _ecrire_references_prix(references)
+
+    return references
+
+
+def _comparer_prix(prix_precedent, prix_actuel):
+
+    if not prix_precedent or not prix_actuel:
+
+        return ""
+
+    try:
+
+        precedent = Decimal(str(prix_precedent))
+        actuel = Decimal(str(prix_actuel))
+
+    except (InvalidOperation, ValueError):
+
+        return ""
+
+    if actuel < precedent:
+
+        return "baisse"
+
+    if actuel > precedent:
+
+        return "hausse"
+
+    return "egal"
+
+
+def ajouter_tendances(lignes, references):
+
+    prix_precedents = (
+        references.get("previous") or {}
+    ).get("prices", {})
+    prix_actuels = (
+        references.get("current") or {}
+    ).get("prices", {})
+
+    for station in lignes:
+
+        station_id = station.get("id", "")
+        precedent = prix_precedents.get(station_id, [])
+        actuel = prix_actuels.get(station_id, [])
+
+        for index, carburant in enumerate(CARBURANTS):
+
+            station[f"tendance_{carburant}"] = (
+                _comparer_prix(
+                    precedent[index]
+                    if index < len(precedent)
+                    else "",
+                    actuel[index]
+                    if index < len(actuel)
+                    else ""
+                )
+            )
 
 
 def ecrire_stations_csv(lignes):
@@ -257,6 +423,8 @@ def mettre_a_jour_stations():
             "Aucune station trouvee dans les donnees officielles."
         )
 
+    references = mettre_a_jour_references_9h(lignes)
+    ajouter_tendances(lignes, references)
     ecrire_stations_csv(lignes)
     ecrire_metadata(len(lignes))
 

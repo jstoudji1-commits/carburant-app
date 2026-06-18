@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>Comparateur Carburant</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
 
 <style>
 
@@ -245,35 +246,6 @@ body{
     transform:translateY(-1px);
 }
 
-.rayon-control{
-    margin-top:18px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-}
-
-.rayon-control label{
-    font-size:16px;
-    font-weight:bold;
-}
-
-.rayon-control select{
-    min-width:110px;
-    padding:12px 14px;
-    border:none;
-    border-radius:9px;
-    background:linear-gradient(180deg, #30b943, #138b30);
-    color:white;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-.rayon-control option{
-    color:var(--ink);
-}
-
 .favoris-liste{
     display:none;
 }
@@ -354,6 +326,29 @@ body{
     color:white;
 }
 
+.popup-actions{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+}
+
+.popup-action{
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.popup-action.route{
+    background:#149f38;
+}
+
+.popup-action.share{
+    background:#214053;
+}
+
 .favoris-info{
     margin:0 0 10px 0;
     color:var(--muted);
@@ -376,6 +371,27 @@ body{
     border-radius:50%;
     background:var(--green);
     flex:0 0 auto;
+}
+
+.vehicle-fields{
+    display:grid;
+    gap:10px;
+}
+
+.vehicle-input{
+    width:100%;
+    padding:13px 14px;
+    border:1px solid #cbd5dd;
+    border-radius:9px;
+    background:white;
+    color:var(--ink);
+    font-size:15px;
+    outline:none;
+}
+
+.vehicle-input:focus{
+    border-color:var(--green);
+    box-shadow:0 0 0 3px rgba(20,159,56,0.14);
 }
 
 .map-stage{
@@ -406,6 +422,7 @@ body{
 
 .prix-bulle{
     min-width:120px;
+    position:relative;
     background:white;
     border:2px solid #149f38;
     border-radius:10px;
@@ -425,22 +442,70 @@ body{
     line-height:1.1;
 }
 
-.auto-badge{
+.tendance-indicateur{
+    position:absolute;
+    top:-14px;
+    right:-14px;
+    width:32px;
+    height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    border:3px solid white;
+    border-radius:50%;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    line-height:1;
+    cursor:pointer;
+    box-shadow:0 5px 12px rgba(16,37,54,0.28);
+}
+
+.tendance-indicateur.baisse{
+    background:#16a34a;
+}
+
+.tendance-indicateur.hausse{
+    background:#dc2626;
+}
+
+.tendance-indicateur.egal{
+    background:#2563eb;
+}
+
+.tendance-popup{
     position:absolute;
     top:24px;
-    left:34px;
-    z-index:700;
-    padding:14px 18px;
-    background:rgba(255,255,255,0.94);
-    border-radius:9px;
+    right:24px;
+    z-index:1100;
+    max-width:330px;
+    padding:18px 44px 18px 18px;
+    background:white;
+    border:1px solid #dce4ea;
+    border-radius:10px;
     color:var(--ink);
-    font-size:16px;
-    font-weight:bold;
+    font-size:14px;
+    line-height:1.45;
     box-shadow:var(--shadow);
 }
 
-.auto-badge strong{
-    color:var(--green);
+.tendance-popup[hidden]{
+    display:none;
+}
+
+.tendance-popup button{
+    position:absolute;
+    top:8px;
+    right:8px;
+    width:28px;
+    height:28px;
+    border:none;
+    border-radius:50%;
+    background:#edf2ef;
+    color:var(--ink);
+    font-size:18px;
+    cursor:pointer;
 }
 
 .bottom-card{
@@ -501,12 +566,15 @@ body{
     box-shadow:0 8px 18px rgba(16,37,54,0.15);
 }
 
-.route-button.maps{
+.route-button.route{
     background:linear-gradient(180deg, #27b33e, #087a2c);
 }
 
-.route-button.waze{
-    background:linear-gradient(180deg, #20b8ec, #0b8fc5);
+.route-info{
+    margin-top:8px;
+    color:var(--green-dark);
+    font-size:14px;
+    font-weight:bold;
 }
 
 @media (max-width: 900px){
@@ -580,12 +648,6 @@ body{
         padding:13px 10px;
     }
 
-    .auto-badge{
-        top:12px;
-        left:12px;
-        font-size:13px;
-        padding:10px 12px;
-    }
 }
 
 </style>
@@ -608,14 +670,6 @@ body{
     >
 
     <div class="top-actions">
-        <button
-            type="button"
-            id="btn-position"
-            class="position-button"
-        >
-            Ma position
-        </button>
-
         <button
             type="button"
             class="menu-button"
@@ -696,19 +750,6 @@ body{
                 </label>
             </div>
 
-            <div class="rayon-control">
-                <label for="rayon-select">Rayon de recherche</label>
-                <select
-                    id="rayon-select"
-                    name="rayon"
-                >
-                    <option value="5" {% if rayon == 5 %}selected{% endif %}>5 km</option>
-                    <option value="10" {% if rayon == 10 %}selected{% endif %}>10 km</option>
-                    <option value="20" {% if rayon == 20 %}selected{% endif %}>20 km</option>
-                    <option value="50" {% if rayon == 50 %}selected{% endif %}>50 km</option>
-                </select>
-            </div>
-
             <input
                 type="hidden"
                 id="latitude"
@@ -721,6 +762,40 @@ body{
                 name="longitude"
             >
         </form>
+
+        <section class="control-card vehicle-card">
+            <p class="control-title">Mon v&eacute;hicule</p>
+
+            <div class="vehicle-fields">
+                <input
+                    class="vehicle-input"
+                    id="vehicule-nom"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Nom du v&eacute;hicule"
+                >
+
+                <input
+                    class="vehicle-input"
+                    id="vehicule-reservoir"
+                    type="number"
+                    min="0"
+                    step="1"
+                    inputmode="decimal"
+                    placeholder="Taille du r&eacute;servoir (L)"
+                >
+
+                <input
+                    class="vehicle-input"
+                    id="vehicule-conso"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    inputmode="decimal"
+                    placeholder="Consommation moyenne (L/100 km)"
+                >
+            </div>
+        </section>
 
         <div
             id="favoris-liste"
@@ -736,8 +811,14 @@ body{
     <main class="map-stage">
         <div id="map"></div>
 
-        <div class="auto-badge">
-            Actualisation auto : <strong>ON</strong>
+        <div id="tendance-popup" class="tendance-popup" hidden>
+            <button
+                type="button"
+                onclick="fermerPopupTendance()"
+                aria-label="Fermer"
+            >&times;</button>
+            Prix v&eacute;rifi&eacute; hier &agrave; 9h00 par rapport au prix
+            v&eacute;rifi&eacute; aujourd'hui &agrave; 9h00.
         </div>
 
         {% if stations and stations[0].latitude and stations[0].longitude %}
@@ -746,23 +827,20 @@ body{
             <div>
                 <p class="bottom-title">Trouver la station la moins chere</p>
                 <p class="bottom-subtitle">
-                    Itineraire direct vers le prix le plus bas autour de vous
+                    Itin&eacute;raire direct vers le prix le plus bas autour de vous
                 </p>
+                <p
+                    id="itineraire-info"
+                    class="route-info"
+                ></p>
             </div>
             <div class="bottom-actions">
                 <button
                     type="button"
-                    class="route-button maps"
-                    onclick="ouvrirGoogleMaps({{ stations[0].latitude }}, {{ stations[0].longitude }})"
+                    class="route-button route"
+                    onclick="tracerItineraire({{ stations[0].latitude }}, {{ stations[0].longitude }})"
                 >
-                    Google Maps
-                </button>
-                <button
-                    type="button"
-                    class="route-button waze"
-                    onclick="ouvrirWaze({{ stations[0].latitude }}, {{ stations[0].longitude }})"
-                >
-                    Waze
+                    Itin&eacute;raire
                 </button>
             </div>
         </div>
@@ -776,6 +854,104 @@ body{
 ></p>
 
 <script>
+
+window.afficherPopupTendance = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var popup = document.getElementById("tendance-popup");
+
+    if (popup) {
+        popup.hidden = false;
+    }
+
+};
+
+window.fermerPopupTendance = function() {
+
+    var popup = document.getElementById("tendance-popup");
+
+    if (popup) {
+        popup.hidden = true;
+    }
+
+};
+
+window.partagerPrixStation = async function(event, station) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var texte =
+        station.carburant
+        + " \u00e0 "
+        + station.prix
+        + " \u20ac - "
+        + station.adresse
+        + ", "
+        + station.cp
+        + " "
+        + station.ville;
+    var url =
+        window.location.origin
+        + window.location.pathname
+        + "?carburant="
+        + encodeURIComponent(
+            station.carburant.toLowerCase()
+        );
+    var donnees = {
+        title: "Prix carburant OptiPlein",
+        text: texte,
+        url: url
+    };
+
+    if (navigator.share) {
+
+        try {
+            await navigator.share(donnees);
+            return;
+        } catch (erreur) {
+            if (erreur.name === "AbortError") {
+                return;
+            }
+        }
+
+    }
+
+    var contenu = texte + "\n" + url;
+
+    try {
+        await navigator.clipboard.writeText(contenu);
+    } catch (erreur) {
+        var zoneCopie = document.createElement("textarea");
+        zoneCopie.value = contenu;
+        zoneCopie.style.position = "fixed";
+        zoneCopie.style.opacity = "0";
+        document.body.appendChild(zoneCopie);
+        zoneCopie.select();
+        document.execCommand("copy");
+        zoneCopie.remove();
+    }
+
+    var bouton = event && event.currentTarget;
+
+    if (bouton) {
+        var libelleInitial = bouton.textContent;
+        bouton.textContent = "Copi\u00e9 !";
+        window.setTimeout(
+            function() {
+                bouton.textContent = libelleInitial;
+            },
+            1800
+        );
+    }
+
+};
 
 // ========================
 // Creation de la carte
@@ -812,6 +988,14 @@ var stationFavori{{ loop.index }} = {
     longitude: {{ station.longitude|tojson }}
 };
 
+var stationPartage{{ loop.index }} = {
+    carburant: {{ carburant|upper|tojson }},
+    prix: {{ station.carburant_selectionne|tojson }},
+    adresse: {{ station.adresse|tojson }},
+    cp: {{ station.cp|tojson }},
+    ville: {{ station.ville|tojson }}
+};
+
 var prixIcon = L.divIcon({
 
     className: "prix-marker",
@@ -820,6 +1004,16 @@ var prixIcon = L.divIcon({
         <div class="prix-bulle">
             {{ station.carburant_selectionne }} &euro;
             <span>{{ carburant|upper }}</span>
+            {% if station.tendance_selectionnee %}
+            <button
+                type="button"
+                class="tendance-indicateur {{ station.tendance_selectionnee }}"
+                onclick="event.stopPropagation(); afficherPopupTendance(event)"
+                aria-label="Voir la comparaison du prix"
+            >
+                {% if station.tendance_selectionnee == "baisse" %}&#8595;{% elif station.tendance_selectionnee == "hausse" %}&#8593;{% else %}={% endif %}
+            </button>
+            {% endif %}
         </div>
     `,
 
@@ -903,56 +1097,24 @@ var marker = L.marker(
         <br><br>
         {% endif %}
 
-        <div
-            style="
-                display:flex;
-                gap:10px;
-                justify-content:center;
-            "
-        >
+        <div class="popup-actions">
 
             <button
-
-                onclick="ouvrirGoogleMaps(
+                onclick="tracerItineraire(
                     {{ station.latitude }},
                     {{ station.longitude }}
                 )"
-
-                style="
-                    padding:8px 12px;
-                    background:#34a853;
-                    color:white;
-                    border:none;
-                    border-radius:6px;
-                    cursor:pointer;
-                "
-
+                class="popup-action route"
             >
-
-                Google Maps
-
+                Itin&eacute;raire
             </button>
 
             <button
-
-                onclick="ouvrirWaze(
-                    {{ station.latitude }},
-                    {{ station.longitude }}
-                )"
-
-                style="
-                    padding:8px 12px;
-                    background:#33CCFF;
-                    color:white;
-                    border:none;
-                    border-radius:6px;
-                    cursor:pointer;
-                "
-
+                type="button"
+                class="popup-action share"
+                onclick="partagerPrixStation(event, stationPartage{{ loop.index }})"
             >
-
-                Waze
-
+                Partager
             </button>
 
         </div>
@@ -1187,12 +1349,12 @@ function actualiserListeFavoris(favoris) {
             var itineraire = document.createElement("button");
             itineraire.type = "button";
             itineraire.className = "favori-action";
-            itineraire.textContent = "Trajet";
+            itineraire.textContent = "Itineraire";
             itineraire.addEventListener(
                 "click",
                 function() {
 
-                    ouvrirGoogleMaps(
+                    tracerItineraire(
                         station.latitude,
                         station.longitude
                     );
@@ -1254,6 +1416,19 @@ var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
 var zoomNavigation = 16;
 var premierCentrageUtilisateur = true;
+var parametresPosition = new URLSearchParams(
+    window.location.search
+);
+var latitudeDerniereRecherche = parseFloat(
+    parametresPosition.get("latitude")
+);
+var longitudeDerniereRecherche = parseFloat(
+    parametresPosition.get("longitude")
+);
+var distanceActualisationKm = 0.5;
+var delaiActualisationMs = 30000;
+var derniereActualisationStations = 0;
+var actualisationStationsEnCours = false;
 
 function deplacerMarqueurUtilisateur(
     nouvelleLatitude,
@@ -1317,6 +1492,90 @@ function deplacerMarqueurUtilisateur(
 
 }
 
+function distanceDeplacementKm(
+    latitudeDepart,
+    longitudeDepart,
+    latitudeArrivee,
+    longitudeArrivee
+) {
+
+    var rayonTerre = 6371;
+    var conversion = Math.PI / 180;
+    var dLatitude = (
+        latitudeArrivee - latitudeDepart
+    ) * conversion;
+    var dLongitude = (
+        longitudeArrivee - longitudeDepart
+    ) * conversion;
+
+    latitudeDepart *= conversion;
+    latitudeArrivee *= conversion;
+
+    var a =
+        Math.sin(dLatitude / 2) ** 2
+        + Math.cos(latitudeDepart)
+        * Math.cos(latitudeArrivee)
+        * Math.sin(dLongitude / 2) ** 2;
+
+    return rayonTerre * 2 * Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+    );
+
+}
+
+function actualiserStationsSelonPosition() {
+
+    if (actualisationStationsEnCours) {
+
+        return;
+
+    }
+
+    var positionInitialeManquante =
+        Number.isNaN(latitudeDerniereRecherche)
+        || Number.isNaN(longitudeDerniereRecherche);
+
+    var distanceParcourue = positionInitialeManquante
+        ? distanceActualisationKm
+        : distanceDeplacementKm(
+            latitudeDerniereRecherche,
+            longitudeDerniereRecherche,
+            latitudeUtilisateur,
+            longitudeUtilisateur
+        );
+
+    var maintenant = Date.now();
+    var delaiRespecte =
+        positionInitialeManquante
+        || maintenant - derniereActualisationStations
+            >= delaiActualisationMs;
+
+    if (
+        distanceParcourue < distanceActualisationKm
+        || !delaiRespecte
+    ) {
+
+        return;
+
+    }
+
+    var formulaire = document.querySelector(
+        "form.control-card"
+    );
+
+    if (!formulaire) {
+
+        return;
+
+    }
+
+    actualisationStationsEnCours = true;
+    derniereActualisationStations = maintenant;
+    formulaire.submit();
+
+}
+
 function recentrerSurUtilisateur() {
 
     if (
@@ -1373,6 +1632,8 @@ function demarrerGeolocalisation() {
                 "position"
             ).innerHTML = "";
 
+            actualiserStationsSelonPosition();
+
             if (marqueurUtilisateur) {
 
                 deplacerMarqueurUtilisateur(
@@ -1385,12 +1646,12 @@ function demarrerGeolocalisation() {
                 var userIcon = L.divIcon({
 
                     html:
-                        '<div style="width:12px;height:12px;border-radius:50%;background:#007bff;border:2px solid white;box-shadow:0 0 7px rgba(0,0,0,0.28);"></div>',
+                        '<div style="width:16px;height:16px;border-radius:50%;background:#007bff;border:3px solid white;box-shadow:0 0 9px rgba(0,0,0,0.32);"></div>',
 
                     className: "",
 
-                    iconSize: [16,16],
-                    iconAnchor: [8,8]
+                    iconSize: [22,22],
+                    iconAnchor: [11,11]
 
                 });
 
@@ -1441,22 +1702,6 @@ function demarrerGeolocalisation() {
 
 }
 
-var boutonPosition = document.getElementById("btn-position");
-
-if (boutonPosition) {
-
-    boutonPosition.addEventListener(
-        "click",
-        function() {
-
-            demarrerGeolocalisation();
-            recentrerSurUtilisateur();
-
-        }
-    );
-
-}
-
 // Lancement automatique au chargement
 
  window.addEventListener(
@@ -1470,7 +1715,7 @@ window.addEventListener(
 );
 
 var controlesAutomatiques = document.querySelectorAll(
-    'input[name="carburant"], select[name="rayon"]'
+    'input[name="carburant"]'
 );
 
 controlesAutomatiques.forEach(
@@ -1488,67 +1733,191 @@ controlesAutomatiques.forEach(
     }
 );
 
-function ouvrirGoogleMaps(
-    latitudeStation,
-    longitudeStation
-) {
+var champsVehicule = [
+    "vehicule-nom",
+    "vehicule-reservoir",
+    "vehicule-conso"
+];
 
-    const destination =
-        latitudeStation + "," + longitudeStation;
+function chargerVehicule() {
 
-    if (
-        latitudeUtilisateur !== null
-        &&
-        longitudeUtilisateur !== null
-    ) {
+    champsVehicule.forEach(
+        function(champId) {
 
-        const origine =
-            latitudeUtilisateur
-            + ","
-            + longitudeUtilisateur;
+            var champ = document.getElementById(champId);
 
-        window.open(
+            if (!champ) {
 
-            "https://www.google.com/maps/dir/?api=1"
-            + "&origin=" + encodeURIComponent(origine)
-            + "&destination=" + encodeURIComponent(destination)
-            + "&travelmode=driving",
+                return;
 
-            "_blank"
+            }
 
-        );
+            champ.value = localStorage.getItem(champId) || "";
 
-    } else {
+            champ.addEventListener(
+                "input",
+                function() {
 
-        window.open(
+                    localStorage.setItem(
+                        champId,
+                        champ.value
+                    );
 
-            "https://www.google.com/maps/dir/?api=1"
-            + "&destination=" + encodeURIComponent(destination)
-            + "&travelmode=driving",
+                }
+            );
 
-            "_blank"
+        }
+    );
 
-        );
+}
+
+window.addEventListener(
+    "load",
+    chargerVehicule
+);
+
+var itineraireLayer = null;
+
+function afficherInfoItineraire(message) {
+
+    var info = document.getElementById(
+        "itineraire-info"
+    );
+
+    if (info) {
+
+        info.textContent = message;
 
     }
 
 }
-function ouvrirWaze(
+
+function formaterDuree(minutes) {
+
+    if (minutes < 60) {
+
+        return Math.round(minutes) + " min";
+
+    }
+
+    var heures = Math.floor(minutes / 60);
+    var reste = Math.round(minutes % 60);
+
+    return heures + " h " + reste + " min";
+
+}
+
+function dessinerItineraire(coordonnees) {
+
+    if (itineraireLayer) {
+
+        map.removeLayer(itineraireLayer);
+
+    }
+
+    itineraireLayer = L.geoJSON(
+        {
+            type: "Feature",
+            geometry: {
+                type: "LineString",
+                coordinates: coordonnees
+            }
+        },
+        {
+            style: {
+                color: "#149f38",
+                weight: 6,
+                opacity: 0.92
+            }
+        }
+    ).addTo(map);
+
+    map.fitBounds(
+        itineraireLayer.getBounds(),
+        {
+            padding: [60, 60]
+        }
+    );
+
+}
+
+async function tracerItineraire(
     latitudeStation,
     longitudeStation
 ) {
 
-    window.open(
+    if (
+        latitudeUtilisateur === null
+        ||
+        longitudeUtilisateur === null
+    ) {
 
-        "https://waze.com/ul?ll="
-        + latitudeStation
-        + ","
-        + longitudeStation
-        + "&navigate=yes",
+        afficherInfoItineraire(
+            "Position GPS en attente pour calculer l'itineraire."
+        );
+        demarrerGeolocalisation();
+        return;
 
-        "_blank"
+    }
 
+    afficherInfoItineraire(
+        "Calcul de l'itineraire..."
     );
+
+    var url =
+        "https://router.project-osrm.org/route/v1/driving/"
+        + longitudeUtilisateur
+        + ","
+        + latitudeUtilisateur
+        + ";"
+        + longitudeStation
+        + ","
+        + latitudeStation
+        + "?overview=full&geometries=geojson";
+
+    try {
+
+        var response = await fetch(url);
+
+        if (!response.ok) {
+
+            throw new Error("route indisponible");
+
+        }
+
+        var data = await response.json();
+        var route = data.routes && data.routes[0];
+
+        if (!route) {
+
+            throw new Error("route introuvable");
+
+        }
+
+        dessinerItineraire(
+            route.geometry.coordinates
+        );
+
+        var distanceKm = (
+            route.distance / 1000
+        ).toFixed(1);
+        var dureeMinutes = route.duration / 60;
+
+        afficherInfoItineraire(
+            distanceKm
+            + " km - "
+            + formaterDuree(dureeMinutes)
+        );
+
+        map.closePopup();
+
+    } catch (erreur) {
+
+        afficherInfoItineraire(
+            "Impossible de calculer l'itineraire pour le moment."
+        );
+
+    }
 
 }
 </script>

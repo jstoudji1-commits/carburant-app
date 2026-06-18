@@ -31,7 +31,7 @@ jobs:
       - name: Verifier si les donnees ont change
         id: changes
         run: |
-          if [ -n "$(git status --porcelain -- stations.csv stations_metadata.json)" ]; then
+          if [ -n "$(git status --porcelain -- stations.csv stations_metadata.json stations_prix_9h.json)" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -42,7 +42,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add stations.csv stations_metadata.json
+          git add stations.csv stations_metadata.json stations_prix_9h.json
           git commit -m "Mise a jour automatique des prix carburants"
           git push
 
