@@ -5,12 +5,66 @@ from typing import Optional
 from fastapi.staticfiles import StaticFiles
 
 
+import asyncio
 import csv
+from contextlib import asynccontextmanager, suppress
+import logging
 import math
-from update_data import texte_derniere_mise_a_jour
+from update_data import (
+    mettre_a_jour_stations,
+    texte_derniere_mise_a_jour,
+)
 
 
-app = FastAPI()
+INTERVALLE_MISE_A_JOUR_SECONDES = 10 * 60
+logger = logging.getLogger("optiplein.update")
+
+
+async def actualiser_prix_periodiquement():
+
+    boucle = asyncio.get_running_loop()
+
+    while True:
+
+        debut = boucle.time()
+
+        try:
+            await asyncio.to_thread(
+                mettre_a_jour_stations
+            )
+        except Exception:
+            logger.exception(
+                "La mise a jour automatique des prix a echoue."
+            )
+
+        duree = boucle.time() - debut
+
+        await asyncio.sleep(
+            max(
+                0,
+                INTERVALLE_MISE_A_JOUR_SECONDES - duree
+            )
+        )
+
+
+@asynccontextmanager
+async def duree_de_vie_application(app):
+
+    tache_mise_a_jour = asyncio.create_task(
+        actualiser_prix_periodiquement()
+    )
+
+    yield
+
+    tache_mise_a_jour.cancel()
+
+    with suppress(asyncio.CancelledError):
+        await tache_mise_a_jour
+
+
+app = FastAPI(
+    lifespan=duree_de_vie_application
+)
 
 app.mount(
     "/static",
