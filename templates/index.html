@@ -424,6 +424,14 @@ body{
     box-shadow:0 0 0 3px rgba(20,159,56,0.14);
 }
 
+.map-column{
+    min-width:0;
+    min-height:0;
+    display:grid;
+    grid-template-rows:minmax(0, 1fr) auto;
+    background:#eef3ef;
+}
+
 .map-stage{
     position:relative;
     min-width:0;
@@ -540,7 +548,7 @@ body{
 
 .leaflet-control-follow{
     margin-right:22px !important;
-    margin-bottom:150px !important;
+    margin-bottom:22px !important;
 }
 
 .leaflet-control-follow button{
@@ -564,15 +572,12 @@ body{
 }
 
 .bottom-card{
-    position:absolute;
-    left:26px;
-    right:26px;
-    bottom:22px;
-    z-index:700;
+    position:relative;
     display:grid;
     grid-template-columns:84px 1fr auto;
     align-items:center;
     gap:18px;
+    margin:14px 18px 16px;
     padding:20px;
     background:rgba(255,255,255,0.96);
     border:1px solid rgba(220,228,234,0.9);
@@ -625,6 +630,10 @@ body{
     background:linear-gradient(180deg, #27b33e, #087a2c);
 }
 
+.route-button[hidden]{
+    display:none;
+}
+
 .route-info{
     margin-top:8px;
     color:var(--green-dark);
@@ -671,8 +680,12 @@ body{
         overflow:visible;
     }
 
-    .map-stage{
+    .map-column{
         order:1;
+        display:block;
+    }
+
+    .map-stage{
         height:58vh;
         min-height:420px;
     }
@@ -682,11 +695,9 @@ body{
     }
 
     .bottom-card{
-        left:12px;
-        right:12px;
-        bottom:12px;
         grid-template-columns:1fr;
         gap:10px;
+        margin:12px;
         padding:14px;
     }
 
@@ -705,7 +716,7 @@ body{
 
     .leaflet-control-follow{
         margin-right:12px !important;
-        margin-bottom:225px !important;
+        margin-bottom:12px !important;
     }
 
 }
@@ -882,28 +893,32 @@ body{
         </div>
     </aside>
 
-    <main class="map-stage">
-        <div id="map"></div>
+    <main class="map-column">
+        <div class="map-stage">
+            <div id="map"></div>
 
-        <div id="tendance-popup" class="tendance-popup" hidden>
-            <button
-                type="button"
-                onclick="fermerPopupTendance()"
-                aria-label="Fermer"
-            >&times;</button>
-            Prix v&eacute;rifi&eacute; hier &agrave; 9h00 par rapport au prix
-            v&eacute;rifi&eacute; aujourd'hui &agrave; 9h00.
+            <div id="tendance-popup" class="tendance-popup" hidden>
+                <button
+                    type="button"
+                    onclick="fermerPopupTendance()"
+                    aria-label="Fermer"
+                >&times;</button>
+                Prix v&eacute;rifi&eacute; hier &agrave; 9h00 par rapport au prix
+                v&eacute;rifi&eacute; aujourd'hui &agrave; 9h00.
+            </div>
         </div>
 
         {% if stations and stations[0].latitude and stations[0].longitude %}
         <div class="bottom-card">
-            <div class="bottom-icon">Prix</div>
+            <div class="bottom-icon">Eco</div>
             <div>
                 <p id="economy-title" class="bottom-title">
-                    Trouver la station la moins chere
+                    Station la plus &eacute;conomique
                 </p>
                 <p id="economy-subtitle" class="bottom-subtitle">
-                    Itin&eacute;raire direct vers le prix le plus bas autour de vous
+                    Renseignez les caract&eacute;ristiques de votre v&eacute;hicule pour
+                    obtenir l'itin&eacute;raire et la station la plus rentable autour
+                    de vous.
                 </p>
                 <p
                     id="itineraire-info"
@@ -915,7 +930,7 @@ body{
                     type="button"
                     id="economy-route-button"
                     class="route-button route"
-                    onclick="tracerItineraire({{ stations[0].latitude }}, {{ stations[0].longitude }})"
+                    hidden
                 >
                     Itin&eacute;raire
                 </button>
@@ -2256,6 +2271,7 @@ window.calculerMeilleureStation = function() {
             meilleureStation.longitude
         );
     };
+    boutonItineraire.hidden = false;
 
 };
 
