@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-19T06:24:17.942181+00:00",
+  "generated_at": "2026-06-19T06:41:27.035845+00:00",
   "summary": {
     "stations_total": 9796,
-    "adresses_ban_trouvees": 9723,
+    "adresses_ban_trouvees": 9721,
     "enseignes_trouvees": 7770,
     "coordonnees_corrigees": 124,
-    "a_verifier_manuellement": 1490
+    "a_verifier_manuellement": 1488
   },
   "review_required": [
     {
@@ -306,17 +306,6 @@
       "source_correction": ""
     },
     {
-      "id": "29000016",
-      "adresse": "2 AVENUE DE TY BOS - ZAC DE TY DOUAR",
-      "cp": "29000",
-      "ville": "Quimper",
-      "ecart_ban_metres": 445569,
-      "score_ban": 0.31454967914438503,
-      "resultat_ban": "Avenue ZAC 2000 33380 Mios",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "86200003",
       "adresse": "Parc Commercial CareoLes Landes",
       "cp": "86200",
@@ -423,6 +412,17 @@
       "ecart_ban_metres": 368637,
       "score_ban": 0.34136268774703554,
       "resultat_ban": "ZAC des Toupes 39570 Montmorot",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "71160003",
+      "adresse": "CC LIGERVAL-ZAC DES CHARMES-AVENUE DE L' EUROPE",
+      "cp": "71160",
+      "ville": "Digoin",
+      "ecart_ban_metres": 366791,
+      "score_ban": 0.4228997326203208,
+      "resultat_ban": "Avenue de l’Europe- Zac des 3 Frontières 54350 Mont-Saint-Martin",
       "corrigee": false,
       "source_correction": ""
     },
@@ -702,17 +702,6 @@
       "source_correction": ""
     },
     {
-      "id": "93120005",
-      "adresse": "AUTOROUTE A1 - AIRE DE LA COURNEUVE OUEST - SENS LILLE/PARIS",
-      "cp": "93120",
-      "ville": "La Courneuve",
-      "ecart_ban_metres": 183693,
-      "score_ban": 0.3327047006651884,
-      "resultat_ban": "Autoroute A1-E15 (lille-Paris) 59113 Seclin",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "41200009",
       "adresse": "AUTOROUTE A85 - AIRE DE ROMORANTIN",
       "cp": "41200",
@@ -728,9 +717,9 @@
       "adresse": "ZAC du Moulin aux Moines",
       "cp": "72650",
       "ville": "La Chapelle-Saint-Aubin",
-      "ecart_ban_metres": 148145,
+      "ecart_ban_metres": 148308,
       "score_ban": 0.31640119244391973,
-      "resultat_ban": "ZAC des Champs Chouette 1 27600 Saint-Aubin-sur-Gaillon",
+      "resultat_ban": "ZAC des Champs Chouette 2 27600 Saint-Aubin-sur-Gaillon",
       "corrigee": false,
       "source_correction": ""
     },
@@ -1582,17 +1571,6 @@
       "source_correction": ""
     },
     {
-      "id": "71160003",
-      "adresse": "CC LIGERVAL-ZAC DES CHARMES-AVENUE DE L' EUROPE",
-      "cp": "71160",
-      "ville": "Digoin",
-      "ecart_ban_metres": 8104,
-      "score_ban": 0.33418332906530085,
-      "resultat_ban": "ZAC des Charmes 71600 Paray-le-Monial",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "44310001",
       "adresse": "ESPACE CIAL GRAND LAC",
       "cp": "44310",
@@ -1743,6 +1721,17 @@
       "ecart_ban_metres": 7448,
       "score_ban": 0.7195333542319747,
       "resultat_ban": "Route de Lavelanet 09300 Nalzen",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "21490003",
+      "adresse": "AUTOROUTE A31 - AIRE DE DIJON BROGNON",
+      "cp": "21490",
+      "ville": "Brognon",
+      "ecart_ban_metres": 7290,
+      "score_ban": 0.4005330303030302,
+      "resultat_ban": "Route de Dijon 21490 Norges-la-Ville",
       "corrigee": false,
       "source_correction": ""
     },
@@ -2128,6 +2117,17 @@
       "ecart_ban_metres": 6325,
       "score_ban": 0.43248518565941096,
       "resultat_ban": "Allée des restanques 13127 Vitrolles",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "45190015",
+      "adresse": "Aire de Meung sur Loire, Autoroute A10",
+      "cp": "45190",
+      "ville": "Messas",
+      "ecart_ban_metres": 6232,
+      "score_ban": 0.5270393506493506,
+      "resultat_ban": "Route de Bel Air 45130 Meung-sur-Loire",
       "corrigee": false,
       "source_correction": ""
     },
@@ -2693,17 +2693,6 @@
       "source_correction": ""
     },
     {
-      "id": "13300010",
-      "adresse": "RN 113 - ZAC DE LA CRAU",
-      "cp": "13300",
-      "ville": "Salon-de-Provence",
-      "ecart_ban_metres": 4882,
-      "score_ban": 0.48564874608150466,
-      "resultat_ban": "Route nationale 113 13300 Salon-de-Provence",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "13741001",
       "adresse": "R.N. 113",
       "cp": "13127",
@@ -2920,17 +2909,6 @@
       "ecart_ban_metres": 4629,
       "score_ban": 0.482852258953168,
       "resultat_ban": "Les Quatre Vents (St Rémy-en-Mauges) 49110 Montrevault-sur-Èvre",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "20090015",
-      "adresse": "Avenue du Président Kennedy - HLM Bat P",
-      "cp": "20090",
-      "ville": "Ajaccio",
-      "ecart_ban_metres": 4627,
-      "score_ban": 0.43781355371900826,
-      "resultat_ban": "Residence Hlm du Vazzio Erilia 20090 Ajaccio",
       "corrigee": false,
       "source_correction": ""
     },
@@ -4724,17 +4702,6 @@
       "ecart_ban_metres": 3319,
       "score_ban": 0.530345041322314,
       "resultat_ban": "Chemin de Villeray 53480 Vaiges",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "45430006",
-      "adresse": "ROUTE NATIONALE 60",
-      "cp": "45430",
-      "ville": "Mardié",
-      "ecart_ban_metres": 3318,
-      "score_ban": 0.473818961038961,
-      "resultat_ban": "Avenue Nationale 45430 Chécy",
       "corrigee": false,
       "source_correction": ""
     },
@@ -6631,6 +6598,17 @@
       "source_correction": ""
     },
     {
+      "id": "35580004",
+      "adresse": "D177 - LES BOIS",
+      "cp": "35580",
+      "ville": "Guignen",
+      "ecart_ban_metres": 2501,
+      "score_ban": 0.7734711888111888,
+      "resultat_ban": "Les Bois 35580 Guignen",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
       "id": "83520001",
       "adresse": "QUARTIER LA GARONNE",
       "cp": "83520",
@@ -7544,6 +7522,17 @@
       "source_correction": ""
     },
     {
+      "id": "45430006",
+      "adresse": "ROUTE NATIONALE 60",
+      "cp": "45430",
+      "ville": "Mardié",
+      "ecart_ban_metres": 2261,
+      "score_ban": 0.4193851374207188,
+      "resultat_ban": "Allée de l'Auvernat 45430 Mardié",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
       "id": "56130002",
       "adresse": "routes de nantes",
       "cp": "56130",
@@ -7650,17 +7639,6 @@
       "ecart_ban_metres": 2230,
       "score_ban": 0.5875639534883721,
       "resultat_ban": "165 Route de Courrières 62220 Carvin",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "45190015",
-      "adresse": "Aire de Meung sur Loire, Autoroute A10",
-      "cp": "45190",
-      "ville": "Messas",
-      "ecart_ban_metres": 2229,
-      "score_ban": 0.396761610845295,
-      "resultat_ban": "Route de Messas 45190 Villorceau",
       "corrigee": false,
       "source_correction": ""
     },
@@ -7837,17 +7815,6 @@
       "ecart_ban_metres": 2183,
       "score_ban": 0.8826850988142292,
       "resultat_ban": "Route de Ferrières 03250 Le Mayet-de-Montagne",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "21490003",
-      "adresse": "AUTOROUTE A31 - AIRE DE DIJON BROGNON",
-      "cp": "21490",
-      "ville": "Brognon",
-      "ecart_ban_metres": 2182,
-      "score_ban": 0.3637261251862891,
-      "resultat_ban": "Rue de Beire le Châtel 21490 Brognon",
       "corrigee": false,
       "source_correction": ""
     },
@@ -11966,6 +11933,17 @@
       "source_correction": ""
     },
     {
+      "id": "17138007",
+      "adresse": "RN. 11 / SENS NIORT - LA ROCHELL",
+      "cp": "17138",
+      "ville": "Puilboreau",
+      "ecart_ban_metres": 1483,
+      "score_ban": 0.5141644741532976,
+      "resultat_ban": "Rue de la Rochelle 17138 Puilboreau",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
       "id": "49250001",
       "adresse": "ZAC Actival",
       "cp": "49250",
@@ -12556,6 +12534,17 @@
       "ecart_ban_metres": 1407,
       "score_ban": 0.6767711688311687,
       "resultat_ban": "Avenue de Nice 06650 Le Rouret",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "1800003",
+      "adresse": "ROUTE DE CHALAMONT",
+      "cp": "01800",
+      "ville": "Meximieux",
+      "ecart_ban_metres": 1405,
+      "score_ban": 0.9482390909090909,
+      "resultat_ban": "Route de Chalamont 01800 Meximieux",
       "corrigee": false,
       "source_correction": ""
     },
@@ -13194,17 +13183,6 @@
       "ecart_ban_metres": 1327,
       "score_ban": 0.8146680419580419,
       "resultat_ban": "Route de Lacanau -  RD 1215 33160 Saint-Médard-en-Jalles",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "81600006",
-      "adresse": "190 RUE DU CASTELLET ZA GARRIGUE LONGUE",
-      "cp": "81600",
-      "ville": "Montans",
-      "ecart_ban_metres": 1323,
-      "score_ban": 0.5419468261562999,
-      "resultat_ban": "Route de Garrigue Longue 81600 Montans",
       "corrigee": false,
       "source_correction": ""
     },
@@ -13902,17 +13880,6 @@
       "source_correction": ""
     },
     {
-      "id": "13800004",
-      "adresse": "Quartier les Craux",
-      "cp": "13800",
-      "ville": "Istres",
-      "ecart_ban_metres": 1238,
-      "score_ban": 0.6082845989304813,
-      "resultat_ban": "Les Craux Sud 13800 Istres",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "61500002",
       "adresse": "ROUTE DE MORTAGNE",
       "cp": "61500",
@@ -14019,6 +13986,17 @@
       "ecart_ban_metres": 1227,
       "score_ban": 0.7234501782531193,
       "resultat_ban": "Rue Grande Rue 50110 Cherbourg-en-Cotentin",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "13800004",
+      "adresse": "Quartier les Craux",
+      "cp": "13800",
+      "ville": "Istres",
+      "ecart_ban_metres": 1226,
+      "score_ban": 0.6082845989304813,
+      "resultat_ban": "Les Craux Est 13800 Istres",
       "corrigee": false,
       "source_correction": ""
     },
@@ -16399,1370 +16377,5 @@
       "source_correction": ""
     }
   ],
-  "corrected": [
-    {
-      "id": "17600004",
-      "adresse": "204 route de Royan",
-      "cp": "17600",
-      "ville": "Médis",
-      "ecart_ban_metres": 4310,
-      "score_ban": 0.9584163636363635,
-      "resultat_ban": "204 Route de Royan 17600 Médis",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "58230002",
-      "adresse": "14 RUE HENRI BACHELIN",
-      "cp": "58230",
-      "ville": "Montsauche-les-Settons",
-      "ecart_ban_metres": 4095,
-      "score_ban": 0.9447909090909089,
-      "resultat_ban": "14 Rue Henri Bachelin 58230 Montsauche-les-Settons",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "32800003",
-      "adresse": "RTE DE MANCIET",
-      "cp": "32800",
-      "ville": "Eauze",
-      "ecart_ban_metres": 3209,
-      "score_ban": 0.8290407792207791,
-      "resultat_ban": "Route de Manciet 32800 Eauze",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "59554008",
-      "adresse": "Route de Bapaume",
-      "cp": "59554",
-      "ville": "Raillencourt-Sainte-Olle",
-      "ecart_ban_metres": 2947,
-      "score_ban": 0.9539145454545455,
-      "resultat_ban": "Route de Bapaume 59554 Raillencourt-Sainte-Olle",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "86130006",
-      "adresse": "ROUTE CHAMPS DE GAIN",
-      "cp": "86130",
-      "ville": "Saint-Georges-lès-Baillargeaux",
-      "ecart_ban_metres": 2914,
-      "score_ban": 0.857610909090909,
-      "resultat_ban": "Route du Champ de Gain 86130 Saint-Georges-lès-Baillargeaux",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "2450003",
-      "adresse": "16 RUE DU 2 SEPTEMBRE 1944",
-      "cp": "02450",
-      "ville": "La Neuville-lès-Dorengt",
-      "ecart_ban_metres": 2765,
-      "score_ban": 0.8609617355371899,
-      "resultat_ban": "16 Rue du 2 Septembre 02450 La Neuville-lès-Dorengt",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "74300009",
-      "adresse": "180 allée des Noyères",
-      "cp": "74300",
-      "ville": "Magland",
-      "ecart_ban_metres": 2751,
-      "score_ban": 0.9439663636363634,
-      "resultat_ban": "180 Allée des Noyères 74300 Magland",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "41200001",
-      "adresse": "ZAC DE PLAISANCE",
-      "cp": "41200",
-      "ville": "Romorantin-Lanthenay",
-      "ecart_ban_metres": 2658,
-      "score_ban": 0.8419615151515151,
-      "resultat_ban": "Rue de Plaisance 41200 Romorantin-Lanthenay",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "18100016",
-      "adresse": "7 rue Etienne Dolet",
-      "cp": "18100",
-      "ville": "Vierzon",
-      "ecart_ban_metres": 2642,
-      "score_ban": 0.9645863636363635,
-      "resultat_ban": "7 Rue Etienne Dolet 18100 Vierzon",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "60200011",
-      "adresse": "Avenue de l' Europe",
-      "cp": "60200",
-      "ville": "Compiègne",
-      "ecart_ban_metres": 2630,
-      "score_ban": 0.9654881818181816,
-      "resultat_ban": "Avenue de l'Europe 60200 Compiègne",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "50710003",
-      "adresse": "26 Rue de l'Europe",
-      "cp": "50710",
-      "ville": "Créances",
-      "ecart_ban_metres": 2535,
-      "score_ban": 0.9514054545454544,
-      "resultat_ban": "26 Rue de l’Europe 50710 Créances",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "62560002",
-      "adresse": "26 RUE PRINCIPALE",
-      "cp": "62560",
-      "ville": "Dennebrœucq",
-      "ecart_ban_metres": 2530,
-      "score_ban": 0.9540681818181816,
-      "resultat_ban": "26 Rue Principale 62560 Dennebrœucq",
-      "corrigee": true,
-      "source_correction": "Base Adresse Nationale"
-    },
-    {
-      "id": "78520002",
-      "adresse": "ROUTE NATIONALE 190",
-      "cp": "78520",
-      "ville": "Limay",
-      "ecart_ban_metres": 2346,
-      "score_ban": 0.86911173553719,
-      "resultat_ban": "Route Nationale No 190 78520 Limay",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "65220002",
-      "adresse": "Route de Tarbes",
-      "cp": "65220",
-      "ville": "Lalanne-Trie",
-      "ecart_ban_metres": 2331,
-      "score_ban": 0.9378918181818182,
-      "resultat_ban": "Route de Tarbes 65220 Lalanne-Trie",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "8320003",
-      "adresse": "ROUTE NATIONALE 51",
-      "cp": "08320",
-      "ville": "Hierges",
-      "ecart_ban_metres": 2186,
-      "score_ban": 0.9302309090909091,
-      "resultat_ban": "Route Nationale 51 08320 Hierges",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "38260004",
-      "adresse": "2935 chemin de la voie ferrée",
-      "cp": "38260",
-      "ville": "La Côte-Saint-André",
-      "ecart_ban_metres": 2185,
-      "score_ban": 0.9575072727272727,
-      "resultat_ban": "2935 Chemin de la Voie Ferree 38260 La Côte-Saint-André",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "38150010",
-      "adresse": "601 ROUTE NATIONALE 7",
-      "cp": "38150",
-      "ville": "Salaise-sur-Sanne",
-      "ecart_ban_metres": 2172,
-      "score_ban": 0.8747780991735536,
-      "resultat_ban": "Route Nationale 7 38150 Salaise-sur-Sanne",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "1540001",
-      "adresse": "184 rue du 19 mars 1962",
-      "cp": "01540",
-      "ville": "Vonnas",
-      "ecart_ban_metres": 2169,
-      "score_ban": 0.9553109090909091,
-      "resultat_ban": "184 Rue du 19 Mars 1962 01540 Vonnas",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "42300013",
-      "adresse": "209 Rue de Charlieu",
-      "cp": "42300",
-      "ville": "Roanne",
-      "ecart_ban_metres": 2127,
-      "score_ban": 0.9745454545454545,
-      "resultat_ban": "209 Rue de Charlieu 42300 Roanne",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "35230004",
-      "adresse": "6 avenue de l'alliance",
-      "cp": "35230",
-      "ville": "Orgères",
-      "ecart_ban_metres": 2122,
-      "score_ban": 0.9515790909090909,
-      "resultat_ban": "6 Avenue de l'Alliance 35230 Orgères",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "13140010",
-      "adresse": "2 AVENUE DU SUD",
-      "cp": "13140",
-      "ville": "Miramas",
-      "ecart_ban_metres": 2005,
-      "score_ban": 0.953491818181818,
-      "resultat_ban": "2 Avenue du Sud 13140 Miramas",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "87100007",
-      "adresse": "86 Rue Abbe Pierre",
-      "cp": "87100",
-      "ville": "Limoges",
-      "ecart_ban_metres": 2001,
-      "score_ban": 0.9769945454545454,
-      "resultat_ban": "86 rue Abbé Pierre 87100 Limoges",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "74260002",
-      "adresse": "2917 ROUTE DES GRANDES ALPES",
-      "cp": "74260",
-      "ville": "Les Gets",
-      "ecart_ban_metres": 1914,
-      "score_ban": 0.9578436363636363,
-      "resultat_ban": "2917 Route des grandes alpes 74260 Les Gets",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "79000002",
-      "adresse": "Boulevard de l'Atlantique",
-      "cp": "79000",
-      "ville": "Niort",
-      "ecart_ban_metres": 1902,
-      "score_ban": 0.9669745454545453,
-      "resultat_ban": "Boulevard de l'Atlantique 79000 Niort",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "57160006",
-      "adresse": "AVENUE DE LA LIBERATION",
-      "cp": "57160",
-      "ville": "Châtel-Saint-Germain",
-      "ecart_ban_metres": 1878,
-      "score_ban": 0.9545336363636363,
-      "resultat_ban": "Avenue de la Libération 57160 Châtel-Saint-Germain",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "68000021",
-      "adresse": "122 rue du Ladhof",
-      "cp": "68000",
-      "ville": "Colmar",
-      "ecart_ban_metres": 1867,
-      "score_ban": 0.9775309090909089,
-      "resultat_ban": "122 Rue du Ladhof 68000 Colmar",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "91190009",
-      "adresse": "2 Route de Gometz",
-      "cp": "91190",
-      "ville": "Gif-sur-Yvette",
-      "ecart_ban_metres": 1850,
-      "score_ban": 0.8258271328671327,
-      "resultat_ban": "2 Rue de Gometz 91190 Gif-sur-Yvette",
-      "corrigee": true,
-      "source_correction": "Base Adresse Nationale"
-    },
-    {
-      "id": "69510004",
-      "adresse": "104 ROUTE DES MONTS DU LYONNAIS",
-      "cp": "69510",
-      "ville": "Messimy",
-      "ecart_ban_metres": 1833,
-      "score_ban": 0.9629,
-      "resultat_ban": "104 Route des Monts du Lyonnais 69510 Messimy",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "13920010",
-      "adresse": "cd5 chemin Emplaniers",
-      "cp": "13920",
-      "ville": "Saint-Mitre-les-Remparts",
-      "ecart_ban_metres": 1831,
-      "score_ban": 0.8249258677685949,
-      "resultat_ban": "Chemin des Emplaniers 13920 Saint-Mitre-les-Remparts",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "84700004",
-      "adresse": "1238 ROUTE D'ORANGE",
-      "cp": "84700",
-      "ville": "Sorgues",
-      "ecart_ban_metres": 1828,
-      "score_ban": 0.8099872727272727,
-      "resultat_ban": "Route d’Orange 84700 Sorgues",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "31200009",
-      "adresse": "AVENUE DES ETATS-UNIS",
-      "cp": "31200",
-      "ville": "Toulouse",
-      "ecart_ban_metres": 1802,
-      "score_ban": 0.9877981818181818,
-      "resultat_ban": "Avenue des Etats Unis 31200 Toulouse",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "74350006",
-      "adresse": "363 ROUTE D'ANNECY",
-      "cp": "74350",
-      "ville": "Cruseilles",
-      "ecart_ban_metres": 1793,
-      "score_ban": 0.9569827272727272,
-      "resultat_ban": "363 Route d'Annecy 74350 Cruseilles",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "11700007",
-      "adresse": "Aire des corbières SUD A61",
-      "cp": "11700",
-      "ville": "Capendu",
-      "ecart_ban_metres": 1774,
-      "score_ban": 0.8502653613053612,
-      "resultat_ban": "Aire des Corbieres Sud 11700 Capendu",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "31470007",
-      "adresse": "Allées de Gascogne",
-      "cp": "31470",
-      "ville": "Fonsorbes",
-      "ecart_ban_metres": 1763,
-      "score_ban": 0.878921550802139,
-      "resultat_ban": "Allée de Gascogne 31470 Fonsorbes",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "74320006",
-      "adresse": "754 route d'Albertville",
-      "cp": "74320",
-      "ville": "Sevrier",
-      "ecart_ban_metres": 1748,
-      "score_ban": 0.9657427272727271,
-      "resultat_ban": "754 Route d'Albertville 74320 Sevrier",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "50000002",
-      "adresse": "ROUTE DE VILLEDIEU",
-      "cp": "50000",
-      "ville": "Saint-Lô",
-      "ecart_ban_metres": 1703,
-      "score_ban": 0.8077440106951871,
-      "resultat_ban": "Rue de Villedieu 50000 Saint-Lô",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "62760002",
-      "adresse": "36 RUE DE VERDUN",
-      "cp": "62760",
-      "ville": "Pas-en-Artois",
-      "ecart_ban_metres": 1690,
-      "score_ban": 0.8730442857142856,
-      "resultat_ban": "Rue de Verdun 62760 Pas-en-Artois",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "47400003",
-      "adresse": "Avenue Beauregard",
-      "cp": "47400",
-      "ville": "Tonneins",
-      "ecart_ban_metres": 1682,
-      "score_ban": 0.8830933689839571,
-      "resultat_ban": "Avenue de Beauregard 47400 Tonneins",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "83130005",
-      "adresse": "46 PLACE CLAUDE CHIAPPE",
-      "cp": "83130",
-      "ville": "La Garde",
-      "ecart_ban_metres": 1678,
-      "score_ban": 0.8880705741626793,
-      "resultat_ban": "46 Place Claude Chappe 83130 La Garde",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "59243002",
-      "adresse": "221 avenue Jean Jaurès",
-      "cp": "59243",
-      "ville": "Quarouble",
-      "ecart_ban_metres": 1670,
-      "score_ban": 0.8020962004662003,
-      "resultat_ban": "221 Rue Jean Jaurès 59243 Quarouble",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "28310011",
-      "adresse": "LA HAUTE BORNE",
-      "cp": "28310",
-      "ville": "Toury",
-      "ecart_ban_metres": 1622,
-      "score_ban": 0.9430645454545454,
-      "resultat_ban": "La Haute Borne 28310 Toury",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "57100008",
-      "adresse": "1 ROUTE DE METZ",
-      "cp": "57100",
-      "ville": "Thionville",
-      "ecart_ban_metres": 1619,
-      "score_ban": 0.9718027272727272,
-      "resultat_ban": "1 Route de Metz 57100 Thionville",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "31600006",
-      "adresse": "1 BIS BOULEVARD JOFFRERY",
-      "cp": "31600",
-      "ville": "Muret",
-      "ecart_ban_metres": 1603,
-      "score_ban": 0.8271125874125873,
-      "resultat_ban": "1bis Boulevard de Joffrery 31600 Muret",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "1300001",
-      "adresse": "ZAC DE L OUSSON",
-      "cp": "01300",
-      "ville": "Belley",
-      "ecart_ban_metres": 1600,
-      "score_ban": 0.8514246753246754,
-      "resultat_ban": "ZA de l’Ousson 01300 Belley",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "13800010",
-      "adresse": "22 Avenue Félix GOUIN",
-      "cp": "13800",
-      "ville": "Istres",
-      "ecart_ban_metres": 1597,
-      "score_ban": 0.9671727272727272,
-      "resultat_ban": "22 Avenue Félix Gouin 13800 Istres",
-      "corrigee": true,
-      "source_correction": "Base Adresse Nationale"
-    },
-    {
-      "id": "43200006",
-      "adresse": "LA GUIDE",
-      "cp": "43200",
-      "ville": "Yssingeaux",
-      "ecart_ban_metres": 1594,
-      "score_ban": 0.8498962626262625,
-      "resultat_ban": "ZI la Guide 43200 Yssingeaux",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "17350005",
-      "adresse": "Route de Saintes",
-      "cp": "17350",
-      "ville": "Saint-Savinien",
-      "ecart_ban_metres": 1593,
-      "score_ban": 0.9521963636363635,
-      "resultat_ban": "Route de Saintes 17350 Saint-Savinien",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "13270014",
-      "adresse": "215 avenue Georges Pompidou",
-      "cp": "13270",
-      "ville": "Fos-sur-Mer",
-      "ecart_ban_metres": 1580,
-      "score_ban": 0.967921818181818,
-      "resultat_ban": "215 Avenue Georges Pompidou 13270 Fos-sur-Mer",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "22240001",
-      "adresse": "LA NOE",
-      "cp": "22240",
-      "ville": "Plurien",
-      "ecart_ban_metres": 1563,
-      "score_ban": 0.9447272727272725,
-      "resultat_ban": "La Noë 22240 Plurien",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "9600003",
-      "adresse": "Avenue du 11 Novembre 1918",
-      "cp": "09600",
-      "ville": "Laroque-d'Olmes",
-      "ecart_ban_metres": 1561,
-      "score_ban": 0.9599336363636364,
-      "resultat_ban": "Avenue du 11 Novembre 1918 09600 Laroque-d'Olmes",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "4100007",
-      "adresse": "Route de Volx",
-      "cp": "04100",
-      "ville": "Manosque",
-      "ecart_ban_metres": 1548,
-      "score_ban": 0.9654463636363635,
-      "resultat_ban": "Route de Volx 04100 Manosque",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "53600007",
-      "adresse": "route de Sillé",
-      "cp": "53600",
-      "ville": "Évron",
-      "ecart_ban_metres": 1543,
-      "score_ban": 0.9482418181818182,
-      "resultat_ban": "Route de Sillé 53600 Évron",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "44350003",
-      "adresse": "Boulevard du 19 Mars 1962",
-      "cp": "44350",
-      "ville": "Guérande",
-      "ecart_ban_metres": 1534,
-      "score_ban": 0.9678245454545454,
-      "resultat_ban": "Boulevard du 19 mars 1962 44350 Guérande",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "10170001",
-      "adresse": "ROUTE D ARCIS",
-      "cp": "10170",
-      "ville": "Méry-sur-Seine",
-      "ecart_ban_metres": 1526,
-      "score_ban": 0.9502727272727273,
-      "resultat_ban": "Route d’Arcis 10170 Méry-sur-Seine",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "47200013",
-      "adresse": "6-8 RUE FRANCOIS MAURIAC",
-      "cp": "47200",
-      "ville": "Marmande",
-      "ecart_ban_metres": 1519,
-      "score_ban": 0.9079303827751195,
-      "resultat_ban": "8 Rue François Mauriac 47200 Marmande",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "69480005",
-      "adresse": "Route de Villefranche",
-      "cp": "69480",
-      "ville": "Anse",
-      "ecart_ban_metres": 1507,
-      "score_ban": 0.9664727272727273,
-      "resultat_ban": "Route de Villefranche 69480 Anse",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "35290003",
-      "adresse": "Zone du maupas",
-      "cp": "35290",
-      "ville": "Saint-Méen-le-Grand",
-      "ecart_ban_metres": 1507,
-      "score_ban": 0.8126004878048779,
-      "resultat_ban": "ZA du Maupas 35290 Saint-Méen-le-Grand",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "37130001",
-      "adresse": "Rue Carnot",
-      "cp": "37130",
-      "ville": "Langeais",
-      "ecart_ban_metres": 1478,
-      "score_ban": 0.9541954545454544,
-      "resultat_ban": "Rue Carnot 37130 Langeais",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "24200008",
-      "adresse": "17 AVENUE DE LA DORDOGNE",
-      "cp": "24200",
-      "ville": "Sarlat-la-Canéda",
-      "ecart_ban_metres": 1474,
-      "score_ban": 0.9609727272727272,
-      "resultat_ban": "17 Avenue de la Dordogne 24200 Sarlat-la-Canéda",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "56660001",
-      "adresse": "9 Rue des Hêtres",
-      "cp": "56660",
-      "ville": "Saint-Jean-Brévelay",
-      "ecart_ban_metres": 1471,
-      "score_ban": 0.9511909090909091,
-      "resultat_ban": "9 Rue des Hêtres 56660 Saint-Jean-Brévelay",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "66028001",
-      "adresse": "AVENUE D'ESPAGNE",
-      "cp": "66000",
-      "ville": "Perpignan",
-      "ecart_ban_metres": 1457,
-      "score_ban": 0.9751899999999999,
-      "resultat_ban": "Avenue d'Espagne 66000 Perpignan",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "3300003",
-      "adresse": "rue des peupliers",
-      "cp": "03300",
-      "ville": "Cusset",
-      "ecart_ban_metres": 1443,
-      "score_ban": 0.9632936363636363,
-      "resultat_ban": "Rue des Peupliers 03300 Cusset",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "41370001",
-      "adresse": "ROUTE DE MER",
-      "cp": "41370",
-      "ville": "Josnes",
-      "ecart_ban_metres": 1434,
-      "score_ban": 0.9480581818181818,
-      "resultat_ban": "Route de Mer 41370 Josnes",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "36120001",
-      "adresse": "2 Avenue de Verdun",
-      "cp": "36120",
-      "ville": "Ardentes",
-      "ecart_ban_metres": 1399,
-      "score_ban": 0.9591554545454546,
-      "resultat_ban": "2 Avenue de Verdun 36120 Ardentes",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "64220002",
-      "adresse": "1151 rte de St Jean Pied de Port",
-      "cp": "64220",
-      "ville": "Saint-Jean-le-Vieux",
-      "ecart_ban_metres": 1388,
-      "score_ban": 0.8220009090909091,
-      "resultat_ban": "1151 Route de Saint-Jean-Pied-de-Port 64220 Saint-Jean-le-Vieux",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "37550001",
-      "adresse": "355 ROUTE DE CORMERY",
-      "cp": "37550",
-      "ville": "Saint-Avertin",
-      "ecart_ban_metres": 1383,
-      "score_ban": 0.8398659423503325,
-      "resultat_ban": "355 Rue de Cormery 37550 Saint-Avertin",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "37700001",
-      "adresse": "Avenue Jacques DUCLOS",
-      "cp": "37700",
-      "ville": "Saint-Pierre-des-Corps",
-      "ecart_ban_metres": 1383,
-      "score_ban": 0.9612081818181817,
-      "resultat_ban": "Avenue Jacques Duclos 37700 Saint-Pierre-des-Corps",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "34110002",
-      "adresse": "27 avenue du marechal juin",
-      "cp": "34110",
-      "ville": "Frontignan",
-      "ecart_ban_metres": 1373,
-      "score_ban": 0.9714154545454544,
-      "resultat_ban": "27 Avenue du Maréchal Juin 34110 Frontignan",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "80220001",
-      "adresse": "90 RUE CHARLES DE GAULLE",
-      "cp": "80220",
-      "ville": "Gamaches",
-      "ecart_ban_metres": 1373,
-      "score_ban": 0.9635590909090908,
-      "resultat_ban": "90 Rue Charles de Gaulle 80220 Gamaches",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "71200004",
-      "adresse": "rue de pologne",
-      "cp": "71200",
-      "ville": "Le Creusot",
-      "ecart_ban_metres": 1345,
-      "score_ban": 0.9621063636363635,
-      "resultat_ban": "Rue de Pologne 71200 Le Creusot",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "77130008",
-      "adresse": "route du bréau",
-      "cp": "77130",
-      "ville": "Varennes-sur-Seine",
-      "ecart_ban_metres": 1341,
-      "score_ban": 0.8101354545454544,
-      "resultat_ban": "rue du Bréau 77130 Varennes-sur-Seine",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "85100003",
-      "adresse": "33 Avenue d'Aquitaine",
-      "cp": "85100",
-      "ville": "Les Sables-d'Olonne",
-      "ecart_ban_metres": 1340,
-      "score_ban": 0.9766399999999998,
-      "resultat_ban": "33 Avenue d'Aquitaine 85100 Les Sables-d'Olonne",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "85150003",
-      "adresse": "1 RUE DE L'OCEAN",
-      "cp": "85150",
-      "ville": "Les Achards",
-      "ecart_ban_metres": 1337,
-      "score_ban": 0.9580718181818181,
-      "resultat_ban": "1 Rue de l'Océan 85150 Les Achards",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "38160003",
-      "adresse": "28, route de Grenoble",
-      "cp": "38160",
-      "ville": "Saint-Sauveur",
-      "ecart_ban_metres": 1336,
-      "score_ban": 0.9576190909090907,
-      "resultat_ban": "28 Route de Grenoble 38160 Saint-Sauveur",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "13110005",
-      "adresse": "Route Nationale 568",
-      "cp": "13110",
-      "ville": "Port-de-Bouc",
-      "ecart_ban_metres": 1335,
-      "score_ban": 0.9543445454545454,
-      "resultat_ban": "Route Nationale 568 13110 Port-de-Bouc",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "31230003",
-      "adresse": "Le pont neuf",
-      "cp": "31230",
-      "ville": "L'Isle-en-Dodon",
-      "ecart_ban_metres": 1333,
-      "score_ban": 0.8064493301435405,
-      "resultat_ban": "Rue du Pont Neuf 31230 L'Isle-en-Dodon",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "58220001",
-      "adresse": "1 rue Guy de Jean",
-      "cp": "58220",
-      "ville": "Donzy",
-      "ecart_ban_metres": 1331,
-      "score_ban": 0.950301818181818,
-      "resultat_ban": "1 Rue Guy de Jean 58220 Donzy",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "54460001",
-      "adresse": "32, Route de Frouard",
-      "cp": "54460",
-      "ville": "Liverdun",
-      "ecart_ban_metres": 1318,
-      "score_ban": 0.9596018181818182,
-      "resultat_ban": "32 Route de Frouard 54460 Liverdun",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "77460001",
-      "adresse": "115 Avenue du Maréchal Leclerc",
-      "cp": "77460",
-      "ville": "Souppes-sur-Loing",
-      "ecart_ban_metres": 1305,
-      "score_ban": 0.9667154545454545,
-      "resultat_ban": "115 Avenue du Maréchal Leclerc 77460 Souppes-sur-Loing",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "12850007",
-      "adresse": "Route d'Espalion",
-      "cp": "12850",
-      "ville": "Onet-le-Château",
-      "ecart_ban_metres": 1297,
-      "score_ban": 0.9652,
-      "resultat_ban": "Route d'Espalion 12850 Onet-le-Château",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "34300002",
-      "adresse": "59 AVENUE DE SETE",
-      "cp": "34300",
-      "ville": "Agde",
-      "ecart_ban_metres": 1293,
-      "score_ban": 0.9685436363636364,
-      "resultat_ban": "59 Avenue de Sète 34300 Agde",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "40120001",
-      "adresse": "Route de Pau",
-      "cp": "40120",
-      "ville": "Sarbazan",
-      "ecart_ban_metres": 1285,
-      "score_ban": 0.9548954545454543,
-      "resultat_ban": "Route de Pau 40120 Sarbazan",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "45570001",
-      "adresse": "514 ROUTE D'ORLEANS",
-      "cp": "45570",
-      "ville": "Ouzouer-sur-Loire",
-      "ecart_ban_metres": 1271,
-      "score_ban": 0.8370594214876033,
-      "resultat_ban": "514 Rue d'Orléans 45570 Ouzouer-sur-Loire",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "64230004",
-      "adresse": "RD32 ROUTE D'ARZACQ",
-      "cp": "64230",
-      "ville": "Mazerolles",
-      "ecart_ban_metres": 1267,
-      "score_ban": 0.8206953246753246,
-      "resultat_ban": "Route d'Arzacq 64230 Mazerolles",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "13016008",
-      "adresse": "450 CHEMIN DU LITTORAL",
-      "cp": "13016",
-      "ville": "Marseille",
-      "ecart_ban_metres": 1262,
-      "score_ban": 0.8686099017199017,
-      "resultat_ban": "Chemin du littoral 13016 Marseille",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "16400001",
-      "adresse": "Route de Bordeaux",
-      "cp": "16400",
-      "ville": "La Couronne",
-      "ecart_ban_metres": 1262,
-      "score_ban": 0.968211818181818,
-      "resultat_ban": "Route de Bordeaux 16400 La Couronne",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "58200010",
-      "adresse": "Rue du Maréchal Leclerc",
-      "cp": "58200",
-      "ville": "Cosne-Cours-sur-Loire",
-      "ecart_ban_metres": 1261,
-      "score_ban": 0.8845612794612794,
-      "resultat_ban": "Avenue du Marechal Leclerc 58200 Cosne-Cours-sur-Loire",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "31600008",
-      "adresse": "90 chemin de coucoures",
-      "cp": "31600",
-      "ville": "Lherm",
-      "ecart_ban_metres": 1256,
-      "score_ban": 0.9498072727272727,
-      "resultat_ban": "90 Chemin de Coucourès 31600 Lherm",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "78630011",
-      "adresse": "ROUTE DE 40 SOUS - RN113",
-      "cp": "78630",
-      "ville": "Orgeval",
-      "ecart_ban_metres": 1234,
-      "score_ban": 0.8093594805194805,
-      "resultat_ban": "Route de 40 sous 78630 Orgeval",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "45500010",
-      "adresse": "CHEMIN DES ALLIX",
-      "cp": "45500",
-      "ville": "Gien",
-      "ecart_ban_metres": 1231,
-      "score_ban": 0.9613636363636364,
-      "resultat_ban": "Chemin des Allix 45500 Gien",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "13270005",
-      "adresse": "Avenue Georges Pompidou",
-      "cp": "13270",
-      "ville": "Fos-sur-Mer",
-      "ecart_ban_metres": 1220,
-      "score_ban": 0.967921818181818,
-      "resultat_ban": "Avenue Georges Pompidou 13270 Fos-sur-Mer",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "56460003",
-      "adresse": "2 RUE NATIONALE",
-      "cp": "56460",
-      "ville": "Val d'Oust",
-      "ecart_ban_metres": 1213,
-      "score_ban": 0.9553390909090907,
-      "resultat_ban": "2 Rue Nationale 56460 Val d'Oust",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "37270005",
-      "adresse": "62 CHEMIN DE LA BUSSARDIERE",
-      "cp": "37270",
-      "ville": "Véretz",
-      "ecart_ban_metres": 1204,
-      "score_ban": 0.9590136363636363,
-      "resultat_ban": "62 Chemin De La Bussardière 37270 Véretz",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "9200003",
-      "adresse": "5 avenue de la Résistance",
-      "cp": "09200",
-      "ville": "Saint-Girons",
-      "ecart_ban_metres": 1172,
-      "score_ban": 0.9222067019027483,
-      "resultat_ban": "Avenue de la Résistance 09200 Saint-Girons",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "88300008",
-      "adresse": "24 AVENUE HERRINGEN",
-      "cp": "88300",
-      "ville": "Neufchâteau",
-      "ecart_ban_metres": 1166,
-      "score_ban": 0.8913317482517482,
-      "resultat_ban": "24 Avenue de Herringen 88300 Neufchâteau",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "2120006",
-      "adresse": "1 RUE SADI CARNOT",
-      "cp": "02120",
-      "ville": "Guise",
-      "ecart_ban_metres": 1156,
-      "score_ban": 0.9005994805194805,
-      "resultat_ban": "Rue Sadi Carnot 02120 Guise",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "24460003",
-      "adresse": "94 Avenue de la Beauronne",
-      "cp": "24460",
-      "ville": "Agonac",
-      "ecart_ban_metres": 1154,
-      "score_ban": 0.9577718181818181,
-      "resultat_ban": "94 Avenue de la Beauronne 24460 Agonac",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "69190009",
-      "adresse": "130 Boulevard Yves Farges",
-      "cp": "69190",
-      "ville": "Saint-Fons",
-      "ecart_ban_metres": 1149,
-      "score_ban": 0.8996222077922077,
-      "resultat_ban": "130 Boulevard Yves Farge 69190 Saint-Fons",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "62660004",
-      "adresse": "195 ROUTE NATIONALE",
-      "cp": "62660",
-      "ville": "Beuvry",
-      "ecart_ban_metres": 1149,
-      "score_ban": 0.9706036363636362,
-      "resultat_ban": "195 Route Nationale 62660 Beuvry",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "77500008",
-      "adresse": "20 Avenue de Claye",
-      "cp": "77500",
-      "ville": "Chelles",
-      "ecart_ban_metres": 1136,
-      "score_ban": 0.9736545454545454,
-      "resultat_ban": "20 Avenue de Claye 77500 Chelles",
-      "corrigee": true,
-      "source_correction": "Base Adresse Nationale"
-    },
-    {
-      "id": "71480005",
-      "adresse": "540 route des CHARMETTES",
-      "cp": "71480",
-      "ville": "Varennes-Saint-Sauveur",
-      "ecart_ban_metres": 1131,
-      "score_ban": 0.9500245454545453,
-      "resultat_ban": "540 Route des Charmettes 71480 Varennes-Saint-Sauveur",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "42440004",
-      "adresse": "12 rue Aubépine",
-      "cp": "42440",
-      "ville": "Noirétable",
-      "ecart_ban_metres": 1127,
-      "score_ban": 0.8261455555555556,
-      "resultat_ban": "12 Rue de l'Aubépine 42440 Noirétable",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "7200014",
-      "adresse": "145 ROUTE D'AUBENAS",
-      "cp": "07200",
-      "ville": "Vogüé",
-      "ecart_ban_metres": 1122,
-      "score_ban": 0.9501327272727271,
-      "resultat_ban": "145 Route d'Aubenas 07200 Vogüé",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "23250001",
-      "adresse": "Nouallet",
-      "cp": "23250",
-      "ville": "Sardent",
-      "ecart_ban_metres": 1120,
-      "score_ban": 0.9504272727272726,
-      "resultat_ban": "Nouallet 23250 Sardent",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "49124003",
-      "adresse": "9 rue de Verdun",
-      "cp": "49124",
-      "ville": "Saint-Barthélemy-d'Anjou",
-      "ecart_ban_metres": 1119,
-      "score_ban": 0.9578299999999998,
-      "resultat_ban": "9 Rue de Verdun 49124 Saint-Barthélemy-d'Anjou",
-      "corrigee": true,
-      "source_correction": "Base Adresse Nationale"
-    },
-    {
-      "id": "74210002",
-      "adresse": "680 route d'Annecy",
-      "cp": "74210",
-      "ville": "Doussard",
-      "ecart_ban_metres": 1111,
-      "score_ban": 0.96137,
-      "resultat_ban": "680 Route d'Annecy 74210 Doussard",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "6296001",
-      "adresse": "111 Avenue Saint-Augustin",
-      "cp": "06200",
-      "ville": "Nice",
-      "ecart_ban_metres": 1107,
-      "score_ban": 0.9825736363636364,
-      "resultat_ban": "111 Avenue Saint-Augustin 06200 Nice",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "29740001",
-      "adresse": "Rue de Lesconil",
-      "cp": "29740",
-      "ville": "Plobannalec-Lesconil",
-      "ecart_ban_metres": 1102,
-      "score_ban": 0.957881818181818,
-      "resultat_ban": "Rue de Lesconil 29740 Plobannalec-Lesconil",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "33112001",
-      "adresse": "17  Rue Pierre Ralle",
-      "cp": "33112",
-      "ville": "Saint-Laurent-Médoc",
-      "ecart_ban_metres": 1099,
-      "score_ban": 0.9561190909090908,
-      "resultat_ban": "17 Rue Pierre Ralle 33112 Saint-Laurent-Médoc",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "24600004",
-      "adresse": "ROUTE DE PERIGUEUX",
-      "cp": "24600",
-      "ville": "Ribérac",
-      "ecart_ban_metres": 1086,
-      "score_ban": 0.9567945454545453,
-      "resultat_ban": "Route de Périgueux 24600 Ribérac",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "22710001",
-      "adresse": "31 Rue de Lannion",
-      "cp": "22710",
-      "ville": "Penvénan",
-      "ecart_ban_metres": 1070,
-      "score_ban": 0.9601163636363635,
-      "resultat_ban": "31 Rue de Lannion 22710 Penvénan",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "71320001",
-      "adresse": "ROUTE DE GUEUGNON",
-      "cp": "71320",
-      "ville": "Toulon-sur-Arroux",
-      "ecart_ban_metres": 1066,
-      "score_ban": 0.954020909090909,
-      "resultat_ban": "Route de Gueugnon 71320 Toulon-sur-Arroux",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "18150001",
-      "adresse": "34 rue jean comte",
-      "cp": "18150",
-      "ville": "La Guerche-sur-l'Aubois",
-      "ecart_ban_metres": 1063,
-      "score_ban": 0.9564709090909091,
-      "resultat_ban": "34 Rue Jean Comte 18150 La Guerche-sur-l'Aubois",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "83120001",
-      "adresse": "164 Route du Plan-de-la-Tour",
-      "cp": "83120",
-      "ville": "Sainte-Maxime",
-      "ecart_ban_metres": 1058,
-      "score_ban": 0.9708490909090908,
-      "resultat_ban": "164 Route du Plan de la Tour 83120 Sainte-Maxime",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "74450001",
-      "adresse": "223 Route de la Clusaz",
-      "cp": "74450",
-      "ville": "Saint-Jean-de-Sixt",
-      "ecart_ban_metres": 1049,
-      "score_ban": 0.9515790909090909,
-      "resultat_ban": "223 Route de La Clusaz 74450 Saint-Jean-de-Sixt",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "41260001",
-      "adresse": "1 route Nationale 152",
-      "cp": "41260",
-      "ville": "La Chaussée-Saint-Victor",
-      "ecart_ban_metres": 1047,
-      "score_ban": 0.8940169340463456,
-      "resultat_ban": "1 Route Nationale 41260 La Chaussée-Saint-Victor",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "91170003",
-      "adresse": "Route de Fleury",
-      "cp": "91170",
-      "ville": "Viry-Châtillon",
-      "ecart_ban_metres": 1046,
-      "score_ban": 0.9710563636363636,
-      "resultat_ban": "Route de Fleury 91170 Viry-Châtillon",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "59216002",
-      "adresse": "27 rue du général de gaulle",
-      "cp": "59216",
-      "ville": "Sars-Poteries",
-      "ecart_ban_metres": 1039,
-      "score_ban": 0.9580645454545453,
-      "resultat_ban": "27 Rue du Général de Gaulle 59216 Sars-Poteries",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "1480006",
-      "adresse": "56 CHEMIN DU PLUMERET",
-      "cp": "01480",
-      "ville": "Frans",
-      "ecart_ban_metres": 1033,
-      "score_ban": 0.9429636363636363,
-      "resultat_ban": "56 Chemin du Plumeret 01480 Frans",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "69658001",
-      "adresse": "zac du garet",
-      "cp": "69400",
-      "ville": "Villefranche-sur-Saône",
-      "ecart_ban_metres": 1030,
-      "score_ban": 0.8409855602536996,
-      "resultat_ban": "Rue du Garet 69400 Villefranche-sur-Saône",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "87280008",
-      "adresse": "25 Avenue Georges Guingouin",
-      "cp": "87280",
-      "ville": "Limoges",
-      "ecart_ban_metres": 1025,
-      "score_ban": 0.9771827272727273,
-      "resultat_ban": "25 avenue Georges Guingouin 87280 Limoges",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "5350001",
-      "adresse": "2507 Route du Queyras",
-      "cp": "05350",
-      "ville": "Château-Ville-Vieille",
-      "ecart_ban_metres": 1025,
-      "score_ban": 0.9438772727272726,
-      "resultat_ban": "2507 Route du Queyras 05350 Château-Ville-Vieille",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "38150012",
-      "adresse": "9001 avenue jacques prevert",
-      "cp": "38150",
-      "ville": "Roussillon",
-      "ecart_ban_metres": 1018,
-      "score_ban": 0.8468835729386891,
-      "resultat_ban": "Avenue Jacques Prévert 38150 Roussillon",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    },
-    {
-      "id": "62180004",
-      "adresse": "LES ALLEES",
-      "cp": "62180",
-      "ville": "Verton",
-      "ecart_ban_metres": 1018,
-      "score_ban": 0.9577536363636362,
-      "resultat_ban": "Les Allees 62180 Verton",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap"
-    }
-  ]
+  "corrected": []
 }
