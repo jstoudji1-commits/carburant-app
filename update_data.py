@@ -18,6 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent
 STATIONS_CSV = BASE_DIR / "stations.csv"
 METADATA_JSON = BASE_DIR / "stations_metadata.json"
 REFERENCES_PRIX_JSON = BASE_DIR / "stations_prix_9h.json"
+ENRICHISSEMENT_STATIONS_JSON = BASE_DIR / "stations_enrichment.json"
 FUSEAU_PARIS = ZoneInfo("Europe/Paris")
 CARBURANTS = ["gazole", "e10", "sp98"]
 
@@ -33,6 +34,7 @@ ENTETES = [
     "adresse",
     "latitude",
     "longitude",
+    "enseigne",
     "gazole",
     "e10",
     "sp98",
@@ -40,6 +42,49 @@ ENTETES = [
     "tendance_e10",
     "tendance_sp98",
 ]
+
+
+def signature_adresse(station):
+
+    texte = "|".join(
+        str(station.get(cle, "") or "")
+        for cle in ("adresse", "cp", "ville")
+    )
+    return " ".join(texte.casefold().split())
+
+
+def appliquer_enrichissements(lignes):
+
+    enrichissements = {}
+
+    if ENRICHISSEMENT_STATIONS_JSON.exists():
+        try:
+            contenu = json.loads(
+                ENRICHISSEMENT_STATIONS_JSON.read_text(
+                    encoding="utf-8"
+                )
+            )
+            enrichissements = contenu.get("stations", {})
+        except (OSError, ValueError, TypeError):
+            enrichissements = {}
+
+    for station in lignes:
+        station["enseigne"] = ""
+        enrichissement = enrichissements.get(
+            str(station.get("id", "")),
+            {}
+        )
+
+        if enrichissement.get("signature") != signature_adresse(station):
+            continue
+
+        station["enseigne"] = enrichissement.get("enseigne", "")
+
+        latitude = enrichissement.get("latitude_corrigee")
+        longitude = enrichissement.get("longitude_corrigee")
+        if latitude is not None and longitude is not None:
+            station["latitude"] = latitude
+            station["longitude"] = longitude
 
 
 def _prix(valeur):
@@ -445,6 +490,7 @@ def mettre_a_jour_stations():
 
     references = mettre_a_jour_references_9h(lignes)
     ajouter_tendances(lignes, references)
+    appliquer_enrichissements(lignes)
     ecrire_stations_csv(lignes)
     ecrire_metadata(len(lignes))
 

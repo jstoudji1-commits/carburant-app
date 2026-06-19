@@ -10,13 +10,14 @@ on:
     paths:
       - update_data.py
       - update_stations.py
+      - stations_enrichment.json
       - .github/workflows/update-stations.yml
 
 permissions:
   contents: write
 
 concurrency:
-  group: update-stations
+  group: station-data
   cancel-in-progress: false
 
 jobs:

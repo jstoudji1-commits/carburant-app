@@ -463,6 +463,20 @@ body{
     color:var(--green-dark);
 }
 
+.data-source-link{
+    align-self:center;
+    margin-top:8px;
+    color:#7b8792;
+    font-size:11px;
+    text-decoration:none;
+}
+
+.data-source-link:hover,
+.data-source-link:focus-visible{
+    color:var(--green-dark);
+    text-decoration:underline;
+}
+
 .vehicle-fields{
     display:grid;
     gap:10px;
@@ -519,14 +533,18 @@ body{
 }
 
 .prix-bulle{
-    min-width:88px;
+    min-width:98px;
     position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
     background:white;
     border:1.5px solid #149f38;
     border-radius:8px;
-    padding:6px 9px;
+    padding:5px 7px;
     color:var(--ink);
-    font-size:17px;
+    font-size:16px;
     font-weight:bold;
     text-align:center;
     white-space:nowrap;
@@ -534,7 +552,69 @@ body{
 }
 
 .prix-bulle.indisponible{
-    font-size:14px;
+    font-size:13px;
+}
+
+.enseigne-logo{
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:24px;
+    height:24px;
+    overflow:hidden;
+    border:1px solid #dfe7e2;
+    border-radius:6px;
+    background:#fff;
+}
+
+.enseigne-logo img{
+    width:100%;
+    height:100%;
+    padding:2px;
+    object-fit:contain;
+}
+
+.enseigne-logo-fallback{
+    background:#0c8f35;
+    border-color:#0c8f35;
+    color:#fff;
+    font-size:10px;
+    font-weight:800;
+    line-height:1;
+}
+
+.popup-identite-prix{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:10px;
+}
+
+.popup-identite-prix .enseigne-logo{
+    width:42px;
+    height:42px;
+    border-radius:8px;
+}
+
+.popup-identite-texte{
+    min-width:0;
+    text-align:left;
+}
+
+.popup-enseigne{
+    color:#087a2c;
+    font-size:15px;
+    font-weight:bold;
+    line-height:1.2;
+}
+
+.popup-prix{
+    margin-top:2px;
+    color:var(--ink);
+    font-size:17px;
+    font-weight:800;
 }
 
 .tendance-indicateur{
@@ -1050,6 +1130,13 @@ body{
             target="_blank"
             rel="noopener noreferrer"
         >Signaler un probl&egrave;me</a>
+
+        <a
+            class="data-source-link"
+            href="https://www.openstreetmap.org/copyright"
+            target="_blank"
+            rel="noopener noreferrer"
+        >&copy; contributeurs OpenStreetMap</a>
     </aside>
 
     <main class="map-column">
@@ -1412,12 +1499,93 @@ var markers = [];
 var markersParStation = {};
 var stationsEconomie = [];
 
+var logosEnseignes = [
+    { motifs: ["intermarche", "mousquetaires"], fichier: "intermarche.png" },
+    { motifs: ["leclerc"], fichier: "leclerc.png" },
+    { motifs: ["super u", "systeme u", "station u", "hyper u", "u express", "la station u"], fichier: "systeme-u.png" },
+    { motifs: ["carrefour"], fichier: "carrefour.png" },
+    { motifs: ["total"], fichier: "totalenergies.png" },
+    { motifs: ["avia"], fichier: "avia.png" },
+    { motifs: ["esso"], fichier: "esso.png" },
+    { motifs: ["auchan"], fichier: "auchan.png" },
+    { motifs: ["eni", "agip"], fichier: "eni.png" },
+    { motifs: ["bp"], fichier: "bp.png", exact: true },
+    { motifs: ["elan"], fichier: "elan.svg" },
+    { motifs: ["netto"], fichier: "netto.png" },
+    { motifs: ["dyneff"], fichier: "dyneff.png" },
+    { motifs: ["shell"], fichier: "shell.png" },
+    { motifs: ["dats 24", "dats24"], fichier: "dats24.png" },
+    { motifs: ["casino"], fichier: "casino.png" },
+    { motifs: ["spar"], fichier: "spar.png" },
+    { motifs: ["fulli"], fichier: "fulli.ico" },
+    { motifs: ["monoprix"], fichier: "monoprix.png" },
+    { motifs: ["aldi"], fichier: "aldi.png" },
+    { motifs: ["renault"], fichier: "renault.png" },
+    { motifs: ["rompetrol"], fichier: "rompetrol.png" },
+    { motifs: ["roady"], fichier: "roady.png" },
+    { motifs: ["bi1"], fichier: "bi1.png" },
+    { motifs: ["g20"], fichier: "g20.png" }
+];
+
+function normaliserNomEnseigne(nom) {
+    return String(nom || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+}
+
+function echapperHtml(valeur) {
+    return String(valeur || "").replace(/[&<>"']/g, function(caractere) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;",
+            "'": "&#039;"
+        }[caractere];
+    });
+}
+
+function creerLogoEnseigne(nom) {
+    var nomNormalise = normaliserNomEnseigne(nom);
+    var logo = logosEnseignes.find(function(definition) {
+        return definition.motifs.some(function(motif) {
+            return definition.exact
+                ? nomNormalise === motif
+                : nomNormalise.indexOf(motif) !== -1;
+        });
+    });
+    var libelle = nom || "Station-service";
+
+    if (logo) {
+        return '<span class="enseigne-logo"><img src="/static/brand-logos/'
+            + logo.fichier
+            + '" alt="Logo '
+            + echapperHtml(libelle)
+            + '"></span>';
+    }
+
+    var mots = nomNormalise.split(" ").filter(Boolean);
+    var initiales = mots.length
+        ? (mots[0].charAt(0) + (mots[1] ? mots[1].charAt(0) : "")).toUpperCase()
+        : "ST";
+
+    return '<span class="enseigne-logo enseigne-logo-fallback" title="'
+        + echapperHtml(libelle)
+        + '">'
+        + echapperHtml(initiales)
+        + '</span>';
+}
+
 {% for station in stations %}
 
 {% if station.latitude and station.longitude %}
 
 var stationFavori{{ loop.index }} = {
     id: {{ station.id|tojson }},
+    enseigne: {{ station.enseigne|default("")|tojson }},
     adresse: {{ station.adresse|tojson }},
     cp: {{ station.cp|tojson }},
     ville: {{ station.ville|tojson }},
@@ -1433,8 +1601,12 @@ var stationPartage{{ loop.index }} = {
     ville: {{ station.ville|tojson }}
 };
 
+var nomEnseigne{{ loop.index }} = {{ station.enseigne|default("")|tojson }};
+var logoEnseigne{{ loop.index }} = creerLogoEnseigne(nomEnseigne{{ loop.index }});
+
 stationsEconomie.push({
     id: {{ station.id|tojson }},
+    enseigne: {{ station.enseigne|default("")|tojson }},
     adresse: {{ station.adresse|tojson }},
     ville: {{ station.ville|tojson }},
     latitude: Number({{ station.latitude|tojson }}),
@@ -1449,11 +1621,14 @@ var prixIcon = L.divIcon({
 
     html: `
         <div class="prix-bulle{% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %} indisponible{% endif %}">
+            ${logoEnseigne{{ loop.index }}}
+            <span>
             {% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %}
             Indisponible
             {% else %}
             {{ "%.3f"|format(station.carburant_selectionne|float)|replace(".", ",") }} &euro;
             {% endif %}
+            </span>
             {% if station.tendance_selectionnee and station.carburant_selectionne|float != 0 and station.carburant_selectionne|float != 9.999 %}
             <button
                 type="button"
@@ -1467,8 +1642,8 @@ var prixIcon = L.divIcon({
         </div>
     `,
 
-    iconSize: [92, 36],
-    iconAnchor: [46, 18]
+    iconSize: [112, 36],
+    iconAnchor: [56, 18]
 
 });
 
@@ -1495,13 +1670,21 @@ var marker = L.marker(
         "
     >
 
-        <strong>
-            {% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %}
-            Carburant : Indisponible
-            {% else %}
-            Carburant : {{ "%.3f"|format(station.carburant_selectionne|float)|replace(".", ",") }} &euro;
-            {% endif %}
-        </strong>
+        <div class="popup-identite-prix">
+            ${logoEnseigne{{ loop.index }}}
+            <div class="popup-identite-texte">
+                <div class="popup-enseigne">
+                    ${echapperHtml(nomEnseigne{{ loop.index }} || "Station-service")}
+                </div>
+                <div class="popup-prix">
+                    {% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %}
+                    Indisponible
+                    {% else %}
+                    {{ "%.3f"|format(station.carburant_selectionne|float)|replace(".", ",") }} &euro;
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
         <br><br>
 
@@ -1792,7 +1975,10 @@ function actualiserListeFavoris(favoris) {
             var nom = document.createElement("div");
             nom.className = "favori-nom";
             nom.textContent =
-                station.adresse
+                (station.enseigne
+                    ? station.enseigne + " - "
+                    : "")
+                + station.adresse
                 + " - "
                 + station.cp
                 + " "
@@ -1870,10 +2056,14 @@ var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
 var zoomNavigation = 16;
+var zoomGuidageActif = 18;
 var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
 var capCarte = capInitialCarte;
 var dernierCapUtilisateur = capInitialCarte;
+var dateDernierCapFiable = 0;
+var utilisateurEnMouvement = false;
+var precisionUtilisateur = 20;
 var animationOrientationCarte = null;
 var boutonSuiviCarte = null;
 var latitudeDerniereRecherche = parseFloat(
@@ -2168,7 +2358,9 @@ function recentrerSurUtilisateur() {
             latitudeUtilisateur,
             longitudeUtilisateur
         ],
-        zoomNavigation,
+        navigationActive
+            ? zoomGuidageActif
+            : zoomNavigation,
         {
             animate: true
         }
@@ -2241,9 +2433,17 @@ function demarrerGeolocalisation() {
             longitudeUtilisateur =
     position.coords.longitude;
 
+            precisionUtilisateur = Number.isFinite(
+                Number(position.coords.accuracy)
+            )
+                ? Number(position.coords.accuracy)
+                : 20;
             var capGps = position.coords.heading === null
                 ? Number.NaN
                 : Number(position.coords.heading);
+            var vitesseGps = position.coords.speed === null
+                ? Number.NaN
+                : Number(position.coords.speed);
             var distanceDepuisPositionPrecedente = (
                 latitudePrecedente === null
                 || longitudePrecedente === null
@@ -2256,8 +2456,15 @@ function demarrerGeolocalisation() {
                     longitudeUtilisateur
                 );
 
+            utilisateurEnMouvement =
+                (Number.isFinite(vitesseGps) && vitesseGps >= 1)
+                || distanceDepuisPositionPrecedente >= 0.003;
+
             if (Number.isFinite(capGps) && capGps >= 0) {
                 dernierCapUtilisateur = capGps;
+                if (utilisateurEnMouvement) {
+                    dateDernierCapFiable = Date.now();
+                }
             } else if (distanceDepuisPositionPrecedente >= 0.003) {
                 dernierCapUtilisateur = calculerCapDeplacement(
                     latitudePrecedente,
@@ -2265,6 +2472,7 @@ function demarrerGeolocalisation() {
                     latitudeUtilisateur,
                     longitudeUtilisateur
                 );
+                dateDernierCapFiable = Date.now();
             }
 
             if (suiviCarteActif) {
@@ -2286,6 +2494,7 @@ function demarrerGeolocalisation() {
             actualiserStationsSelonPosition();
             calculerMeilleureStation();
             actualiserGuidageNavigation();
+            verifierEcartItineraire();
 
             if (marqueurUtilisateur) {
 
@@ -2462,12 +2671,25 @@ window.calculerMeilleureStation = function() {
         return;
     }
 
-    var stationsCalculees = stationsEconomie
-        .filter(
-            function(station) {
-                return station.prix > 0 && station.prix !== 9.999;
-            }
-        )
+    var stationsDisponibles = stationsEconomie.filter(
+        function(station) {
+            return station.prix > 0 && station.prix !== 9.999;
+        }
+    );
+
+    if (!stationsDisponibles.length) {
+        return;
+    }
+
+    var prixMoyen = stationsDisponibles.reduce(
+        function(total, station) {
+            return total + station.prix;
+        },
+        0
+    ) / stationsDisponibles.length;
+    var coutPleinReference = reservoir * prixMoyen;
+
+    var stationsCalculees = stationsDisponibles
         .map(
             function(station) {
 
@@ -2483,8 +2705,8 @@ window.calculerMeilleureStation = function() {
                 return Object.assign({}, station, {
                     distanceCalculee: distance,
                     coutTotal:
-                        (reservoir + carburantTrajet)
-                        * station.prix
+                        reservoir * station.prix
+                        + carburantTrajet * prixMoyen
                 });
 
             }
@@ -2494,14 +2716,6 @@ window.calculerMeilleureStation = function() {
         return;
     }
 
-    var stationPlusProche = stationsCalculees.reduce(
-        function(meilleure, station) {
-            return station.distanceCalculee
-                < meilleure.distanceCalculee
-                ? station
-                : meilleure;
-        }
-    );
     var meilleureStation = stationsCalculees.reduce(
         function(meilleure, station) {
             return station.coutTotal < meilleure.coutTotal
@@ -2511,8 +2725,7 @@ window.calculerMeilleureStation = function() {
     );
     var economie = Math.max(
         0,
-        stationPlusProche.coutTotal
-            - meilleureStation.coutTotal
+        coutPleinReference - meilleureStation.coutTotal
     );
     var prixFormate = meilleureStation.prix
         .toLocaleString(
@@ -2540,7 +2753,7 @@ window.calculerMeilleureStation = function() {
 
     titre.textContent =
         "Station la plus \u00e9conomique : "
-        + meilleureStation.ville;
+        + (meilleureStation.enseigne || meilleureStation.ville);
     sousTitre.textContent =
         meilleureStation.adresse
         + " \u00b7 "
@@ -2549,7 +2762,7 @@ window.calculerMeilleureStation = function() {
         + distanceFormatee
         + " km \u00b7 \u00c9conomie estim\u00e9e "
         + economieFormatee
-        + " \u20ac";
+        + " \u20ac par rapport au prix moyen local";
     if (!routeNavigation && !navigationActive) {
         boutonItineraire.textContent = "Itin\u00e9raire";
         boutonItineraire.onclick = function() {
@@ -2645,6 +2858,11 @@ var routeNavigation = null;
 var etapesNavigation = [];
 var indexEtapeNavigation = 0;
 var navigationActive = false;
+var destinationNavigation = null;
+var coordonneesRouteNavigation = [];
+var positionsHorsItineraire = 0;
+var derniereRelanceItineraire = 0;
+var relanceItineraireEnCours = false;
 
 function afficherInfoItineraire(message) {
 
@@ -2675,7 +2893,7 @@ function formaterDuree(minutes) {
 
 }
 
-function dessinerItineraire(coordonnees) {
+function dessinerItineraire(coordonnees, afficherApercu) {
 
     if (itineraireLayer) {
 
@@ -2700,16 +2918,18 @@ function dessinerItineraire(coordonnees) {
         }
     ).addTo(map);
 
-    suiviCarteActif = false;
-    actualiserBoutonSuiviCarte();
-    capCarte = 0;
-    map.setBearing(0);
-    map.fitBounds(
-        itineraireLayer.getBounds(),
-        {
-            padding: [60, 60]
-        }
-    );
+    if (afficherApercu) {
+        suiviCarteActif = false;
+        actualiserBoutonSuiviCarte();
+        capCarte = 0;
+        map.setBearing(0);
+        map.fitBounds(
+            itineraireLayer.getBounds(),
+            {
+                padding: [60, 60]
+            }
+        );
+    }
 
 }
 
@@ -2829,7 +3049,99 @@ function actualiserGuidageNavigation() {
 
 }
 
-window.demarrerNavigation = function() {
+function distanceItineraireMetres() {
+
+    if (!coordonneesRouteNavigation.length) {
+        return Number.POSITIVE_INFINITY;
+    }
+
+    var conversionLongitude =
+        111320 * Math.cos(latitudeUtilisateur * Math.PI / 180);
+    var conversionLatitude = 110540;
+    var distanceMinimum = Number.POSITIVE_INFINITY;
+
+    for (var index = 0; index < coordonneesRouteNavigation.length - 1; index += 1) {
+        var depart = coordonneesRouteNavigation[index];
+        var arrivee = coordonneesRouteNavigation[index + 1];
+        var x1 = (depart[0] - longitudeUtilisateur) * conversionLongitude;
+        var y1 = (depart[1] - latitudeUtilisateur) * conversionLatitude;
+        var x2 = (arrivee[0] - longitudeUtilisateur) * conversionLongitude;
+        var y2 = (arrivee[1] - latitudeUtilisateur) * conversionLatitude;
+        var dx = x2 - x1;
+        var dy = y2 - y1;
+        var longueurCarree = dx * dx + dy * dy;
+        var progression = longueurCarree === 0
+            ? 0
+            : Math.max(
+                0,
+                Math.min(1, -(x1 * dx + y1 * dy) / longueurCarree)
+            );
+        var xProche = x1 + progression * dx;
+        var yProche = y1 + progression * dy;
+        distanceMinimum = Math.min(
+            distanceMinimum,
+            Math.hypot(xProche, yProche)
+        );
+    }
+
+    return distanceMinimum;
+
+}
+
+function verifierEcartItineraire() {
+
+    if (
+        !navigationActive
+        || !destinationNavigation
+        || relanceItineraireEnCours
+        || latitudeUtilisateur === null
+        || longitudeUtilisateur === null
+    ) {
+        return;
+    }
+
+    var distanceDestination = distanceDeplacementKm(
+        latitudeUtilisateur,
+        longitudeUtilisateur,
+        destinationNavigation.latitude,
+        destinationNavigation.longitude
+    ) * 1000;
+
+    if (distanceDestination < 40) {
+        positionsHorsItineraire = 0;
+        return;
+    }
+
+    var seuilEcart = Math.max(75, precisionUtilisateur * 1.5);
+    if (distanceItineraireMetres() > seuilEcart) {
+        positionsHorsItineraire += 1;
+    } else {
+        positionsHorsItineraire = 0;
+    }
+
+    if (
+        positionsHorsItineraire < 3
+        || Date.now() - derniereRelanceItineraire < 15000
+    ) {
+        return;
+    }
+
+    positionsHorsItineraire = 0;
+    derniereRelanceItineraire = Date.now();
+    relanceItineraireEnCours = true;
+    tracerItineraire(
+        destinationNavigation.latitude,
+        destinationNavigation.longitude,
+        true
+    ).finally(
+        function() {
+            relanceItineraireEnCours = false;
+        }
+    );
+
+}
+
+window.demarrerNavigation = async function() {
 
     if (!routeNavigation) {
         return;
@@ -2849,11 +3161,25 @@ window.demarrerNavigation = function() {
     recentrerSurUtilisateur();
     actualiserGuidageNavigation();
 
+    if (destinationNavigation && !relanceItineraireEnCours) {
+        relanceItineraireEnCours = true;
+        try {
+            await tracerItineraire(
+                destinationNavigation.latitude,
+                destinationNavigation.longitude,
+                true
+            );
+        } finally {
+            relanceItineraireEnCours = false;
+        }
+    }
+
 };
 
 window.arreterNavigation = function() {
 
     navigationActive = false;
+    positionsHorsItineraire = 0;
     document.getElementById("navigation-panel").hidden = true;
 
     var bouton = document.getElementById("economy-route-button");
@@ -2866,8 +3192,11 @@ window.arreterNavigation = function() {
 
 async function tracerItineraire(
     latitudeStation,
-    longitudeStation
+    longitudeStation,
+    maintenirNavigation
 ) {
+
+    maintenirNavigation = Boolean(maintenirNavigation);
 
     if (
         latitudeUtilisateur === null
@@ -2884,18 +3213,27 @@ async function tracerItineraire(
     }
 
     afficherInfoItineraire(
-        "Calcul de l'itineraire..."
+        maintenirNavigation
+            ? "Adaptation de l'itineraire..."
+            : "Calcul de l'itineraire..."
     );
 
-    arreterNavigation();
-    routeNavigation = null;
-    etapesNavigation = [];
-    indexEtapeNavigation = 0;
+    if (maintenirNavigation) {
+        navigationActive = true;
+        document.getElementById("navigation-panel").hidden = false;
+        document.getElementById("navigation-instruction").textContent =
+            "Calcul d'un nouvel itin\u00e9raire";
+    } else {
+        arreterNavigation();
+        routeNavigation = null;
+        etapesNavigation = [];
+        indexEtapeNavigation = 0;
+    }
 
     var boutonItineraire = document.getElementById(
         "economy-route-button"
     );
-    if (boutonItineraire) {
+    if (boutonItineraire && !maintenirNavigation) {
         boutonItineraire.textContent = "Calcul...";
         boutonItineraire.disabled = true;
     }
@@ -2909,7 +3247,18 @@ async function tracerItineraire(
         + longitudeStation
         + ","
         + latitudeStation
-        + "?overview=full&geometries=geojson&steps=true";
+        + "?overview=full&geometries=geojson&steps=true&continue_straight=true";
+
+    var capRecent =
+        utilisateurEnMouvement
+        && Date.now() - dateDernierCapFiable < 10000
+        && Number.isFinite(dernierCapUtilisateur);
+
+    if (capRecent) {
+        url += "&bearings="
+            + Math.round(dernierCapUtilisateur)
+            + ",60;";
+    }
 
     try {
 
@@ -2931,10 +3280,16 @@ async function tracerItineraire(
         }
 
         dessinerItineraire(
-            route.geometry.coordinates
+            route.geometry.coordinates,
+            !maintenirNavigation
         );
 
         routeNavigation = route;
+        destinationNavigation = {
+            latitude: latitudeStation,
+            longitude: longitudeStation
+        };
+        coordonneesRouteNavigation = route.geometry.coordinates;
         etapesNavigation = (route.legs || []).reduce(
             function(toutesLesEtapes, trajet) {
                 return toutesLesEtapes.concat(trajet.steps || []);
@@ -2954,18 +3309,29 @@ async function tracerItineraire(
             + formaterDuree(dureeMinutes)
         );
 
-        if (boutonItineraire) {
+        if (boutonItineraire && maintenirNavigation) {
+            boutonItineraire.disabled = false;
+            boutonItineraire.textContent = "Arr\u00eater";
+            boutonItineraire.onclick = arreterNavigation;
+        } else if (boutonItineraire) {
             boutonItineraire.disabled = false;
             boutonItineraire.textContent = "D\u00e9marrer";
             boutonItineraire.onclick = demarrerNavigation;
             boutonItineraire.hidden = false;
         }
 
+        if (maintenirNavigation) {
+            suiviCarteActif = true;
+            actualiserBoutonSuiviCarte();
+            recentrerSurUtilisateur();
+            actualiserGuidageNavigation();
+        }
+
         map.closePopup();
 
     } catch (erreur) {
 
-        if (boutonItineraire) {
+        if (boutonItineraire && !maintenirNavigation) {
             boutonItineraire.disabled = false;
             boutonItineraire.textContent = "Itin\u00e9raire";
             boutonItineraire.onclick = function() {
@@ -2977,8 +3343,14 @@ async function tracerItineraire(
         }
 
         afficherInfoItineraire(
-            "Impossible de calculer l'itineraire pour le moment."
+            maintenirNavigation
+                ? "Guidage conserv\u00e9, nouveau calcul indisponible."
+                : "Impossible de calculer l'itineraire pour le moment."
         );
+
+        if (maintenirNavigation) {
+            actualiserGuidageNavigation();
+        }
 
     }
 

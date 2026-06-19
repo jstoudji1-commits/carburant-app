@@ -1,0 +1,47 @@
+name: Verification coordonnees et enseignes
+
+on:
+  schedule:
+    - cron: "20 3 * * 0"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - verify_station_coordinates.py
+      - .github/workflows/verify-station-coordinates.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: station-data
+  cancel-in-progress: false
+
+jobs:
+  verify-stations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Recuperer le projet
+        uses: actions/checkout@v6
+
+      - name: Installer Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Verifier les coordonnees et les enseignes
+        run: python verify_station_coordinates.py
+
+      - name: Publier les corrections
+        run: |
+          if [ -n "$(git status --porcelain -- stations.csv stations_enrichment.json stations_coordinates_report.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add stations.csv stations_enrichment.json stations_coordinates_report.json
+            git commit -m "Verification automatique des coordonnees stations"
+            git pull --rebase
+            git push
+          fi
