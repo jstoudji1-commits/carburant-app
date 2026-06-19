@@ -3477,9 +3477,17 @@ window.calculerMeilleureStation = function() {
         }
     );
 
+    var nomStationEconomique =
+        meilleureStation.enseigne || "Station-service";
+    var villeStationEconomique = meilleureStation.ville
+        && meilleureStation.ville !== nomStationEconomique
+        ? " \u00b7 " + meilleureStation.ville
+        : "";
+
     titre.textContent =
         "Station la plus \u00e9conomique : "
-        + (meilleureStation.enseigne || meilleureStation.ville);
+        + nomStationEconomique
+        + villeStationEconomique;
     sousTitre.textContent =
         meilleureStation.adresse
         + " \u00b7 "
