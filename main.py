@@ -462,34 +462,22 @@ def page_web(
 
     nombre_stations = len(stations)
 
-    prix_valides = [
+    stations_avec_prix = []
 
-        float(
-            station.get(
-                carburant,
-                ""
-            )
-        )
+    for station in stations:
+        try:
+            prix = float(station.get(carburant, ""))
+            if prix not in (0, 9.999):
+                stations_avec_prix.append((prix, station))
+        except (TypeError, ValueError):
+            continue
 
-        for station in stations
-
-        if station.get(
-            carburant,
-            ""
-        ).strip()
-        and float(station.get(carburant, "")) not in (0, 9.999)
-
-    ]
-
-    prix_min = (
-
-        min(prix_valides)
-
-        if prix_valides
-
+    station_prix_min = (
+        min(stations_avec_prix, key=lambda element: element[0])
+        if stations_avec_prix
         else None
-
     )
+    prix_min = station_prix_min[0] if station_prix_min else None
 
     return templates.TemplateResponse(
 
@@ -504,6 +492,8 @@ def page_web(
             "nombre_stations": nombre_stations,
 
             "prix_min": prix_min,
+
+            "station_prix_min": station_prix_min[1] if station_prix_min else None,
 
             "carburant": carburant,
 

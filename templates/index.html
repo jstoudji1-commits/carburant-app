@@ -181,7 +181,8 @@ body{
 .stat-value{
     display:flex;
     align-items:flex-start;
-    justify-content:flex-start;
+    justify-content:center;
+    width:100%;
     gap:4px;
     font-size:50px;
     line-height:0.95;
@@ -202,6 +203,54 @@ body{
 
 .best-price{
     color:#35ec68;
+}
+
+.stat-price-detail{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:11px;
+}
+
+.stat-station-min{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    color:white;
+    font-size:14px;
+    line-height:1.2;
+    text-align:center;
+    padding:3px 5px;
+    border:0;
+    border-radius:6px;
+    background:transparent;
+    font-family:inherit;
+    cursor:pointer;
+    transition:background-color 160ms ease, transform 160ms ease;
+}
+
+.stat-station-min:hover,
+.stat-station-min:focus-visible{
+    background:rgba(255,255,255,0.13);
+    outline:2px solid rgba(255,255,255,0.72);
+    outline-offset:2px;
+}
+
+.stat-station-min:active{
+    transform:scale(0.98);
+}
+
+.stat-station-min .enseigne-logo{
+    width:23px;
+    height:23px;
+    border-radius:5px;
+}
+
+.stat-station-min strong{
+    font-weight:800;
 }
 
 .price-pill{
@@ -1327,12 +1376,32 @@ body{
                     <div class="stat-icon">Prix</div>
                     <span class="price-pill">{{ carburant|upper }}</span>
                 </div>
-                <div class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}">
-                    {% if prix_min is not none %}
-                    <span>{{ "%.3f"|format(prix_min)|replace(".", ",") }}</span>
-                    <span class="stat-currency">&euro;</span>
-                    {% else %}
-                    <span>Indisponible</span>
+                <div class="stat-price-detail">
+                    <div class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}">
+                        {% if prix_min is not none %}
+                        <span>{{ "%.3f"|format(prix_min)|replace(".", ",") }}</span>
+                        <span class="stat-currency">&euro;</span>
+                        {% else %}
+                        <span>Indisponible</span>
+                        {% endif %}
+                    </div>
+                    {% if station_prix_min %}
+                    <button
+                        type="button"
+                        class="stat-station-min"
+                        data-station-id="{{ station_prix_min.id|e }}"
+                        onclick="afficherStationPrixMinimum(event)"
+                        aria-label="Afficher {{ station_prix_min.enseigne|default('la station-service', true)|e }} &agrave; {{ station_prix_min.ville|e }} sur la carte"
+                    >
+                        <span
+                            id="stat-station-logo"
+                            data-enseigne="{{ station_prix_min.enseigne|default('')|e }}"
+                        ></span>
+                        <span>
+                            <strong>{{ station_prix_min.enseigne|default('Station-service', true) }}</strong>
+                            {% if station_prix_min.ville %}&middot; {{ station_prix_min.ville }}{% endif %}
+                        </span>
+                    </button>
                     {% endif %}
                 </div>
             </div>
@@ -2078,6 +2147,14 @@ function creerLogoEnseigne(nom, contexte) {
         + '"><img src="/static/favicon.png" alt="Station sans logo identifi&eacute;"></span>';
 }
 
+var logoStationPrixMinimum = document.getElementById("stat-station-logo");
+if (logoStationPrixMinimum) {
+    logoStationPrixMinimum.innerHTML = creerLogoEnseigne(
+        logoStationPrixMinimum.dataset.enseigne,
+        "popup"
+    );
+}
+
 {% for station in stations %}
 
 {% if station.latitude and station.longitude %}
@@ -2280,6 +2357,33 @@ markersParStation[{{ station.id|tojson }}] = marker;
 {% endif %}
 
 {% endfor %}
+
+function afficherStationPrixMinimum(event) {
+    var bouton = event.currentTarget;
+    var markerStation = markersParStation[bouton.dataset.stationId];
+
+    if (!markerStation) {
+        return;
+    }
+
+    suiviCarteActif = false;
+    interrompreOrientationAutomatique();
+    var positionStation = markerStation.getLatLng();
+
+    map.setView(
+        positionStation,
+        Math.max(map.getZoom(), 16),
+        {
+            animate: true
+        }
+    );
+    markerStation.openPopup();
+
+    document.querySelector(".map-stage").scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+}
 
 var favorisStationsCle = "optiplein-favoris";
 var nombreMaximumFavoris = 3;
