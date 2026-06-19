@@ -528,6 +528,9 @@ body{
 }
 
 .prix-marker{
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
     background:transparent;
     border:none;
 }
@@ -575,13 +578,21 @@ body{
     object-fit:contain;
 }
 
-.enseigne-logo-fallback{
-    background:#0c8f35;
-    border-color:#0c8f35;
-    color:#fff;
-    font-size:10px;
-    font-weight:800;
-    line-height:1;
+.enseigne-logo-large{
+    width:50px;
+}
+
+.enseigne-logo-optiplein{
+    border-color:#b9d9bf;
+    background:#f4fbf5;
+}
+
+.enseigne-logo-optiplein img{
+    width:135%;
+    height:135%;
+    max-width:none;
+    padding:0;
+    object-fit:contain;
 }
 
 .popup-identite-prix{
@@ -596,6 +607,10 @@ body{
     width:42px;
     height:42px;
     border-radius:8px;
+}
+
+.popup-identite-prix .enseigne-logo-large{
+    width:90px;
 }
 
 .popup-identite-texte{
@@ -1472,6 +1487,7 @@ var map = L.map(
     {
         rotate: true,
         rotateControl: false,
+        touchRotate: true,
         bearing: capInitialCarte
     }
 ).setView(
@@ -1500,7 +1516,7 @@ var markersParStation = {};
 var stationsEconomie = [];
 
 var logosEnseignes = [
-    { motifs: ["intermarche", "mousquetaires"], fichier: "intermarche.png" },
+    { motifs: ["intermarche", "mousquetaires"], fichier: "intermarche-hd.png", large: true },
     { motifs: ["leclerc"], fichier: "leclerc.png" },
     { motifs: ["super u", "systeme u", "station u", "hyper u", "u express", "la station u"], fichier: "systeme-u.png" },
     { motifs: ["carrefour"], fichier: "carrefour.png" },
@@ -1560,23 +1576,18 @@ function creerLogoEnseigne(nom) {
     var libelle = nom || "Station-service";
 
     if (logo) {
-        return '<span class="enseigne-logo"><img src="/static/brand-logos/'
+        return '<span class="enseigne-logo'
+            + (logo.large ? ' enseigne-logo-large' : '')
+            + '"><img src="/static/brand-logos/'
             + logo.fichier
             + '" alt="Logo '
             + echapperHtml(libelle)
             + '"></span>';
     }
 
-    var mots = nomNormalise.split(" ").filter(Boolean);
-    var initiales = mots.length
-        ? (mots[0].charAt(0) + (mots[1] ? mots[1].charAt(0) : "")).toUpperCase()
-        : "ST";
-
-    return '<span class="enseigne-logo enseigne-logo-fallback" title="'
+    return '<span class="enseigne-logo enseigne-logo-optiplein" title="'
         + echapperHtml(libelle)
-        + '">'
-        + echapperHtml(initiales)
-        + '</span>';
+        + '"><img src="/static/favicon.png" alt="Station sans logo identifi&eacute;"></span>';
 }
 
 {% for station in stations %}
@@ -1642,8 +1653,8 @@ var prixIcon = L.divIcon({
         </div>
     `,
 
-    iconSize: [112, 36],
-    iconAnchor: [56, 18]
+    iconSize: [132, 36],
+    iconAnchor: [66, 18]
 
 });
 
@@ -2059,6 +2070,7 @@ var zoomNavigation = 16;
 var zoomGuidageActif = 18;
 var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
+var orientationAutomatiqueActive = true;
 var capCarte = capInitialCarte;
 var dernierCapUtilisateur = capInitialCarte;
 var dateDernierCapFiable = 0;
@@ -2107,6 +2119,8 @@ function calculerCapDeplacement(
 function orienterCarte(capCible) {
 
     if (
+        !orientationAutomatiqueActive
+        ||
         !Number.isFinite(capCible)
         || typeof map.setBearing !== "function"
     ) {
@@ -2142,6 +2156,8 @@ function orienterCarte(capCible) {
         if (progression < 1) {
             animationOrientationCarte =
                 requestAnimationFrame(animerCap);
+        } else {
+            animationOrientationCarte = null;
         }
 
     }
@@ -2159,11 +2175,13 @@ function actualiserBoutonSuiviCarte() {
 
     boutonSuiviCarte.classList.toggle(
         "active",
-        suiviCarteActif
+        suiviCarteActif && orientationAutomatiqueActive
     );
-    boutonSuiviCarte.title = suiviCarteActif
+    boutonSuiviCarte.title = (
+        suiviCarteActif && orientationAutomatiqueActive
+    )
         ? "Suivi GPS actif"
-        : "Reprendre le suivi GPS";
+        : "Reprendre le suivi et l'orientation GPS";
     boutonSuiviCarte.setAttribute(
         "aria-label",
         boutonSuiviCarte.title
@@ -2350,6 +2368,7 @@ function recentrerSurUtilisateur() {
     }
 
     suiviCarteActif = true;
+    orientationAutomatiqueActive = true;
     actualiserBoutonSuiviCarte();
     orienterCarte(dernierCapUtilisateur);
 
@@ -2403,11 +2422,71 @@ var SuiviCarteControl = L.Control.extend({
 
 new SuiviCarteControl().addTo(map);
 
+function interrompreOrientationAutomatique() {
+
+    orientationAutomatiqueActive = false;
+
+    if (animationOrientationCarte) {
+        cancelAnimationFrame(animationOrientationCarte);
+        animationOrientationCarte = null;
+    }
+
+    if (typeof map.getBearing === "function") {
+        capCarte = map.getBearing();
+    }
+
+    actualiserBoutonSuiviCarte();
+
+}
+
+var conteneurCarte = map.getContainer();
+
+conteneurCarte.addEventListener(
+    "touchstart",
+    function(event) {
+        if (event.touches && event.touches.length === 2) {
+            interrompreOrientationAutomatique();
+        }
+    },
+    {
+        capture: true,
+        passive: true
+    }
+);
+
+document.addEventListener(
+    "touchend",
+    function() {
+        if (
+            !orientationAutomatiqueActive
+            && typeof map.getBearing === "function"
+        ) {
+            capCarte = map.getBearing();
+            sessionStorage.setItem(
+                "optiplein-cap-carte",
+                String(capCarte)
+            );
+        }
+    },
+    {
+        passive: true
+    }
+);
+
+map.on(
+    "rotate",
+    function() {
+        if (typeof map.getBearing === "function") {
+            capCarte = map.getBearing();
+        }
+    }
+);
+
 map.on(
     "dragstart",
     function() {
         suiviCarteActif = false;
-        actualiserBoutonSuiviCarte();
+        interrompreOrientationAutomatique();
     }
 );
 
@@ -2475,7 +2554,10 @@ function demarrerGeolocalisation() {
                 dateDernierCapFiable = Date.now();
             }
 
-            if (suiviCarteActif) {
+            if (
+                suiviCarteActif
+                && orientationAutomatiqueActive
+            ) {
                 orienterCarte(dernierCapUtilisateur);
             }
 
@@ -2920,6 +3002,7 @@ function dessinerItineraire(coordonnees, afficherApercu) {
 
     if (afficherApercu) {
         suiviCarteActif = false;
+        orientationAutomatiqueActive = false;
         actualiserBoutonSuiviCarte();
         capCarte = 0;
         map.setBearing(0);
@@ -3149,6 +3232,7 @@ window.demarrerNavigation = async function() {
 
     navigationActive = true;
     suiviCarteActif = true;
+    orientationAutomatiqueActive = true;
     actualiserBoutonSuiviCarte();
     document.getElementById("navigation-panel").hidden = false;
 
