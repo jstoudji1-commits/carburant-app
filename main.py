@@ -230,6 +230,16 @@ def home():
         url="/web"
     )
 
+
+@app.get("/confidentialite")
+def confidentialite(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="confidentialite.html",
+        context={}
+    )
+
 @app.get("/stations")
 def get_stations():
 

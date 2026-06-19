@@ -1,0 +1,39 @@
+Publication d'OptiPlein sur Google Play
+
+1. Creer le compte developpeur
+- Ouvrir https://play.google.com/console/signup
+- Terminer la verification d'identite et les informations de paiement.
+
+2. Creer l'application
+- Nom : OptiPlein
+- Langue par defaut : francais (France)
+- Type : application
+- Gratuite
+
+3. Completer la fiche
+- Utiliser fiche-fr.txt pour les textes.
+- Categorie suggeree : Auto et vehicules.
+- Ajouter l'icone 512 x 512, une image de presentation 1024 x 500 et des captures de telephone.
+- URL de confidentialite : https://carburant-app-v1kt.onrender.com/confidentialite
+
+4. Completer les declarations
+- Securite des donnees : s'aider de declaration-donnees.txt et verifier chaque reponse.
+- Acces a l'application : aucune connexion requise.
+- Public cible : application destinee aux conducteurs, pas aux enfants.
+- Publicite : non, tant qu'aucun module publicitaire n'est ajoute.
+- Autorisation de localisation : expliquer la recherche de stations et le guidage.
+
+5. Creer et sauvegarder la cle d'envoi
+- Dans Android Studio : Build > Generate Signed Bundle / APK.
+- Choisir Android App Bundle puis Create new.
+- Conserver le fichier de cle et ses mots de passe hors du projet et dans une sauvegarde sure.
+- Ne jamais envoyer la cle sur GitHub.
+
+6. Generer puis envoyer le paquet signe
+- Format : Android App Bundle (.aab).
+- Premier versionCode : 1.
+- Activer Play App Signing lors de la premiere publication.
+- Selon le type et l'anciennete du compte, Play Console peut imposer une phase de test avant la production.
+
+Paquet de controle non signe genere localement
+android/app/build/outputs/bundle/release/app-release.aab

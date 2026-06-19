@@ -1,0 +1,19 @@
+Guide de saisie de la section Securite des donnees Google Play
+
+Localisation precise
+- Finalites : fonctionnalites de l'application et personnalisation de l'experience.
+- Traitement : recherche des stations, calcul des distances et des itineraires.
+- Partage possible avec les prestataires techniques de cartographie, d'itineraire et d'hebergement.
+- Collecte facultative : oui, l'utilisateur peut refuser l'autorisation GPS.
+- Chiffrement en transit : oui, via HTTPS.
+
+Adresse e-mail, uniquement si saisie dans un signalement
+- Finalite : communication avec le developpeur et assistance.
+- Collecte facultative : oui.
+- Chiffrement en transit : oui, via HTTPS.
+
+Donnees du vehicule
+- Nom, reservoir et consommation conserves localement sur l'appareil.
+- Ne pas les declarer comme collectees tant qu'elles ne sont pas transmises au serveur.
+
+Verifier ces reponses dans Play Console avant publication.
