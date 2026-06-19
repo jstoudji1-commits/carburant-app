@@ -519,41 +519,38 @@ body{
 }
 
 .prix-bulle{
-    min-width:120px;
+    min-width:88px;
     position:relative;
     background:white;
-    border:2px solid #149f38;
-    border-radius:10px;
-    padding:8px 13px;
+    border:1.5px solid #149f38;
+    border-radius:8px;
+    padding:6px 9px;
     color:var(--ink);
-    font-size:22px;
+    font-size:17px;
     font-weight:bold;
-    text-align:right;
+    text-align:center;
     white-space:nowrap;
-    box-shadow:0 8px 18px rgba(16,37,54,0.20);
+    box-shadow:0 5px 12px rgba(16,37,54,0.18);
 }
 
-.prix-bulle span{
-    display:block;
-    color:#04872e;
-    font-size:15px;
-    line-height:1.1;
+.prix-bulle.indisponible{
+    font-size:14px;
 }
 
 .tendance-indicateur{
     position:absolute;
-    top:-14px;
-    right:-14px;
-    width:32px;
-    height:32px;
+    top:-11px;
+    right:-11px;
+    width:25px;
+    height:25px;
     display:flex;
     align-items:center;
     justify-content:center;
     padding:0;
-    border:3px solid white;
+    border:2px solid white;
     border-radius:50%;
     color:white;
-    font-size:20px;
+    font-size:16px;
     font-weight:bold;
     line-height:1;
     cursor:pointer;
@@ -964,9 +961,13 @@ body{
             <div class="stat-row">
                 <div class="stat-icon">Prix</div>
                 <div>
-                    <p class="stat-label">Prix le plus bas</p>
+                    <p class="stat-label">Prix le plus bas autour de vous</p>
                     <div class="stat-value best-price">
+                        {% if prix_min is not none %}
                         {{ "%.3f"|format(prix_min)|replace(".", ",") }} &euro;
+                        {% else %}
+                        Indisponible
+                        {% endif %}
                         <span class="price-pill">{{ carburant|upper }}</span>
                     </div>
                 </div>
@@ -1036,7 +1037,10 @@ body{
         ></div>
 
         <div class="update-card">
-            <span>Derniere mise a jour : {{ texte_verification }}</span>
+            <span>
+                Derni&egrave;re mise &agrave; jour :
+                <span id="update-age">{{ texte_verification }}</span>
+            </span>
             <span class="update-dot"></span>
         </div>
 
@@ -1116,6 +1120,67 @@ body{
 ></p>
 
 <script>
+
+var dateDerniereMiseAJour = {% if date_verification %}new Date({{ date_verification|tojson }}){% else %}null{% endif %};
+
+function texteAgeMiseAJour() {
+
+    if (!dateDerniereMiseAJour || Number.isNaN(dateDerniereMiseAJour.getTime())) {
+        return "v\u00e9rification en attente";
+    }
+
+    var secondes = Math.max(
+        0,
+        Math.floor((Date.now() - dateDerniereMiseAJour.getTime()) / 1000)
+    );
+
+    if (secondes < 60) {
+        return "v\u00e9rifi\u00e9 il y a "
+            + secondes
+            + (secondes === 1 ? " seconde" : " secondes");
+    }
+
+    var minutes = Math.floor(secondes / 60);
+    return "v\u00e9rifi\u00e9 il y a "
+        + minutes
+        + (minutes === 1 ? " minute" : " minutes");
+
+}
+
+function actualiserCompteurMiseAJour() {
+
+    var compteur = document.getElementById("update-age");
+    if (compteur) {
+        compteur.textContent = texteAgeMiseAJour();
+    }
+
+}
+
+async function synchroniserDateMiseAJour() {
+
+    try {
+        var reponse = await fetch(
+            "/api/derniere-mise-a-jour",
+            { cache: "no-store" }
+        );
+        if (!reponse.ok) {
+            return;
+        }
+
+        var donnees = await reponse.json();
+        if (donnees.updated_at) {
+            dateDerniereMiseAJour = new Date(donnees.updated_at);
+            actualiserCompteurMiseAJour();
+        }
+    } catch (erreur) {
+        console.log("Synchronisation de la mise a jour indisponible");
+    }
+
+}
+
+actualiserCompteurMiseAJour();
+setInterval(actualiserCompteurMiseAJour, 1000);
+setInterval(synchroniserDateMiseAJour, 30000);
 
 window.fermerPanneauVehicule = function() {
 
@@ -1215,17 +1280,21 @@ window.partagerPrixStation = async function(event, station) {
         event.stopPropagation();
     }
 
-    var texte =
-        station.carburant
-        + " \u00e0 "
-        + Number(station.prix).toLocaleString(
+    var prixNombre = Number(station.prix);
+    var prixPartage = prixNombre === 0 || prixNombre === 9.999
+        ? "indisponible"
+        : prixNombre.toLocaleString(
             "fr-FR",
             {
                 minimumFractionDigits: 3,
                 maximumFractionDigits: 3
             }
-        )
-        + " \u20ac - "
+        ) + " \u20ac";
+    var texte =
+        station.carburant
+        + " \u00e0 "
+        + prixPartage
+        + " - "
         + station.adresse
         + ", "
         + station.cp
@@ -1291,14 +1360,39 @@ window.partagerPrixStation = async function(event, station) {
 // Creation de la carte
 // ========================
 
+var parametresPosition = new URLSearchParams(
+    window.location.search
+);
+var latitudeInitialeCarte = parseFloat(
+    parametresPosition.get("latitude")
+);
+var longitudeInitialeCarte = parseFloat(
+    parametresPosition.get("longitude")
+);
+var positionInitialeCarteDisponible =
+    Number.isFinite(latitudeInitialeCarte)
+    && Number.isFinite(longitudeInitialeCarte);
+var capInitialCarte = positionInitialeCarteDisponible
+    ? Number(sessionStorage.getItem("optiplein-cap-carte"))
+    : 0;
+
+if (!Number.isFinite(capInitialCarte)) {
+    capInitialCarte = 0;
+}
+
 var map = L.map(
     "map",
     {
         rotate: true,
         rotateControl: false,
-        bearing: 0
+        bearing: capInitialCarte
     }
-).setView([46.6, 2.4], 6);
+).setView(
+    positionInitialeCarteDisponible
+        ? [latitudeInitialeCarte, longitudeInitialeCarte]
+        : [46.6, 2.4],
+    positionInitialeCarteDisponible ? 16 : 6
+);
 
 L.tileLayer(
 
@@ -1354,10 +1448,13 @@ var prixIcon = L.divIcon({
     className: "prix-marker",
 
     html: `
-        <div class="prix-bulle">
+        <div class="prix-bulle{% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %} indisponible{% endif %}">
+            {% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %}
+            Indisponible
+            {% else %}
             {{ "%.3f"|format(station.carburant_selectionne|float)|replace(".", ",") }} &euro;
-            <span>{{ carburant|upper }}</span>
-            {% if station.tendance_selectionnee %}
+            {% endif %}
+            {% if station.tendance_selectionnee and station.carburant_selectionne|float != 0 and station.carburant_selectionne|float != 9.999 %}
             <button
                 type="button"
                 class="tendance-indicateur {{ station.tendance_selectionnee }}"
@@ -1370,8 +1467,8 @@ var prixIcon = L.divIcon({
         </div>
     `,
 
-    iconSize: [120, 62],
-    iconAnchor: [60, 31]
+    iconSize: [92, 36],
+    iconAnchor: [46, 18]
 
 });
 
@@ -1399,7 +1496,11 @@ var marker = L.marker(
     >
 
         <strong>
+            {% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %}
+            Carburant : Indisponible
+            {% else %}
             Carburant : {{ "%.3f"|format(station.carburant_selectionne|float)|replace(".", ",") }} &euro;
+            {% endif %}
         </strong>
 
         <br><br>
@@ -1744,7 +1845,7 @@ function actualiserListeFavoris(favoris) {
 // Zoom automatique
 // ========================
 
-if (markers.length > 0) {
+if (markers.length > 0 && !positionInitialeCarteDisponible) {
 
     var group = L.featureGroup(markers);
 
@@ -1769,15 +1870,12 @@ var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
 var zoomNavigation = 16;
-var premierCentrageUtilisateur = true;
+var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
-var capCarte = 0;
-var dernierCapUtilisateur = 0;
+var capCarte = capInitialCarte;
+var dernierCapUtilisateur = capInitialCarte;
 var animationOrientationCarte = null;
 var boutonSuiviCarte = null;
-var parametresPosition = new URLSearchParams(
-    window.location.search
-);
 var latitudeDerniereRecherche = parseFloat(
     parametresPosition.get("latitude")
 );
@@ -1997,6 +2095,10 @@ function actualiserStationsSelonPosition() {
 
     }
 
+    if (navigationActive) {
+        return;
+    }
+
     var positionInitialeManquante =
         Number.isNaN(latitudeDerniereRecherche)
         || Number.isNaN(longitudeDerniereRecherche);
@@ -2037,6 +2139,10 @@ function actualiserStationsSelonPosition() {
 
     actualisationStationsEnCours = true;
     derniereActualisationStations = maintenant;
+    sessionStorage.setItem(
+        "optiplein-cap-carte",
+        String(capCarte)
+    );
     formulaire.submit();
 
 }
@@ -2135,7 +2241,9 @@ function demarrerGeolocalisation() {
             longitudeUtilisateur =
     position.coords.longitude;
 
-            var capGps = Number(position.coords.heading);
+            var capGps = position.coords.heading === null
+                ? Number.NaN
+                : Number(position.coords.heading);
             var distanceDepuisPositionPrecedente = (
                 latitudePrecedente === null
                 || longitudePrecedente === null
@@ -2357,7 +2465,7 @@ window.calculerMeilleureStation = function() {
     var stationsCalculees = stationsEconomie
         .filter(
             function(station) {
-                return station.prix > 0;
+                return station.prix > 0 && station.prix !== 9.999;
             }
         )
         .map(

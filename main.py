@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager, suppress
 import logging
 import math
 from update_data import (
+    date_derniere_mise_a_jour,
     mettre_a_jour_stations,
     texte_derniere_mise_a_jour,
 )
@@ -160,6 +161,20 @@ def get_stations():
     return stations
 
 
+@app.get("/api/derniere-mise-a-jour")
+def get_derniere_mise_a_jour():
+
+    date_mise_a_jour = date_derniere_mise_a_jour()
+
+    return {
+        "updated_at": (
+            date_mise_a_jour.isoformat()
+            if date_mise_a_jour
+            else None
+        )
+    }
+
+
 @app.get("/web")
 def page_web(
     request: Request,
@@ -167,7 +182,7 @@ def page_web(
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
     carburant: str = "gazole",
-    rayon: int = 10
+    rayon: int = 15
 ):
 
     stations = charger_stations()
@@ -256,8 +271,6 @@ def page_web(
             key=lambda x: x["distance"]
         )
 
-        stations = stations[:10]
-
     else:
 
         for station in stations:
@@ -315,6 +328,7 @@ def page_web(
             carburant,
             ""
         ).strip()
+        and float(station.get(carburant, "")) not in (0, 9.999)
 
     ]
 
@@ -324,7 +338,7 @@ def page_web(
 
         if prix_valides
 
-        else 0
+        else None
 
     )
 
@@ -346,7 +360,13 @@ def page_web(
 
             "rayon": rayon,
 
-            "texte_verification": texte_derniere_mise_a_jour()
+            "texte_verification": texte_derniere_mise_a_jour(),
+
+            "date_verification": (
+                date_derniere_mise_a_jour().isoformat()
+                if date_derniere_mise_a_jour()
+                else None
+            )
 
         }
 
