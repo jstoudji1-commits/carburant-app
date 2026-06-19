@@ -125,6 +125,8 @@ body{
 
 .sidebar{
     z-index:900;
+    display:flex;
+    flex-direction:column;
     padding:24px 18px 18px 18px;
     overflow:auto;
     background:rgba(245,248,246,0.78);
@@ -396,11 +398,69 @@ body{
 }
 
 .update-dot{
+    position:relative;
     width:12px;
     height:12px;
     border-radius:50%;
     background:var(--green);
     flex:0 0 auto;
+    box-shadow:0 0 0 0 rgba(20,159,56,0.38);
+    animation:update-dot-pulse 2.2s ease-out infinite;
+}
+
+.update-dot::after{
+    content:"";
+    position:absolute;
+    inset:3px;
+    border-radius:50%;
+    background:#5df07e;
+    animation:update-dot-glow 2.2s ease-in-out infinite;
+}
+
+@keyframes update-dot-pulse{
+    0%, 35%{
+        box-shadow:0 0 0 0 rgba(20,159,56,0.38);
+        transform:scale(1);
+    }
+    65%{
+        box-shadow:0 0 0 8px rgba(20,159,56,0);
+        transform:scale(1.08);
+    }
+    100%{
+        box-shadow:0 0 0 0 rgba(20,159,56,0);
+        transform:scale(1);
+    }
+}
+
+@keyframes update-dot-glow{
+    0%, 100%{
+        opacity:0.55;
+    }
+    50%{
+        opacity:1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .update-dot,
+    .update-dot::after{
+        animation:none;
+    }
+}
+
+.problem-report-link{
+    align-self:center;
+    margin-top:auto;
+    padding-top:18px;
+    color:#657485;
+    font-size:13px;
+    text-decoration:underline;
+    text-underline-offset:3px;
+}
+
+.problem-report-link:hover,
+.problem-report-link:focus-visible{
+    color:var(--green-dark);
 }
 
 .vehicle-fields{
@@ -906,7 +966,7 @@ body{
                 <div>
                     <p class="stat-label">Prix le plus bas</p>
                     <div class="stat-value best-price">
-                        {{ prix_min }} &euro;
+                        {{ "%.3f"|format(prix_min)|replace(".", ",") }} &euro;
                         <span class="price-pill">{{ carburant|upper }}</span>
                     </div>
                 </div>
@@ -979,6 +1039,13 @@ body{
             <span>Derniere mise a jour : {{ texte_verification }}</span>
             <span class="update-dot"></span>
         </div>
+
+        <a
+            class="problem-report-link"
+            href="https://github.com/jstoudji1-commits/carburant-app/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+        >Signaler un probl&egrave;me</a>
     </aside>
 
     <main class="map-column">
@@ -1151,7 +1218,13 @@ window.partagerPrixStation = async function(event, station) {
     var texte =
         station.carburant
         + " \u00e0 "
-        + station.prix
+        + Number(station.prix).toLocaleString(
+            "fr-FR",
+            {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            }
+        )
         + " \u20ac - "
         + station.adresse
         + ", "
@@ -1282,7 +1355,7 @@ var prixIcon = L.divIcon({
 
     html: `
         <div class="prix-bulle">
-            {{ station.carburant_selectionne }} &euro;
+            {{ "%.3f"|format(station.carburant_selectionne|float)|replace(".", ",") }} &euro;
             <span>{{ carburant|upper }}</span>
             {% if station.tendance_selectionnee %}
             <button
@@ -1326,7 +1399,7 @@ var marker = L.marker(
     >
 
         <strong>
-            Carburant : {{ station.carburant_selectionne }} &euro;
+            Carburant : {{ "%.3f"|format(station.carburant_selectionne|float)|replace(".", ",") }} &euro;
         </strong>
 
         <br><br>
