@@ -1,0 +1,16 @@
+node_modules/
+
+# Fichiers generes par Android / Capacitor
+android/.gradle/
+android/build/
+android/app/build/
+
+# Environnements et caches Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Configuration locale
+.env
+

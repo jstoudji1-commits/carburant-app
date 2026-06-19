@@ -141,17 +141,18 @@ body{
     box-shadow:var(--shadow);
 }
 
-.stat-row{
+.stat-price-layout{
     display:grid;
     grid-template-columns:72px 1fr;
     gap:18px;
     align-items:center;
 }
 
-.stat-row + .stat-row{
-    margin-top:22px;
-    padding-top:22px;
-    border-top:1px solid rgba(255,255,255,0.25);
+.stat-price-meta{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
 }
 
 .stat-icon{
@@ -169,24 +170,34 @@ body{
 }
 
 .stat-label{
-    margin:0 0 6px 0;
+    margin:0 0 16px 0;
     font-size:18px;
     font-weight:bold;
+    line-height:1.2;
+    text-align:center;
+    white-space:nowrap;
 }
 
 .stat-value{
     display:flex;
-    align-items:flex-end;
-    gap:10px;
+    align-items:flex-start;
+    justify-content:flex-start;
+    gap:4px;
     font-size:50px;
     line-height:0.95;
     font-weight:bold;
 }
 
-.stat-value small{
-    padding-bottom:7px;
-    font-size:18px;
-    font-weight:normal;
+.stat-currency{
+    margin-top:1px;
+    font-size:24px;
+    line-height:1;
+    font-weight:bold;
+}
+
+.stat-value.indisponible{
+    font-size:27px;
+    line-height:1.1;
 }
 
 .best-price{
@@ -194,13 +205,16 @@ body{
 }
 
 .price-pill{
-    align-self:center;
-    padding:8px 14px;
+    width:62px;
+    padding:6px 4px;
+    box-sizing:border-box;
     background:#159b31;
     color:white;
     border-radius:8px;
-    font-size:15px;
+    font-size:13px;
     font-weight:bold;
+    line-height:1.1;
+    text-align:center;
 }
 
 .control-card,
@@ -443,7 +457,8 @@ body{
 
 @media (prefers-reduced-motion: reduce){
     .update-dot,
-    .update-dot::after{
+    .update-dot::after,
+    .gps-position-arrow span{
         animation:none;
     }
 }
@@ -452,15 +467,160 @@ body{
     align-self:center;
     margin-top:auto;
     padding-top:18px;
+    border:none;
+    background:transparent;
     color:#657485;
     font-size:13px;
+    font-family:inherit;
     text-decoration:underline;
     text-underline-offset:3px;
+    cursor:pointer;
 }
 
 .problem-report-link:hover,
 .problem-report-link:focus-visible{
     color:var(--green-dark);
+}
+
+.problem-modal{
+    position:fixed;
+    inset:0;
+    z-index:3000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    background:rgba(7,31,49,0.56);
+}
+
+.problem-modal[hidden]{
+    display:none;
+}
+
+.problem-dialog{
+    position:relative;
+    width:min(520px, 100%);
+    max-height:calc(100vh - 36px);
+    overflow:auto;
+    padding:24px;
+    border-radius:10px;
+    background:white;
+    color:var(--ink);
+    box-shadow:0 22px 60px rgba(7,31,49,0.30);
+}
+
+.problem-dialog h2{
+    margin:0 42px 18px 0;
+    font-size:22px;
+}
+
+.problem-close{
+    position:absolute;
+    top:14px;
+    right:14px;
+    width:34px;
+    height:34px;
+    padding:0;
+    border:none;
+    border-radius:8px;
+    background:#edf2ef;
+    color:var(--ink);
+    font-size:23px;
+    cursor:pointer;
+}
+
+.problem-form{
+    display:grid;
+    gap:14px;
+}
+
+.problem-field{
+    display:grid;
+    gap:6px;
+}
+
+.problem-field label{
+    font-size:14px;
+    font-weight:bold;
+}
+
+.problem-field input,
+.problem-field select,
+.problem-field textarea{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid #cbd5dd;
+    border-radius:8px;
+    background:white;
+    color:var(--ink);
+    font:inherit;
+}
+
+.problem-field textarea{
+    min-height:120px;
+    resize:vertical;
+}
+
+.problem-field input:focus,
+.problem-field select:focus,
+.problem-field textarea:focus{
+    border-color:var(--green);
+    outline:none;
+    box-shadow:0 0 0 3px rgba(20,159,56,0.14);
+}
+
+.problem-honeypot{
+    position:absolute;
+    left:-10000px;
+    width:1px;
+    height:1px;
+    overflow:hidden;
+}
+
+.problem-status{
+    min-height:20px;
+    margin:0;
+    color:#526474;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.problem-status.success{
+    color:var(--green-dark);
+}
+
+.problem-status.error{
+    color:#b42318;
+}
+
+.problem-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+.problem-action{
+    padding:11px 16px;
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.problem-action.cancel{
+    background:#edf2ef;
+    color:var(--ink);
+}
+
+.problem-action.send{
+    background:var(--green);
+    color:white;
+}
+
+.problem-action:disabled{
+    opacity:0.6;
+    cursor:wait;
 }
 
 .data-source-link{
@@ -535,6 +695,62 @@ body{
     border:none;
 }
 
+.gps-user-marker{
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    background:transparent;
+    border:none;
+}
+
+.gps-position-arrow{
+    position:relative;
+    width:34px;
+    height:40px;
+    transform-origin:50% 50%;
+    transition:transform 180ms linear;
+    filter:drop-shadow(0 4px 5px rgba(8,45,85,0.34));
+}
+
+.gps-position-arrow::before,
+.gps-position-arrow::after{
+    content:"";
+    position:absolute;
+    clip-path:polygon(50% 0, 96% 100%, 50% 80%, 4% 100%);
+}
+
+.gps-position-arrow::before{
+    inset:0;
+    background:white;
+}
+
+.gps-position-arrow::after{
+    inset:4px 5px 5px;
+    background:linear-gradient(180deg, #39a7ff 0%, #0878e8 68%, #005fc4 100%);
+}
+
+.gps-position-arrow span{
+    position:absolute;
+    z-index:-1;
+    top:50%;
+    left:50%;
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    background:rgba(26,142,255,0.16);
+    transform:translate(-50%, -50%);
+    animation:gps-arrow-pulse 2.2s ease-out infinite;
+}
+
+@keyframes gps-arrow-pulse{
+    0%, 45%{
+        box-shadow:0 0 0 0 rgba(26,142,255,0.22);
+    }
+    100%{
+        box-shadow:0 0 0 12px rgba(26,142,255,0);
+    }
+}
+
 .prix-bulle{
     min-width:98px;
     position:relative;
@@ -578,10 +794,6 @@ body{
     object-fit:contain;
 }
 
-.enseigne-logo-large{
-    width:50px;
-}
-
 .enseigne-logo-optiplein{
     border-color:#b9d9bf;
     background:#f4fbf5;
@@ -609,8 +821,12 @@ body{
     border-radius:8px;
 }
 
-.popup-identite-prix .enseigne-logo-large{
-    width:90px;
+.enseigne-logo-intermarche-carte{
+    width:34px;
+}
+
+.popup-identite-prix .enseigne-logo-intermarche-popup{
+    width:104px;
 }
 
 .popup-identite-texte{
@@ -646,22 +862,37 @@ body{
     border-radius:50%;
     color:white;
     font-size:16px;
-    font-weight:bold;
+    font-family:Arial, sans-serif;
+    font-weight:900;
     line-height:1;
+    -webkit-text-stroke:0.7px currentColor;
     cursor:pointer;
     box-shadow:0 5px 12px rgba(16,37,54,0.28);
 }
 
 .tendance-indicateur.baisse{
     background:#16a34a;
+    text-shadow:
+        0.6px 0 currentColor,
+        -0.6px 0 currentColor,
+        0 0.6px currentColor,
+        0 -0.6px currentColor;
+    transform:rotate(-45deg);
 }
 
 .tendance-indicateur.hausse{
     background:#dc2626;
+    text-shadow:
+        0.6px 0 currentColor,
+        -0.6px 0 currentColor,
+        0 0.6px currentColor,
+        0 -0.6px currentColor;
+    transform:rotate(45deg);
 }
 
 .tendance-indicateur.egal{
     background:#2563eb;
+    -webkit-text-stroke:0;
 }
 
 .tendance-popup{
@@ -916,6 +1147,33 @@ body{
         padding:18px;
     }
 
+    .stat-label{
+        margin-bottom:14px;
+        font-size:17px;
+    }
+
+    .stat-price-layout{
+        grid-template-columns:66px minmax(0, 1fr);
+        gap:14px;
+    }
+
+    .stat-value{
+        font-size:47px;
+    }
+
+    .stat-currency{
+        font-size:21px;
+    }
+
+    .stat-icon,
+    .price-pill{
+        width:58px;
+    }
+
+    .stat-icon{
+        height:58px;
+    }
+
     .bottom-card{
         grid-template-columns:1fr;
         gap:10px;
@@ -959,6 +1217,16 @@ body{
         font-size:16px;
     }
 
+}
+
+@media (max-width: 360px){
+    .stat-label{
+        font-size:16px;
+    }
+
+    .stat-value{
+        font-size:43px;
+    }
 }
 
 </style>
@@ -1053,18 +1321,19 @@ body{
 <div class="app-layout">
     <aside class="sidebar">
         <section class="stat-card">
-            <div class="stat-row">
-                <div class="stat-icon">Prix</div>
-                <div>
-                    <p class="stat-label">Prix le plus bas autour de vous</p>
-                    <div class="stat-value best-price">
-                        {% if prix_min is not none %}
-                        {{ "%.3f"|format(prix_min)|replace(".", ",") }} &euro;
-                        {% else %}
-                        Indisponible
-                        {% endif %}
-                        <span class="price-pill">{{ carburant|upper }}</span>
-                    </div>
+            <p class="stat-label">Prix le plus bas autour de vous</p>
+            <div class="stat-price-layout">
+                <div class="stat-price-meta">
+                    <div class="stat-icon">Prix</div>
+                    <span class="price-pill">{{ carburant|upper }}</span>
+                </div>
+                <div class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}">
+                    {% if prix_min is not none %}
+                    <span>{{ "%.3f"|format(prix_min)|replace(".", ",") }}</span>
+                    <span class="stat-currency">&euro;</span>
+                    {% else %}
+                    <span>Indisponible</span>
+                    {% endif %}
                 </div>
             </div>
         </section>
@@ -1139,12 +1408,11 @@ body{
             <span class="update-dot"></span>
         </div>
 
-        <a
+        <button
+            type="button"
             class="problem-report-link"
-            href="https://github.com/jstoudji1-commits/carburant-app/issues/new"
-            target="_blank"
-            rel="noopener noreferrer"
-        >Signaler un probl&egrave;me</a>
+            onclick="ouvrirSignalement()"
+        >Signaler un probl&egrave;me</button>
 
         <a
             class="data-source-link"
@@ -1216,6 +1484,105 @@ body{
     </main>
 </div>
 
+<div
+    id="problem-modal"
+    class="problem-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="problem-title"
+    onclick="fermerSignalementDepuisFond(event)"
+    hidden
+>
+    <section class="problem-dialog">
+        <button
+            type="button"
+            class="problem-close"
+            aria-label="Fermer"
+            onclick="fermerSignalement()"
+        >&times;</button>
+
+        <h2 id="problem-title">Signaler un probl&egrave;me</h2>
+
+        <form
+            id="problem-form"
+            class="problem-form"
+            onsubmit="envoyerSignalement(event)"
+        >
+            <div class="problem-field">
+                <label for="problem-category">Type de probl&egrave;me</label>
+                <select id="problem-category" name="categorie" required>
+                    <option value="Prix ou station">Prix ou station</option>
+                    <option value="Carte ou GPS">Carte ou GPS</option>
+                    <option value="Itineraire">Itin&eacute;raire</option>
+                    <option value="Affichage">Affichage</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+
+            <div class="problem-field">
+                <label for="problem-station">Station concern&eacute;e (facultatif)</label>
+                <input
+                    id="problem-station"
+                    name="station"
+                    type="text"
+                    maxlength="160"
+                    placeholder="Enseigne, ville ou adresse"
+                >
+            </div>
+
+            <div class="problem-field">
+                <label for="problem-description">Description</label>
+                <textarea
+                    id="problem-description"
+                    name="description"
+                    minlength="10"
+                    maxlength="2000"
+                    required
+                    placeholder="D&eacute;crivez ce qui ne fonctionne pas"
+                ></textarea>
+            </div>
+
+            <div class="problem-field">
+                <label for="problem-email">Votre e-mail (facultatif)</label>
+                <input
+                    id="problem-email"
+                    name="email"
+                    type="email"
+                    maxlength="160"
+                    autocomplete="email"
+                    placeholder="Pour recevoir une r&eacute;ponse"
+                >
+            </div>
+
+            <div class="problem-honeypot" aria-hidden="true">
+                <label for="problem-website">Site web</label>
+                <input
+                    id="problem-website"
+                    name="site_web"
+                    type="text"
+                    tabindex="-1"
+                    autocomplete="off"
+                >
+            </div>
+
+            <p id="problem-status" class="problem-status" role="status"></p>
+
+            <div class="problem-actions">
+                <button
+                    type="button"
+                    class="problem-action cancel"
+                    onclick="fermerSignalement()"
+                >Annuler</button>
+                <button
+                    id="problem-submit"
+                    type="submit"
+                    class="problem-action send"
+                >Envoyer</button>
+            </div>
+        </form>
+    </section>
+</div>
+
 <p
     id="position"
     style="display:none;"
@@ -1251,10 +1618,19 @@ function texteAgeMiseAJour() {
 
 function actualiserCompteurMiseAJour() {
 
+    var texteActualise = texteAgeMiseAJour();
     var compteur = document.getElementById("update-age");
     if (compteur) {
-        compteur.textContent = texteAgeMiseAJour();
+        compteur.textContent = texteActualise;
     }
+
+    document.querySelectorAll(
+        ".station-update-age"
+    ).forEach(
+        function(compteurStation) {
+            compteurStation.textContent = texteActualise;
+        }
+    );
 
 }
 
@@ -1283,6 +1659,105 @@ async function synchroniserDateMiseAJour() {
 actualiserCompteurMiseAJour();
 setInterval(actualiserCompteurMiseAJour, 1000);
 setInterval(synchroniserDateMiseAJour, 30000);
+
+window.ouvrirSignalement = function() {
+
+    var fenetre = document.getElementById("problem-modal");
+    var statut = document.getElementById("problem-status");
+
+    if (!fenetre) {
+        return;
+    }
+
+    if (statut) {
+        statut.textContent = "";
+        statut.className = "problem-status";
+    }
+
+    fenetre.hidden = false;
+    document.getElementById("problem-category").focus();
+
+};
+
+window.fermerSignalement = function() {
+
+    var fenetre = document.getElementById("problem-modal");
+
+    if (fenetre) {
+        fenetre.hidden = true;
+    }
+
+};
+
+window.fermerSignalementDepuisFond = function(event) {
+
+    if (event.target === event.currentTarget) {
+        fermerSignalement();
+    }
+
+};
+
+window.envoyerSignalement = async function(event) {
+
+    event.preventDefault();
+
+    var formulaire = event.currentTarget;
+    var bouton = document.getElementById("problem-submit");
+    var statut = document.getElementById("problem-status");
+    var donneesFormulaire = new FormData(formulaire);
+    var donnees = Object.fromEntries(donneesFormulaire.entries());
+    donnees.page = window.location.origin + window.location.pathname;
+
+    bouton.disabled = true;
+    bouton.textContent = "Envoi...";
+    statut.textContent = "";
+    statut.className = "problem-status";
+
+    try {
+        var reponse = await fetch(
+            "/api/signaler-probleme",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(donnees)
+            }
+        );
+        var resultat = await reponse.json().catch(
+            function() {
+                return {};
+            }
+        );
+
+        if (!reponse.ok) {
+            throw new Error(
+                resultat.detail
+                || "Le message n'a pas pu etre envoye."
+            );
+        }
+
+        formulaire.reset();
+        statut.textContent = "Merci, votre signalement a bien ete envoye.";
+        statut.className = "problem-status success";
+    } catch (erreur) {
+        statut.textContent = erreur.message;
+        statut.className = "problem-status error";
+    } finally {
+        bouton.disabled = false;
+        bouton.textContent = "Envoyer";
+    }
+
+};
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+        if (event.key === "Escape") {
+            fermerSignalement();
+        }
+    }
+);
 
 window.fermerPanneauVehicule = function() {
 
@@ -1516,7 +1991,13 @@ var markersParStation = {};
 var stationsEconomie = [];
 
 var logosEnseignes = [
-    { motifs: ["intermarche", "mousquetaires"], fichier: "intermarche-hd.png", large: true },
+    {
+        motifs: ["intermarche", "mousquetaires"],
+        fichier: "intermarche-hd.png",
+        fichierCarte: "intermarche-marker.png",
+        classeCarte: "enseigne-logo-intermarche-carte",
+        classePopup: "enseigne-logo-intermarche-popup"
+    },
     { motifs: ["leclerc"], fichier: "leclerc.png" },
     { motifs: ["super u", "systeme u", "station u", "hyper u", "u express", "la station u"], fichier: "systeme-u.png" },
     { motifs: ["carrefour"], fichier: "carrefour.png" },
@@ -1564,7 +2045,7 @@ function echapperHtml(valeur) {
     });
 }
 
-function creerLogoEnseigne(nom) {
+function creerLogoEnseigne(nom, contexte) {
     var nomNormalise = normaliserNomEnseigne(nom);
     var logo = logosEnseignes.find(function(definition) {
         return definition.motifs.some(function(motif) {
@@ -1576,10 +2057,17 @@ function creerLogoEnseigne(nom) {
     var libelle = nom || "Station-service";
 
     if (logo) {
+        var fichier = contexte === "carte" && logo.fichierCarte
+            ? logo.fichierCarte
+            : logo.fichier;
+        var classe = contexte === "carte"
+            ? logo.classeCarte
+            : logo.classePopup;
+
         return '<span class="enseigne-logo'
-            + (logo.large ? ' enseigne-logo-large' : '')
+            + (classe ? ' ' + classe : '')
             + '"><img src="/static/brand-logos/'
-            + logo.fichier
+            + fichier
             + '" alt="Logo '
             + echapperHtml(libelle)
             + '"></span>';
@@ -1613,7 +2101,14 @@ var stationPartage{{ loop.index }} = {
 };
 
 var nomEnseigne{{ loop.index }} = {{ station.enseigne|default("")|tojson }};
-var logoEnseigne{{ loop.index }} = creerLogoEnseigne(nomEnseigne{{ loop.index }});
+var logoEnseigneCarte{{ loop.index }} = creerLogoEnseigne(
+    nomEnseigne{{ loop.index }},
+    "carte"
+);
+var logoEnseignePopup{{ loop.index }} = creerLogoEnseigne(
+    nomEnseigne{{ loop.index }},
+    "popup"
+);
 
 stationsEconomie.push({
     id: {{ station.id|tojson }},
@@ -1632,7 +2127,7 @@ var prixIcon = L.divIcon({
 
     html: `
         <div class="prix-bulle{% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %} indisponible{% endif %}">
-            ${logoEnseigne{{ loop.index }}}
+            ${logoEnseigneCarte{{ loop.index }}}
             <span>
             {% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %}
             Indisponible
@@ -1682,7 +2177,7 @@ var marker = L.marker(
     >
 
         <div class="popup-identite-prix">
-            ${logoEnseigne{{ loop.index }}}
+            ${logoEnseignePopup{{ loop.index }}}
             <div class="popup-identite-texte">
                 <div class="popup-enseigne">
                     ${echapperHtml(nomEnseigne{{ loop.index }} || "Station-service")}
@@ -1718,7 +2213,7 @@ var marker = L.marker(
                 font-weight:bold;
             "
         >
-            {{ texte_verification }}
+            <span class="station-update-age">${texteAgeMiseAJour()}</span>
         </div>
 
         <br>
@@ -1775,6 +2270,7 @@ marker.on(
     function() {
 
         actualiserBoutonsFavoris();
+        actualiserCompteurMiseAJour();
 
     }
 );
@@ -2073,8 +2569,10 @@ var suiviCarteActif = true;
 var orientationAutomatiqueActive = true;
 var capCarte = capInitialCarte;
 var dernierCapUtilisateur = capInitialCarte;
+var capFlecheUtilisateur = capInitialCarte;
 var dateDernierCapFiable = 0;
 var utilisateurEnMouvement = false;
+var vitesseUtilisateurMps = 0;
 var precisionUtilisateur = 20;
 var animationOrientationCarte = null;
 var boutonSuiviCarte = null;
@@ -2164,6 +2662,32 @@ function orienterCarte(capCible) {
 
     animationOrientationCarte =
         requestAnimationFrame(animerCap);
+
+}
+
+function actualiserOrientationFlecheUtilisateur(capCible) {
+
+    if (Number.isFinite(capCible)) {
+        capFlecheUtilisateur = capCible;
+    }
+
+    if (!marqueurUtilisateur) {
+        return;
+    }
+
+    var elementMarqueur = marqueurUtilisateur.getElement();
+    var fleche = elementMarqueur
+        ? elementMarqueur.querySelector(".gps-position-arrow")
+        : null;
+
+    if (!fleche) {
+        return;
+    }
+
+    var rotation = (
+        capFlecheUtilisateur - capCarte + 540
+    ) % 360 - 180;
+    fleche.style.transform = "rotate(" + rotation + "deg)";
 
 }
 
@@ -2479,6 +3003,7 @@ map.on(
         if (typeof map.getBearing === "function") {
             capCarte = map.getBearing();
         }
+        actualiserOrientationFlecheUtilisateur();
     }
 );
 
@@ -2523,6 +3048,9 @@ function demarrerGeolocalisation() {
             var vitesseGps = position.coords.speed === null
                 ? Number.NaN
                 : Number(position.coords.speed);
+            vitesseUtilisateurMps = Number.isFinite(vitesseGps)
+                ? Math.max(0, vitesseGps)
+                : vitesseUtilisateurMps;
             var distanceDepuisPositionPrecedente = (
                 latitudePrecedente === null
                 || longitudePrecedente === null
@@ -2554,11 +3082,21 @@ function demarrerGeolocalisation() {
                 dateDernierCapFiable = Date.now();
             }
 
+            var capAffichage = navigationActive
+                ? calculerCapItineraireDevant()
+                : dernierCapUtilisateur;
+
+            if (!Number.isFinite(capAffichage)) {
+                capAffichage = dernierCapUtilisateur;
+            }
+
+            actualiserOrientationFlecheUtilisateur(capAffichage);
+
             if (
                 suiviCarteActif
                 && orientationAutomatiqueActive
             ) {
-                orienterCarte(dernierCapUtilisateur);
+                orienterCarte(capAffichage);
             }
 
             document.getElementById(
@@ -2590,12 +3128,12 @@ function demarrerGeolocalisation() {
                 var userIcon = L.divIcon({
 
                     html:
-                        '<div style="width:16px;height:16px;border-radius:50%;background:#007bff;border:3px solid white;box-shadow:0 0 9px rgba(0,0,0,0.32);"></div>',
+                        '<div class="gps-position-arrow"><span></span></div>',
 
-                    className: "",
+                    className: "gps-user-marker",
 
-                    iconSize: [22,22],
-                    iconAnchor: [11,11]
+                    iconSize: [46,46],
+                    iconAnchor: [23,23]
 
                 });
 
@@ -2616,6 +3154,8 @@ function demarrerGeolocalisation() {
                     .bindPopup(
                         "Vous etes ici"
                     );
+
+                actualiserOrientationFlecheUtilisateur(capAffichage);
 
                 if (premierCentrageUtilisateur) {
 
@@ -2945,6 +3485,167 @@ var coordonneesRouteNavigation = [];
 var positionsHorsItineraire = 0;
 var derniereRelanceItineraire = 0;
 var relanceItineraireEnCours = false;
+var debutEcartItineraire = 0;
+var minuteurRecalculItineraire = null;
+var delaiRecalculItineraireMs = 2500;
+
+function reinitialiserDetectionEcart() {
+
+    positionsHorsItineraire = 0;
+    debutEcartItineraire = 0;
+
+    if (minuteurRecalculItineraire !== null) {
+        clearTimeout(minuteurRecalculItineraire);
+        minuteurRecalculItineraire = null;
+    }
+
+}
+
+function calculerCapItineraireDevant() {
+
+    if (
+        !navigationActive
+        || coordonneesRouteNavigation.length < 2
+        || latitudeUtilisateur === null
+        || longitudeUtilisateur === null
+    ) {
+        return Number.NaN;
+    }
+
+    var conversionLongitude =
+        111320 * Math.cos(latitudeUtilisateur * Math.PI / 180);
+    var conversionLatitude = 110540;
+    var meilleurSegment = null;
+
+    for (
+        var index = 0;
+        index < coordonneesRouteNavigation.length - 1;
+        index += 1
+    ) {
+        var depart = coordonneesRouteNavigation[index];
+        var arrivee = coordonneesRouteNavigation[index + 1];
+        var segmentX =
+            (arrivee[0] - depart[0]) * conversionLongitude;
+        var segmentY =
+            (arrivee[1] - depart[1]) * conversionLatitude;
+        var positionX =
+            (longitudeUtilisateur - depart[0]) * conversionLongitude;
+        var positionY =
+            (latitudeUtilisateur - depart[1]) * conversionLatitude;
+        var longueurCarree =
+            segmentX * segmentX + segmentY * segmentY;
+        var progression = longueurCarree > 0
+            ? Math.max(
+                0,
+                Math.min(
+                    1,
+                    (
+                        positionX * segmentX
+                        + positionY * segmentY
+                    ) / longueurCarree
+                )
+            )
+            : 0;
+        var ecartX = positionX - progression * segmentX;
+        var ecartY = positionY - progression * segmentY;
+        var distanceCarree = ecartX * ecartX + ecartY * ecartY;
+
+        if (
+            !meilleurSegment
+            || distanceCarree < meilleurSegment.distanceCarree
+        ) {
+            meilleurSegment = {
+                index: index,
+                progression: progression,
+                distanceCarree: distanceCarree,
+                longitude:
+                    depart[0]
+                    + (arrivee[0] - depart[0]) * progression,
+                latitude:
+                    depart[1]
+                    + (arrivee[1] - depart[1]) * progression
+            };
+        }
+    }
+
+    if (!meilleurSegment) {
+        return Number.NaN;
+    }
+
+    var distanceAnticipation = Math.max(
+        25,
+        Math.min(70, vitesseUtilisateurMps * 3)
+    );
+    var longitudeCourante = meilleurSegment.longitude;
+    var latitudeCourante = meilleurSegment.latitude;
+    var indexSegment = meilleurSegment.index;
+    var distanceRestante = distanceAnticipation;
+    var cible = null;
+
+    while (
+        indexSegment < coordonneesRouteNavigation.length - 1
+    ) {
+        var finSegment =
+            coordonneesRouteNavigation[indexSegment + 1];
+        var longueurSegment = distanceDeplacementKm(
+            latitudeCourante,
+            longitudeCourante,
+            finSegment[1],
+            finSegment[0]
+        ) * 1000;
+
+        if (
+            longueurSegment > 0
+            && longueurSegment >= distanceRestante
+        ) {
+            var ratio = distanceRestante / longueurSegment;
+            cible = {
+                longitude:
+                    longitudeCourante
+                    + (finSegment[0] - longitudeCourante) * ratio,
+                latitude:
+                    latitudeCourante
+                    + (finSegment[1] - latitudeCourante) * ratio
+            };
+            break;
+        }
+
+        distanceRestante -= longueurSegment;
+        longitudeCourante = finSegment[0];
+        latitudeCourante = finSegment[1];
+        indexSegment += 1;
+    }
+
+    if (!cible) {
+        var dernierPoint =
+            coordonneesRouteNavigation[
+                coordonneesRouteNavigation.length - 1
+            ];
+        cible = {
+            longitude: dernierPoint[0],
+            latitude: dernierPoint[1]
+        };
+    }
+
+    if (
+        distanceDeplacementKm(
+            meilleurSegment.latitude,
+            meilleurSegment.longitude,
+            cible.latitude,
+            cible.longitude
+        ) < 0.003
+    ) {
+        return Number.NaN;
+    }
+
+    return calculerCapDeplacement(
+        meilleurSegment.latitude,
+        meilleurSegment.longitude,
+        cible.latitude,
+        cible.longitude
+    );
+
+}
 
 function afficherInfoItineraire(message) {
 
@@ -3191,25 +3892,39 @@ function verifierEcartItineraire() {
     ) * 1000;
 
     if (distanceDestination < 40) {
-        positionsHorsItineraire = 0;
+        reinitialiserDetectionEcart();
         return;
     }
 
     var seuilEcart = Math.max(75, precisionUtilisateur * 1.5);
     if (distanceItineraireMetres() > seuilEcart) {
         positionsHorsItineraire += 1;
+
+        if (!debutEcartItineraire) {
+            debutEcartItineraire = Date.now();
+            minuteurRecalculItineraire = setTimeout(
+                function() {
+                    minuteurRecalculItineraire = null;
+                    verifierEcartItineraire();
+                },
+                delaiRecalculItineraireMs
+            );
+        }
     } else {
-        positionsHorsItineraire = 0;
+        reinitialiserDetectionEcart();
+        return;
     }
 
     if (
-        positionsHorsItineraire < 3
-        || Date.now() - derniereRelanceItineraire < 15000
+        Date.now() - debutEcartItineraire
+            < delaiRecalculItineraireMs
+        || Date.now() - derniereRelanceItineraire
+            < delaiRecalculItineraireMs
     ) {
         return;
     }
 
-    positionsHorsItineraire = 0;
+    reinitialiserDetectionEcart();
     derniereRelanceItineraire = Date.now();
     relanceItineraireEnCours = true;
     tracerItineraire(
@@ -3263,7 +3978,7 @@ window.demarrerNavigation = async function() {
 window.arreterNavigation = function() {
 
     navigationActive = false;
-    positionsHorsItineraire = 0;
+    reinitialiserDetectionEcart();
     document.getElementById("navigation-panel").hidden = true;
 
     var bouton = document.getElementById("economy-route-button");

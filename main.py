@@ -1,15 +1,24 @@
 ﻿from fastapi import FastAPI, Request
+from fastapi import HTTPException
 from fastapi.templating import Jinja2Templates
 
-from typing import Optional
+from typing import Literal, Optional
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, ConfigDict, Field
 
 
 import asyncio
 import csv
 from contextlib import asynccontextmanager, suppress
+from datetime import datetime
+from email.message import EmailMessage
 import logging
 import math
+import os
+import re
+import smtplib
+import ssl
+import time
 from update_data import (
     date_derniere_mise_a_jour,
     mettre_a_jour_stations,
@@ -19,6 +28,82 @@ from update_data import (
 
 INTERVALLE_MISE_A_JOUR_SECONDES = 10 * 60
 logger = logging.getLogger("optiplein.update")
+EMAIL_SIGNALEMENT = os.getenv(
+    "REPORT_EMAIL",
+    "j.stoudji1@gmail.com"
+)
+signalements_recents = {}
+
+
+class SignalementProbleme(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    categorie: Literal[
+        "Prix ou station",
+        "Carte ou GPS",
+        "Itineraire",
+        "Affichage",
+        "Autre",
+    ]
+    description: str = Field(min_length=10, max_length=2000)
+    station: str = Field(default="", max_length=160)
+    email: str = Field(default="", max_length=160)
+    page: str = Field(default="", max_length=300)
+    site_web: str = Field(default="", max_length=120)
+
+
+def envoyer_signalement_email(signalement):
+
+    hote = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    port = int(os.getenv("SMTP_PORT", "587"))
+    utilisateur = os.getenv("SMTP_USER", "")
+    mot_de_passe = os.getenv("SMTP_PASSWORD", "")
+    expediteur = os.getenv("SMTP_FROM", utilisateur)
+
+    if not utilisateur or not mot_de_passe or not expediteur:
+        raise RuntimeError("Configuration SMTP absente")
+
+    message = EmailMessage()
+    message["Subject"] = (
+        "[OptiPlein] Signalement - "
+        + signalement.categorie
+    )
+    message["From"] = expediteur
+    message["To"] = EMAIL_SIGNALEMENT
+
+    if signalement.email:
+        message["Reply-To"] = signalement.email
+
+    message.set_content(
+        "Nouveau signalement OptiPlein\n\n"
+        f"Categorie : {signalement.categorie}\n"
+        f"Station : {signalement.station or 'Non precisee'}\n"
+        f"Contact : {signalement.email or 'Non renseigne'}\n"
+        f"Page : {signalement.page or '/web'}\n"
+        f"Date : {datetime.now().astimezone():%d/%m/%Y %H:%M:%S %Z}\n\n"
+        "Description :\n"
+        f"{signalement.description.strip()}\n"
+    )
+
+    contexte_ssl = ssl.create_default_context()
+
+    if port == 465:
+        with smtplib.SMTP_SSL(
+            hote,
+            port,
+            timeout=20,
+            context=contexte_ssl,
+        ) as serveur:
+            serveur.login(utilisateur, mot_de_passe)
+            serveur.send_message(message)
+    else:
+        with smtplib.SMTP(hote, port, timeout=20) as serveur:
+            serveur.ehlo()
+            serveur.starttls(context=contexte_ssl)
+            serveur.ehlo()
+            serveur.login(utilisateur, mot_de_passe)
+            serveur.send_message(message)
 
 
 async def actualiser_prix_periodiquement():
@@ -173,6 +258,70 @@ def get_derniere_mise_a_jour():
             else None
         )
     }
+
+
+@app.post("/api/signaler-probleme")
+async def signaler_probleme(
+    signalement: SignalementProbleme,
+    request: Request,
+):
+
+    if signalement.site_web:
+        return {"ok": True}
+
+    signalement.description = signalement.description.strip()
+    signalement.station = signalement.station.strip()
+    signalement.email = signalement.email.strip()
+
+    if len(signalement.description) < 10:
+        raise HTTPException(
+            status_code=422,
+            detail="La description doit contenir au moins 10 caracteres.",
+        )
+
+    if signalement.email and not re.fullmatch(
+        r"[^\s@]+@[^\s@]+\.[^\s@]+",
+        signalement.email,
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="L'adresse e-mail n'est pas valide.",
+        )
+
+    adresse_client = (
+        request.client.host
+        if request.client
+        else "inconnue"
+    )
+    maintenant = time.monotonic()
+    dernier_envoi = signalements_recents.get(adresse_client, 0)
+
+    if maintenant - dernier_envoi < 60:
+        raise HTTPException(
+            status_code=429,
+            detail="Veuillez patienter une minute avant un nouvel envoi.",
+        )
+
+    try:
+        await asyncio.to_thread(
+            envoyer_signalement_email,
+            signalement,
+        )
+    except RuntimeError:
+        raise HTTPException(
+            status_code=503,
+            detail="L'envoi des signalements n'est pas encore configure.",
+        )
+    except Exception:
+        logger.exception("L'envoi du signalement a echoue.")
+        raise HTTPException(
+            status_code=502,
+            detail="Le message n'a pas pu etre envoye. Reessayez plus tard.",
+        )
+
+    signalements_recents[adresse_client] = maintenant
+
+    return {"ok": True}
 
 
 @app.get("/web")
