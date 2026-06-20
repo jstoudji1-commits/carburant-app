@@ -1112,6 +1112,12 @@ body{
     font-size:15px;
 }
 
+.economy-saving{
+    color:#159b31;
+    font-size:17px;
+    font-weight:800;
+}
+
 .bottom-actions{
     display:flex;
     gap:12px;
@@ -1373,8 +1379,7 @@ body{
             <p class="stat-label">Prix le plus bas autour de vous</p>
             <div class="stat-price-layout">
                 <div class="stat-price-meta">
-                    <div class="stat-icon">Prix</div>
-                    <span class="price-pill">{{ carburant|upper }}</span>
+                    <div class="stat-icon">{{ carburant|upper }}</div>
                 </div>
                 <div class="stat-price-detail">
                     <div class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}">
@@ -2723,6 +2728,26 @@ function calculerCapDeplacement(
 
 }
 
+function lisserCap(capPrecedent, nouveauCap, facteur) {
+
+    if (!Number.isFinite(nouveauCap)) {
+        return capPrecedent;
+    }
+
+    if (!Number.isFinite(capPrecedent)) {
+        return (nouveauCap + 360) % 360;
+    }
+
+    var difference = (
+        (nouveauCap - capPrecedent + 540) % 360
+    ) - 180;
+
+    return (
+        capPrecedent + difference * facteur + 360
+    ) % 360;
+
+}
+
 function orienterCarte(capCible) {
 
     if (
@@ -2738,39 +2763,10 @@ function orienterCarte(capCible) {
         cancelAnimationFrame(animationOrientationCarte);
     }
 
-    var capDepart = capCarte;
-    var difference = (
-        (capCible - capDepart + 540) % 360
-    ) - 180;
-    var debut = performance.now();
-    var duree = 700;
-
-    function animerCap(tempsActuel) {
-
-        var progression = Math.min(
-            (tempsActuel - debut) / duree,
-            1
-        );
-        var progressionAdoucie =
-            progression * (2 - progression);
-        capCarte = (
-            capDepart
-            + difference * progressionAdoucie
-            + 360
-        ) % 360;
-        map.setBearing(capCarte);
-
-        if (progression < 1) {
-            animationOrientationCarte =
-                requestAnimationFrame(animerCap);
-        } else {
-            animationOrientationCarte = null;
-        }
-
-    }
-
-    animationOrientationCarte =
-        requestAnimationFrame(animerCap);
+    capCarte = (capCible + 360) % 360;
+    map.setBearing(capCarte);
+    animationOrientationCarte = null;
+    actualiserOrientationFlecheUtilisateur(capCible);
 
 }
 
@@ -2793,9 +2789,11 @@ function actualiserOrientationFlecheUtilisateur(capCible) {
         return;
     }
 
-    var rotation = (
-        capFlecheUtilisateur - capCarte + 540
-    ) % 360 - 180;
+    var rotation = suiviCarteActif && orientationAutomatiqueActive
+        ? 0
+        : (
+            capFlecheUtilisateur - capCarte + 540
+        ) % 360 - 180;
     fleche.style.transform = "rotate(" + rotation + "deg)";
 
 }
@@ -3176,24 +3174,44 @@ function demarrerGeolocalisation() {
                 (Number.isFinite(vitesseGps) && vitesseGps >= 1)
                 || distanceDepuisPositionPrecedente >= 0.003;
 
-            if (Number.isFinite(capGps) && capGps >= 0) {
-                dernierCapUtilisateur = capGps;
-                if (utilisateurEnMouvement) {
-                    dateDernierCapFiable = Date.now();
-                }
-            } else if (distanceDepuisPositionPrecedente >= 0.003) {
-                dernierCapUtilisateur = calculerCapDeplacement(
+            var capDeplacement = distanceDepuisPositionPrecedente >= 0.003
+                ? calculerCapDeplacement(
                     latitudePrecedente,
                     longitudePrecedente,
                     latitudeUtilisateur,
                     longitudeUtilisateur
-                );
+                )
+                : Number.NaN;
+            var capMesure = Number.isFinite(capGps) && capGps >= 0
+                ? capGps
+                : capDeplacement;
+
+            if (Number.isFinite(capMesure) && utilisateurEnMouvement) {
+                var facteurLissage = vitesseUtilisateurMps >= 8
+                    ? 0.58
+                    : vitesseUtilisateurMps >= 3
+                        ? 0.46
+                        : 0.34;
+                dernierCapUtilisateur = dateDernierCapFiable
+                    ? lisserCap(
+                        dernierCapUtilisateur,
+                        capMesure,
+                        facteurLissage
+                    )
+                    : capMesure;
                 dateDernierCapFiable = Date.now();
             }
 
-            var capAffichage = navigationActive
+            var capReelRecent =
+                utilisateurEnMouvement
+                && Date.now() - dateDernierCapFiable < 5000
+                && Number.isFinite(dernierCapUtilisateur);
+            var capItineraire = navigationActive
                 ? calculerCapItineraireDevant()
-                : dernierCapUtilisateur;
+                : Number.NaN;
+            var capAffichage = capReelRecent
+                ? dernierCapUtilisateur
+                : capItineraire;
 
             if (!Number.isFinite(capAffichage)) {
                 capAffichage = dernierCapUtilisateur;
@@ -3499,9 +3517,14 @@ window.calculerMeilleureStation = function() {
         + prixFormate
         + " \u20ac/L \u00b7 "
         + distanceFormatee
-        + " km \u00b7 \u00c9conomie estim\u00e9e "
+        + " km \u00b7 ";
+    var economieMiseEnAvant = document.createElement("span");
+    economieMiseEnAvant.className = "economy-saving";
+    economieMiseEnAvant.textContent =
+        "\u00c9conomie estim\u00e9e "
         + economieFormatee
         + " \u20ac par rapport au prix moyen local";
+    sousTitre.appendChild(economieMiseEnAvant);
     if (!routeNavigation && !navigationActive) {
         boutonItineraire.textContent = "Itin\u00e9raire";
         boutonItineraire.onclick = function() {
@@ -3590,6 +3613,38 @@ function chargerVehicule() {
 window.addEventListener(
     "load",
     chargerVehicule
+);
+
+var intervalleCalculRentabiliteMs = 3 * 60 * 1000;
+var dernierCalculPeriodiqueRentabilite = Date.now();
+
+function actualiserRentabilitePeriodiquement() {
+
+    if (document.visibilityState === "hidden") {
+        return;
+    }
+
+    calculerMeilleureStation();
+    dernierCalculPeriodiqueRentabilite = Date.now();
+
+}
+
+setInterval(
+    actualiserRentabilitePeriodiquement,
+    intervalleCalculRentabiliteMs
+);
+
+document.addEventListener(
+    "visibilitychange",
+    function() {
+        if (
+            document.visibilityState === "visible"
+            && Date.now() - dernierCalculPeriodiqueRentabilite
+                >= intervalleCalculRentabiliteMs
+        ) {
+            actualiserRentabilitePeriodiquement();
+        }
+    }
 );
 
 var itineraireLayer = null;
