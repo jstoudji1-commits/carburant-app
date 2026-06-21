@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-19T06:41:27.035845+00:00",
+  "generated_at": "2026-06-21T12:05:28.779292+00:00",
   "summary": {
     "stations_total": 9796,
-    "adresses_ban_trouvees": 9721,
-    "enseignes_trouvees": 7770,
+    "adresses_ban_trouvees": 9723,
+    "enseignes_trouvees": 7769,
     "coordonnees_corrigees": 124,
-    "a_verifier_manuellement": 1488
+    "a_verifier_manuellement": 1491
   },
   "review_required": [
     {
@@ -60,17 +60,6 @@
       "ecart_ban_metres": 774163,
       "score_ban": 0.3171252892561983,
       "resultat_ban": "Aire de Sce de l’Autoroute a 26 02690 Urvillers",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "12230003",
-      "adresse": "La Méridienne - Parc d’activités Millau-Larzac",
-      "cp": "12230",
-      "ville": "La Cavalerie",
-      "ecart_ban_metres": 719018,
-      "score_ban": 0.3861655555555555,
-      "resultat_ban": "Rue du Parc des Activités 50470 Cherbourg-en-Cotentin",
       "corrigee": false,
       "source_correction": ""
     },
@@ -302,6 +291,17 @@
       "ecart_ban_metres": 474240,
       "score_ban": 0.38063898989898987,
       "resultat_ban": "Aire Autoroute A10 Bordeaux 79800 Sainte-Eanne",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "29000016",
+      "adresse": "2 AVENUE DE TY BOS - ZAC DE TY DOUAR",
+      "cp": "29000",
+      "ville": "Quimper",
+      "ecart_ban_metres": 445569,
+      "score_ban": 0.31454967914438503,
+      "resultat_ban": "Avenue ZAC 2000 33380 Mios",
       "corrigee": false,
       "source_correction": ""
     },
@@ -702,13 +702,24 @@
       "source_correction": ""
     },
     {
-      "id": "41200009",
-      "adresse": "AUTOROUTE A85 - AIRE DE ROMORANTIN",
-      "cp": "41200",
-      "ville": "Pruniers-en-Sologne",
-      "ecart_ban_metres": 170724,
-      "score_ban": 0.3564844005270092,
-      "resultat_ban": "Aire Autoroute A 10 Paris 79800 Sainte-Eanne",
+      "id": "55160013",
+      "adresse": "AUTOROUTE A4 AIRE DE VERDUN SAINT NICOLAS SUD",
+      "cp": "55160",
+      "ville": "Sommedieue",
+      "ecart_ban_metres": 185675,
+      "score_ban": 0.3516178873239436,
+      "resultat_ban": "Autoroute Aire de Repos Sud A5 89100 Soucy",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "93120005",
+      "adresse": "AUTOROUTE A1 - AIRE DE LA COURNEUVE OUEST - SENS LILLE/PARIS",
+      "cp": "93120",
+      "ville": "La Courneuve",
+      "ecart_ban_metres": 183693,
+      "score_ban": 0.3327047006651884,
+      "resultat_ban": "Autoroute A1-E15 (lille-Paris) 59113 Seclin",
       "corrigee": false,
       "source_correction": ""
     },
@@ -717,9 +728,9 @@
       "adresse": "ZAC du Moulin aux Moines",
       "cp": "72650",
       "ville": "La Chapelle-Saint-Aubin",
-      "ecart_ban_metres": 148308,
+      "ecart_ban_metres": 148145,
       "score_ban": 0.31640119244391973,
-      "resultat_ban": "ZAC des Champs Chouette 2 27600 Saint-Aubin-sur-Gaillon",
+      "resultat_ban": "ZAC des Champs Chouette 1 27600 Saint-Aubin-sur-Gaillon",
       "corrigee": false,
       "source_correction": ""
     },
@@ -834,6 +845,17 @@
       "source_correction": ""
     },
     {
+      "id": "41200009",
+      "adresse": "AUTOROUTE A85 - AIRE DE ROMORANTIN",
+      "cp": "41200",
+      "ville": "Pruniers-en-Sologne",
+      "ecart_ban_metres": 106759,
+      "score_ban": 0.3028863636363636,
+      "resultat_ban": "Autoroute A85 37140 Restigné",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
       "id": "83690002",
       "adresse": "Quartier les Plantiers",
       "cp": "83690",
@@ -907,17 +929,6 @@
       "ecart_ban_metres": 88953,
       "score_ban": 0.6726078869778869,
       "resultat_ban": "14 Rue Général Leclerc 57950 Montigny-lès-Metz",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "55160013",
-      "adresse": "AUTOROUTE A4 AIRE DE VERDUN SAINT NICOLAS SUD",
-      "cp": "55160",
-      "ville": "Sommedieue",
-      "ecart_ban_metres": 86707,
-      "score_ban": 0.33590855614973264,
-      "resultat_ban": "Autoroute A4 57500 Saint-Avold",
       "corrigee": false,
       "source_correction": ""
     },
@@ -1028,6 +1039,17 @@
       "ecart_ban_metres": 45615,
       "score_ban": 0.4185399173553719,
       "resultat_ban": "Impasse de la 1ere Dfl 13230 Port-Saint-Louis-du-Rhône",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "12230003",
+      "adresse": "La Méridienne - Parc d’activités Millau-Larzac",
+      "cp": "12230",
+      "ville": "La Cavalerie",
+      "ecart_ban_metres": 39252,
+      "score_ban": 0.36493578512396696,
+      "resultat_ban": "Zone d’Activite la Meridienne 34700 Le Bosc",
       "corrigee": false,
       "source_correction": ""
     },
@@ -1384,6 +1406,17 @@
       "source_correction": ""
     },
     {
+      "id": "71250007",
+      "adresse": "RN 79",
+      "cp": "71250",
+      "ville": "Sainte-Cécile",
+      "ecart_ban_metres": 9739,
+      "score_ban": 0.3443038755980861,
+      "resultat_ban": "Route de Saint-Vincent 71250 La Vineuse sur Fregande",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
       "id": "33260010",
       "adresse": "RD112 Lieu dit Jaumard",
       "cp": "33260",
@@ -1721,17 +1754,6 @@
       "ecart_ban_metres": 7448,
       "score_ban": 0.7195333542319747,
       "resultat_ban": "Route de Lavelanet 09300 Nalzen",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "21490003",
-      "adresse": "AUTOROUTE A31 - AIRE DE DIJON BROGNON",
-      "cp": "21490",
-      "ville": "Brognon",
-      "ecart_ban_metres": 7290,
-      "score_ban": 0.4005330303030302,
-      "resultat_ban": "Route de Dijon 21490 Norges-la-Ville",
       "corrigee": false,
       "source_correction": ""
     },
@@ -2117,17 +2139,6 @@
       "ecart_ban_metres": 6325,
       "score_ban": 0.43248518565941096,
       "resultat_ban": "Allée des restanques 13127 Vitrolles",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "45190015",
-      "adresse": "Aire de Meung sur Loire, Autoroute A10",
-      "cp": "45190",
-      "ville": "Messas",
-      "ecart_ban_metres": 6232,
-      "score_ban": 0.5270393506493506,
-      "resultat_ban": "Route de Bel Air 45130 Meung-sur-Loire",
       "corrigee": false,
       "source_correction": ""
     },
@@ -2572,17 +2583,6 @@
       "source_correction": ""
     },
     {
-      "id": "26120001",
-      "adresse": "ZONE DES GOUVERNAUX",
-      "cp": "26120",
-      "ville": "Chabeuil",
-      "ecart_ban_metres": 5146,
-      "score_ban": 0.5025663636363635,
-      "resultat_ban": "Allée des Gerbes 26120 Chabeuil",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "84507001",
       "adresse": "Route de Saint-Paul-Trois-Chateaux",
       "cp": "84500",
@@ -2689,6 +2689,17 @@
       "ecart_ban_metres": 4953,
       "score_ban": 0.4504781385281385,
       "resultat_ban": "Route d'Arzens 11290 Alairac",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "13300010",
+      "adresse": "RN 113 - ZAC DE LA CRAU",
+      "cp": "13300",
+      "ville": "Salon-de-Provence",
+      "ecart_ban_metres": 4882,
+      "score_ban": 0.48564874608150466,
+      "resultat_ban": "Route nationale 113 13300 Salon-de-Provence",
       "corrigee": false,
       "source_correction": ""
     },
@@ -3078,17 +3089,6 @@
       "source_correction": ""
     },
     {
-      "id": "63270002",
-      "adresse": "ZAC des Meules 2",
-      "cp": "63270",
-      "ville": "Vic-le-Comte",
-      "ecart_ban_metres": 4515,
-      "score_ban": 0.4663074747474747,
-      "resultat_ban": "Rue des Meules 63270 Yronde-et-Buron",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "56270001",
       "adresse": "BD des islandais",
       "cp": "22680",
@@ -3184,17 +3184,6 @@
       "ecart_ban_metres": 4441,
       "score_ban": 0.40270065830721,
       "resultat_ban": "Rue du Champ de l'Aire 34290 Montblanc",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "83130008",
-      "adresse": "AIRE DES AMANDIERS CHABERTE, AUTOROUTE A57",
-      "cp": "83130",
-      "ville": "La Garde",
-      "ecart_ban_metres": 4430,
-      "score_ban": 0.5142835725677831,
-      "resultat_ban": "Rue des Amandiers 83130 La Garde",
       "corrigee": false,
       "source_correction": ""
     },
@@ -4702,6 +4691,17 @@
       "ecart_ban_metres": 3319,
       "score_ban": 0.530345041322314,
       "resultat_ban": "Chemin de Villeray 53480 Vaiges",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "45430006",
+      "adresse": "ROUTE NATIONALE 60",
+      "cp": "45430",
+      "ville": "Mardié",
+      "ecart_ban_metres": 3318,
+      "score_ban": 0.473818961038961,
+      "resultat_ban": "Avenue Nationale 45430 Chécy",
       "corrigee": false,
       "source_correction": ""
     },
@@ -6631,6 +6631,17 @@
       "source_correction": ""
     },
     {
+      "id": "18200011",
+      "adresse": "Autoroute A71 - La GazonnièreSens Bourges – Clermond-Ferrand",
+      "cp": "18200",
+      "ville": "Farges-Allichamps",
+      "ecart_ban_metres": 2486,
+      "score_ban": 0.36497985370950886,
+      "resultat_ban": "Route de Bourges 18200 Bruère-Allichamps",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
       "id": "11110005",
       "adresse": "AUTOROUTE A9 - AIRE DE NARBONNE VINASSAN SUD",
       "cp": "11110",
@@ -7522,17 +7533,6 @@
       "source_correction": ""
     },
     {
-      "id": "45430006",
-      "adresse": "ROUTE NATIONALE 60",
-      "cp": "45430",
-      "ville": "Mardié",
-      "ecart_ban_metres": 2261,
-      "score_ban": 0.4193851374207188,
-      "resultat_ban": "Allée de l'Auvernat 45430 Mardié",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "56130002",
       "adresse": "routes de nantes",
       "cp": "56130",
@@ -7639,6 +7639,17 @@
       "ecart_ban_metres": 2230,
       "score_ban": 0.5875639534883721,
       "resultat_ban": "165 Route de Courrières 62220 Carvin",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "45190015",
+      "adresse": "Aire de Meung sur Loire, Autoroute A10",
+      "cp": "45190",
+      "ville": "Messas",
+      "ecart_ban_metres": 2229,
+      "score_ban": 0.396761610845295,
+      "resultat_ban": "Route de Messas 45190 Villorceau",
       "corrigee": false,
       "source_correction": ""
     },
@@ -7764,6 +7775,17 @@
       "source_correction": ""
     },
     {
+      "id": "26120001",
+      "adresse": "ZONE DES GOUVERNAUX",
+      "cp": "26120",
+      "ville": "Chabeuil",
+      "ecart_ban_metres": 2196,
+      "score_ban": 0.5025663636363635,
+      "resultat_ban": "Chemin des Goussons 26120 Chabeuil",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
       "id": "20220006",
       "adresse": "RN 197",
       "cp": "20220",
@@ -7815,6 +7837,17 @@
       "ecart_ban_metres": 2183,
       "score_ban": 0.8826850988142292,
       "resultat_ban": "Route de Ferrières 03250 Le Mayet-de-Montagne",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "21490003",
+      "adresse": "AUTOROUTE A31 - AIRE DE DIJON BROGNON",
+      "cp": "21490",
+      "ville": "Brognon",
+      "ecart_ban_metres": 2182,
+      "score_ban": 0.3637261251862891,
+      "resultat_ban": "Rue de Beire le Châtel 21490 Brognon",
       "corrigee": false,
       "source_correction": ""
     },
@@ -9432,6 +9465,17 @@
       "ecart_ban_metres": 1839,
       "score_ban": 0.4656566666666666,
       "resultat_ban": "Impasse Rene Demars 95470 Vémars",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "34400016",
+      "adresse": "A9, AIRE AMBRUSSUM NORD (direction Nimes Montpellier)",
+      "cp": "34400",
+      "ville": "Villetelle",
+      "ecart_ban_metres": 1838,
+      "score_ban": 0.41231791293213826,
+      "resultat_ban": "Chemin d'Ambrussum 34400 Villetelle",
       "corrigee": false,
       "source_correction": ""
     },
@@ -12109,17 +12153,6 @@
       "source_correction": ""
     },
     {
-      "id": "18200011",
-      "adresse": "Autoroute A71 - La GazonnièreSens Bourges – Clermond-Ferrand",
-      "cp": "18200",
-      "ville": "Farges-Allichamps",
-      "ecart_ban_metres": 1459,
-      "score_ban": 0.40940609625668445,
-      "resultat_ban": "Route de Lignieres 18200 Farges-Allichamps",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "34600002",
       "adresse": "Station Service de BEL AIR",
       "cp": "34600",
@@ -12538,17 +12571,6 @@
       "source_correction": ""
     },
     {
-      "id": "1800003",
-      "adresse": "ROUTE DE CHALAMONT",
-      "cp": "01800",
-      "ville": "Meximieux",
-      "ecart_ban_metres": 1405,
-      "score_ban": 0.9482390909090909,
-      "resultat_ban": "Route de Chalamont 01800 Meximieux",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "24330005",
       "adresse": "les guichoux",
       "cp": "24330",
@@ -12879,17 +12901,6 @@
       "source_correction": ""
     },
     {
-      "id": "34400016",
-      "adresse": "A9, AIRE AMBRUSSUM NORD (direction Nimes Montpellier)",
-      "cp": "34400",
-      "ville": "Villetelle",
-      "ecart_ban_metres": 1355,
-      "score_ban": 0.4409214141414141,
-      "resultat_ban": "Chemin de Montpellier 34400 Villetelle",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
       "id": "70300001",
       "adresse": "RN 57",
       "cp": "70300",
@@ -13183,6 +13194,17 @@
       "ecart_ban_metres": 1327,
       "score_ban": 0.8146680419580419,
       "resultat_ban": "Route de Lacanau -  RD 1215 33160 Saint-Médard-en-Jalles",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "81600006",
+      "adresse": "190 RUE DU CASTELLET ZA GARRIGUE LONGUE",
+      "cp": "81600",
+      "ville": "Montans",
+      "ecart_ban_metres": 1323,
+      "score_ban": 0.5419468261562999,
+      "resultat_ban": "Route de Garrigue Longue 81600 Montans",
       "corrigee": false,
       "source_correction": ""
     },
@@ -13880,6 +13902,17 @@
       "source_correction": ""
     },
     {
+      "id": "13800004",
+      "adresse": "Quartier les Craux",
+      "cp": "13800",
+      "ville": "Istres",
+      "ecart_ban_metres": 1238,
+      "score_ban": 0.6082845989304813,
+      "resultat_ban": "Les Craux Sud 13800 Istres",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
       "id": "61500002",
       "adresse": "ROUTE DE MORTAGNE",
       "cp": "61500",
@@ -13986,17 +14019,6 @@
       "ecart_ban_metres": 1227,
       "score_ban": 0.7234501782531193,
       "resultat_ban": "Rue Grande Rue 50110 Cherbourg-en-Cotentin",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "13800004",
-      "adresse": "Quartier les Craux",
-      "cp": "13800",
-      "ville": "Istres",
-      "ecart_ban_metres": 1226,
-      "score_ban": 0.6082845989304813,
-      "resultat_ban": "Les Craux Est 13800 Istres",
       "corrigee": false,
       "source_correction": ""
     },
@@ -14272,17 +14294,6 @@
       "ecart_ban_metres": 1184,
       "score_ban": 0.5617981818181818,
       "resultat_ban": "Quartier du Touar 83460 Les Arcs",
-      "corrigee": false,
-      "source_correction": ""
-    },
-    {
-      "id": "84000020",
-      "adresse": "COURTINE OUEST-ROCADE CH. DE GAU",
-      "cp": "84000",
-      "ville": "Avignon",
-      "ecart_ban_metres": 1184,
-      "score_ban": 0.5589548251748252,
-      "resultat_ban": "Rocade Charles de Gaulle 84000 Avignon",
       "corrigee": false,
       "source_correction": ""
     },
@@ -15108,6 +15119,17 @@
       "ecart_ban_metres": 1110,
       "score_ban": 0.31902710437710435,
       "resultat_ban": "Le Void Chaintra 88450 Vincey",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "84000020",
+      "adresse": "COURTINE OUEST-ROCADE CH. DE GAU",
+      "cp": "84000",
+      "ville": "Avignon",
+      "ecart_ban_metres": 1109,
+      "score_ban": 0.5416520408163265,
+      "resultat_ban": "Chemin de Courtine 84000 Avignon",
       "corrigee": false,
       "source_correction": ""
     },
@@ -16109,6 +16131,17 @@
       "ecart_ban_metres": 1021,
       "score_ban": 0.9648809090909091,
       "resultat_ban": "Rue du Maréchal Foch 61700 Domfront en Poiraie",
+      "corrigee": false,
+      "source_correction": ""
+    },
+    {
+      "id": "13630003",
+      "adresse": "48 avenue de la bouvine RD 571",
+      "cp": "13630",
+      "ville": "Eyragues",
+      "ecart_ban_metres": 1020,
+      "score_ban": 0.829059696969697,
+      "resultat_ban": "Avenue de la Bouvine D 571 13630 Eyragues",
       "corrigee": false,
       "source_correction": ""
     },
