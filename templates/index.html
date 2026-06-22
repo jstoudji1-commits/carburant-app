@@ -1118,6 +1118,26 @@ body{
     font-weight:800;
 }
 
+.economy-recalculation{
+    position:absolute;
+    inset:0;
+    z-index:4;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:12px;
+    background:rgba(255,255,255,0.68);
+    color:#087a2c;
+    font-size:20px;
+    font-weight:800;
+    pointer-events:none;
+    backdrop-filter:blur(1px);
+}
+
+.economy-recalculation[hidden]{
+    display:none;
+}
+
 .bottom-actions{
     display:flex;
     gap:12px;
@@ -1533,6 +1553,13 @@ body{
 
         {% if stations and stations[0].latitude and stations[0].longitude %}
         <div class="bottom-card">
+            <div
+                id="economy-recalculation"
+                class="economy-recalculation"
+                role="status"
+                aria-live="polite"
+                hidden
+            >Recalcul en cours</div>
             <div class="bottom-icon">Eco</div>
             <div>
                 <p id="economy-title" class="bottom-title">
@@ -2682,8 +2709,8 @@ var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
 var orientationAutomatiqueActive = true;
 var capCarte = capInitialCarte;
-var dernierCapUtilisateur = capInitialCarte;
-var capFlecheUtilisateur = capInitialCarte;
+var dernierCapUtilisateur = (360 - capInitialCarte) % 360;
+var capFlecheUtilisateur = dernierCapUtilisateur;
 var dateDernierCapFiable = 0;
 var utilisateurEnMouvement = false;
 var vitesseUtilisateurMps = 0;
@@ -2748,6 +2775,38 @@ function lisserCap(capPrecedent, nouveauCap, facteur) {
 
 }
 
+function calculerPointDevant(
+    latitude,
+    longitude,
+    cap,
+    distanceMetres
+) {
+
+    var rayonTerre = 6371000;
+    var conversion = Math.PI / 180;
+    var latitudeDepart = latitude * conversion;
+    var longitudeDepart = longitude * conversion;
+    var capRadians = cap * conversion;
+    var distanceAngulaire = distanceMetres / rayonTerre;
+    var latitudeCible = Math.asin(
+        Math.sin(latitudeDepart) * Math.cos(distanceAngulaire)
+        + Math.cos(latitudeDepart) * Math.sin(distanceAngulaire)
+        * Math.cos(capRadians)
+    );
+    var longitudeCible = longitudeDepart + Math.atan2(
+        Math.sin(capRadians) * Math.sin(distanceAngulaire)
+        * Math.cos(latitudeDepart),
+        Math.cos(distanceAngulaire)
+        - Math.sin(latitudeDepart) * Math.sin(latitudeCible)
+    );
+
+    return {
+        latitude: latitudeCible / conversion,
+        longitude: longitudeCible / conversion
+    };
+
+}
+
 function orienterCarte(capCible) {
 
     if (
@@ -2763,7 +2822,8 @@ function orienterCarte(capCible) {
         cancelAnimationFrame(animationOrientationCarte);
     }
 
-    capCarte = (capCible + 360) % 360;
+    // leaflet-rotate attend la rotation visuelle de la carte, inverse du cap GPS.
+    capCarte = (360 - capCible) % 360;
     map.setBearing(capCarte);
     animationOrientationCarte = null;
     actualiserOrientationFlecheUtilisateur(capCible);
@@ -2792,7 +2852,7 @@ function actualiserOrientationFlecheUtilisateur(capCible) {
     var rotation = suiviCarteActif && orientationAutomatiqueActive
         ? 0
         : (
-            capFlecheUtilisateur - capCarte + 540
+            capFlecheUtilisateur + capCarte + 540
         ) % 360 - 180;
     fleche.style.transform = "rotate(" + rotation + "deg)";
 
@@ -3188,10 +3248,10 @@ function demarrerGeolocalisation() {
 
             if (Number.isFinite(capMesure) && utilisateurEnMouvement) {
                 var facteurLissage = vitesseUtilisateurMps >= 8
-                    ? 0.58
+                    ? 0.78
                     : vitesseUtilisateurMps >= 3
-                        ? 0.46
-                        : 0.34;
+                        ? 0.70
+                        : 0.50;
                 dernierCapUtilisateur = dateDernierCapFiable
                     ? lisserCap(
                         dernierCapUtilisateur,
@@ -3349,6 +3409,38 @@ var champsVehicule = [
     "vehicule-reservoir",
     "vehicule-conso"
 ];
+var economiePrecedentePourSeuil = null;
+var recalculRentabiliteEnCours = false;
+
+function declencherRecalculSousSeuil() {
+
+    if (recalculRentabiliteEnCours) {
+        return;
+    }
+
+    var indicateur = document.getElementById(
+        "economy-recalculation"
+    );
+    recalculRentabiliteEnCours = true;
+
+    if (indicateur) {
+        indicateur.hidden = false;
+    }
+
+    setTimeout(
+        function() {
+            calculerMeilleureStation();
+
+            if (indicateur) {
+                indicateur.hidden = true;
+            }
+
+            recalculRentabiliteEnCours = false;
+        },
+        750
+    );
+
+}
 
 function actualiserNomBoutonVehicule() {
 
@@ -3476,6 +3568,16 @@ window.calculerMeilleureStation = function() {
         0,
         coutPleinReference - meilleureStation.coutTotal
     );
+
+    if (
+        navigationActive
+        && Number.isFinite(economieEstimeeFigee)
+    ) {
+        economie = economieEstimeeFigee;
+    } else {
+        derniereEconomieEstimee = economie;
+    }
+
     var prixFormate = meilleureStation.prix
         .toLocaleString(
             "fr-FR",
@@ -3523,8 +3625,26 @@ window.calculerMeilleureStation = function() {
     economieMiseEnAvant.textContent =
         "\u00c9conomie estim\u00e9e "
         + economieFormatee
-        + " \u20ac par rapport au prix moyen local";
+        + " \u20ac";
     sousTitre.appendChild(economieMiseEnAvant);
+    sousTitre.appendChild(
+        document.createTextNode(
+            " par rapport au prix moyen local"
+        )
+    );
+
+    var economiePasseSousUnEuro =
+        economie < 1
+        && (
+            economiePrecedentePourSeuil === null
+            || economiePrecedentePourSeuil >= 1
+        );
+    economiePrecedentePourSeuil = economie;
+
+    if (economiePasseSousUnEuro) {
+        declencherRecalculSousSeuil();
+    }
+
     if (!routeNavigation && !navigationActive) {
         boutonItineraire.textContent = "Itin\u00e9raire";
         boutonItineraire.onclick = function() {
@@ -3652,6 +3772,8 @@ var routeNavigation = null;
 var etapesNavigation = [];
 var indexEtapeNavigation = 0;
 var navigationActive = false;
+var derniereEconomieEstimee = null;
+var economieEstimeeFigee = null;
 var destinationNavigation = null;
 var coordonneesRouteNavigation = [];
 var positionsHorsItineraire = 0;
@@ -4117,6 +4239,12 @@ window.demarrerNavigation = async function() {
         return;
     }
 
+    if (!Number.isFinite(derniereEconomieEstimee)) {
+        calculerMeilleureStation();
+    }
+    economieEstimeeFigee = Number.isFinite(derniereEconomieEstimee)
+        ? derniereEconomieEstimee
+        : null;
     navigationActive = true;
     suiviCarteActif = true;
     orientationAutomatiqueActive = true;
@@ -4150,6 +4278,7 @@ window.demarrerNavigation = async function() {
 window.arreterNavigation = function() {
 
     navigationActive = false;
+    economieEstimeeFigee = null;
     reinitialiserDetectionEcart();
     document.getElementById("navigation-panel").hidden = true;
 
@@ -4158,6 +4287,8 @@ window.arreterNavigation = function() {
         bouton.textContent = "D\u00e9marrer";
         bouton.onclick = demarrerNavigation;
     }
+
+    calculerMeilleureStation();
 
 }
 
@@ -4209,26 +4340,42 @@ async function tracerItineraire(
         boutonItineraire.disabled = true;
     }
 
+    var capRecent =
+        utilisateurEnMouvement
+        && Date.now() - dateDernierCapFiable < 10000
+        && Number.isFinite(dernierCapUtilisateur);
+    var pointDevant = capRecent
+        ? calculerPointDevant(
+            latitudeUtilisateur,
+            longitudeUtilisateur,
+            dernierCapUtilisateur,
+            Math.max(
+                120,
+                Math.min(250, vitesseUtilisateurMps * 6)
+            )
+        )
+        : null;
+    var coordonneesIntermediaires = pointDevant
+        ? ";" + pointDevant.longitude + "," + pointDevant.latitude
+        : "";
     var url =
         "https://router.project-osrm.org/route/v1/driving/"
         + longitudeUtilisateur
         + ","
         + latitudeUtilisateur
+        + coordonneesIntermediaires
         + ";"
         + longitudeStation
         + ","
         + latitudeStation
         + "?overview=full&geometries=geojson&steps=true&continue_straight=true";
 
-    var capRecent =
-        utilisateurEnMouvement
-        && Date.now() - dateDernierCapFiable < 10000
-        && Number.isFinite(dernierCapUtilisateur);
-
     if (capRecent) {
         url += "&bearings="
             + Math.round(dernierCapUtilisateur)
-            + ",60;";
+            + ",45;"
+            + Math.round(dernierCapUtilisateur)
+            + ",70;";
     }
 
     try {
@@ -4330,7 +4477,3 @@ async function tracerItineraire(
 </body>
 
 </html>
-
-
-
-
