@@ -1113,9 +1113,14 @@ body{
 }
 
 .economy-saving{
+    display:inline-block;
     color:#159b31;
     font-size:17px;
     font-weight:800;
+}
+
+.economy-saving-label{
+    display:block;
 }
 
 .economy-recalculation{
@@ -3622,10 +3627,13 @@ window.calculerMeilleureStation = function() {
         + " km \u00b7 ";
     var economieMiseEnAvant = document.createElement("span");
     economieMiseEnAvant.className = "economy-saving";
-    economieMiseEnAvant.textContent =
-        "\u00c9conomie estim\u00e9e "
-        + economieFormatee
-        + " \u20ac";
+    var economieLibelle = document.createElement("span");
+    economieLibelle.className = "economy-saving-label";
+    economieLibelle.textContent = "\u00c9conomie estim\u00e9e";
+    var economieMontant = document.createElement("span");
+    economieMontant.textContent = economieFormatee + " \u20ac";
+    economieMiseEnAvant.appendChild(economieLibelle);
+    economieMiseEnAvant.appendChild(economieMontant);
     sousTitre.appendChild(economieMiseEnAvant);
     sousTitre.appendChild(
         document.createTextNode(
