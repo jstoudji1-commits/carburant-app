@@ -414,6 +414,16 @@ def confidentialite(request: Request):
         context={}
     )
 
+
+@app.get("/suppression-compte")
+def suppression_compte(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="suppression_compte.html",
+        context={}
+    )
+
 @app.get("/stations")
 def get_stations():
 
