@@ -1654,8 +1654,9 @@ body{
                         <span class="premium-price">3,99 &euro;/an</span>
                     </p>
                     <p class="premium-offer-copy">
-                        Passez en mode malin : moins de pub, plus de suivi,
-                        et des choix de stations vraiment rentables.
+                        Passez en mode malin : suppression de la pub, plus de suivi,
+                        et recalcul de la station la plus rentable toutes les
+                        30 secondes au lieu de 3 minutes.
                     </p>
                     <ul class="premium-benefits">
                         <li>5 v&eacute;hicules, favoris illimit&eacute;s et historique des &eacute;conomies.</li>
@@ -1979,6 +1980,11 @@ body{
 <script>
 
 var dateDerniereMiseAJour = {% if date_verification %}new Date({{ date_verification|tojson }}){% else %}null{% endif %};
+var dateDonneesChargees = dateDerniereMiseAJour
+    ? dateDerniereMiseAJour.toISOString()
+    : "";
+var rechargementPrixEnCours = false;
+var derniereSynchronisationPrix = 0;
 
 function texteAgeMiseAJour() {
 
@@ -2022,6 +2028,33 @@ function actualiserCompteurMiseAJour() {
 
 }
 
+function rechargerAvecPositionActuelle() {
+
+    if (rechargementPrixEnCours) {
+        return;
+    }
+
+    rechargementPrixEnCours = true;
+
+    var url = new URL(window.location.href);
+    if (
+        latitudeUtilisateur !== null
+        && longitudeUtilisateur !== null
+    ) {
+        url.searchParams.set("latitude", latitudeUtilisateur);
+        url.searchParams.set("longitude", longitudeUtilisateur);
+    }
+    url.searchParams.set("carburant", {{ carburant|tojson }});
+    url.searchParams.set("rayon", "15");
+
+    sessionStorage.setItem(
+        "optiplein-cap-carte",
+        String(capCarte)
+    );
+    window.location.replace(url.toString());
+
+}
+
 async function synchroniserDateMiseAJour() {
 
     try {
@@ -2035,8 +2068,23 @@ async function synchroniserDateMiseAJour() {
 
         var donnees = await reponse.json();
         if (donnees.updated_at) {
-            dateDerniereMiseAJour = new Date(donnees.updated_at);
+            var dateServeur = new Date(donnees.updated_at);
+            if (Number.isNaN(dateServeur.getTime())) {
+                return;
+            }
+            var isoServeur = dateServeur.toISOString();
+            dateDerniereMiseAJour = dateServeur;
             actualiserCompteurMiseAJour();
+
+            if (
+                dateDonneesChargees
+                && isoServeur !== dateDonneesChargees
+            ) {
+                afficherInfoItineraire(
+                    "Nouveaux prix disponibles, actualisation..."
+                );
+                rechargerAvecPositionActuelle();
+            }
         }
     } catch (erreur) {
         console.log("Synchronisation de la mise a jour indisponible");
@@ -2046,7 +2094,30 @@ async function synchroniserDateMiseAJour() {
 
 actualiserCompteurMiseAJour();
 setInterval(actualiserCompteurMiseAJour, 1000);
-setInterval(synchroniserDateMiseAJour, 30000);
+
+function intervalleSynchronisationPrixMs() {
+
+    return comptePremiumActif()
+        ? 30 * 1000
+        : 3 * 60 * 1000;
+
+}
+
+setInterval(
+    function() {
+        var maintenant = Date.now();
+        if (
+            maintenant - derniereSynchronisationPrix
+                < intervalleSynchronisationPrixMs()
+        ) {
+            return;
+        }
+
+        derniereSynchronisationPrix = maintenant;
+        synchroniserDateMiseAJour();
+    },
+    30000
+);
 
 window.ouvrirSignalement = function() {
 

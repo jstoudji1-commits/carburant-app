@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-06-23T09:00:26.908108+00:00",
+  "source_officielle": "https://donnees.roulez-eco.fr/opendata/instantane",
+  "stations_locales": 9795,
+  "stations_officielles": 9797,
+  "stations_communes": 9795,
+  "stations_manquantes_localement": [
+    "59125006",
+    "86140001"
+  ],
+  "stations_absentes_du_flux_officiel": [],
+  "nombre_ecarts": 11249,
+  "ecarts_par_champ": {
+    "latitude": 2584,
+    "longitude": 2585,
+    "gazole": 2046,
+    "e10": 1290,
+    "sp98": 1132,
+    "ville": 1612
+  },
+  "fichier_ecarts": "stations_prix_carburants_gouv_ecarts.csv"
+}

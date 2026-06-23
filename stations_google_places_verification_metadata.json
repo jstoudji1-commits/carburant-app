@@ -1,0 +1,14 @@
+{
+  "fichier": "stations_google_places_verification.csv",
+  "stations": 9795,
+  "stations_a_verifier": 3025,
+  "source_actuelle": [
+    "stations.csv",
+    "stations_coordinates_report.json",
+    "Donn?es officielles carburants",
+    "Base Adresse Nationale",
+    "OpenStreetMap"
+  ],
+  "colonnes_google": "Colonnes pr?vues pour un contr?le via Google Places API officielle ou v?rification manuelle. Ne contient pas de donn?es extraites de Google Maps.",
+  "note_legale": "Google Maps Platform interdit le scraping massif et la sauvegarde de noms/adresses Google Maps hors des usages autoris?s. Le place_id peut ?tre conserv? selon les r?gles Google Places."
+}
