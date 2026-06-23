@@ -5,7 +5,8 @@
     "https://www.openstreetmap.org",
     "BANCO / OpenStreetMap commerces",
     "stations_sans_enseigne_a_completer.csv",
-    "stations_sans_enseigne_restantes_manuelles.xlsx"
+    "stations_sans_enseigne_restantes_manuelles.xlsx",
+    "Correction manuelle utilisateur"
   ],
   "stations": {
     "40500002": {
@@ -90052,10 +90053,11 @@
       "enseigne": "Independent",
       "source_enseigne": "BANCO",
       "source_enseigne_detail": "reference_prix_carburants; osm=way/100383557; distance=0m",
-      "latitude_corrigee": null,
-      "longitude_corrigee": null,
-      "source_correction": "",
-      "osm_id": null
+      "latitude_corrigee": 43.60857919741936,
+      "longitude_corrigee": 5.097715180427857,
+      "source_correction": "Correction manuelle utilisateur",
+      "osm_id": null,
+      "source_correction_detail": "Coordonnees confirmees pour station Route Nationale 113 - Salon-de-Provence"
     },
     "65110003": {
       "signature": "route pierrefitte|65110|cauterets",
@@ -90442,10 +90444,11 @@
       "enseigne": "TotalEnergies",
       "source_enseigne": "BANCO",
       "source_enseigne_detail": "reference_prix_carburants; osm=node/7227060568; distance=0m",
-      "latitude_corrigee": null,
-      "longitude_corrigee": null,
-      "source_correction": "",
-      "osm_id": null
+      "latitude_corrigee": 43.58991321082368,
+      "longitude_corrigee": 5.1937006041042455,
+      "source_correction": "Correction manuelle utilisateur",
+      "osm_id": null,
+      "source_correction_detail": "Coordonnees fournies pour TotalEnergies Est - Aire de Lancon de Provence"
     },
     "5200004": {
       "signature": "359 route des portes du lac route nationale 94|05200|baratier",
@@ -97312,10 +97315,11 @@
       "enseigne": "TotalEnergies",
       "source_enseigne": "BANCO",
       "source_enseigne_detail": "reference_prix_carburants; osm=node/6815532726; distance=0m",
-      "latitude_corrigee": null,
-      "longitude_corrigee": null,
-      "source_correction": "",
-      "osm_id": null
+      "latitude_corrigee": 43.58981607546812,
+      "longitude_corrigee": 5.18581490982403,
+      "source_correction": "Correction manuelle utilisateur",
+      "osm_id": null,
+      "source_correction_detail": "Coordonnees fournies pour TotalEnergies Ouest - Aire de Lancon de Provence"
     },
     "24470001": {
       "signature": "avenue léon sireyjol|24470|saint-pardoux-la-rivière",
