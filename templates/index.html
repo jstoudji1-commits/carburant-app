@@ -553,6 +553,10 @@ body{
     display:none;
 }
 
+.premium-only[hidden]{
+    display:none;
+}
+
 .favoris-info{
     margin:0 0 10px 0;
     color:var(--muted);
@@ -1673,7 +1677,7 @@ body{
                         placeholder="Consommation moyenne (L/100 km)"
                     >
 
-                    <div class="reservoir-gauge">
+                    <div class="reservoir-gauge premium-only" hidden>
                         <div class="reservoir-gauge-header">
                             <span>&Eacute;tat du r&eacute;servoir</span>
                             <span
@@ -4113,6 +4117,12 @@ function actualiserPlanCompte() {
     if (nouveauVehiculeBouton) {
         nouveauVehiculeBouton.hidden = !premium;
     }
+
+    document.querySelectorAll(".premium-only").forEach(
+        function(element) {
+            element.hidden = !premium;
+        }
+    );
 
     actualiserBoutonsFavoris();
     actualiserListeVehicules();
