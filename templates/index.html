@@ -506,18 +506,25 @@ body{
 }
 
 .popup-actions{
-    display:flex;
-    gap:10px;
-    justify-content:center;
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:8px;
+    width:100%;
+    max-width:260px;
+    margin:0 auto;
 }
 
 .popup-action{
-    padding:8px 14px;
-    border:none;
-    border-radius:6px;
+    min-width:0;
+    padding:9px 10px;
+    border:1px solid transparent;
+    border-radius:9px;
     color:white;
+    font-size:13px;
     font-weight:bold;
     cursor:pointer;
+    white-space:nowrap;
+    box-shadow:0 5px 12px rgba(16,37,54,0.13);
 }
 
 .popup-action.route{
@@ -529,7 +536,17 @@ body{
 }
 
 .popup-action.external{
-    background:#0f8fbd;
+    background:#ffffff;
+    color:#173346;
+    border-color:#d8e1e8;
+}
+
+.popup-action.external.waze{
+    color:#099bd8;
+}
+
+.popup-action.external.google{
+    color:#12813a;
 }
 
 .premium-navigation[hidden]{
@@ -1342,8 +1359,9 @@ body{
 }
 
 .bottom-actions{
-    display:flex;
+    display:grid;
     gap:12px;
+    min-width:180px;
 }
 
 .route-button{
@@ -1361,8 +1379,42 @@ body{
     background:linear-gradient(180deg, #27b33e, #087a2c);
 }
 
-.route-button[hidden]{
+.route-button[hidden],
+.premium-route-actions[hidden]{
     display:none;
+}
+
+.premium-route-actions{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:8px;
+}
+
+.premium-route-button{
+    min-width:0;
+    padding:11px 10px;
+    border:1px solid #d8e1e8;
+    border-radius:9px;
+    background:white;
+    color:#173346;
+    font-size:13px;
+    font-weight:800;
+    cursor:pointer;
+    box-shadow:0 6px 14px rgba(16,37,54,0.12);
+    white-space:nowrap;
+}
+
+.premium-route-button.waze{
+    color:#099bd8;
+}
+
+.premium-route-button.google{
+    color:#12813a;
+}
+
+.premium-route-button:disabled{
+    opacity:0.55;
+    cursor:not-allowed;
 }
 
 .route-info{
@@ -1867,6 +1919,28 @@ body{
                 >
                     Itin&eacute;raire
                 </button>
+                <div
+                    id="economy-premium-navigation"
+                    class="premium-route-actions premium-navigation"
+                    hidden
+                >
+                    <button
+                        type="button"
+                        id="economy-waze-button"
+                        class="premium-route-button waze"
+                        disabled
+                    >
+                        Waze
+                    </button>
+                    <button
+                        type="button"
+                        id="economy-google-button"
+                        class="premium-route-button google"
+                        disabled
+                    >
+                        Google Maps
+                    </button>
+                </div>
             </div>
         </div>
         {% endif %}
@@ -2763,7 +2837,7 @@ var marker = L.marker(
 
             <button
                 type="button"
-                class="popup-action external premium-navigation"
+                class="popup-action external waze premium-navigation"
                 onclick="ouvrirWaze(
                     {{ station.latitude }},
                     {{ station.longitude }}
@@ -2775,7 +2849,7 @@ var marker = L.marker(
 
             <button
                 type="button"
-                class="popup-action external premium-navigation"
+                class="popup-action external google premium-navigation"
                 onclick="ouvrirGoogleMaps(
                     {{ station.latitude }},
                     {{ station.longitude }}
@@ -4210,6 +4284,12 @@ window.calculerMeilleureStation = function() {
     var boutonItineraire = document.getElementById(
         "economy-route-button"
     );
+    var boutonWaze = document.getElementById(
+        "economy-waze-button"
+    );
+    var boutonGoogleMaps = document.getElementById(
+        "economy-google-button"
+    );
 
     if (
         !reservoir
@@ -4393,6 +4473,28 @@ window.calculerMeilleureStation = function() {
         };
     }
     boutonItineraire.hidden = false;
+
+    if (boutonWaze) {
+        boutonWaze.disabled = false;
+        boutonWaze.onclick = function() {
+            ouvrirWaze(
+                meilleureStation.latitude,
+                meilleureStation.longitude
+            );
+        };
+    }
+
+    if (boutonGoogleMaps) {
+        boutonGoogleMaps.disabled = false;
+        boutonGoogleMaps.onclick = function() {
+            ouvrirGoogleMaps(
+                meilleureStation.latitude,
+                meilleureStation.longitude
+            );
+        };
+    }
+
+    actualiserNavigationPremium();
 
 };
 
