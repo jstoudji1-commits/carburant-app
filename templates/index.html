@@ -828,11 +828,58 @@ body{
     accent-color:var(--green);
 }
 
-.premium-note{
-    margin:10px 0 0 0;
-    color:var(--muted);
-    font-size:12px;
+.premium-offer{
+    margin:14px 0 0 0;
+    padding:14px;
+    border:1px solid rgba(20,159,56,0.22);
+    border-radius:10px;
+    background:linear-gradient(180deg, #f4fff7, #ffffff);
+    color:var(--ink);
+}
+
+.premium-offer-title{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    margin:0 0 8px 0;
+    font-size:15px;
+    font-weight:800;
+}
+
+.premium-price{
+    flex:0 0 auto;
+    color:var(--green-dark);
+    font-size:16px;
+    white-space:nowrap;
+}
+
+.premium-offer-copy{
+    margin:0 0 10px 0;
+    color:#425463;
+    font-size:13px;
     line-height:1.35;
+}
+
+.premium-benefits{
+    margin:0;
+    padding:0;
+    display:grid;
+    gap:6px;
+    list-style:none;
+    color:#214053;
+    font-size:12px;
+    line-height:1.3;
+}
+
+.premium-benefits li::before{
+    content:"";
+    display:inline-block;
+    width:7px;
+    height:7px;
+    margin-right:7px;
+    border-radius:50%;
+    background:var(--green);
 }
 
 .map-column{
@@ -1601,11 +1648,21 @@ body{
                 >
                     Enregistrer
                 </button>
-                <p class="premium-note" id="premium-note">
-                    Premium : jusqu'&agrave; 5 v&eacute;hicules, favoris illimit&eacute;s,
-                    historique des &eacute;conomies et choix Waze/Google Maps apr&egrave;s
-                    branchement Google Play.
-                </p>
+                <section class="premium-offer" id="premium-note">
+                    <p class="premium-offer-title">
+                        <span>OptiPlein Premium</span>
+                        <span class="premium-price">3,99 &euro;/an</span>
+                    </p>
+                    <p class="premium-offer-copy">
+                        Passez en mode malin : moins de pub, plus de suivi,
+                        et des choix de stations vraiment rentables.
+                    </p>
+                    <ul class="premium-benefits">
+                        <li>5 v&eacute;hicules, favoris illimit&eacute;s et historique des &eacute;conomies.</li>
+                        <li>Jauge de r&eacute;servoir pour calculer l'&eacute;conomie r&eacute;elle.</li>
+                        <li>Guidage au choix : OptiPlein, Waze ou Google Maps.</li>
+                    </ul>
+                </section>
             </section>
         </div>
     </div>
