@@ -12,10 +12,15 @@ import csv
 from contextlib import asynccontextmanager, suppress
 from datetime import datetime
 from email.message import EmailMessage
+import hashlib
+import hmac
+import json
 import logging
 import math
 import os
+from pathlib import Path
 import re
+import secrets
 import smtplib
 import ssl
 import time
@@ -30,9 +35,18 @@ INTERVALLE_MISE_A_JOUR_SECONDES = 10 * 60
 logger = logging.getLogger("optiplein.update")
 EMAIL_SIGNALEMENT = os.getenv(
     "REPORT_EMAIL",
-    "j.stoudji1@gmail.com"
+    "optiplein5@gmail.com"
 )
 signalements_recents = {}
+DOSSIER_DONNEES_UTILISATEURS = Path(
+    os.getenv("OPTIPLEIN_DATA_DIR", ".")
+)
+COMPTES_UTILISATEURS_FICHIER = (
+    DOSSIER_DONNEES_UTILISATEURS
+    / "comptes_utilisateurs.json"
+)
+SESSIONS_UTILISATEURS = {}
+PBKDF2_ITERATIONS = 260000
 
 
 class SignalementProbleme(BaseModel):
@@ -51,6 +65,166 @@ class SignalementProbleme(BaseModel):
     email: str = Field(default="", max_length=160)
     page: str = Field(default="", max_length=300)
     site_web: str = Field(default="", max_length=120)
+
+
+class CompteIdentifiants(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(min_length=5, max_length=160)
+    mot_de_passe: str = Field(min_length=8, max_length=120)
+
+
+class DonneesCompte(BaseModel):
+
+    model_config = ConfigDict(extra="allow")
+
+    favoris: list = Field(default_factory=list)
+    vehicules: list = Field(default_factory=list)
+    vehicule_actif: str = ""
+    plan: Literal["free", "premium"] = "free"
+    historique_economies: list = Field(default_factory=list)
+
+
+class SauvegardeCompte(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    donnees: DonneesCompte
+
+
+def normaliser_email(email):
+
+    return email.strip().lower()
+
+
+def email_valide(email):
+
+    return bool(
+        re.fullmatch(
+            r"[^\s@]+@[^\s@]+\.[^\s@]+",
+            email,
+        )
+    )
+
+
+def charger_comptes_utilisateurs():
+
+    if not COMPTES_UTILISATEURS_FICHIER.exists():
+        return {"users": {}}
+
+    try:
+        with COMPTES_UTILISATEURS_FICHIER.open(
+            encoding="utf-8"
+        ) as fichier:
+            donnees = json.load(fichier)
+            if isinstance(donnees, dict) and "users" in donnees:
+                return donnees
+    except (OSError, ValueError, TypeError):
+        logger.exception(
+            "Impossible de lire les comptes utilisateurs."
+        )
+
+    return {"users": {}}
+
+
+def enregistrer_comptes_utilisateurs(donnees):
+
+    COMPTES_UTILISATEURS_FICHIER.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    temporaire = COMPTES_UTILISATEURS_FICHIER.with_suffix(
+        ".tmp"
+    )
+
+    with temporaire.open("w", encoding="utf-8") as fichier:
+        json.dump(
+            donnees,
+            fichier,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    temporaire.replace(COMPTES_UTILISATEURS_FICHIER)
+
+
+def hasher_mot_de_passe(mot_de_passe, sel=None):
+
+    sel = sel or secrets.token_hex(16)
+    empreinte = hashlib.pbkdf2_hmac(
+        "sha256",
+        mot_de_passe.encode("utf-8"),
+        sel.encode("utf-8"),
+        PBKDF2_ITERATIONS,
+    ).hex()
+
+    return {
+        "salt": sel,
+        "hash": empreinte,
+        "iterations": PBKDF2_ITERATIONS,
+    }
+
+
+def verifier_mot_de_passe(mot_de_passe, securite):
+
+    sel = securite.get("salt", "")
+    attendu = securite.get("hash", "")
+    iterations = int(
+        securite.get("iterations", PBKDF2_ITERATIONS)
+    )
+
+    if not sel or not attendu:
+        return False
+
+    obtenu = hashlib.pbkdf2_hmac(
+        "sha256",
+        mot_de_passe.encode("utf-8"),
+        sel.encode("utf-8"),
+        iterations,
+    ).hex()
+
+    return hmac.compare_digest(obtenu, attendu)
+
+
+def creer_session(email):
+
+    jeton = secrets.token_urlsafe(32)
+    SESSIONS_UTILISATEURS[jeton] = email
+
+    return jeton
+
+
+def email_depuis_requete(request):
+
+    autorisation = request.headers.get("Authorization", "")
+    prefixe = "Bearer "
+
+    if not autorisation.startswith(prefixe):
+        raise HTTPException(
+            status_code=401,
+            detail="Connexion requise.",
+        )
+
+    jeton = autorisation[len(prefixe):].strip()
+    email = SESSIONS_UTILISATEURS.get(jeton)
+
+    if not email:
+        raise HTTPException(
+            status_code=401,
+            detail="Session expiree. Reconnectez-vous.",
+        )
+
+    return email
+
+
+def limiter_donnees_compte(donnees):
+
+    donnees.favoris = donnees.favoris[:500]
+    donnees.vehicules = donnees.vehicules[:5]
+    donnees.historique_economies = donnees.historique_economies[:300]
+
+    return donnees.model_dump()
 
 
 def envoyer_signalement_email(signalement):
@@ -267,6 +441,117 @@ def get_derniere_mise_a_jour():
             if date_mise_a_jour
             else None
         )
+    }
+
+
+@app.post("/api/compte/inscription")
+def creer_compte(identifiants: CompteIdentifiants):
+
+    email = normaliser_email(identifiants.email)
+
+    if not email_valide(email):
+        raise HTTPException(
+            status_code=422,
+            detail="L'adresse e-mail n'est pas valide.",
+        )
+
+    comptes = charger_comptes_utilisateurs()
+    utilisateurs = comptes.setdefault("users", {})
+
+    if email in utilisateurs:
+        raise HTTPException(
+            status_code=409,
+            detail="Un compte existe deja avec cette adresse.",
+        )
+
+    utilisateurs[email] = {
+        "email": email,
+        "password": hasher_mot_de_passe(
+            identifiants.mot_de_passe
+        ),
+        "created_at": datetime.now().astimezone().isoformat(),
+        "updated_at": datetime.now().astimezone().isoformat(),
+        "data": limiter_donnees_compte(DonneesCompte()),
+    }
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "email": email,
+        "token": creer_session(email),
+        "donnees": utilisateurs[email]["data"],
+    }
+
+
+@app.post("/api/compte/connexion")
+def connecter_compte(identifiants: CompteIdentifiants):
+
+    email = normaliser_email(identifiants.email)
+    comptes = charger_comptes_utilisateurs()
+    utilisateur = comptes.get("users", {}).get(email)
+
+    if not utilisateur or not verifier_mot_de_passe(
+        identifiants.mot_de_passe,
+        utilisateur.get("password", {}),
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Adresse e-mail ou mot de passe incorrect.",
+        )
+
+    return {
+        "ok": True,
+        "email": email,
+        "token": creer_session(email),
+        "donnees": utilisateur.get("data", {}),
+    }
+
+
+@app.get("/api/compte/donnees")
+def lire_donnees_compte(request: Request):
+
+    email = email_depuis_requete(request)
+    comptes = charger_comptes_utilisateurs()
+    utilisateur = comptes.get("users", {}).get(email)
+
+    if not utilisateur:
+        raise HTTPException(
+            status_code=404,
+            detail="Compte introuvable.",
+        )
+
+    return {
+        "ok": True,
+        "email": email,
+        "donnees": utilisateur.get("data", {}),
+    }
+
+
+@app.post("/api/compte/sauvegarde")
+def sauvegarder_donnees_compte(
+    sauvegarde: SauvegardeCompte,
+    request: Request,
+):
+
+    email = email_depuis_requete(request)
+    comptes = charger_comptes_utilisateurs()
+    utilisateur = comptes.get("users", {}).get(email)
+
+    if not utilisateur:
+        raise HTTPException(
+            status_code=404,
+            detail="Compte introuvable.",
+        )
+
+    utilisateur["data"] = limiter_donnees_compte(
+        sauvegarde.donnees
+    )
+    utilisateur["updated_at"] = datetime.now().astimezone().isoformat()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "updated_at": utilisateur["updated_at"],
     }
 
 

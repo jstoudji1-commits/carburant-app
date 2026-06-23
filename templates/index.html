@@ -141,6 +141,86 @@ body{
     box-shadow:0 0 0 2px rgba(20,159,56,0.12);
 }
 
+.account-sync{
+    display:grid;
+    gap:9px;
+    margin-bottom:14px;
+    padding:12px;
+    border:1px solid #dce4ea;
+    border-radius:9px;
+    background:#ffffff;
+}
+
+.account-sync-title{
+    margin:0;
+    color:var(--ink);
+    font-size:14px;
+    font-weight:800;
+}
+
+.account-sync-copy{
+    margin:0;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.3;
+}
+
+.account-sync input{
+    width:100%;
+    padding:10px 11px;
+    border:1px solid #cbd5dd;
+    border-radius:8px;
+    color:var(--ink);
+    font-size:14px;
+}
+
+.account-sync-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.account-sync-button{
+    padding:10px 8px;
+    border:1px solid #cbd5dd;
+    border-radius:8px;
+    background:white;
+    color:var(--ink);
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.account-sync-button.primary{
+    border-color:var(--green);
+    background:var(--green);
+    color:white;
+}
+
+.account-sync-button.logout{
+    grid-column:1 / -1;
+    color:#b42318;
+}
+
+.account-sync-button[hidden]{
+    display:none;
+}
+
+.account-sync-status{
+    min-height:17px;
+    margin:0;
+    color:var(--muted);
+    font-size:12px;
+    font-weight:bold;
+}
+
+.account-sync-status.success{
+    color:var(--green-dark);
+}
+
+.account-sync-status.error{
+    color:#b42318;
+}
+
 .vehicle-list{
     display:grid;
     gap:8px;
@@ -1628,6 +1708,60 @@ body{
                     </div>
                 </div>
 
+                <div class="account-sync">
+                    <p class="account-sync-title">
+                        Sauvegarde du compte
+                    </p>
+                    <p class="account-sync-copy">
+                        Cr&eacute;ez un compte pour retrouver vos favoris,
+                        v&eacute;hicules et historiques sur un autre t&eacute;l&eacute;phone.
+                    </p>
+                    <input
+                        id="account-email"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="Adresse e-mail"
+                    >
+                    <input
+                        id="account-password"
+                        type="password"
+                        autocomplete="current-password"
+                        minlength="8"
+                        placeholder="Mot de passe"
+                    >
+                    <div class="account-sync-actions">
+                        <button
+                            type="button"
+                            class="account-sync-button primary"
+                            id="account-login-button"
+                            onclick="connecterCompteOptiPlein(event)"
+                        >
+                            Connexion
+                        </button>
+                        <button
+                            type="button"
+                            class="account-sync-button"
+                            id="account-create-button"
+                            onclick="creerCompteOptiPlein(event)"
+                        >
+                            Cr&eacute;er
+                        </button>
+                        <button
+                            type="button"
+                            class="account-sync-button logout"
+                            id="account-logout-button"
+                            onclick="deconnecterCompteOptiPlein(event)"
+                            hidden
+                        >
+                            D&eacute;connexion
+                        </button>
+                    </div>
+                    <p
+                        id="account-sync-status"
+                        class="account-sync-status"
+                    ></p>
+                </div>
+
                 <div
                     class="vehicle-list"
                     id="vehicle-list"
@@ -2925,9 +3059,13 @@ var planCompteCle = "optiplein-plan";
 var vehiculesCle = "optiplein-vehicules";
 var vehiculeActifCle = "optiplein-vehicule-actif";
 var historiqueEconomiesCle = "optiplein-historique-economies";
+var compteTokenCle = "optiplein-compte-token";
+var compteEmailCle = "optiplein-compte-email";
 var nombreMaximumFavorisGratuit = 3;
 var nombreMaximumVehiculesGratuit = 1;
 var nombreMaximumVehiculesPremium = 5;
+var sauvegardeCompteTimer = null;
+var applicationDonneesCompteEnCours = false;
 
 function planCompteActuel() {
 
@@ -2959,6 +3097,352 @@ function nombreMaximumVehiculesActuel() {
 
 }
 
+function jetonCompte() {
+
+    return localStorage.getItem(compteTokenCle) || "";
+
+}
+
+function compteUtilisateurConnecte() {
+
+    return Boolean(jetonCompte());
+
+}
+
+function definirStatutCompte(message, type) {
+
+    var statut = document.getElementById("account-sync-status");
+
+    if (!statut) {
+        return;
+    }
+
+    statut.textContent = message || "";
+    statut.className = "account-sync-status"
+        + (type ? " " + type : "");
+
+}
+
+function lireHistoriqueEconomies() {
+
+    try {
+        return JSON.parse(
+            localStorage.getItem(historiqueEconomiesCle)
+        ) || [];
+    } catch (erreur) {
+        return [];
+    }
+
+}
+
+function donneesCompteLocales() {
+
+    return {
+        favoris: lireFavoris(),
+        vehicules: lireVehicules(),
+        vehicule_actif: localStorage.getItem(vehiculeActifCle) || "",
+        plan: planCompteActuel(),
+        historique_economies: lireHistoriqueEconomies()
+    };
+
+}
+
+function appliquerDonneesCompte(donnees) {
+
+    if (!donnees) {
+        return;
+    }
+
+    applicationDonneesCompteEnCours = true;
+
+    localStorage.setItem(
+        favorisStationsCle,
+        JSON.stringify(donnees.favoris || [])
+    );
+    localStorage.setItem(
+        vehiculesCle,
+        JSON.stringify(donnees.vehicules || [])
+    );
+    localStorage.setItem(
+        historiqueEconomiesCle,
+        JSON.stringify(donnees.historique_economies || [])
+    );
+    localStorage.setItem(
+        planCompteCle,
+        donnees.plan === "premium" ? "premium" : "free"
+    );
+
+    if (donnees.vehicule_actif) {
+        localStorage.setItem(
+            vehiculeActifCle,
+            donnees.vehicule_actif
+        );
+    } else {
+        localStorage.removeItem(vehiculeActifCle);
+    }
+
+    chargerVehicule();
+    actualiserBoutonsFavoris();
+    actualiserPlanCompte();
+    calculerMeilleureStation();
+    applicationDonneesCompteEnCours = false;
+
+}
+
+function actualiserInterfaceCompte() {
+
+    var email = localStorage.getItem(compteEmailCle) || "";
+    var champEmail = document.getElementById("account-email");
+    var champMotDePasse = document.getElementById("account-password");
+    var boutonConnexion = document.getElementById("account-login-button");
+    var boutonCreation = document.getElementById("account-create-button");
+    var boutonDeconnexion = document.getElementById("account-logout-button");
+    var connecte = compteUtilisateurConnecte();
+
+    if (champEmail && email) {
+        champEmail.value = email;
+    }
+
+    if (champMotDePasse && connecte) {
+        champMotDePasse.value = "";
+    }
+
+    if (boutonConnexion) {
+        boutonConnexion.hidden = connecte;
+    }
+
+    if (boutonCreation) {
+        boutonCreation.hidden = connecte;
+    }
+
+    if (boutonDeconnexion) {
+        boutonDeconnexion.hidden = !connecte;
+    }
+
+    definirStatutCompte(
+        connecte
+            ? "Sauvegarde active pour " + email + "."
+            : "Non connect\u00e9 : les donn\u00e9es restent sur ce t\u00e9l\u00e9phone.",
+        connecte ? "success" : ""
+    );
+
+}
+
+async function requeteCompte(chemin, options) {
+
+    var entetes = {
+        "Content-Type": "application/json"
+    };
+    var jeton = jetonCompte();
+
+    if (jeton) {
+        entetes.Authorization = "Bearer " + jeton;
+    }
+
+    var reponse = await fetch(
+        chemin,
+        Object.assign(
+            {
+                headers: entetes
+            },
+            options || {}
+        )
+    );
+    var resultat = await reponse.json().catch(
+        function() {
+            return {};
+        }
+    );
+
+    if (!reponse.ok) {
+        throw new Error(
+            resultat.detail || "Action impossible pour le moment."
+        );
+    }
+
+    return resultat;
+
+}
+
+function identifiantsCompteDepuisFormulaire() {
+
+    var email = (
+        document.getElementById("account-email").value || ""
+    ).trim();
+    var motDePasse = document.getElementById("account-password").value || "";
+
+    if (!email || !motDePasse) {
+        throw new Error("Renseignez l'e-mail et le mot de passe.");
+    }
+
+    if (motDePasse.length < 8) {
+        throw new Error("Le mot de passe doit contenir au moins 8 caract\u00e8res.");
+    }
+
+    return {
+        email: email,
+        mot_de_passe: motDePasse
+    };
+
+}
+
+async function finaliserConnexionCompte(resultat, sauvegarderLocal) {
+
+    localStorage.setItem(compteTokenCle, resultat.token);
+    localStorage.setItem(compteEmailCle, resultat.email);
+
+    if (sauvegarderLocal) {
+        await sauvegarderCompteMaintenant();
+    } else {
+        appliquerDonneesCompte(resultat.donnees || {});
+    }
+
+    actualiserInterfaceCompte();
+
+}
+
+window.creerCompteOptiPlein = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    try {
+        definirStatutCompte("Cr\u00e9ation du compte...", "");
+        var resultat = await requeteCompte(
+            "/api/compte/inscription",
+            {
+                method: "POST",
+                body: JSON.stringify(
+                    identifiantsCompteDepuisFormulaire()
+                )
+            }
+        );
+        await finaliserConnexionCompte(resultat, true);
+        definirStatutCompte("Compte cr\u00e9\u00e9 et donn\u00e9es sauvegard\u00e9es.", "success");
+    } catch (erreur) {
+        definirStatutCompte(erreur.message, "error");
+    }
+
+};
+
+window.connecterCompteOptiPlein = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    try {
+        definirStatutCompte("Connexion...", "");
+        var resultat = await requeteCompte(
+            "/api/compte/connexion",
+            {
+                method: "POST",
+                body: JSON.stringify(
+                    identifiantsCompteDepuisFormulaire()
+                )
+            }
+        );
+        await finaliserConnexionCompte(resultat, false);
+        definirStatutCompte("Compte connect\u00e9 et donn\u00e9es restaur\u00e9es.", "success");
+    } catch (erreur) {
+        definirStatutCompte(erreur.message, "error");
+    }
+
+};
+
+window.deconnecterCompteOptiPlein = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    localStorage.removeItem(compteTokenCle);
+    localStorage.removeItem(compteEmailCle);
+    actualiserInterfaceCompte();
+
+};
+
+async function sauvegarderCompteMaintenant() {
+
+    if (!compteUtilisateurConnecte()) {
+        return;
+    }
+
+    await requeteCompte(
+        "/api/compte/sauvegarde",
+        {
+            method: "POST",
+            body: JSON.stringify({
+                donnees: donneesCompteLocales()
+            })
+        }
+    );
+
+    definirStatutCompte(
+        "Sauvegard\u00e9 \u00e0 l'instant.",
+        "success"
+    );
+
+}
+
+function programmerSauvegardeCompte() {
+
+    if (
+        applicationDonneesCompteEnCours
+        || !compteUtilisateurConnecte()
+    ) {
+        return;
+    }
+
+    window.clearTimeout(sauvegardeCompteTimer);
+    sauvegardeCompteTimer = window.setTimeout(
+        function() {
+            sauvegarderCompteMaintenant().catch(
+                function(erreur) {
+                    definirStatutCompte(erreur.message, "error");
+                }
+            );
+        },
+        700
+    );
+
+}
+
+async function restaurerSessionCompte() {
+
+    actualiserInterfaceCompte();
+
+    if (!compteUtilisateurConnecte()) {
+        return;
+    }
+
+    try {
+        var resultat = await requeteCompte(
+            "/api/compte/donnees",
+            {
+                method: "GET"
+            }
+        );
+        appliquerDonneesCompte(resultat.donnees || {});
+        definirStatutCompte(
+            "Donn\u00e9es du compte synchronis\u00e9es.",
+            "success"
+        );
+    } catch (erreur) {
+        localStorage.removeItem(compteTokenCle);
+        actualiserInterfaceCompte();
+        definirStatutCompte(
+            erreur.message,
+            "error"
+        );
+    }
+
+}
+
 function lireFavoris() {
 
     try {
@@ -2983,6 +3467,7 @@ function enregistrerFavoris(favoris) {
         favorisStationsCle,
         JSON.stringify(favoris)
     );
+    programmerSauvegardeCompte();
 
 }
 
@@ -4022,6 +4507,7 @@ function lireVehicules() {
             ];
             enregistrerVehicules(vehicules);
             localStorage.setItem(vehiculeActifCle, vehicules[0].id);
+            programmerSauvegardeCompte();
         }
     }
 
@@ -4035,6 +4521,7 @@ function enregistrerVehicules(vehicules) {
         vehiculesCle,
         JSON.stringify(vehicules)
     );
+    programmerSauvegardeCompte();
 
 }
 
@@ -4061,6 +4548,7 @@ function synchroniserAnciennesClesVehicule(vehicule) {
     localStorage.setItem("vehicule-reservoir", vehicule.reservoir || "");
     localStorage.setItem("vehicule-conso", vehicule.conso || "");
     localStorage.setItem("vehicule-jauge", String(vehicule.jauge || 50));
+    programmerSauvegardeCompte();
 
 }
 
@@ -4136,6 +4624,7 @@ window.changerPlanCompte = function(plan) {
         planCompteCle,
         plan === "premium" ? "premium" : "free"
     );
+    programmerSauvegardeCompte();
 
     if (!comptePremiumActif()) {
         var vehicules = lireVehicules().slice(0, 1);
@@ -4206,6 +4695,7 @@ function actualiserListeVehicules() {
                 "click",
                 function() {
                     localStorage.setItem(vehiculeActifCle, vehicule.id);
+                    programmerSauvegardeCompte();
                     chargerVehicule();
                 }
             );
@@ -4246,6 +4736,7 @@ function enregistrerEconomiePremium(station, economie) {
         historiqueEconomiesCle,
         JSON.stringify(historique.slice(0, 200))
     );
+    programmerSauvegardeCompte();
 
 }
 
@@ -4572,6 +5063,7 @@ window.enregistrerVehicule = function(event) {
     enregistrerVehicules(vehicules);
     localStorage.setItem(vehiculeActifCle, vehicule.id);
     synchroniserAnciennesClesVehicule(vehicule);
+    programmerSauvegardeCompte();
 
     actualiserNomBoutonVehicule();
     actualiserListeVehicules();
@@ -4614,6 +5106,7 @@ function chargerVehicule() {
     actualiserNomBoutonVehicule();
     actualiserListeVehicules();
     actualiserPlanCompte();
+    actualiserInterfaceCompte();
     calculerMeilleureStation();
 
 }
@@ -4621,6 +5114,11 @@ function chargerVehicule() {
 window.addEventListener(
     "load",
     chargerVehicule
+);
+
+window.addEventListener(
+    "load",
+    restaurerSessionCompte
 );
 
 var intervalleCalculRentabiliteMs = 3 * 60 * 1000;
