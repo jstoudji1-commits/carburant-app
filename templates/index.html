@@ -1897,7 +1897,7 @@ body{
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <meta
     name="viewport"
-    content="width=device-width, initial-scale=1"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
 >
 </head>
 
@@ -6064,6 +6064,9 @@ function calculerRentabiliteStations(
                     meilleureReference.cout - station.coutTotal
                 )
                 : 0;
+            station.stationReferenceRentable = meilleureReference
+                ? meilleureReference.station
+                : null;
 
         }
     );
@@ -6220,6 +6223,21 @@ window.calculerMeilleureStation = function() {
         && meilleureStation.ville !== nomStationEconomique
         ? " \u00b7 " + meilleureStation.ville
         : "";
+    var libelleReferenceRentabilite =
+        resultatRentabilite.libelleReference;
+    var stationReferenceRentable =
+        meilleureStation.stationReferenceRentable;
+
+    if (stationReferenceRentable) {
+        libelleReferenceRentabilite += " ("
+            + (stationReferenceRentable.enseigne || "Station-service")
+            + (
+                stationReferenceRentable.ville
+                    ? " \u00b7 " + stationReferenceRentable.ville
+                    : ""
+            )
+            + ")";
+    }
 
     titre.textContent =
         "Station la plus \u00e9conomique : "
@@ -6244,7 +6262,7 @@ window.calculerMeilleureStation = function() {
     sousTitre.appendChild(economieMiseEnAvant);
     sousTitre.appendChild(
         document.createTextNode(
-            resultatRentabilite.libelleReference
+            libelleReferenceRentabilite
         )
     );
 
