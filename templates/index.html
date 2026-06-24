@@ -85,6 +85,8 @@ body{
     top:calc(100% + 12px);
     right:0;
     width:340px;
+    max-height:calc(100vh - 120px);
+    overflow:auto;
     padding:18px;
     background:white;
     border:1px solid var(--line);
@@ -246,6 +248,117 @@ body{
 .vehicle-list-button.active{
     border-color:var(--green);
     background:#e8f7ec;
+}
+
+.premium-menu{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:7px;
+    margin:12px 0;
+}
+
+.premium-menu[hidden]{
+    display:none;
+}
+
+.premium-menu-button{
+    padding:10px 6px;
+    border:1px solid #dce4ea;
+    border-radius:8px;
+    background:#fff;
+    color:var(--ink);
+    font-size:12px;
+    font-weight:800;
+    cursor:pointer;
+}
+
+.premium-menu-button.active{
+    border-color:var(--green);
+    background:#e8f7ec;
+    color:var(--green-dark);
+}
+
+.premium-page{
+    display:none;
+}
+
+.premium-page.active{
+    display:block;
+}
+
+.premium-panel-card{
+    display:grid;
+    gap:10px;
+    margin:0 0 12px 0;
+    padding:13px;
+    border:1px solid #dce4ea;
+    border-radius:10px;
+    background:#fff;
+}
+
+.premium-panel-title{
+    margin:0;
+    color:var(--ink);
+    font-size:14px;
+    font-weight:800;
+}
+
+.premium-empty{
+    margin:0;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.35;
+}
+
+.premium-history-list{
+    display:grid;
+    gap:8px;
+}
+
+.premium-history-item{
+    display:grid;
+    gap:3px;
+    padding:10px;
+    border:1px solid #edf1f3;
+    border-radius:8px;
+    background:#f8fbf9;
+}
+
+.premium-history-main{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    color:var(--ink);
+    font-size:13px;
+    font-weight:800;
+}
+
+.premium-history-saving{
+    color:var(--green-dark);
+    white-space:nowrap;
+}
+
+.premium-history-meta,
+.premium-option-copy{
+    margin:0;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.35;
+}
+
+.premium-option-button{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid #cbd5dd;
+    border-radius:8px;
+    background:#fff;
+    color:var(--green-dark);
+    font-weight:800;
+    cursor:pointer;
+}
+
+.premium-option-button.danger{
+    color:#b42318;
 }
 
 .vehicle-secondary-button{
@@ -1704,9 +1817,8 @@ body{
 
 </style>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <meta
     name="viewport"
     content="width=device-width, initial-scale=1"
@@ -1745,76 +1857,14 @@ body{
                     Configurer mon v&eacute;hicule
                 </p>
 
-                <div class="account-plan" aria-label="Type de compte">
-                    <p class="account-plan-label">
-                        Choisir ma formule
-                    </p>
-                    <div class="account-plan-actions">
-                        <button
-                            type="button"
-                            class="account-plan-button"
-                            id="plan-free-button"
-                            onclick="changerPlanCompte('free')"
-                        >
-                            Gratuit
-                        </button>
-                        <button
-                            type="button"
-                            class="account-plan-button"
-                            id="plan-premium-button"
-                            onclick="changerPlanCompte('premium')"
-                        >
-                            Premium
-                        </button>
-                    </div>
-                </div>
-
-                <div class="plan-comparison" aria-label="Comparatif des formules">
-                    <div class="plan-comparison-row plan-comparison-head">
-                        <div class="plan-comparison-cell">Options</div>
-                        <div class="plan-comparison-cell plan-comparison-free">Gratuit</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">Premium</div>
-                    </div>
-                    <div class="plan-comparison-row">
-                        <div class="plan-comparison-cell plan-comparison-feature">Stations autour de vous</div>
-                        <div class="plan-comparison-cell plan-comparison-free">Oui</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
-                    </div>
-                    <div class="plan-comparison-row">
-                        <div class="plan-comparison-cell plan-comparison-feature">Calcul rentable</div>
-                        <div class="plan-comparison-cell plan-comparison-free">3 min</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">15 sec</div>
-                    </div>
-                    <div class="plan-comparison-row">
-                        <div class="plan-comparison-cell plan-comparison-feature">Favoris</div>
-                        <div class="plan-comparison-cell plan-comparison-free">3 max</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">Illimit&eacute;s</div>
-                    </div>
-                    <div class="plan-comparison-row">
-                        <div class="plan-comparison-cell plan-comparison-feature">V&eacute;hicules</div>
-                        <div class="plan-comparison-cell plan-comparison-free">1</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">5</div>
-                    </div>
-                    <div class="plan-comparison-row">
-                        <div class="plan-comparison-cell plan-comparison-feature">Jauge r&eacute;servoir</div>
-                        <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
-                    </div>
-                    <div class="plan-comparison-row">
-                        <div class="plan-comparison-cell plan-comparison-feature">Publicit&eacute;</div>
-                        <div class="plan-comparison-cell plan-comparison-free">Oui</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">Supprim&eacute;e</div>
-                    </div>
-                </div>
-
                 <div class="account-sync">
                     <p class="account-sync-title">
                         Cr&eacute;er ou connecter mon compte
                     </p>
                     <p class="account-sync-copy">
-                        S&eacute;lectionnez Gratuit ou Premium, puis cr&eacute;ez
-                        votre compte pour sauvegarder votre formule, vos
-                        favoris, vos v&eacute;hicules et vos historiques.
+                        Cr&eacute;ez ou connectez votre compte pour sauvegarder
+                        votre formule, vos favoris, vos v&eacute;hicules et vos
+                        historiques.
                     </p>
                     <input
                         id="account-email"
@@ -1862,82 +1912,233 @@ body{
                     ></p>
                 </div>
 
-                <div
-                    class="vehicle-list"
-                    id="vehicle-list"
-                    hidden
-                ></div>
-
-                <button
-                    type="button"
-                    class="vehicle-secondary-button"
-                    id="vehicle-new-button"
-                    onclick="nouveauVehicule()"
-                    hidden
-                >
-                    Nouveau v&eacute;hicule
-                </button>
-
-                <div class="vehicle-fields">
-                    <input
-                        class="vehicle-input"
-                        id="vehicule-nom"
-                        type="text"
-                        autocomplete="off"
-                        maxlength="40"
-                        required
-                        placeholder="Nom du v&eacute;hicule"
-                    >
-
-                    <input
-                        class="vehicle-input"
-                        id="vehicule-reservoir"
-                        type="number"
-                        min="1"
-                        step="1"
-                        inputmode="decimal"
-                        required
-                        placeholder="Taille du r&eacute;servoir (L)"
-                    >
-
-                    <input
-                        class="vehicle-input"
-                        id="vehicule-conso"
-                        type="number"
-                        min="0.1"
-                        step="0.1"
-                        inputmode="decimal"
-                        required
-                        placeholder="Consommation moyenne (L/100 km)"
-                    >
-
-                    <div class="reservoir-gauge premium-only" hidden>
-                        <div class="reservoir-gauge-header">
-                            <span>&Eacute;tat du r&eacute;servoir</span>
-                            <span
-                                class="reservoir-gauge-value"
-                                id="vehicule-jauge-valeur"
-                            >50 %</span>
-                        </div>
-                        <input
-                            id="vehicule-jauge"
-                            type="range"
-                            min="0"
-                            max="100"
-                            step="5"
-                            value="50"
-                            oninput="actualiserJaugeReservoir()"
+                <div class="account-plan" aria-label="Type de compte">
+                    <p class="account-plan-label">
+                        Choisir ma formule
+                    </p>
+                    <div class="account-plan-actions">
+                        <button
+                            type="button"
+                            class="account-plan-button"
+                            id="plan-free-button"
+                            onclick="changerPlanCompte('free')"
                         >
+                            Gratuit
+                        </button>
+                        <button
+                            type="button"
+                            class="account-plan-button"
+                            id="plan-premium-button"
+                            onclick="changerPlanCompte('premium')"
+                        >
+                            Premium
+                        </button>
                     </div>
                 </div>
 
-                <button
-                    type="button"
-                    class="vehicle-save-button"
-                    onclick="enregistrerVehicule(event)"
+                <div
+                    class="plan-comparison"
+                    id="plan-comparison"
+                    aria-label="Comparatif des formules"
                 >
-                    Enregistrer
-                </button>
+                    <div class="plan-comparison-row plan-comparison-head">
+                        <div class="plan-comparison-cell">Options</div>
+                        <div class="plan-comparison-cell plan-comparison-free">Gratuit</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Premium</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Stations autour de vous</div>
+                        <div class="plan-comparison-cell plan-comparison-free">Oui</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Calcul rentable</div>
+                        <div class="plan-comparison-cell plan-comparison-free">3 min</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">15 sec</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Favoris</div>
+                        <div class="plan-comparison-cell plan-comparison-free">3 max</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Illimit&eacute;s</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">V&eacute;hicules</div>
+                        <div class="plan-comparison-cell plan-comparison-free">1</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">5</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Jauge r&eacute;servoir</div>
+                        <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Publicit&eacute;</div>
+                        <div class="plan-comparison-cell plan-comparison-free">Oui</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Supprim&eacute;e</div>
+                    </div>
+                </div>
+
+                <nav
+                    class="premium-menu premium-only"
+                    id="premium-menu"
+                    aria-label="Menu premium"
+                    hidden
+                >
+                    <button
+                        type="button"
+                        class="premium-menu-button active"
+                        data-premium-page="vehicles"
+                        onclick="changerPagePremium('vehicles')"
+                    >
+                        V&eacute;hicules
+                    </button>
+                    <button
+                        type="button"
+                        class="premium-menu-button"
+                        data-premium-page="history"
+                        onclick="changerPagePremium('history')"
+                    >
+                        Historique
+                    </button>
+                    <button
+                        type="button"
+                        class="premium-menu-button"
+                        data-premium-page="options"
+                        onclick="changerPagePremium('options')"
+                    >
+                        Options
+                    </button>
+                </nav>
+
+                <div
+                    class="premium-page active"
+                    id="premium-page-vehicles"
+                >
+                    <div
+                        class="vehicle-list"
+                        id="vehicle-list"
+                        hidden
+                    ></div>
+
+                    <button
+                        type="button"
+                        class="vehicle-secondary-button"
+                        id="vehicle-new-button"
+                        onclick="nouveauVehicule()"
+                        hidden
+                    >
+                        Nouveau v&eacute;hicule
+                    </button>
+
+                    <div class="vehicle-fields">
+                        <input
+                            class="vehicle-input"
+                            id="vehicule-nom"
+                            type="text"
+                            autocomplete="off"
+                            maxlength="40"
+                            required
+                            placeholder="Nom du v&eacute;hicule"
+                        >
+
+                        <input
+                            class="vehicle-input"
+                            id="vehicule-reservoir"
+                            type="number"
+                            min="1"
+                            step="1"
+                            inputmode="decimal"
+                            required
+                            placeholder="Taille du r&eacute;servoir (L)"
+                        >
+
+                        <input
+                            class="vehicle-input"
+                            id="vehicule-conso"
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            inputmode="decimal"
+                            required
+                            placeholder="Consommation moyenne (L/100 km)"
+                        >
+
+                        <div class="reservoir-gauge premium-only" hidden>
+                            <div class="reservoir-gauge-header">
+                                <span>&Eacute;tat du r&eacute;servoir</span>
+                                <span
+                                    class="reservoir-gauge-value"
+                                    id="vehicule-jauge-valeur"
+                                >50 %</span>
+                            </div>
+                            <input
+                                id="vehicule-jauge"
+                                type="range"
+                                min="0"
+                                max="100"
+                                step="5"
+                                value="50"
+                                oninput="actualiserJaugeReservoir()"
+                            >
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="vehicle-save-button"
+                        onclick="enregistrerVehicule(event)"
+                    >
+                        Enregistrer
+                    </button>
+                </div>
+
+                <section
+                    class="premium-page premium-only"
+                    id="premium-page-history"
+                    hidden
+                >
+                    <div class="premium-panel-card">
+                        <p class="premium-panel-title">
+                            Historique des &eacute;conomies
+                        </p>
+                        <div
+                            class="premium-history-list"
+                            id="premium-history-list"
+                        ></div>
+                    </div>
+                </section>
+
+                <section
+                    class="premium-page premium-only"
+                    id="premium-page-options"
+                    hidden
+                >
+                    <div class="premium-panel-card">
+                        <p class="premium-panel-title">
+                            Options premium
+                        </p>
+                        <p class="premium-option-copy">
+                            Recalcul de la station la plus rentable toutes les
+                            15 secondes, guidage avanc&eacute; et favoris
+                            illimit&eacute;s.
+                        </p>
+                        <button
+                            type="button"
+                            class="premium-option-button"
+                            onclick="forcerCalculRentabilitePremium()"
+                        >
+                            Recalculer maintenant
+                        </button>
+                        <button
+                            type="button"
+                            class="premium-option-button danger"
+                            onclick="viderHistoriqueEconomies()"
+                        >
+                            Vider l'historique
+                        </button>
+                    </div>
+                </section>
+
                 <section class="premium-offer" id="premium-note">
                     <p class="premium-offer-title">
                         <span>OptiPlein Premium</span>
@@ -2769,6 +2970,393 @@ var capInitialCarte = positionInitialeCarteDisponible
 if (!Number.isFinite(capInitialCarte)) {
     capInitialCarte = 0;
 }
+
+function creerAdaptateurMapLibre() {
+
+    var cleMapTiler = window.OPTIPLEIN_MAPTILER_KEY || "";
+    var styleCarte = cleMapTiler
+        ? "https://api.maptiler.com/maps/streets-v2/style.json?key="
+            + encodeURIComponent(cleMapTiler)
+        : {
+        version: 8,
+        sources: {
+            "carto-light": {
+                type: "raster",
+                tiles: [
+                    "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                    "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                    "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                    "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+                ],
+                tileSize: 256,
+                attribution: "&copy; contributeurs OpenStreetMap"
+            }
+        },
+        layers: [
+            {
+                id: "carto-light",
+                type: "raster",
+                source: "carto-light"
+            }
+        ]
+    };
+
+    function normaliserLatLng(position) {
+        if (Array.isArray(position)) {
+            return {
+                lat: Number(position[0]),
+                lng: Number(position[1])
+            };
+        }
+
+        return {
+            lat: Number(position.lat),
+            lng: Number(position.lng)
+        };
+    }
+
+    function normaliserBounds(bounds) {
+        if (bounds && typeof bounds.toArray === "function") {
+            return bounds.toArray();
+        }
+
+        return bounds;
+    }
+
+    function creerCarte(id, options) {
+        var carteInterne = new maplibregl.Map({
+            container: id,
+            style: styleCarte,
+            center: [2.4, 46.6],
+            zoom: 6,
+            bearing: options && Number.isFinite(options.bearing)
+                ? options.bearing
+                : 0,
+            pitch: 58,
+            attributionControl: false
+        });
+        carteInterne.addControl(
+            new maplibregl.NavigationControl({
+                visualizePitch: true
+            }),
+            "bottom-right"
+        );
+
+        var adaptateur = {
+            _map: carteInterne,
+            setView: function(position, zoom, optionsVue) {
+                var point = normaliserLatLng(position);
+                carteInterne.easeTo({
+                    center: [point.lng, point.lat],
+                    zoom: zoom,
+                    duration: optionsVue && optionsVue.animate ? 450 : 0
+                });
+                return adaptateur;
+            },
+            panTo: function(position, optionsVue) {
+                var point = normaliserLatLng(position);
+                carteInterne.easeTo({
+                    center: [point.lng, point.lat],
+                    duration: optionsVue && optionsVue.animate ? 350 : 0
+                });
+                return adaptateur;
+            },
+            getZoom: function() {
+                return carteInterne.getZoom();
+            },
+            setBearing: function(cap) {
+                carteInterne.rotateTo(cap, {
+                    duration: 0
+                });
+                return adaptateur;
+            },
+            getBearing: function() {
+                return (carteInterne.getBearing() + 360) % 360;
+            },
+            setPitch: function(inclinaison) {
+                carteInterne.easeTo({
+                    pitch: inclinaison,
+                    duration: 250
+                });
+                return adaptateur;
+            },
+            fitBounds: function(bounds, optionsVue) {
+                var padding = optionsVue && optionsVue.padding
+                    ? optionsVue.padding
+                    : [40, 40];
+                carteInterne.fitBounds(
+                    normaliserBounds(bounds),
+                    {
+                        padding: Array.isArray(padding)
+                            ? {
+                                top: padding[0],
+                                right: padding[1],
+                                bottom: padding[0],
+                                left: padding[1]
+                            }
+                            : padding,
+                        pitch: 58,
+                        duration: 450
+                    }
+                );
+                return adaptateur;
+            },
+            removeLayer: function(couche) {
+                if (couche && typeof couche.remove === "function") {
+                    couche.remove();
+                }
+                return adaptateur;
+            },
+            closePopup: function() {
+                document.querySelectorAll(".maplibregl-popup")
+                    .forEach(function(popup) {
+                        var bouton = popup.querySelector(
+                            ".maplibregl-popup-close-button"
+                        );
+                        if (bouton) {
+                            bouton.click();
+                        }
+                    });
+                return adaptateur;
+            },
+            getContainer: function() {
+                return carteInterne.getContainer();
+            },
+            on: function(evenement, rappel) {
+                carteInterne.on(evenement, rappel);
+                return adaptateur;
+            }
+        };
+
+        return adaptateur;
+    }
+
+    function creerIcone(options) {
+        return options || {};
+    }
+
+    function creerMarqueur(position, options) {
+        var pointInitial = normaliserLatLng(position);
+        var element = document.createElement("div");
+        var icone = options && options.icon ? options.icon : {};
+        element.className = icone.className || "";
+        element.innerHTML = icone.html || "";
+
+        if (icone.iconSize) {
+            element.style.width = icone.iconSize[0] + "px";
+            element.style.height = icone.iconSize[1] + "px";
+        }
+
+        var marqueurInterne = new maplibregl.Marker({
+            element: element,
+            anchor: "center"
+        }).setLngLat([pointInitial.lng, pointInitial.lat]);
+        var popupInterne = null;
+        var carteCible = null;
+        var evenements = {};
+
+        var adaptateurMarqueur = {
+            addTo: function(carte) {
+                carteCible = carte;
+                marqueurInterne.addTo(carte._map);
+                return adaptateurMarqueur;
+            },
+            bindPopup: function(html) {
+                popupInterne = new maplibregl.Popup({
+                    offset: 24,
+                    closeButton: true,
+                    closeOnClick: true
+                }).setHTML(html);
+                popupInterne.on("open", function() {
+                    (evenements.popupopen || []).forEach(
+                        function(rappel) {
+                            rappel();
+                        }
+                    );
+                });
+                marqueurInterne.setPopup(popupInterne);
+                return adaptateurMarqueur;
+            },
+            on: function(evenement, rappel) {
+                evenements[evenement] = evenements[evenement] || [];
+                evenements[evenement].push(rappel);
+                return adaptateurMarqueur;
+            },
+            getElement: function() {
+                return marqueurInterne.getElement();
+            },
+            setLatLng: function(positionNouvelle) {
+                var point = normaliserLatLng(positionNouvelle);
+                marqueurInterne.setLngLat([point.lng, point.lat]);
+                return adaptateurMarqueur;
+            },
+            getLatLng: function() {
+                var point = marqueurInterne.getLngLat();
+                return {
+                    lat: point.lat,
+                    lng: point.lng
+                };
+            },
+            openPopup: function() {
+                if (popupInterne && carteCible) {
+                    popupInterne.setLngLat(marqueurInterne.getLngLat());
+                    popupInterne.addTo(carteCible._map);
+                }
+                return adaptateurMarqueur;
+            },
+            remove: function() {
+                marqueurInterne.remove();
+            }
+        };
+
+        return adaptateurMarqueur;
+    }
+
+    function creerFeatureGroup(marqueurs) {
+        return {
+            getBounds: function() {
+                var limites = new maplibregl.LngLatBounds();
+                marqueurs.forEach(function(marqueur) {
+                    var point = marqueur.getLatLng();
+                    limites.extend([point.lng, point.lat]);
+                });
+                return limites;
+            }
+        };
+    }
+
+    function creerGeoJson(donnees, options) {
+        var identifiant = "route-" + Date.now();
+        var carteCible = null;
+        var couche = {
+            addTo: function(carte) {
+                carteCible = carte;
+                var couleur = options && options.style
+                    ? options.style.color
+                    : "#149f38";
+                var epaisseur = options && options.style
+                    ? options.style.weight
+                    : 6;
+                var opacite = options && options.style
+                    ? options.style.opacity
+                    : 0.92;
+
+                function ajouter() {
+                    if (carte._map.getSource(identifiant)) {
+                        return;
+                    }
+                    carte._map.addSource(identifiant, {
+                        type: "geojson",
+                        data: donnees
+                    });
+                    carte._map.addLayer({
+                        id: identifiant,
+                        type: "line",
+                        source: identifiant,
+                        layout: {
+                            "line-cap": "round",
+                            "line-join": "round"
+                        },
+                        paint: {
+                            "line-color": couleur,
+                            "line-width": epaisseur,
+                            "line-opacity": opacite
+                        }
+                    });
+                }
+
+                if (carte._map.isStyleLoaded()) {
+                    ajouter();
+                } else {
+                    carte._map.once("load", ajouter);
+                }
+
+                return couche;
+            },
+            getBounds: function() {
+                var limites = new maplibregl.LngLatBounds();
+                donnees.geometry.coordinates.forEach(function(point) {
+                    limites.extend(point);
+                });
+                return limites;
+            },
+            remove: function() {
+                if (!carteCible) {
+                    return;
+                }
+                if (carteCible._map.getLayer(identifiant)) {
+                    carteCible._map.removeLayer(identifiant);
+                }
+                if (carteCible._map.getSource(identifiant)) {
+                    carteCible._map.removeSource(identifiant);
+                }
+            }
+        };
+
+        return couche;
+    }
+
+    return {
+        map: creerCarte,
+        tileLayer: function() {
+            return {
+                addTo: function() {}
+            };
+        },
+        divIcon: creerIcone,
+        marker: creerMarqueur,
+        featureGroup: creerFeatureGroup,
+        geoJSON: creerGeoJson,
+        Control: {
+            extend: function(definition) {
+                return function() {
+                    this.addTo = function(carte) {
+                        var element = definition.onAdd();
+                        element.classList.add("maplibregl-ctrl");
+                        carte._map.addControl(
+                            {
+                                onAdd: function() {
+                                    return element;
+                                },
+                                onRemove: function() {
+                                    element.remove();
+                                }
+                            },
+                            definition.options && definition.options.position
+                                ? definition.options.position
+                                    .replace("bottomright", "bottom-right")
+                                : "bottom-right"
+                        );
+                        return this;
+                    };
+                };
+            }
+        },
+        DomUtil: {
+            create: function(tag, classe, parent) {
+                var element = document.createElement(tag);
+                element.className = classe || "";
+                if (parent) {
+                    parent.appendChild(element);
+                }
+                return element;
+            }
+        },
+        DomEvent: {
+            disableClickPropagation: function(element) {
+                element.addEventListener("click", function(event) {
+                    event.stopPropagation();
+                });
+            },
+            on: function(element, evenement, rappel) {
+                element.addEventListener(evenement, rappel);
+            }
+        }
+    };
+
+}
+
+var L = creerAdaptateurMapLibre();
 
 var map = L.map(
     "map",
@@ -3836,6 +4424,7 @@ var zoomGuidageActif = 18;
 var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
 var orientationAutomatiqueActive = true;
+var inclinaisonCarteGps = 58;
 var capCarte = capInitialCarte;
 var dernierCapUtilisateur = (360 - capInitialCarte) % 360;
 var capFlecheUtilisateur = dernierCapUtilisateur;
@@ -4203,6 +4792,7 @@ function recentrerSurUtilisateur() {
             animate: true
         }
     );
+    map.setPitch(inclinaisonCarteGps);
 
 }
 
@@ -4687,11 +5277,162 @@ function actualiserJaugeReservoir() {
 
 window.actualiserJaugeReservoir = actualiserJaugeReservoir;
 
+var pagePremiumActive = "vehicles";
+
+function actualiserHistoriqueEconomiesPremium() {
+
+    var conteneur = document.getElementById("premium-history-list");
+    var historique = lireHistoriqueEconomies();
+
+    if (!conteneur) {
+        return;
+    }
+
+    conteneur.innerHTML = "";
+
+    if (!historique.length) {
+        var vide = document.createElement("p");
+        vide.className = "premium-empty";
+        vide.textContent =
+            "L'historique appara\u00eetra ici apr\u00e8s vos prochains itin\u00e9raires rentables.";
+        conteneur.appendChild(vide);
+        return;
+    }
+
+    historique.slice(0, 8).forEach(
+        function(ligne) {
+            var item = document.createElement("article");
+            item.className = "premium-history-item";
+
+            var principal = document.createElement("div");
+            principal.className = "premium-history-main";
+
+            var station = document.createElement("span");
+            station.textContent = [
+                ligne.station || "Station-service",
+                ligne.ville || ""
+            ].filter(Boolean).join(" · ");
+
+            var economie = document.createElement("span");
+            economie.className = "premium-history-saving";
+            economie.textContent = "+"
+                + (Number(ligne.economie) || 0).toLocaleString(
+                    "fr-FR",
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                )
+                + " \u20ac";
+
+            principal.appendChild(station);
+            principal.appendChild(economie);
+
+            var meta = document.createElement("p");
+            meta.className = "premium-history-meta";
+            var date = ligne.date
+                ? new Date(ligne.date).toLocaleDateString(
+                    "fr-FR",
+                    {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    }
+                )
+                : "";
+            meta.textContent = [
+                ligne.vehicule || "",
+                ligne.carburant || "",
+                date
+            ].filter(Boolean).join(" · ");
+
+            item.appendChild(principal);
+            item.appendChild(meta);
+            conteneur.appendChild(item);
+        }
+    );
+
+}
+
+function actualiserPagesPremium() {
+
+    var premium = comptePremiumActif();
+
+    if (!premium) {
+        pagePremiumActive = "vehicles";
+    }
+
+    document.querySelectorAll(".premium-menu-button").forEach(
+        function(bouton) {
+            bouton.classList.toggle(
+                "active",
+                bouton.dataset.premiumPage === pagePremiumActive
+            );
+        }
+    );
+
+    document.querySelectorAll(".premium-page").forEach(
+        function(page) {
+            var active = page.id === "premium-page-" + pagePremiumActive;
+            page.classList.toggle("active", active);
+            if (page.classList.contains("premium-only")) {
+                page.hidden = !premium;
+            }
+        }
+    );
+
+    var pageVehicules = document.getElementById("premium-page-vehicles");
+    if (pageVehicules) {
+        pageVehicules.classList.add("active");
+        if (premium) {
+            pageVehicules.classList.toggle(
+                "active",
+                pagePremiumActive === "vehicles"
+            );
+        }
+    }
+
+    actualiserHistoriqueEconomiesPremium();
+
+}
+
+window.changerPagePremium = function(page) {
+
+    pagePremiumActive = ["vehicles", "history", "options"].indexOf(page) >= 0
+        ? page
+        : "vehicles";
+    actualiserPagesPremium();
+
+};
+
+window.forcerCalculRentabilitePremium = function() {
+
+    dernierCalculPeriodiqueRentabilite = 0;
+    calculerMeilleureStation();
+    actualiserHistoriqueEconomiesPremium();
+
+};
+
+window.viderHistoriqueEconomies = function() {
+
+    if (!confirm("Vider l'historique des \u00e9conomies ?")) {
+        return;
+    }
+
+    localStorage.setItem(historiqueEconomiesCle, "[]");
+    programmerSauvegardeCompte();
+    actualiserHistoriqueEconomiesPremium();
+
+};
+
 function actualiserPlanCompte() {
 
     var premium = comptePremiumActif();
     var boutonGratuit = document.getElementById("plan-free-button");
     var boutonPremium = document.getElementById("plan-premium-button");
+    var comparatifPlan = document.getElementById("plan-comparison");
+    var offrePremium = document.getElementById("premium-note");
     var pub = document.getElementById("ad-banner");
     var nouveauVehiculeBouton = document.getElementById("vehicle-new-button");
 
@@ -4707,6 +5448,14 @@ function actualiserPlanCompte() {
         pub.hidden = premium;
     }
 
+    if (comparatifPlan) {
+        comparatifPlan.hidden = premium;
+    }
+
+    if (offrePremium) {
+        offrePremium.hidden = premium;
+    }
+
     if (nouveauVehiculeBouton) {
         nouveauVehiculeBouton.hidden = !premium;
     }
@@ -4719,6 +5468,7 @@ function actualiserPlanCompte() {
 
     actualiserBoutonsFavoris();
     actualiserListeVehicules();
+    actualiserPagesPremium();
     actualiserNavigationPremium();
 
 }
@@ -4844,6 +5594,7 @@ function enregistrerEconomiePremium(station, economie) {
         JSON.stringify(historique.slice(0, 200))
     );
     programmerSauvegardeCompte();
+    actualiserHistoriqueEconomiesPremium();
 
 }
 
@@ -5605,6 +6356,7 @@ function dessinerItineraire(coordonnees, afficherApercu) {
         actualiserBoutonSuiviCarte();
         capCarte = 0;
         map.setBearing(0);
+        map.setPitch(inclinaisonCarteGps);
         map.fitBounds(
             itineraireLayer.getBounds(),
             {
