@@ -983,6 +983,65 @@ body{
     background:var(--green);
 }
 
+.plan-comparison{
+    margin:12px 0;
+    border:1px solid #dce4ea;
+    border-radius:10px;
+    overflow:hidden;
+    background:#fff;
+}
+
+.plan-comparison-row{
+    display:grid;
+    grid-template-columns:minmax(116px, 1fr) 82px 92px;
+    align-items:stretch;
+    border-top:1px solid #edf1f3;
+    font-size:12px;
+    color:#243746;
+}
+
+.plan-comparison-row:first-child{
+    border-top:0;
+}
+
+.plan-comparison-cell{
+    display:flex;
+    align-items:center;
+    min-width:0;
+    padding:9px 10px;
+    border-left:1px solid #edf1f3;
+    line-height:1.25;
+}
+
+.plan-comparison-cell:first-child{
+    border-left:0;
+}
+
+.plan-comparison-head{
+    background:#f5faf7;
+    color:var(--ink);
+    font-weight:800;
+}
+
+.plan-comparison-feature{
+    font-weight:700;
+}
+
+.plan-comparison-free,
+.plan-comparison-premium{
+    justify-content:center;
+    text-align:center;
+}
+
+.plan-comparison-premium{
+    color:var(--green-dark);
+    font-weight:800;
+}
+
+.plan-comparison-muted{
+    color:#687985;
+}
+
 .map-column{
     min-width:0;
     min-height:0;
@@ -1687,7 +1746,9 @@ body{
                 </p>
 
                 <div class="account-plan" aria-label="Type de compte">
-                    <p class="account-plan-label">Compte utilisateur</p>
+                    <p class="account-plan-label">
+                        Choisir ma formule
+                    </p>
                     <div class="account-plan-actions">
                         <button
                             type="button"
@@ -1708,13 +1769,52 @@ body{
                     </div>
                 </div>
 
+                <div class="plan-comparison" aria-label="Comparatif des formules">
+                    <div class="plan-comparison-row plan-comparison-head">
+                        <div class="plan-comparison-cell">Options</div>
+                        <div class="plan-comparison-cell plan-comparison-free">Gratuit</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Premium</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Stations autour de vous</div>
+                        <div class="plan-comparison-cell plan-comparison-free">Oui</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Calcul rentable</div>
+                        <div class="plan-comparison-cell plan-comparison-free">3 min</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">15 sec</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Favoris</div>
+                        <div class="plan-comparison-cell plan-comparison-free">3 max</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Illimit&eacute;s</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">V&eacute;hicules</div>
+                        <div class="plan-comparison-cell plan-comparison-free">1</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">5</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Jauge r&eacute;servoir</div>
+                        <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Publicit&eacute;</div>
+                        <div class="plan-comparison-cell plan-comparison-free">Oui</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Supprim&eacute;e</div>
+                    </div>
+                </div>
+
                 <div class="account-sync">
                     <p class="account-sync-title">
-                        Sauvegarde du compte
+                        Cr&eacute;er ou connecter mon compte
                     </p>
                     <p class="account-sync-copy">
-                        Cr&eacute;ez un compte pour retrouver vos favoris,
-                        v&eacute;hicules et historiques sur un autre t&eacute;l&eacute;phone.
+                        S&eacute;lectionnez Gratuit ou Premium, puis cr&eacute;ez
+                        votre compte pour sauvegarder votre formule, vos
+                        favoris, vos v&eacute;hicules et vos historiques.
                     </p>
                     <input
                         id="account-email"
@@ -1744,7 +1844,7 @@ body{
                             id="account-create-button"
                             onclick="creerCompteOptiPlein(event)"
                         >
-                            Cr&eacute;er
+                            Cr&eacute;er mon compte
                         </button>
                         <button
                             type="button"
@@ -1846,7 +1946,7 @@ body{
                     <p class="premium-offer-copy">
                         Passez en mode malin : suppression de la pub, plus de suivi,
                         et recalcul de la station la plus rentable toutes les
-                        30 secondes au lieu de 3 minutes.
+                        15 secondes au lieu de 3 minutes.
                     </p>
                     <ul class="premium-benefits">
                         <li>5 v&eacute;hicules, favoris illimit&eacute;s et historique des &eacute;conomies.</li>
@@ -3320,7 +3420,12 @@ window.creerCompteOptiPlein = async function(event) {
             }
         );
         await finaliserConnexionCompte(resultat, true);
-        definirStatutCompte("Compte cr\u00e9\u00e9 et donn\u00e9es sauvegard\u00e9es.", "success");
+        definirStatutCompte(
+            "Compte "
+            + (comptePremiumActif() ? "Premium" : "Gratuit")
+            + " cr\u00e9\u00e9 et donn\u00e9es sauvegard\u00e9es.",
+            "success"
+        );
     } catch (erreur) {
         definirStatutCompte(erreur.message, "error");
     }
@@ -4637,6 +4742,8 @@ window.changerPlanCompte = function(plan) {
 
     actualiserPlanCompte();
     chargerVehicule();
+    dernierCalculPeriodiqueRentabilite = 0;
+    calculerMeilleureStation();
 
 };
 
@@ -4766,6 +4873,119 @@ function nombreVehiculeEnregistre(cle) {
 
 }
 
+function calculerRentabiliteStations(
+    stationsDisponibles,
+    latitudeCalcul,
+    longitudeCalcul,
+    reservoir,
+    consommation,
+    litresACompleter
+) {
+
+    var stationsCalculees = stationsDisponibles.map(
+        function(station) {
+
+            var distance = distanceDeplacementKm(
+                latitudeCalcul,
+                longitudeCalcul,
+                station.latitude,
+                station.longitude
+            );
+            var carburantTrajet =
+                distance * 2 * consommation / 100;
+
+            return Object.assign({}, station, {
+                distanceCalculee: distance,
+                carburantTrajet: carburantTrajet
+            });
+
+        }
+    );
+
+    stationsCalculees.forEach(
+        function(station) {
+
+            station.coutTotal =
+                litresACompleter * station.prix
+                + station.carburantTrajet * station.prix;
+
+        }
+    );
+
+    if (!comptePremiumActif()) {
+        var prixMoyen = stationsDisponibles.reduce(
+            function(total, station) {
+                return total + station.prix;
+            },
+            0
+        ) / stationsDisponibles.length;
+        var coutPleinReference = litresACompleter * prixMoyen;
+
+        return {
+            stationsCalculees: stationsCalculees.map(
+                function(station) {
+                    return Object.assign({}, station, {
+                        coutTotal:
+                            litresACompleter * station.prix
+                            + station.carburantTrajet * prixMoyen
+                    });
+                }
+            ),
+            coutReference: coutPleinReference,
+            libelleReference:
+                " par rapport au prix moyen local"
+        };
+    }
+
+    var coutReferenceParStation = stationsCalculees.map(
+        function(stationReference) {
+            return {
+                station: stationReference,
+                cout:
+                    litresACompleter * stationReference.prix
+                    + stationReference.carburantTrajet
+                        * stationReference.prix
+            };
+        }
+    );
+
+    stationsCalculees.forEach(
+        function(station) {
+
+            var meilleureReference = coutReferenceParStation
+                .filter(
+                    function(reference) {
+                        return reference.station.id !== station.id;
+                    }
+                )
+                .reduce(
+                    function(meilleure, reference) {
+                        return !meilleure || reference.cout < meilleure.cout
+                            ? reference
+                            : meilleure;
+                    },
+                    null
+                );
+
+            station.economieComparee = meilleureReference
+                ? Math.max(
+                    0,
+                    meilleureReference.cout - station.coutTotal
+                )
+                : 0;
+
+        }
+    );
+
+    return {
+        stationsCalculees: stationsCalculees,
+        coutReference: null,
+        libelleReference:
+            " par rapport aux stations environnantes"
+    };
+
+}
+
 window.calculerMeilleureStation = function() {
 
     var reservoir = nombreVehiculeEnregistre(
@@ -4829,41 +5049,20 @@ window.calculerMeilleureStation = function() {
         return;
     }
 
-    var prixMoyen = stationsDisponibles.reduce(
-        function(total, station) {
-            return total + station.prix;
-        },
-        0
-    ) / stationsDisponibles.length;
     niveauReservoir = Math.max(
         0,
         Math.min(100, Number.isFinite(niveauReservoir) ? niveauReservoir : 50)
     );
     var litresACompleter = reservoir * (100 - niveauReservoir) / 100;
-    var coutPleinReference = litresACompleter * prixMoyen;
-
-    var stationsCalculees = stationsDisponibles
-        .map(
-            function(station) {
-
-                var distance = distanceDeplacementKm(
-                    latitudeCalcul,
-                    longitudeCalcul,
-                    station.latitude,
-                    station.longitude
-                );
-                var carburantTrajet =
-                    distance * 2 * consommation / 100;
-
-                return Object.assign({}, station, {
-                    distanceCalculee: distance,
-                    coutTotal:
-                        litresACompleter * station.prix
-                        + carburantTrajet * prixMoyen
-                });
-
-            }
-        );
+    var resultatRentabilite = calculerRentabiliteStations(
+        stationsDisponibles,
+        latitudeCalcul,
+        longitudeCalcul,
+        reservoir,
+        consommation,
+        litresACompleter
+    );
+    var stationsCalculees = resultatRentabilite.stationsCalculees;
 
     if (!stationsCalculees.length) {
         return;
@@ -4876,10 +5075,13 @@ window.calculerMeilleureStation = function() {
                 : meilleure;
         }
     );
-    var economie = Math.max(
-        0,
-        coutPleinReference - meilleureStation.coutTotal
-    );
+    var economie = comptePremiumActif()
+        ? meilleureStation.economieComparee
+        : Math.max(
+            0,
+            resultatRentabilite.coutReference
+                - meilleureStation.coutTotal
+        );
 
     if (
         navigationActive
@@ -4944,7 +5146,7 @@ window.calculerMeilleureStation = function() {
     sousTitre.appendChild(economieMiseEnAvant);
     sousTitre.appendChild(
         document.createTextNode(
-            " par rapport au prix moyen local"
+            resultatRentabilite.libelleReference
         )
     );
 
@@ -5121,12 +5323,28 @@ window.addEventListener(
     restaurerSessionCompte
 );
 
-var intervalleCalculRentabiliteMs = 3 * 60 * 1000;
+var intervalleCalculRentabiliteGratuitMs = 3 * 60 * 1000;
+var intervalleCalculRentabilitePremiumMs = 15 * 1000;
 var dernierCalculPeriodiqueRentabilite = Date.now();
+
+function intervalleCalculRentabiliteActuel() {
+
+    return comptePremiumActif()
+        ? intervalleCalculRentabilitePremiumMs
+        : intervalleCalculRentabiliteGratuitMs;
+
+}
 
 function actualiserRentabilitePeriodiquement() {
 
     if (document.visibilityState === "hidden") {
+        return;
+    }
+
+    if (
+        Date.now() - dernierCalculPeriodiqueRentabilite
+        < intervalleCalculRentabiliteActuel()
+    ) {
         return;
     }
 
@@ -5137,7 +5355,7 @@ function actualiserRentabilitePeriodiquement() {
 
 setInterval(
     actualiserRentabilitePeriodiquement,
-    intervalleCalculRentabiliteMs
+    1000
 );
 
 document.addEventListener(
@@ -5146,7 +5364,7 @@ document.addEventListener(
         if (
             document.visibilityState === "visible"
             && Date.now() - dernierCalculPeriodiqueRentabilite
-                >= intervalleCalculRentabiliteMs
+                >= intervalleCalculRentabiliteActuel()
         ) {
             actualiserRentabilitePeriodiquement();
         }
