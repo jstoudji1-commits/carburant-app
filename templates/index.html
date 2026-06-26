@@ -7250,7 +7250,7 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
     }
 
     jauge = Math.max(0, Math.min(100, Number.isFinite(jauge) ? jauge : 50));
-    var autonomieKm = reservoir * jauge / 100 / consommation * 100;
+    var autonomieDepartKm = reservoir * jauge / 100 / consommation * 100;
     var autonomiePleinKm = reservoir / consommation * 100;
     var distanceTrajetKm = route.distance / 1000;
     var litresACompleter = reservoir * (100 - jauge) / 100;
@@ -7265,7 +7265,7 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
     if (!stationsValides.length) {
         return {
             arrets: [],
-            autonomieKm: autonomieKm,
+            autonomieKm: autonomieDepartKm,
             distanceTrajetKm: distanceTrajetKm
         };
     }
@@ -7306,7 +7306,7 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
             );
         });
 
-    if (distanceTrajetKm <= autonomieKm * 0.90) {
+    if (distanceTrajetKm <= autonomieDepartKm * 0.90 && jauge > 25) {
         var arretOpportuniste = filtrerArretsEspaces(
             positionsStations
                 .filter(function(position) {
@@ -7329,24 +7329,44 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
 
         return {
             arrets: arretOpportuniste ? [arretOpportuniste] : [],
-            autonomieKm: autonomieKm,
+            autonomieKm: autonomieDepartKm,
             distanceTrajetKm: distanceTrajetKm
         };
     }
 
     var arrets = [];
     var distanceDernierPleinKm = 0;
-    var distanceSecuriteKm = Math.max(25, autonomiePleinKm * 0.12);
+    var autonomieSegmentKm = autonomieDepartKm;
+    var niveauDepartBas = jauge <= 25;
 
     while (
-        distanceDernierPleinKm + autonomieKm < distanceTrajetKm
+        distanceDernierPleinKm + autonomieSegmentKm < distanceTrajetKm
         && arrets.length < 4
     ) {
-        var limiteKm = distanceDernierPleinKm + autonomieKm - distanceSecuriteKm;
+        var premierArret = arrets.length === 0;
+        var margeSecuriteKm = premierArret
+            ? Math.min(
+                25,
+                Math.max(8, autonomieSegmentKm * 0.22)
+            )
+            : Math.min(
+                35,
+                Math.max(20, autonomiePleinKm * 0.12)
+            );
+        var limiteKm = distanceDernierPleinKm
+            + autonomieSegmentKm
+            - margeSecuriteKm;
         var debutRechercheKm = Math.max(
-            distanceDernierPleinKm + autonomieKm * 0.45,
-            distanceDernierPleinKm + 20
+            distanceDernierPleinKm + 2,
+            premierArret && niveauDepartBas
+                ? distanceDernierPleinKm + 2
+                : distanceDernierPleinKm + autonomieSegmentKm * 0.35
         );
+
+        if (limiteKm <= debutRechercheKm) {
+            break;
+        }
+
         var candidatObligatoire = positionsStations
             .filter(function(position) {
                 return position.distanceRouteKm >= debutRechercheKm
@@ -7359,6 +7379,12 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
                     });
             })
             .sort(function(a, b) {
+                if (premierArret && niveauDepartBas) {
+                    return a.distanceRouteKm - b.distanceRouteKm
+                        || a.ecartMetres - b.ecartMetres
+                        || a.station.prix - b.station.prix;
+                }
+
                 return b.economieNette - a.economieNette
                     || b.distanceRouteKm - a.distanceRouteKm
                     || a.station.prix - b.station.prix;
@@ -7370,13 +7396,21 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
 
         arrets.push(candidatObligatoire);
         distanceDernierPleinKm = candidatObligatoire.distanceRouteKm;
-        autonomieKm = autonomiePleinKm;
+        autonomieSegmentKm = autonomiePleinKm;
     }
 
     if (arrets.length) {
         return {
             arrets: arrets,
-            autonomieKm: reservoir * jauge / 100 / consommation * 100,
+            autonomieKm: autonomieDepartKm,
+            distanceTrajetKm: distanceTrajetKm
+        };
+    }
+
+    if (distanceTrajetKm > autonomieDepartKm * 0.90) {
+        return {
+            arrets: [],
+            autonomieKm: autonomieDepartKm,
             distanceTrajetKm: distanceTrajetKm
         };
     }
@@ -7402,7 +7436,7 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
 
     return {
         arrets: meilleurArretRentable ? [meilleurArretRentable] : [],
-        autonomieKm: reservoir * jauge / 100 / consommation * 100,
+        autonomieKm: autonomieDepartKm,
         distanceTrajetKm: distanceTrajetKm
     };
 
