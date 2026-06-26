@@ -49,6 +49,10 @@ TESTEURS_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "testeurs_landing.json"
 )
+ADMIN_PASSWORD = os.getenv(
+    "ADMIN_PASSWORD",
+    "",
+)
 SESSIONS_UTILISATEURS = {}
 PBKDF2_ITERATIONS = 260000
 
@@ -95,6 +99,14 @@ class SauvegardeCompte(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     donnees: DonneesCompte
+
+
+class AdminChangementPlan(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(min_length=5, max_length=160)
+    plan: Literal["free", "premium"]
 
 
 class InscriptionTesteur(BaseModel):
@@ -260,6 +272,76 @@ def email_depuis_requete(request):
         )
 
     return email
+
+
+def verifier_admin(request):
+
+    mot_de_passe = request.headers.get("X-Admin-Password", "")
+    mot_de_passe_attendu = ADMIN_PASSWORD
+    adresse_client = request.client.host if request.client else ""
+
+    if (
+        not mot_de_passe_attendu
+        and adresse_client in {"127.0.0.1", "localhost", "::1"}
+    ):
+        mot_de_passe_attendu = "optiplein-admin"
+
+    if not mot_de_passe_attendu:
+        raise HTTPException(
+            status_code=503,
+            detail="Mot de passe admin non configure.",
+        )
+
+    if not hmac.compare_digest(mot_de_passe, mot_de_passe_attendu):
+        raise HTTPException(
+            status_code=401,
+            detail="Mot de passe admin incorrect.",
+        )
+
+
+def construire_resume_admin():
+
+    comptes = charger_comptes_utilisateurs()
+    utilisateurs = comptes.get("users", {})
+    lignes_comptes = []
+
+    for email, utilisateur in sorted(utilisateurs.items()):
+        donnees = utilisateur.get("data", {})
+        lignes_comptes.append(
+            {
+                "email": email,
+                "plan": donnees.get("plan", "free"),
+                "created_at": utilisateur.get("created_at", ""),
+                "updated_at": utilisateur.get("updated_at", ""),
+                "favoris": len(donnees.get("favoris", [])),
+                "vehicules": len(donnees.get("vehicules", [])),
+                "historique": len(
+                    donnees.get("historique_economies", [])
+                ),
+                "vehicule_actif": donnees.get("vehicule_actif", ""),
+            }
+        )
+
+    donnees_testeurs = charger_testeurs_landing()
+    testeurs = sorted(
+        donnees_testeurs.get("testeurs", []),
+        key=lambda ligne: ligne.get("created_at", ""),
+        reverse=True,
+    )
+
+    return {
+        "comptes": lignes_comptes,
+        "testeurs": testeurs,
+        "stats": {
+            "comptes": len(lignes_comptes),
+            "premium": sum(
+                1
+                for ligne in lignes_comptes
+                if ligne.get("plan") == "premium"
+            ),
+            "testeurs": len(testeurs),
+        },
+    }
 
 
 def limiter_donnees_compte(donnees):
@@ -447,6 +529,53 @@ def landing_page(request: Request):
         name="landing.html",
         context={}
     )
+
+
+@app.get("/admin")
+def page_admin(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin.html",
+        context={}
+    )
+
+
+@app.get("/api/admin/donnees")
+def donnees_admin(request: Request):
+
+    verifier_admin(request)
+    return construire_resume_admin()
+
+
+@app.post("/api/admin/plan")
+def changer_plan_admin(
+    changement: AdminChangementPlan,
+    request: Request,
+):
+
+    verifier_admin(request)
+    email = normaliser_email(changement.email)
+    comptes = charger_comptes_utilisateurs()
+    utilisateur = comptes.get("users", {}).get(email)
+
+    if not utilisateur:
+        raise HTTPException(
+            status_code=404,
+            detail="Compte introuvable.",
+        )
+
+    donnees = utilisateur.setdefault("data", {})
+    donnees["plan"] = changement.plan
+    utilisateur["updated_at"] = datetime.now().astimezone().isoformat()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "email": email,
+        "plan": changement.plan,
+        "updated_at": utilisateur["updated_at"],
+    }
 
 
 @app.post("/api/testeurs")
