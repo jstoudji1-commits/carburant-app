@@ -1304,6 +1304,45 @@ body{
     font-size:13px;
 }
 
+.ravitaillement-marker{
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+}
+
+.ravitaillement-pin{
+    min-width:118px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:7px 9px;
+    border:2px solid #087a2c;
+    border-radius:9px;
+    background:linear-gradient(180deg, #ffffff, #effbf1);
+    color:#087a2c;
+    font-size:13px;
+    font-weight:900;
+    box-shadow:0 9px 18px rgba(8,122,44,0.24);
+    white-space:nowrap;
+}
+
+.ravitaillement-pin::before{
+    content:"";
+    width:18px;
+    height:18px;
+    flex:0 0 auto;
+    border-radius:5px;
+    background:linear-gradient(180deg, #27b33e, #087a2c);
+    box-shadow:inset 0 0 0 3px #fff;
+}
+
+.ravitaillement-pin.secondaire{
+    border-color:#42a85a;
+    color:#214053;
+    background:#ffffff;
+}
+
 .enseigne-logo{
     flex:0 0 auto;
     display:inline-flex;
@@ -5490,6 +5529,7 @@ function demarrerGeolocalisation() {
             calculerMeilleureStation();
             actualiserGuidageNavigation();
             verifierEcartItineraire();
+            verifierRavitaillementPlusRentablePendantNavigation();
 
             if (marqueurUtilisateur) {
 
@@ -6274,8 +6314,16 @@ window.accepterStationPlusRentable = function() {
 
     var station = propositionStationPlusRentable.station;
     var economie = propositionStationPlusRentable.economie;
+    var typeProposition = propositionStationPlusRentable.type || "station";
+    var arret = propositionStationPlusRentable.arret || null;
     propositionStationPlusRentable = null;
     cacherPopupStationPlusRentable();
+
+    if (typeProposition === "ravitaillement") {
+        accepterRavitaillementPlusRentable(station, arret, economie);
+        return;
+    }
+
     enregistrerEconomiePremium(station, economie);
     economieEstimeeFigee = Number.isFinite(economie) ? economie : null;
     tracerItineraire(
@@ -6287,6 +6335,67 @@ window.accepterStationPlusRentable = function() {
     );
 
 };
+
+async function accepterRavitaillementPlusRentable(station, arret, economie) {
+
+    if (
+        !station
+        || latitudeUtilisateur === null
+        || longitudeUtilisateur === null
+        || !destinationNavigation
+    ) {
+        return;
+    }
+
+    enregistrerEconomiePremium(station, economie || 0);
+
+    try {
+        var route = await calculerRouteAvecCoordonnees([
+            {
+                latitude: latitudeUtilisateur,
+                longitude: longitudeUtilisateur
+            },
+            {
+                latitude: station.latitude,
+                longitude: station.longitude
+            },
+            {
+                latitude: destinationNavigation.latitude,
+                longitude: destinationNavigation.longitude
+            }
+        ]);
+        routeNavigation = route;
+        stationNavigationActive = null;
+        coordonneesRouteNavigation = route.geometry.coordinates;
+        etapesNavigation = (route.legs || []).reduce(
+            function(toutesLesEtapes, trajet) {
+                return toutesLesEtapes.concat(trajet.steps || []);
+            },
+            []
+        );
+        indexEtapeNavigation = 0;
+        trajetPrepare = trajetPrepare || {};
+        trajetPrepare.arrets = arret ? [arret] : [{
+            station: station,
+            distanceRouteKm: 0,
+            economieNette: economie || 0
+        }];
+        dessinerItineraire(route.geometry.coordinates, false);
+        afficherMarqueursRavitaillement(trajetPrepare.arrets);
+        proposerRavitaillementTrajetPremium(route);
+        actualiserGuidageNavigation();
+        calculerMeilleureStation();
+    } catch (erreur) {
+        tracerItineraire(
+            station.latitude,
+            station.longitude,
+            true,
+            station,
+            economie
+        );
+    }
+
+}
 
 function actualiserNomBoutonVehicule() {
 
@@ -6913,6 +7022,7 @@ document.addEventListener(
 );
 
 var itineraireLayer = null;
+var marqueursRavitaillement = [];
 var routeNavigation = null;
 var etapesNavigation = [];
 var indexEtapeNavigation = 0;
@@ -6924,6 +7034,8 @@ var stationNavigationActive = null;
 var propositionStationPlusRentable = null;
 var propositionStationIgnoreeId = "";
 var propositionStationIgnoreeDepuis = 0;
+var controleRavitaillementRentableEnCours = false;
+var dernierControleRavitaillementRentable = 0;
 var trajetPrepare = null;
 var jaugeTrajetTemporaire = null;
 var coordonneesRouteNavigation = [];
@@ -7380,9 +7492,11 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
             })
             .sort(function(a, b) {
                 if (premierArret && niveauDepartBas) {
-                    return a.distanceRouteKm - b.distanceRouteKm
+                    return b.economieNette - a.economieNette
+                        || a.station.prix - b.station.prix
+                        || a.distanceRouteKm - b.distanceRouteKm
                         || a.ecartMetres - b.ecartMetres
-                        || a.station.prix - b.station.prix;
+                        || 0;
                 }
 
                 return b.economieNette - a.economieNette
@@ -7502,6 +7616,173 @@ function proposerRavitaillementTrajetPremium(route) {
 
 }
 
+function effacerMarqueursRavitaillement() {
+
+    marqueursRavitaillement.forEach(function(marker) {
+        map.removeLayer(marker);
+    });
+    marqueursRavitaillement = [];
+
+}
+
+function afficherMarqueursRavitaillement(arrets) {
+
+    effacerMarqueursRavitaillement();
+
+    if (!arrets || !arrets.length) {
+        return;
+    }
+
+    arrets.forEach(function(arret, index) {
+        var station = arret.station;
+
+        if (
+            !station
+            || !Number.isFinite(Number(station.latitude))
+            || !Number.isFinite(Number(station.longitude))
+        ) {
+            return;
+        }
+
+        var libelle = index === 0
+            ? "Prochain ravitaillement"
+            : "Ravitaillement " + (index + 1);
+        var icon = L.divIcon({
+            className: "ravitaillement-marker",
+            html:
+                '<div class="ravitaillement-pin'
+                + (index > 0 ? ' secondaire' : '')
+                + '">'
+                + echapperHtml(libelle)
+                + '</div>',
+            iconSize: [150, 38],
+            iconAnchor: [75, 19]
+        });
+        var marker = L.marker(
+            [
+                Number(station.latitude),
+                Number(station.longitude)
+            ],
+            {
+                icon: icon,
+                zIndexOffset: 900
+            }
+        ).addTo(map);
+        marker.bindPopup(
+            '<strong>'
+            + echapperHtml(libelle)
+            + '</strong><br>'
+            + echapperHtml(station.enseigne || "Station-service")
+            + (station.ville ? " - " + echapperHtml(station.ville) : "")
+            + '<br>'
+            + echapperHtml(station.adresse || "")
+            + (
+                Number.isFinite(Number(station.prix))
+                    ? '<br>' + Number(station.prix).toLocaleString(
+                        "fr-FR",
+                        {
+                            minimumFractionDigits: 3,
+                            maximumFractionDigits: 3
+                        }
+                    ) + ' &euro;/L'
+                    : ""
+            )
+        );
+        marqueursRavitaillement.push(marker);
+    });
+
+}
+
+async function verifierRavitaillementPlusRentablePendantNavigation() {
+
+    if (
+        controleRavitaillementRentableEnCours
+        || !comptePremiumActif()
+        || !navigationActive
+        || !trajetPrepare
+        || !trajetPrepare.arrets
+        || !trajetPrepare.arrets.length
+        || !routeNavigation
+        || !routeNavigation.geometry
+    ) {
+        return;
+    }
+
+    if (Date.now() - dernierControleRavitaillementRentable < 30 * 1000) {
+        return;
+    }
+
+    controleRavitaillementRentableEnCours = true;
+    dernierControleRavitaillementRentable = Date.now();
+
+    try {
+        var stationsFrance = await chargerStationsTrajetFrance();
+        var recalcul = calculerArretsRavitaillementRoute(
+            routeNavigation,
+            jaugeTrajetTemporaire,
+            stationsFrance
+        );
+        var candidat = recalcul.arrets && recalcul.arrets[0];
+        var actuel = trajetPrepare.arrets[0];
+
+        if (
+            !candidat
+            || !actuel
+            || memeStation(candidat.station, actuel.station)
+        ) {
+            return;
+        }
+
+        var gainSupplementaire =
+            (Number(candidat.economieNette) || 0)
+            - (Number(actuel.economieNette) || 0);
+
+        if (gainSupplementaire < 0.75) {
+            return;
+        }
+
+        if (
+            propositionStationIgnoreeId
+            && String(candidat.station.id || "") === propositionStationIgnoreeId
+            && Date.now() - propositionStationIgnoreeDepuis < 5 * 60 * 1000
+        ) {
+            return;
+        }
+
+        propositionStationPlusRentable = {
+            type: "ravitaillement",
+            station: candidat.station,
+            arret: candidat,
+            economie: Math.max(0, Number(candidat.economieNette) || 0),
+            economieSupplementaire: gainSupplementaire
+        };
+
+        var popup = document.getElementById("better-station-popup");
+        var texte = document.getElementById("better-station-copy");
+
+        if (!popup || !texte) {
+            return;
+        }
+
+        texte.textContent =
+            (candidat.station.enseigne || "Une station")
+            + (candidat.station.ville ? " \u00e0 " + candidat.station.ville : "")
+            + " devient plus rentable pour le prochain ravitaillement : +"
+            + gainSupplementaire.toLocaleString(
+                "fr-FR",
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }
+            )
+            + " \u20ac net.";
+        popup.hidden = false;
+    } finally {
+        controleRavitaillementRentableEnCours = false;
+    }
+
+}
+
 function actualiserJaugeTrajet() {
 
     var jauge = document.getElementById("trip-gauge");
@@ -7537,6 +7818,7 @@ window.ouvrirPlanificateurTrajet = function() {
     document.getElementById("trip-planner-result").textContent = "";
     document.getElementById("trip-start-button").disabled = true;
     trajetPrepare = null;
+    effacerMarqueursRavitaillement();
     panneau.hidden = false;
     document.getElementById("trip-destination").focus();
 
@@ -7659,6 +7941,7 @@ window.calculerTrajetPrepare = async function() {
             arrets: ravitaillement.arrets,
             route: routeDirecte
         };
+        afficherMarqueursRavitaillement(trajetPrepare.arrets);
         resultat.innerHTML = htmlArretsRavitaillement(ravitaillement);
         bouton.disabled = false;
     } catch (erreur) {
@@ -7711,6 +7994,7 @@ window.validerTrajetPrepare = async function() {
         );
         indexEtapeNavigation = 0;
         dessinerItineraire(route.geometry.coordinates, false);
+        afficherMarqueursRavitaillement(trajetPrepare.arrets);
         proposerRavitaillementTrajetPremium(route);
         fermerPlanificateurTrajet();
         navigationActive = true;
@@ -8056,6 +8340,7 @@ window.arreterNavigation = function() {
     stationNavigationActive = null;
     propositionStationPlusRentable = null;
     cacherPopupStationPlusRentable();
+    effacerMarqueursRavitaillement();
     proposerRavitaillementTrajetPremium(null);
     reinitialiserDetectionEcart();
     document.getElementById("navigation-panel").hidden = true;
@@ -8086,6 +8371,7 @@ async function tracerItineraire(
     if (!maintenirNavigation) {
         jaugeTrajetTemporaire = null;
         trajetPrepare = null;
+        effacerMarqueursRavitaillement();
     }
 
     if (
