@@ -45,6 +45,10 @@ COMPTES_UTILISATEURS_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "comptes_utilisateurs.json"
 )
+TESTEURS_FICHIER = (
+    DOSSIER_DONNEES_UTILISATEURS
+    / "testeurs_landing.json"
+)
 SESSIONS_UTILISATEURS = {}
 PBKDF2_ITERATIONS = 260000
 
@@ -91,6 +95,14 @@ class SauvegardeCompte(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     donnees: DonneesCompte
+
+
+class InscriptionTesteur(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(min_length=5, max_length=160)
+    source: str = Field(default="landing", max_length=80)
 
 
 def normaliser_email(email):
@@ -147,6 +159,38 @@ def enregistrer_comptes_utilisateurs(donnees):
         )
 
     temporaire.replace(COMPTES_UTILISATEURS_FICHIER)
+
+
+def charger_testeurs_landing():
+
+    if not TESTEURS_FICHIER.exists():
+        return {"testeurs": []}
+
+    try:
+        with TESTEURS_FICHIER.open(encoding="utf-8") as fichier:
+            donnees = json.load(fichier)
+            if isinstance(donnees, dict) and "testeurs" in donnees:
+                return donnees
+    except (OSError, ValueError, TypeError):
+        logger.exception("Impossible de lire les testeurs landing.")
+
+    return {"testeurs": []}
+
+
+def enregistrer_testeurs_landing(donnees):
+
+    TESTEURS_FICHIER.parent.mkdir(parents=True, exist_ok=True)
+    temporaire = TESTEURS_FICHIER.with_suffix(".tmp")
+
+    with temporaire.open("w", encoding="utf-8") as fichier:
+        json.dump(
+            donnees,
+            fichier,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    temporaire.replace(TESTEURS_FICHIER)
 
 
 def hasher_mot_de_passe(mot_de_passe, sel=None):
@@ -395,14 +439,57 @@ def distance_km(
     return rayon * c
 
 
-from fastapi.responses import RedirectResponse
-
 @app.get("/")
-def home():
+def landing_page(request: Request):
 
-    return RedirectResponse(
-        url="/web"
+    return templates.TemplateResponse(
+        request=request,
+        name="landing.html",
+        context={}
     )
+
+
+@app.post("/api/testeurs")
+def inscrire_testeur(inscription: InscriptionTesteur, request: Request):
+
+    email = normaliser_email(inscription.email)
+
+    if not email_valide(email):
+        raise HTTPException(
+            status_code=400,
+            detail="Adresse e-mail invalide.",
+        )
+
+    donnees = charger_testeurs_landing()
+    testeurs = donnees.setdefault("testeurs", [])
+    maintenant = datetime.utcnow().isoformat() + "Z"
+    adresse_ip = request.client.host if request.client else ""
+    existe = next(
+        (
+            ligne
+            for ligne in testeurs
+            if ligne.get("email") == email
+        ),
+        None
+    )
+
+    if existe:
+        existe["updated_at"] = maintenant
+        existe["source"] = inscription.source or "landing"
+    else:
+        testeurs.append(
+            {
+                "email": email,
+                "source": inscription.source or "landing",
+                "created_at": maintenant,
+                "updated_at": maintenant,
+                "ip": adresse_ip,
+            }
+        )
+
+    enregistrer_testeurs_landing(donnees)
+
+    return {"ok": True}
 
 
 @app.get("/confidentialite")

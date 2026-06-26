@@ -708,7 +708,7 @@ body{
     grid-template-columns:repeat(2, minmax(0, 1fr));
     gap:8px;
     width:100%;
-    max-width:260px;
+    max-width:100%;
     margin:0 auto;
 }
 
@@ -760,6 +760,121 @@ body{
     color:var(--muted);
     font-size:13px;
     font-weight:bold;
+}
+
+.leaflet-popup-content-wrapper{
+    border-radius:14px;
+    box-shadow:0 18px 42px rgba(16,37,54,0.22);
+    overflow:hidden;
+}
+
+.leaflet-popup-content{
+    margin:0;
+}
+
+.station-popup{
+    width:min(300px, calc(100vw - 48px));
+    padding:9px;
+    color:var(--ink);
+    text-align:left;
+}
+
+.station-popup .popup-identite-prix{
+    justify-content:flex-start;
+    gap:8px;
+    margin-bottom:5px;
+    padding-bottom:5px;
+    border-bottom:1px solid #edf2ef;
+}
+
+.station-popup .popup-identite-prix .enseigne-logo{
+    width:32px;
+    height:32px;
+    flex:0 0 auto;
+}
+
+.station-popup .popup-identite-prix .enseigne-logo-intermarche-popup{
+    width:74px;
+}
+
+.station-popup .popup-enseigne{
+    font-size:13px;
+}
+
+.station-popup .popup-prix{
+    margin-top:0;
+    font-size:16px;
+}
+
+.station-popup-adresse{
+    margin:0 0 5px 0;
+    color:#214053;
+    font-size:12px;
+    line-height:1.2;
+}
+
+.station-popup-update{
+    margin:0 0 6px 0;
+    color:#49a334;
+    font-size:11px;
+    font-weight:800;
+}
+
+.station-popup-favori{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:5px;
+    margin:0;
+    margin-left:auto;
+    flex:0 0 auto;
+}
+
+.station-popup-favori .favori-bouton{
+    width:28px;
+    height:28px;
+    margin:0;
+    border-width:1px;
+    font-size:18px;
+    flex:0 0 auto;
+}
+
+.station-popup-favori .favoris-info{
+    display:none;
+}
+
+.station-popup-distance{
+    margin:0 0 6px 0;
+    color:var(--muted);
+    font-size:11px;
+    font-weight:800;
+}
+
+.station-popup .popup-actions{
+    gap:6px;
+    margin-top:0;
+}
+
+.station-popup .popup-action{
+    padding:7px 7px;
+    border-radius:7px;
+    font-size:11px;
+}
+
+@media (min-width: 900px){
+    .station-popup{
+        width:310px;
+        padding:10px;
+    }
+
+    .station-popup .popup-actions{
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+    }
+
+    .station-popup .popup-action{
+        font-size:12px;
+        padding:8px 8px;
+    }
 }
 
 .update-card{
@@ -2740,11 +2855,11 @@ body{
             <div class="bottom-icon">Eco</div>
             <div>
                 <p id="economy-title" class="bottom-title">
-                    Prochain ravitaillement
+                    Station la plus &eacute;conomique
                 </p>
                 <p id="economy-subtitle" class="bottom-subtitle">
                     Renseignez les caract&eacute;ristiques de votre v&eacute;hicule pour
-                    obtenir le prochain ravitaillement utile sur votre trajet.
+                    obtenir l'itin&eacute;raire et la station la plus rentable autour de vous.
                 </p>
                 <p
                     id="itineraire-info"
@@ -4021,12 +4136,7 @@ var marker = L.marker(
 
 .bindPopup(`
 
-    <div
-        style="
-            text-align:center;
-            min-width:220px;
-        "
-    >
+    <div class="station-popup">
 
         <div class="popup-identite-prix">
             ${logoEnseignePopup{{ loop.index }}}
@@ -4042,17 +4152,26 @@ var marker = L.marker(
                     {% endif %}
                 </div>
             </div>
+
+            <div class="station-popup-favori">
+                <button
+                    class="favori-bouton"
+                    type="button"
+                    data-station-id="${echapperHtml(String(stationFavori{{ loop.index }}.id || ""))}"
+                    aria-label="Ajouter aux favoris"
+                    title="Ajouter aux favoris"
+                    onclick="changerFavori(stationFavori{{ loop.index }})"
+                >
+                    &#9734;
+                </button>
+
+                <p class="favoris-info">
+                    0 / 3 favoris
+                </p>
+            </div>
         </div>
 
-        <br><br>
-
-        <div
-            style="
-                color:#214053;
-                font-size:13px;
-                line-height:1.35;
-            "
-        >
+        <p class="station-popup-adresse">
             ${echapperHtml(stationFavori{{ loop.index }}.adresse || "")}<br>
             ${echapperHtml(
                 [
@@ -4060,41 +4179,16 @@ var marker = L.marker(
                     stationFavori{{ loop.index }}.ville || ""
                 ].filter(Boolean).join(" ")
             )}
-        </div>
-
-        <div
-            style="
-                margin-top:8px;
-                color:#49a334;
-                font-size:12px;
-                font-weight:bold;
-            "
-        >
-            <span class="station-update-age">${texteAgeMiseAJour()}</span>
-        </div>
-
-        <br>
-
-        <button
-            class="favori-bouton"
-            type="button"
-            data-station-id="${echapperHtml(String(stationFavori{{ loop.index }}.id || ""))}"
-            aria-label="Ajouter aux favoris"
-            title="Ajouter aux favoris"
-            onclick="changerFavori(stationFavori{{ loop.index }})"
-        >
-            &#9734;
-        </button>
-
-        <p class="favoris-info">
-            0 / 3 favoris
         </p>
 
-        <br><br>
+        <p class="station-popup-update">
+            <span class="station-update-age">${texteAgeMiseAJour()}</span>
+        </p>
 
         {% if station.distance %}
-        Distance : {{ station.distance }} km
-        <br><br>
+        <p class="station-popup-distance">
+            Distance : {{ station.distance }} km
+        </p>
         {% endif %}
 
         <div class="popup-actions">
@@ -6557,7 +6651,7 @@ function afficherProchainRavitaillementTrajet(titre, sousTitre, boutonItineraire
         return false;
     }
 
-    titre.textContent = "Prochain ravitaillement : "
+    titre.textContent = "Station la plus \u00e9conomique : "
         + (station.enseigne || "Station-service")
         + (station.ville ? " \u00b7 " + station.ville : "");
     sousTitre.textContent =
