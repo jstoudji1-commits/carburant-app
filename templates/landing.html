@@ -6,7 +6,7 @@
     <title>OptiPlein - Devenir testeur</title>
     <meta
         name="description"
-        content="Rejoignez les testeurs OptiPlein, l'application qui aide les conducteurs a choisir la station carburant la plus rentable."
+        content="Rejoignez les testeurs OptiPlein, l'application qui aide les conducteurs à choisir la station carburant la plus rentable."
     >
     <link rel="icon" href="/static/favicon.png">
     <style>
@@ -61,6 +61,7 @@
             display:flex;
             align-items:center;
             gap:10px;
+            justify-content:flex-end;
         }
 
         .nav-link,
@@ -132,6 +133,18 @@
             margin:20px 0 0;
             color:var(--muted);
             font-size:clamp(18px,2.2vw,22px);
+        }
+
+        .hero-offer{
+            display:inline-flex;
+            margin:18px 0 0;
+            padding:11px 14px;
+            border:1px solid #b9d9bf;
+            border-radius:8px;
+            background:#f4fbf5;
+            color:var(--green-dark);
+            font-size:clamp(16px,2vw,19px);
+            font-weight:900;
         }
 
         .hero-points{
@@ -421,7 +434,6 @@
     <header class="topbar">
         <img class="logo" src="/static/logo.png" alt="OptiPlein">
         <nav class="nav-actions" aria-label="Navigation principale">
-            <a class="nav-link" href="/web">Voir l'application</a>
             <a class="nav-button" href="#devenir-testeur">Devenir testeur</a>
         </nav>
     </header>
@@ -431,31 +443,35 @@
             <div>
                 <p class="eyebrow">Programme testeurs OptiPlein</p>
                 <h1>Essayez le plein malin avant tout le monde.</h1>
+                <p class="hero-offer">
+                    1 an d'abonnement offert pour vous et la personne de votre
+                    choix au lancement de l'application.
+                </p>
                 <p class="lead">
-                    OptiPlein aide les conducteurs a trouver la station la plus
+                    OptiPlein aide les conducteurs à trouver la station la plus
                     rentable, pas seulement le prix le plus bas. L'application
-                    tient compte du trajet, de la consommation du vehicule et du
+                    tient compte du trajet, de la consommation du véhicule et du
                     carburant disponible.
                 </p>
 
-                <div class="hero-points" aria-label="Points cles">
+                <div class="hero-points" aria-label="Points clés">
                     <div class="hero-point">
                         <strong>Prix officiels</strong>
-                        <span>Donnees carburants issues des sources publiques.</span>
+                        <span>Données mises à jour toutes les 10 minutes, 7 jours sur 7, 24 h sur 24.</span>
                     </div>
                     <div class="hero-point">
                         <strong>Calcul rentable</strong>
                         <span>Comparaison station par station autour de vous.</span>
                     </div>
                     <div class="hero-point">
-                        <strong>GPS integre</strong>
-                        <span>Itineraire directement dans l'application.</span>
+                        <strong>GPS intégré</strong>
+                        <span>Itinéraire directement dans l'application.</span>
                     </div>
                 </div>
 
                 <form class="signup" id="tester-form">
                     <p class="signup-title" id="devenir-testeur">
-                        Recevoir l'acces testeur
+                        Recevoir l'accès testeur
                     </p>
                     <div class="signup-row">
                         <input
@@ -474,9 +490,9 @@
                         Premium offert.
                     </p>
                     <p class="privacy-note">
-                        Votre e-mail sert uniquement a vous contacter pour le
-                        test d'OptiPlein. Desinscription possible sur simple
-                        demande a optiplein5@gmail.com.
+                        Votre e-mail sert uniquement à vous contacter pour le
+                        test d'OptiPlein. Désinscription possible sur simple
+                        demande à optiplein5@gmail.com.
                     </p>
                 </form>
             </div>
@@ -492,9 +508,9 @@
             <div>
                 <h2 class="section-title">Ce que vous allez tester</h2>
                 <p class="section-lead">
-                    Les retours des premiers utilisateurs vont servir a valider
-                    l'affichage des prix, la precision des stations, le GPS et
-                    les calculs d'economies en conditions reelles.
+                    Les retours des premiers utilisateurs vont servir à valider
+                    l'affichage des prix, la précision des stations, le GPS et
+                    les calculs d'économies en conditions réelles.
                 </p>
             </div>
 
@@ -502,22 +518,22 @@
                 <article class="tester-card">
                     <strong>La carte des stations</strong>
                     <p>
-                        Verifiez que les stations proches de vous apparaissent
+                        Vérifiez que les stations proches de vous apparaissent
                         bien, avec le bon carburant, le bon prix et la bonne
                         enseigne.
                     </p>
                 </article>
                 <article class="tester-card">
-                    <strong>Le calcul d'economie</strong>
+                    <strong>Le calcul d'économie</strong>
                     <p>
-                        Configurez votre vehicule pour comparer les stations
-                        selon le cout reel du detour et du carburant.
+                        Configurez votre véhicule pour comparer les stations
+                        selon le coût réel du détour et du carburant.
                     </p>
                 </article>
                 <article class="tester-card">
                     <strong>Les trajets</strong>
                     <p>
-                        Testez la preparation d'un trajet et les propositions
+                        Testez la préparation d'un trajet et les propositions
                         de ravitaillement sur la route.
                     </p>
                 </article>
@@ -527,8 +543,8 @@
                 <h2 class="section-title">Gratuit ou Premium</h2>
                 <p class="section-lead">
                     La version gratuite garde les fonctions essentielles. Le
-                    Premium est pense pour les conducteurs qui veulent optimiser
-                    leurs trajets et suivre leurs economies dans le temps.
+                    Premium est pensé pour les conducteurs qui veulent optimiser
+                    leurs trajets et suivre leurs économies dans le temps.
                 </p>
             </div>
 
@@ -544,14 +560,14 @@
                     <div class="comparison-cell">Inclus</div>
                 </div>
                 <div class="comparison-row">
-                    <div class="comparison-cell">Vehicules enregistrables</div>
+                    <div class="comparison-cell">Véhicules enregistrables</div>
                     <div class="comparison-cell">1</div>
                     <div class="comparison-cell">5</div>
                 </div>
                 <div class="comparison-row">
                     <div class="comparison-cell">Favoris</div>
                     <div class="comparison-cell">3 stations</div>
-                    <div class="comparison-cell">Illimites</div>
+                    <div class="comparison-cell">Illimités</div>
                 </div>
                 <div class="comparison-row">
                     <div class="comparison-cell">Recalcul de la station la plus rentable</div>
@@ -559,17 +575,17 @@
                     <div class="comparison-cell">Toutes les 15 secondes</div>
                 </div>
                 <div class="comparison-row">
-                    <div class="comparison-cell">Preparation des ravitaillements sur trajet</div>
+                    <div class="comparison-cell">Préparation des ravitaillements sur trajet</div>
                     <div class="comparison-cell">Non</div>
                     <div class="comparison-cell">Oui</div>
                 </div>
                 <div class="comparison-row">
-                    <div class="comparison-cell">Publicite</div>
+                    <div class="comparison-cell">Publicité</div>
                     <div class="comparison-cell">Oui</div>
-                    <div class="comparison-cell">Supprimee</div>
+                    <div class="comparison-cell">Supprimée</div>
                 </div>
                 <div class="comparison-row">
-                    <div class="comparison-cell">Historique des economies</div>
+                    <div class="comparison-cell">Historique des économies</div>
                     <div class="comparison-cell">Non</div>
                     <div class="comparison-cell">Oui</div>
                 </div>
@@ -579,10 +595,10 @@
                 <div>
                     <h2>OptiPlein Premium</h2>
                     <p>
-                        Suppression de la publicite, favoris illimites,
-                        plusieurs vehicules, historique des economies et
-                        calculs de rentabilite plus frequents. Les testeurs
-                        selectionnes profiteront d'une annee Premium offerte.
+                        Suppression de la publicité, favoris illimités,
+                        plusieurs véhicules, historique des économies et
+                        calculs de rentabilité plus fréquents. Les testeurs
+                        sélectionnés profiteront d'une année Premium offerte.
                     </p>
                 </div>
                 <div class="price">3,99 &euro; / an</div>
@@ -591,15 +607,24 @@
     </main>
 
     <footer>
-        OptiPlein - Application en preparation pour Google Play.
-        <a href="/confidentialite">Confidentialite</a>
+        OptiPlein - Application en préparation pour Google Play.
+        <a id="privacy-link" href="/confidentialite">Confidentialité</a>
         &middot;
-        <a href="/suppression-compte">Suppression de compte</a>
+        <a id="delete-link" href="/suppression-compte">Suppression de compte</a>
         &middot;
         <a href="mailto:optiplein5@gmail.com">Contact</a>
     </footer>
 
     <script>
+        var privacyLink = document.getElementById("privacy-link");
+        var deleteLink = document.getElementById("delete-link");
+        var baseUrl = window.location.protocol === "file:"
+            ? "http://127.0.0.1:8765"
+            : "";
+
+        privacyLink.href = baseUrl + "/confidentialite";
+        deleteLink.href = baseUrl + "/suppression-compte";
+
         var form = document.getElementById("tester-form");
         var email = document.getElementById("tester-email");
         var status = document.getElementById("tester-status");
@@ -609,7 +634,7 @@
             status.textContent = "Inscription en cours...";
 
             try {
-                var response = await fetch("/api/testeurs", {
+                var response = await fetch(baseUrl + "/api/testeurs", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -625,7 +650,7 @@
                 }
 
                 status.textContent =
-                    "Merci, vous etes inscrit pour tester OptiPlein.";
+                    "Merci, vous êtes inscrit pour tester OptiPlein.";
                 form.reset();
             } catch (erreur) {
                 status.textContent =
