@@ -636,10 +636,11 @@ def page_web(
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
     carburant: str = "gazole",
-    rayon: int = 15
+    rayon: int = 25
 ):
 
     stations = charger_stations()
+    stations_autour = []
 
     # Recherche ville ou code postal
 
@@ -668,8 +669,6 @@ def page_web(
     # Recherche autour de moi
 
     if latitude and longitude:
-
-        stations_valides = []
 
         for station in stations:
 
@@ -710,16 +709,11 @@ def page_web(
                 )
 
                 if distance <= rayon:
-
-                    stations_valides.append(
-                        station
-                    )
+                    stations_autour.append(station)
 
             except:
 
                 pass
-
-        stations = stations_valides
 
         stations.sort(
             key=lambda x: x["distance"]
@@ -763,13 +757,13 @@ def page_web(
             )
         )
 
-        stations = stations[:50]
+        stations_autour = stations
 
     nombre_stations = len(stations)
 
     stations_avec_prix = []
 
-    for station in stations:
+    for station in stations_autour:
         try:
             prix = float(station.get(carburant, ""))
             if prix not in (0, 9.999):

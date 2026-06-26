@@ -2922,7 +2922,7 @@ function rechargerAvecPositionActuelle() {
         url.searchParams.set("longitude", longitudeUtilisateur);
     }
     url.searchParams.set("carburant", {{ carburant|tojson }});
-    url.searchParams.set("rayon", "15");
+    url.searchParams.set("rayon", "25");
 
     sessionStorage.setItem(
         "optiplein-cap-carte",
@@ -3786,6 +3786,10 @@ L.tileLayer(
 var markers = [];
 var markersParStation = {};
 var stationsEconomie = [];
+var stationsTrajetFrance = null;
+var chargementStationsTrajetFrance = null;
+var carburantSelectionne = {{ carburant|tojson }};
+var rayonCalculEconomieKm = Number({{ rayon|tojson }}) || 25;
 
 var logosEnseignes = [
     {
@@ -4011,8 +4015,13 @@ var marker = L.marker(
                 line-height:1.35;
             "
         >
-            {{ station.adresse }}<br>
-            {{ station.cp }} {{ station.ville }}
+            ${echapperHtml(stationFavori{{ loop.index }}.adresse || "")}<br>
+            ${echapperHtml(
+                [
+                    stationFavori{{ loop.index }}.cp || "",
+                    stationFavori{{ loop.index }}.ville || ""
+                ].filter(Boolean).join(" ")
+            )}
         </div>
 
         <div
@@ -4031,7 +4040,7 @@ var marker = L.marker(
         <button
             class="favori-bouton"
             type="button"
-            data-station-id="{{ station.id }}"
+            data-station-id="${echapperHtml(String(stationFavori{{ loop.index }}.id || ""))}"
             aria-label="Ajouter aux favoris"
             title="Ajouter aux favoris"
             onclick="changerFavori(stationFavori{{ loop.index }})"
@@ -6108,6 +6117,60 @@ function trouverStationParCoordonnees(latitude, longitude) {
 
 }
 
+function convertirStationTrajetFrance(station) {
+
+    var prix = Number(station[carburantSelectionne]);
+
+    return {
+        id: station.id,
+        enseigne: station.enseigne || "",
+        adresse: station.adresse || "",
+        ville: station.ville || "",
+        latitude: Number(station.latitude),
+        longitude: Number(station.longitude),
+        prix: prix,
+        distance: null
+    };
+
+}
+
+async function chargerStationsTrajetFrance() {
+
+    if (stationsTrajetFrance) {
+        return stationsTrajetFrance;
+    }
+
+    if (!chargementStationsTrajetFrance) {
+        chargementStationsTrajetFrance = fetch("/stations")
+            .then(function(reponse) {
+                if (!reponse.ok) {
+                    throw new Error("stations indisponibles");
+                }
+
+                return reponse.json();
+            })
+            .then(function(stations) {
+                stationsTrajetFrance = stations
+                    .map(convertirStationTrajetFrance)
+                    .filter(function(station) {
+                        return Number.isFinite(station.latitude)
+                            && Number.isFinite(station.longitude)
+                            && station.prix > 0
+                            && station.prix !== 9.999;
+                    });
+
+                return stationsTrajetFrance;
+            })
+            .catch(function() {
+                chargementStationsTrajetFrance = null;
+                return stationsEconomie;
+            });
+    }
+
+    return chargementStationsTrajetFrance;
+
+}
+
 function cacherPopupStationPlusRentable() {
 
     var popup = document.getElementById("better-station-popup");
@@ -6423,7 +6486,18 @@ window.calculerMeilleureStation = function() {
 
     var stationsDisponibles = stationsEconomie.filter(
         function(station) {
-            return station.prix > 0 && station.prix !== 9.999;
+            var distanceStation = distanceDeplacementKm(
+                latitudeCalcul,
+                longitudeCalcul,
+                station.latitude,
+                station.longitude
+            );
+
+            station.distance = distanceStation;
+
+            return station.prix > 0
+                && station.prix !== 9.999
+                && distanceStation <= rayonCalculEconomieKm;
         }
     );
 
@@ -7087,7 +7161,7 @@ function enrichirRentabiliteArret(position, prixReference, litres, consommation)
 
 }
 
-function calculerArretsRavitaillementRoute(route, jaugeForcee) {
+function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
 
     var vehicule = vehiculeActif();
     var reservoir = Number(vehicule && vehicule.reservoir);
@@ -7109,7 +7183,10 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee) {
     var autonomieKm = reservoir * jauge / 100 / consommation * 100;
     var distanceTrajetKm = route.distance / 1000;
     var litresACompleter = reservoir * (100 - jauge) / 100;
-    var stationsValides = stationsEconomie.filter(function(station) {
+    var stationsDisponiblesTrajet = stationsSource
+        || stationsTrajetFrance
+        || stationsEconomie;
+    var stationsValides = stationsDisponiblesTrajet.filter(function(station) {
         return station.prix > 0 && station.prix !== 9.999;
     });
     var prixReference = stationNavigationActive && stationNavigationActive.prix
@@ -7402,10 +7479,14 @@ window.calculerTrajetPrepare = async function() {
             },
             destination
         ]);
+        resultat.textContent =
+            "Recherche des stations sur toute la France...";
+        var stationsFrance = await chargerStationsTrajetFrance();
         var jaugeTrajet = Number(jauge.value);
         var ravitaillement = calculerArretsRavitaillementRoute(
             routeDirecte,
-            jaugeTrajet
+            jaugeTrajet,
+            stationsFrance
         );
         trajetPrepare = {
             destination: destination,
