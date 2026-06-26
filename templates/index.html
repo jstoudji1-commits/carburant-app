@@ -324,6 +324,11 @@ body{
     background:#f8fbf9;
 }
 
+.premium-history-total{
+    border-color:#bfe8c7;
+    background:#f1fbf3;
+}
+
 .premium-history-main{
     display:flex;
     justify-content:space-between;
@@ -1202,6 +1207,7 @@ body{
     height:100%;
     width:100%;
     z-index:1;
+    touch-action:none;
 }
 
 .leaflet-control-zoom{
@@ -1347,6 +1353,14 @@ body{
 
 .enseigne-logo-intermarche-carte{
     width:34px;
+}
+
+.enseigne-logo-avia-carte{
+    width:30px;
+}
+
+.enseigne-logo-avia-carte img{
+    padding:3px;
 }
 
 .popup-identite-prix .enseigne-logo-intermarche-popup{
@@ -1538,6 +1552,163 @@ body{
     cursor:pointer;
 }
 
+.trip-planner-open{
+    position:absolute;
+    top:18px;
+    left:18px;
+    z-index:860;
+    padding:11px 14px;
+    border:0;
+    border-radius:9px;
+    background:linear-gradient(180deg, #27b33e, #087a2c);
+    color:#fff;
+    font-weight:800;
+    box-shadow:0 8px 18px rgba(8,122,44,0.22);
+    cursor:pointer;
+}
+
+.trip-planner-open[hidden]{
+    display:none;
+}
+
+.trip-planner-backdrop{
+    position:absolute;
+    inset:0;
+    z-index:1180;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:18px;
+    background:rgba(238,243,239,0.36);
+    backdrop-filter:blur(5px);
+}
+
+.trip-planner-backdrop[hidden]{
+    display:none;
+}
+
+.trip-planner-panel{
+    width:min(460px, 100%);
+    padding:14px;
+    border:1px solid #dce4ea;
+    border-radius:12px;
+    background:rgba(255,255,255,0.98);
+    box-shadow:var(--shadow);
+}
+
+.trip-planner-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+}
+
+.trip-planner-title{
+    margin:0;
+    color:var(--ink);
+    font-size:17px;
+    font-weight:800;
+}
+
+.trip-planner-close{
+    width:32px;
+    height:32px;
+    border:0;
+    border-radius:8px;
+    background:#edf2ef;
+    color:var(--ink);
+    font-size:21px;
+    cursor:pointer;
+}
+
+.trip-planner-field{
+    display:grid;
+    gap:6px;
+    margin-top:10px;
+}
+
+.trip-planner-field label,
+.trip-planner-gauge-label{
+    color:#425463;
+    font-size:12px;
+    font-weight:800;
+}
+
+.trip-planner-field input{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid #cbd5dd;
+    border-radius:8px;
+    color:var(--ink);
+    font-size:14px;
+}
+
+.trip-planner-gauge{
+    margin-top:10px;
+    padding:11px;
+    border:1px solid #edf1f3;
+    border-radius:9px;
+    background:#f8fbf9;
+}
+
+.trip-planner-gauge-head{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:8px;
+}
+
+.trip-planner-gauge-value{
+    color:var(--green-dark);
+    font-weight:800;
+}
+
+.trip-planner-gauge input{
+    width:100%;
+    accent-color:var(--green);
+}
+
+.trip-planner-result{
+    min-height:32px;
+    margin:10px 0 0 0;
+    color:#425463;
+    font-size:12px;
+    line-height:1.35;
+}
+
+.trip-planner-result strong{
+    color:var(--green-dark);
+}
+
+.trip-planner-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:12px;
+}
+
+.trip-planner-action{
+    padding:10px 9px;
+    border:1px solid #cbd5dd;
+    border-radius:8px;
+    background:#fff;
+    color:var(--ink);
+    font-weight:800;
+    cursor:pointer;
+}
+
+.trip-planner-action.primary{
+    border-color:var(--green);
+    background:linear-gradient(180deg, #27b33e, #087a2c);
+    color:#fff;
+}
+
+.trip-planner-action:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+}
+
 .leaflet-control-follow{
     margin-right:22px !important;
     margin-bottom:22px !important;
@@ -1609,38 +1780,18 @@ body{
     font-weight:800;
 }
 
-.economy-recalculation{
-    position:absolute;
-    inset:0;
-    z-index:4;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:12px;
-    background:rgba(255,255,255,0.68);
-    color:#087a2c;
-    font-size:20px;
-    font-weight:800;
-    pointer-events:none;
-    backdrop-filter:blur(1px);
-}
-
-.economy-recalculation[hidden]{
-    display:none;
-}
-
 .better-station-popup{
     position:absolute;
     left:50%;
-    bottom:118px;
+    bottom:104px;
     z-index:760;
-    width:min(420px, calc(100% - 28px));
+    width:min(390px, calc(100% - 24px));
     transform:translateX(-50%);
-    padding:16px;
+    padding:11px 12px;
     border:1px solid rgba(20,159,56,0.22);
-    border-radius:12px;
+    border-radius:10px;
     background:rgba(255,255,255,0.98);
-    box-shadow:0 14px 34px rgba(16,37,54,0.22);
+    box-shadow:0 10px 24px rgba(16,37,54,0.18);
 }
 
 .better-station-popup[hidden]{
@@ -1648,32 +1799,33 @@ body{
 }
 
 .better-station-title{
-    margin:0 0 6px 0;
+    margin:0 0 3px 0;
     color:var(--ink);
-    font-size:16px;
+    font-size:14px;
     font-weight:800;
 }
 
 .better-station-copy{
     margin:0;
     color:#425463;
-    font-size:13px;
-    line-height:1.35;
+    font-size:12px;
+    line-height:1.25;
 }
 
 .better-station-actions{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:9px;
-    margin-top:13px;
+    gap:7px;
+    margin-top:8px;
 }
 
 .better-station-action{
-    padding:11px 10px;
+    padding:8px 8px;
     border:1px solid #cbd5dd;
-    border-radius:8px;
+    border-radius:7px;
     background:#fff;
     color:var(--ink);
+    font-size:12px;
     font-weight:800;
     cursor:pointer;
 }
@@ -2038,7 +2190,17 @@ body{
                         <div class="plan-comparison-cell plan-comparison-premium">2e station</div>
                     </div>
                     <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">&Eacute;conomie affich&eacute;e</div>
+                        <div class="plan-comparison-cell plan-comparison-free">&Eacute;conomie estim&eacute;e</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">&Eacute;conomie r&eacute;elle &agrave; destination</div>
+                    </div>
+                    <div class="plan-comparison-row">
                         <div class="plan-comparison-cell plan-comparison-feature">Arr&ecirc;ts rentables sur trajet</div>
+                        <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Planification avec jauge trajet</div>
                         <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
                         <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
                     </div>
@@ -2384,6 +2546,15 @@ body{
                 Publicit&eacute; - Passez Premium pour retirer les annonces.
             </div>
             <div id="map"></div>
+            <button
+                type="button"
+                id="trip-planner-open"
+                class="trip-planner-open premium-only"
+                onclick="ouvrirPlanificateurTrajet()"
+                hidden
+            >
+                Pr&eacute;parer trajet
+            </button>
 
             <div id="tendance-popup" class="tendance-popup" hidden>
                 <button
@@ -2446,17 +2617,87 @@ body{
                     </button>
                 </div>
             </div>
+
+            <div
+                id="trip-planner"
+                class="trip-planner-backdrop"
+                hidden
+            >
+                <section class="trip-planner-panel">
+                    <div class="trip-planner-header">
+                        <p class="trip-planner-title">
+                            Pr&eacute;parer mon trajet
+                        </p>
+                        <button
+                            type="button"
+                            class="trip-planner-close"
+                            onclick="fermerPlanificateurTrajet()"
+                            aria-label="Fermer"
+                        >&times;</button>
+                    </div>
+
+                    <div class="trip-planner-field">
+                        <label for="trip-destination">
+                            Destination
+                        </label>
+                        <input
+                            id="trip-destination"
+                            type="text"
+                            autocomplete="street-address"
+                            placeholder="Ville, adresse ou lieu"
+                        >
+                    </div>
+
+                    <div class="trip-planner-gauge">
+                        <div class="trip-planner-gauge-head">
+                            <span class="trip-planner-gauge-label">
+                                R&eacute;servoir pour ce trajet
+                            </span>
+                            <span
+                                id="trip-gauge-value"
+                                class="trip-planner-gauge-value"
+                            >50 %</span>
+                        </div>
+                        <input
+                            id="trip-gauge"
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="5"
+                            value="50"
+                            oninput="actualiserJaugeTrajet()"
+                        >
+                    </div>
+
+                    <p
+                        id="trip-planner-result"
+                        class="trip-planner-result"
+                    ></p>
+
+                    <div class="trip-planner-actions">
+                        <button
+                            type="button"
+                            class="trip-planner-action"
+                            onclick="calculerTrajetPrepare()"
+                        >
+                            Calculer
+                        </button>
+                        <button
+                            type="button"
+                            id="trip-start-button"
+                            class="trip-planner-action primary"
+                            onclick="validerTrajetPrepare()"
+                            disabled
+                        >
+                            Valider le trajet
+                        </button>
+                    </div>
+                </section>
+            </div>
         </div>
 
         {% if stations and stations[0].latitude and stations[0].longitude %}
         <div class="bottom-card">
-            <div
-                id="economy-recalculation"
-                class="economy-recalculation"
-                role="status"
-                aria-live="polite"
-                hidden
-            >Recalcul en cours</div>
             <div class="bottom-icon">Eco</div>
             <div>
                 <p id="economy-title" class="bottom-title">
@@ -3051,12 +3292,21 @@ window.ouvrirGoogleMaps = function(latitude, longitude) {
         return;
     }
 
-    window.open(
-        "https://www.google.com/maps/dir/?api=1&destination="
-            + encodeURIComponent(latitude + "," + longitude)
-            + "&travelmode=driving",
-        "_blank"
-    );
+    var destination = latitude + "," + longitude;
+    var origine = latitudeUtilisateur !== null
+        && longitudeUtilisateur !== null
+        ? latitudeUtilisateur + "," + longitudeUtilisateur
+        : "My Location";
+    var url =
+        "https://www.google.com/maps/dir/?api=1"
+        + "&origin="
+        + encodeURIComponent(origine)
+        + "&destination="
+        + encodeURIComponent(destination)
+        + "&travelmode=driving"
+        + "&dir_action=navigate";
+
+    window.open(url, "_blank");
 
 };
 
@@ -3156,8 +3406,23 @@ function creerAdaptateurMapLibre() {
                 ? options.bearing
                 : 0,
             pitch: 58,
-            attributionControl: false
+            attributionControl: false,
+            cooperativeGestures: false,
+            dragPan: true,
+            dragRotate: true,
+            touchZoomRotate: true,
+            touchPitch: true
         });
+        if (carteInterne.touchZoomRotate) {
+            carteInterne.touchZoomRotate.enable();
+            carteInterne.touchZoomRotate.enableRotation();
+        }
+        if (carteInterne.dragPan) {
+            carteInterne.dragPan.enable();
+        }
+        if (carteInterne.dragRotate) {
+            carteInterne.dragRotate.enable();
+        }
         carteInterne.addControl(
             new maplibregl.NavigationControl({
                 visualizePitch: true
@@ -3501,7 +3766,7 @@ var map = L.map(
     positionInitialeCarteDisponible
         ? [latitudeInitialeCarte, longitudeInitialeCarte]
         : [46.6, 2.4],
-    positionInitialeCarteDisponible ? 16 : 6
+    positionInitialeCarteDisponible ? 17.2 : 6
 );
 
 L.tileLayer(
@@ -3534,7 +3799,12 @@ var logosEnseignes = [
     { motifs: ["super u", "systeme u", "station u", "hyper u", "u express", "la station u"], fichier: "systeme-u.png" },
     { motifs: ["carrefour"], fichier: "carrefour.png" },
     { motifs: ["total"], fichier: "totalenergies.png" },
-    { motifs: ["avia"], fichier: "avia.png" },
+    {
+        motifs: ["avia"],
+        fichier: "avia.png",
+        fichierCarte: "avia-marker.svg",
+        classeCarte: "enseigne-logo-avia-carte"
+    },
     { motifs: ["esso"], fichier: "esso.svg" },
     { motifs: ["auchan"], fichier: "auchan.png" },
     { motifs: ["eni", "agip"], fichier: "eni.png" },
@@ -4526,14 +4796,12 @@ function actualiserListeFavoris(favoris) {
 // Zoom automatique
 // ========================
 
-if (markers.length > 0 && !positionInitialeCarteDisponible) {
-
-    var group = L.featureGroup(markers);
-
-    map.fitBounds(
-        group.getBounds(),
+if (positionInitialeCarteDisponible) {
+    map.setView(
+        [latitudeInitialeCarte, longitudeInitialeCarte],
+        17.2,
         {
-            padding: [30, 30]
+            animate: false
         }
     );
 }
@@ -4550,8 +4818,8 @@ let utilisateurMarker = null;
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
-var zoomNavigation = 16;
-var zoomGuidageActif = 18.7;
+var zoomNavigation = 17.2;
+var zoomGuidageActif = 19.2;
 var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
 var orientationAutomatiqueActive = true;
@@ -4700,11 +4968,9 @@ function actualiserOrientationFlecheUtilisateur(capCible) {
         return;
     }
 
-    var rotation = suiviCarteActif && orientationAutomatiqueActive
-        ? 0
-        : (
-            capFlecheUtilisateur + capCarte + 540
-        ) % 360 - 180;
+    var rotation = (
+        capFlecheUtilisateur + capCarte + 540
+    ) % 360 - 180;
     fleche.style.transform = "rotate(" + rotation + "deg)";
 
 }
@@ -5332,26 +5598,14 @@ function declencherRecalculSousSeuil() {
         return;
     }
 
-    var indicateur = document.getElementById(
-        "economy-recalculation"
-    );
     recalculRentabiliteEnCours = true;
-
-    if (indicateur) {
-        indicateur.hidden = false;
-    }
 
     setTimeout(
         function() {
             calculerMeilleureStation();
-
-            if (indicateur) {
-                indicateur.hidden = true;
-            }
-
             recalculRentabiliteEnCours = false;
         },
-        750
+        50
     );
 
 }
@@ -5485,6 +5739,40 @@ function actualiserHistoriqueEconomiesPremium() {
     }
 
     conteneur.innerHTML = "";
+
+    var total2026 = historique.reduce(
+        function(total, ligne) {
+            var date = ligne.date ? new Date(ligne.date) : null;
+
+            if (!date || date.getFullYear() !== 2026) {
+                return total;
+            }
+
+            return total + (Number(ligne.economie) || 0);
+        },
+        0
+    );
+    var ligneTotal = document.createElement("article");
+    ligneTotal.className = "premium-history-item premium-history-total";
+    var contenuTotal = document.createElement("div");
+    contenuTotal.className = "premium-history-main";
+    var libelleTotal = document.createElement("span");
+    libelleTotal.textContent = "Total en 2026 :";
+    var montantTotal = document.createElement("span");
+    montantTotal.className = "premium-history-saving";
+    montantTotal.textContent = "+"
+        + total2026.toLocaleString(
+            "fr-FR",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        )
+        + " \u20ac";
+    contenuTotal.appendChild(libelleTotal);
+    contenuTotal.appendChild(montantTotal);
+    ligneTotal.appendChild(contenuTotal);
+    conteneur.appendChild(ligneTotal);
 
     if (!historique.length) {
         var vide = document.createElement("p");
@@ -5889,7 +6177,7 @@ function proposerStationPlusRentablePendantNavigation(
     texte.textContent =
         (meilleureStation.enseigne || "Une station")
         + (meilleureStation.ville ? " \u00e0 " + meilleureStation.ville : "")
-        + " devient plus rentable : +"
+        + " : +"
         + economieSupplementaire.toLocaleString(
             "fr-FR",
             {
@@ -5897,7 +6185,7 @@ function proposerStationPlusRentablePendantNavigation(
                 maximumFractionDigits: 2
             }
         )
-        + " \u20ac estim\u00e9s par rapport \u00e0 l'itin\u00e9raire actuel.";
+        + " \u20ac vs trajet actuel.";
     popup.hidden = false;
 
 }
@@ -6254,7 +6542,9 @@ window.calculerMeilleureStation = function() {
     economieMiseEnAvant.className = "economy-saving";
     var economieLibelle = document.createElement("span");
     economieLibelle.className = "economy-saving-label";
-    economieLibelle.textContent = "\u00c9conomie estim\u00e9e ";
+    economieLibelle.textContent = comptePremiumActif()
+        ? "\u00c9conomie r\u00e9elle \u00e0 destination "
+        : "\u00c9conomie estim\u00e9e ";
     var economieMontant = document.createElement("span");
     economieMontant.textContent = economieFormatee + " \u20ac";
     economieMiseEnAvant.appendChild(economieLibelle);
@@ -6502,6 +6792,8 @@ var stationNavigationActive = null;
 var propositionStationPlusRentable = null;
 var propositionStationIgnoreeId = "";
 var propositionStationIgnoreeDepuis = 0;
+var trajetPrepare = null;
+var jaugeTrajetTemporaire = null;
 var coordonneesRouteNavigation = [];
 var positionsHorsItineraire = 0;
 var derniereRelanceItineraire = 0;
@@ -6795,51 +7087,37 @@ function enrichirRentabiliteArret(position, prixReference, litres, consommation)
 
 }
 
-function proposerRavitaillementTrajetPremium(route) {
-
-    var element = document.getElementById("navigation-refuel");
-
-    if (!element) {
-        return;
-    }
-
-    if (!comptePremiumActif() || !route || !route.geometry) {
-        element.hidden = true;
-        element.textContent = "";
-        return;
-    }
+function calculerArretsRavitaillementRoute(route, jaugeForcee) {
 
     var vehicule = vehiculeActif();
     var reservoir = Number(vehicule && vehicule.reservoir);
     var consommation = Number(vehicule && vehicule.conso);
-    var jauge = Number(vehicule && vehicule.jauge);
+    var jauge = Number.isFinite(jaugeForcee)
+        ? jaugeForcee
+        : Number(vehicule && vehicule.jauge);
 
-    if (!reservoir || !consommation) {
-        element.hidden = false;
-        element.textContent =
-            "Renseignez votre v\u00e9hicule pour calculer les ravitaillements du trajet.";
-        return;
+    if (!reservoir || !consommation || !route || !route.geometry) {
+        return {
+            arrets: [],
+            html: "Renseignez votre v\u00e9hicule pour calculer les ravitaillements du trajet.",
+            autonomieKm: 0,
+            distanceTrajetKm: route && route.distance ? route.distance / 1000 : 0
+        };
     }
 
     jauge = Math.max(0, Math.min(100, Number.isFinite(jauge) ? jauge : 50));
     var autonomieKm = reservoir * jauge / 100 / consommation * 100;
     var distanceTrajetKm = route.distance / 1000;
-
     var litresACompleter = reservoir * (100 - jauge) / 100;
+    var stationsValides = stationsEconomie.filter(function(station) {
+        return station.prix > 0 && station.prix !== 9.999;
+    });
     var prixReference = stationNavigationActive && stationNavigationActive.prix
         ? stationNavigationActive.prix
-        : stationsEconomie
-            .filter(function(station) {
-                return station.prix > 0 && station.prix !== 9.999;
-            })
-            .reduce(function(total, station, index, liste) {
-                return total + station.prix / liste.length;
-            }, 0);
-
-    var positionsStations = stationsEconomie
-        .filter(function(station) {
-            return station.prix > 0 && station.prix !== 9.999;
-        })
+        : stationsValides.reduce(function(total, station, index, liste) {
+            return total + station.prix / liste.length;
+        }, 0);
+    var positionsStations = stationsValides
         .map(function(station) {
             return positionStationSurRoute(
                 station,
@@ -6860,7 +7138,6 @@ function proposerRavitaillementTrajetPremium(route) {
                 consommation
             );
         });
-
     var arretOpportuniste = positionsStations
         .filter(function(position) {
             return position.distanceRouteKm <= Math.min(
@@ -6878,7 +7155,6 @@ function proposerRavitaillementTrajetPremium(route) {
             return b.economieNette - a.economieNette
                 || a.station.prix - b.station.prix;
         })[0];
-
     var arrets = [];
     var distanceCouverte = Math.max(0, autonomieKm * 0.75);
 
@@ -6910,59 +7186,305 @@ function proposerRavitaillementTrajetPremium(route) {
         distanceCouverte = candidat.distanceRouteKm + autonomieKm * 0.75;
     }
 
-    element.hidden = false;
-
     if (arretOpportuniste && !arrets.some(function(arret) {
         return memeStation(arret.station, arretOpportuniste.station);
     })) {
         arrets.unshift(arretOpportuniste);
     }
 
-    if (distanceTrajetKm <= autonomieKm * 0.85 && !arrets.length) {
-        element.innerHTML =
-            "<strong>Ravitaillement :</strong> autonomie suffisante sur ce trajet.";
-        return;
-    }
-
-    if (!arrets.length) {
-        element.innerHTML =
-            "<strong>Ravitaillement :</strong> aucune station pertinente charg\u00e9e sur ce trajet.";
-        return;
-    }
-
-    element.innerHTML =
-        "<strong>Ravitaillement conseill\u00e9 :</strong> "
-        + arrets.map(
-            function(arret) {
-                return echapperHtml(
-                    (arret.station.enseigne || "Station")
-                    + (arret.station.ville ? " \u00e0 " + arret.station.ville : "")
-                    + " vers "
-                    + arret.distanceRouteKm.toLocaleString(
-                        "fr-FR",
-                        {
-                            maximumFractionDigits: 0
-                        }
-                    )
-                    + " km"
-                    + (
-                        arret.economieNette >= 2
-                            ? " (gain net env. "
-                                + arret.economieNette.toLocaleString(
-                                    "fr-FR",
-                                    {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                    }
-                                )
-                                + " \u20ac)"
-                            : ""
-                    )
-                );
-            }
-        ).join(" puis ");
+    return {
+        arrets: arrets.slice(0, 3),
+        autonomieKm: autonomieKm,
+        distanceTrajetKm: distanceTrajetKm
+    };
 
 }
+
+function htmlArretsRavitaillement(resultat) {
+
+    if (!resultat.arrets.length) {
+        return resultat.distanceTrajetKm <= resultat.autonomieKm * 0.85
+            ? "<strong>Ravitaillement :</strong> autonomie suffisante sur ce trajet."
+            : "<strong>Ravitaillement :</strong> aucune station pertinente charg\u00e9e sur ce trajet.";
+    }
+
+    return "<strong>Ravitaillement conseill\u00e9 :</strong> "
+        + resultat.arrets.map(function(arret) {
+            return echapperHtml(
+                (arret.station.enseigne || "Station")
+                + (arret.station.ville ? " \u00e0 " + arret.station.ville : "")
+                + " vers "
+                + arret.distanceRouteKm.toLocaleString(
+                    "fr-FR",
+                    {
+                        maximumFractionDigits: 0
+                    }
+                )
+                + " km"
+                + (
+                    arret.economieNette >= 2
+                        ? " (gain net env. "
+                            + arret.economieNette.toLocaleString(
+                                "fr-FR",
+                                {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                }
+                            )
+                            + " \u20ac)"
+                        : ""
+                )
+            );
+        }).join(" puis ");
+
+}
+
+function proposerRavitaillementTrajetPremium(route) {
+
+    var element = document.getElementById("navigation-refuel");
+
+    if (!element) {
+        return;
+    }
+
+    if (!comptePremiumActif() || !route || !route.geometry) {
+        element.hidden = true;
+        element.textContent = "";
+        return;
+    }
+
+    element.hidden = false;
+    element.innerHTML = htmlArretsRavitaillement(
+        calculerArretsRavitaillementRoute(route, jaugeTrajetTemporaire)
+    );
+
+}
+
+function actualiserJaugeTrajet() {
+
+    var jauge = document.getElementById("trip-gauge");
+    var valeur = document.getElementById("trip-gauge-value");
+
+    if (!jauge || !valeur) {
+        return;
+    }
+
+    valeur.textContent = jauge.value + " %";
+
+}
+
+window.actualiserJaugeTrajet = actualiserJaugeTrajet;
+
+window.ouvrirPlanificateurTrajet = function() {
+
+    var panneau = document.getElementById("trip-planner");
+    var jauge = document.getElementById("trip-gauge");
+    var vehicule = vehiculeActif();
+
+    if (!panneau) {
+        return;
+    }
+
+    if (jauge) {
+        jauge.value = String(vehicule && Number.isFinite(Number(vehicule.jauge))
+            ? vehicule.jauge
+            : 50);
+        actualiserJaugeTrajet();
+    }
+
+    document.getElementById("trip-planner-result").textContent = "";
+    document.getElementById("trip-start-button").disabled = true;
+    trajetPrepare = null;
+    panneau.hidden = false;
+    document.getElementById("trip-destination").focus();
+
+};
+
+window.fermerPlanificateurTrajet = function() {
+
+    var panneau = document.getElementById("trip-planner");
+
+    if (panneau) {
+        panneau.hidden = true;
+    }
+
+};
+
+async function geocoderDestinationTrajet(destination) {
+
+    var url = "https://nominatim.openstreetmap.org/search?format=json"
+        + "&limit=1"
+        + "&countrycodes=fr"
+        + "&q="
+        + encodeURIComponent(destination);
+    var reponse = await fetch(url, {
+        headers: {
+            "Accept": "application/json"
+        }
+    });
+
+    if (!reponse.ok) {
+        throw new Error("destination introuvable");
+    }
+
+    var resultats = await reponse.json();
+    var premier = resultats && resultats[0];
+
+    if (!premier) {
+        throw new Error("destination introuvable");
+    }
+
+    return {
+        latitude: Number(premier.lat),
+        longitude: Number(premier.lon),
+        libelle: premier.display_name || destination
+    };
+
+}
+
+async function calculerRouteAvecCoordonnees(points) {
+
+    var url = "https://router.project-osrm.org/route/v1/driving/"
+        + points.map(function(point) {
+            return point.longitude + "," + point.latitude;
+        }).join(";")
+        + "?overview=full&geometries=geojson&steps=true&continue_straight=true";
+    var reponse = await fetch(url);
+
+    if (!reponse.ok) {
+        throw new Error("route indisponible");
+    }
+
+    var donnees = await reponse.json();
+    var route = donnees.routes && donnees.routes[0];
+
+    if (!route) {
+        throw new Error("route introuvable");
+    }
+
+    return route;
+
+}
+
+window.calculerTrajetPrepare = async function() {
+
+    var destinationChamp = document.getElementById("trip-destination");
+    var resultat = document.getElementById("trip-planner-result");
+    var bouton = document.getElementById("trip-start-button");
+    var jauge = document.getElementById("trip-gauge");
+
+    if (!destinationChamp || !resultat || !bouton || !jauge) {
+        return;
+    }
+
+    if (latitudeUtilisateur === null || longitudeUtilisateur === null) {
+        resultat.textContent = "Position GPS en attente pour calculer le trajet.";
+        demarrerGeolocalisation();
+        return;
+    }
+
+    if (!destinationChamp.value.trim()) {
+        destinationChamp.focus();
+        return;
+    }
+
+    bouton.disabled = true;
+    resultat.textContent = "Calcul du trajet...";
+
+    try {
+        var destination = await geocoderDestinationTrajet(
+            destinationChamp.value.trim()
+        );
+        var routeDirecte = await calculerRouteAvecCoordonnees([
+            {
+                latitude: latitudeUtilisateur,
+                longitude: longitudeUtilisateur
+            },
+            destination
+        ]);
+        var jaugeTrajet = Number(jauge.value);
+        var ravitaillement = calculerArretsRavitaillementRoute(
+            routeDirecte,
+            jaugeTrajet
+        );
+        trajetPrepare = {
+            destination: destination,
+            jauge: jaugeTrajet,
+            arrets: ravitaillement.arrets,
+            route: routeDirecte
+        };
+        resultat.innerHTML = htmlArretsRavitaillement(ravitaillement);
+        bouton.disabled = false;
+    } catch (erreur) {
+        trajetPrepare = null;
+        resultat.textContent =
+            "Impossible de calculer cette destination pour le moment.";
+    }
+
+};
+
+window.validerTrajetPrepare = async function() {
+
+    var resultat = document.getElementById("trip-planner-result");
+
+    if (!trajetPrepare || !resultat) {
+        return;
+    }
+
+    resultat.textContent = "Validation du trajet...";
+    jaugeTrajetTemporaire = trajetPrepare.jauge;
+
+    try {
+        var points = [{
+            latitude: latitudeUtilisateur,
+            longitude: longitudeUtilisateur
+        }].concat(
+            trajetPrepare.arrets.map(function(arret) {
+                return {
+                    latitude: arret.station.latitude,
+                    longitude: arret.station.longitude
+                };
+            }),
+            [trajetPrepare.destination]
+        );
+        var route = await calculerRouteAvecCoordonnees(points);
+        routeNavigation = route;
+        stationNavigationActive = null;
+        destinationNavigation = {
+            latitude: trajetPrepare.destination.latitude,
+            longitude: trajetPrepare.destination.longitude,
+            enseigne: trajetPrepare.destination.libelle,
+            ville: ""
+        };
+        coordonneesRouteNavigation = route.geometry.coordinates;
+        etapesNavigation = (route.legs || []).reduce(
+            function(toutesLesEtapes, trajet) {
+                return toutesLesEtapes.concat(trajet.steps || []);
+            },
+            []
+        );
+        indexEtapeNavigation = 0;
+        dessinerItineraire(route.geometry.coordinates, false);
+        proposerRavitaillementTrajetPremium(route);
+        fermerPlanificateurTrajet();
+        navigationActive = true;
+        document.getElementById("navigation-panel").hidden = false;
+        recentrerSurUtilisateur();
+        actualiserGuidageNavigation();
+        var boutonItineraire = document.getElementById("economy-route-button");
+        if (boutonItineraire) {
+            boutonItineraire.hidden = false;
+            boutonItineraire.disabled = false;
+            boutonItineraire.textContent = "Arr\u00eater";
+            boutonItineraire.classList.add("stop");
+            boutonItineraire.onclick = arreterNavigation;
+        }
+    } catch (erreur) {
+        resultat.textContent =
+            "Impossible de valider cet itin\u00e9raire pour le moment.";
+    }
+
+};
 
 function dessinerItineraire(coordonnees, afficherApercu) {
 
@@ -7283,6 +7805,8 @@ window.arreterNavigation = function() {
 
     navigationActive = false;
     economieEstimeeFigee = null;
+    jaugeTrajetTemporaire = null;
+    trajetPrepare = null;
     stationNavigationActive = null;
     propositionStationPlusRentable = null;
     cacherPopupStationPlusRentable();
@@ -7312,6 +7836,11 @@ async function tracerItineraire(
     maintenirNavigation = Boolean(maintenirNavigation);
     stationCible = stationCible
         || trouverStationParCoordonnees(latitudeStation, longitudeStation);
+
+    if (!maintenirNavigation) {
+        jaugeTrajetTemporaire = null;
+        trajetPrepare = null;
+    }
 
     if (
         latitudeUtilisateur === null
