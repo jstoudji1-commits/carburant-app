@@ -806,7 +806,7 @@ body{
     gap:8px;
     margin-bottom:5px;
     padding-bottom:5px;
-    padding-right:18px;
+    padding-right:16px;
     border-bottom:1px solid #edf2ef;
 }
 
@@ -846,20 +846,21 @@ body{
 .station-popup-favori{
     display:flex;
     align-items:center;
-    justify-content:flex-end;
-    gap:5px;
+    justify-content:flex-start;
+    gap:0;
     margin:0;
-    margin-left:auto;
+    margin-left:-2px;
     flex:0 0 auto;
 }
 
 .station-popup-favori .favori-bouton{
-    width:28px;
-    height:28px;
+    width:24px;
+    height:24px;
     margin:0;
     border-width:1px;
-    font-size:18px;
+    font-size:16px;
     flex:0 0 auto;
+    box-shadow:none;
 }
 
 .station-popup-favori .favoris-info{
@@ -3642,6 +3643,32 @@ function creerAdaptateurMapLibre() {
                 });
                 return adaptateur;
             },
+            suivrePosition: function(position, optionsSuivi) {
+                var point = normaliserLatLng(position);
+                optionsSuivi = optionsSuivi || {};
+                carteInterne.easeTo({
+                    center: [point.lng, point.lat],
+                    zoom: Number.isFinite(optionsSuivi.zoom)
+                        ? optionsSuivi.zoom
+                        : carteInterne.getZoom(),
+                    bearing: Number.isFinite(optionsSuivi.bearing)
+                        ? optionsSuivi.bearing
+                        : carteInterne.getBearing(),
+                    pitch: Number.isFinite(optionsSuivi.pitch)
+                        ? optionsSuivi.pitch
+                        : carteInterne.getPitch(),
+                    offset: Array.isArray(optionsSuivi.offset)
+                        ? optionsSuivi.offset
+                        : [0, 0],
+                    duration: Number.isFinite(optionsSuivi.duration)
+                        ? optionsSuivi.duration
+                        : 450,
+                    easing: function(t) {
+                        return t * (2 - t);
+                    }
+                });
+                return adaptateur;
+            },
             getBearing: function() {
                 return (carteInterne.getBearing() + 360) % 360;
             },
@@ -4983,14 +5010,14 @@ let utilisateurMarker = null;
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
-var zoomNavigation = 17.2;
-var zoomGuidageActif = 19.2;
+var zoomNavigation = 18.1;
+var zoomGuidageActif = 19.8;
 var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
 var orientationAutomatiqueActive = true;
-var inclinaisonCarteGps = 58;
+var inclinaisonCarteGps = 64;
 var capCarte = capInitialCarte;
-var dernierCapUtilisateur = (360 - capInitialCarte) % 360;
+var dernierCapUtilisateur = capInitialCarte;
 var capFlecheUtilisateur = dernierCapUtilisateur;
 var dateDernierCapFiable = 0;
 var utilisateurEnMouvement = false;
@@ -5106,8 +5133,7 @@ function orienterCarte(capCible) {
         cancelAnimationFrame(animationOrientationCarte);
     }
 
-    // leaflet-rotate attend la rotation visuelle de la carte, inverse du cap GPS.
-    capCarte = (360 - capCible) % 360;
+    capCarte = (capCible + 360) % 360;
     map.setBearing(capCarte);
     animationOrientationCarte = null;
     actualiserOrientationFlecheUtilisateur(capCible);
@@ -5133,9 +5159,9 @@ function actualiserOrientationFlecheUtilisateur(capCible) {
         return;
     }
 
-    var rotation = (
-        capFlecheUtilisateur + capCarte + 540
-    ) % 360 - 180;
+    var rotation = suiviCarteActif && orientationAutomatiqueActive
+        ? 0
+        : ((capFlecheUtilisateur - capCarte + 540) % 360) - 180;
     fleche.style.transform = "rotate(" + rotation + "deg)";
 
 }
@@ -5178,6 +5204,71 @@ function appliquerMouvementCarteAutomatique(action) {
 
 }
 
+function suivrePositionGpsSurCarte(latitude, longitude, capAffichage) {
+
+    if (
+        !suiviCarteActif
+        || !orientationAutomatiqueActive
+        || !Number.isFinite(latitude)
+        || !Number.isFinite(longitude)
+    ) {
+        return;
+    }
+
+    if (Number.isFinite(capAffichage)) {
+        capCarte = (capAffichage + 360) % 360;
+    }
+
+    var conteneur = map.getContainer ? map.getContainer() : null;
+    var hauteurCarte = conteneur
+        ? conteneur.clientHeight
+        : window.innerHeight;
+    var decalageVertical = navigationActive
+        ? Math.round(hauteurCarte * 0.24)
+        : Math.round(hauteurCarte * 0.14);
+
+    appliquerMouvementCarteAutomatique(
+        function() {
+            if (typeof map.suivrePosition === "function") {
+                map.suivrePosition(
+                    [
+                        latitude,
+                        longitude
+                    ],
+                    {
+                        zoom: navigationActive
+                            ? zoomGuidageActif
+                            : zoomNavigation,
+                        bearing: capCarte,
+                        pitch: inclinaisonCarteGps,
+                        offset: [
+                            0,
+                            decalageVertical
+                        ],
+                        duration: utilisateurEnMouvement ? 550 : 300
+                    }
+                );
+            } else {
+                map.setView(
+                    [
+                        latitude,
+                        longitude
+                    ],
+                    navigationActive
+                        ? zoomGuidageActif
+                        : zoomNavigation,
+                    {
+                        animate: true
+                    }
+                );
+            }
+        }
+    );
+
+    actualiserOrientationFlecheUtilisateur(capAffichage);
+
+}
+
 function suspendreZoomAutomatique() {
 
     if (interactionProgrammeCarte) {
@@ -5193,7 +5284,8 @@ function suspendreZoomAutomatique() {
 
 function deplacerMarqueurUtilisateur(
     nouvelleLatitude,
-    nouvelleLongitude
+    nouvelleLongitude,
+    capAffichage
 ) {
 
     if (animationPositionUtilisateur) {
@@ -5235,22 +5327,6 @@ function deplacerMarqueurUtilisateur(
             longitudeActuelle
         ]);
 
-        if (suiviCarteActif) {
-            appliquerMouvementCarteAutomatique(
-                function() {
-                    map.panTo(
-                        [
-                            latitudeActuelle,
-                            longitudeActuelle
-                        ],
-                        {
-                            animate: false
-                        }
-                    );
-                }
-            );
-        }
-
         if (progression < 1) {
 
             animationPositionUtilisateur =
@@ -5266,6 +5342,12 @@ function deplacerMarqueurUtilisateur(
         requestAnimationFrame(
             animerPosition
         );
+
+    suivrePositionGpsSurCarte(
+        nouvelleLatitude,
+        nouvelleLongitude,
+        capAffichage
+    );
 
 }
 
@@ -5377,24 +5459,10 @@ function recentrerSurUtilisateur() {
     orientationAutomatiqueActive = true;
     zoomUtilisateurManuel = false;
     actualiserBoutonSuiviCarte();
-    orienterCarte(dernierCapUtilisateur);
-
-    appliquerMouvementCarteAutomatique(
-        function() {
-            map.setView(
-                [
-                    latitudeUtilisateur,
-                    longitudeUtilisateur
-                ],
-                navigationActive
-                    ? zoomGuidageActif
-                    : zoomNavigation,
-                {
-                    animate: true
-                }
-            );
-            map.setPitch(inclinaisonCarteGps);
-        }
+    suivrePositionGpsSurCarte(
+        latitudeUtilisateur,
+        longitudeUtilisateur,
+        dernierCapUtilisateur
     );
 
 }
@@ -5522,6 +5590,9 @@ map.on(
 map.on(
     "dragstart",
     function() {
+        if (interactionProgrammeCarte) {
+            return;
+        }
         suiviCarteActif = false;
         interrompreOrientationAutomatique();
     }
@@ -5614,22 +5685,21 @@ function demarrerGeolocalisation() {
             var capItineraire = navigationActive
                 ? calculerCapItineraireDevant()
                 : Number.NaN;
-            var capAffichage = capReelRecent
-                ? dernierCapUtilisateur
-                : capItineraire;
+            var utilisateurSurItineraire = navigationActive
+                && Number.isFinite(capItineraire)
+                && distanceItineraireMetres()
+                    <= Math.max(85, precisionUtilisateur * 2);
+            var capAffichage = utilisateurSurItineraire
+                ? capItineraire
+                : capReelRecent
+                    ? dernierCapUtilisateur
+                    : capItineraire;
 
             if (!Number.isFinite(capAffichage)) {
                 capAffichage = dernierCapUtilisateur;
             }
 
             actualiserOrientationFlecheUtilisateur(capAffichage);
-
-            if (
-                suiviCarteActif
-                && orientationAutomatiqueActive
-            ) {
-                orienterCarte(capAffichage);
-            }
 
             document.getElementById(
                 "latitude"
@@ -5653,7 +5723,8 @@ function demarrerGeolocalisation() {
 
                 deplacerMarqueurUtilisateur(
                     latitudeUtilisateur,
-                    longitudeUtilisateur
+                    longitudeUtilisateur,
+                    capAffichage
                 );
 
             } else {
@@ -5687,8 +5758,6 @@ function demarrerGeolocalisation() {
                     .bindPopup(
                         "Vous etes ici"
                     );
-
-                actualiserOrientationFlecheUtilisateur(capAffichage);
 
                 if (premierCentrageUtilisateur) {
 
