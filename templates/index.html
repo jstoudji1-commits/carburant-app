@@ -5028,6 +5028,9 @@ var boutonSuiviCarte = null;
 var zoomUtilisateurManuel = false;
 var dernierZoomManuel = 0;
 var interactionProgrammeCarte = false;
+var capTelephone = Number.NaN;
+var dateDernierCapTelephone = 0;
+var ecartDepartRouteMetres = 0;
 var latitudeDerniereRecherche = parseFloat(
     parametresPosition.get("latitude")
 );
@@ -5083,6 +5086,61 @@ function lisserCap(capPrecedent, nouveauCap, facteur) {
     return (
         capPrecedent + difference * facteur + 360
     ) % 360;
+
+}
+
+function memoriserCapTelephone(event) {
+
+    var cap = Number.NaN;
+
+    if (Number.isFinite(event.webkitCompassHeading)) {
+        cap = Number(event.webkitCompassHeading);
+    } else if (
+        event.absolute
+        && Number.isFinite(event.alpha)
+    ) {
+        cap = (360 - Number(event.alpha)) % 360;
+    }
+
+    if (!Number.isFinite(cap)) {
+        return;
+    }
+
+    capTelephone = (cap + 360) % 360;
+    dateDernierCapTelephone = Date.now();
+
+}
+
+async function activerOrientationTelephone() {
+
+    if (!window.DeviceOrientationEvent) {
+        return;
+    }
+
+    try {
+        if (
+            typeof DeviceOrientationEvent.requestPermission === "function"
+        ) {
+            var permission =
+                await DeviceOrientationEvent.requestPermission();
+
+            if (permission !== "granted") {
+                return;
+            }
+        }
+
+        window.removeEventListener(
+            "deviceorientation",
+            memoriserCapTelephone
+        );
+        window.addEventListener(
+            "deviceorientation",
+            memoriserCapTelephone,
+            true
+        );
+    } catch (erreur) {
+        console.log("Orientation telephone indisponible");
+    }
 
 }
 
@@ -5661,6 +5719,20 @@ function demarrerGeolocalisation() {
             var capMesure = Number.isFinite(capGps) && capGps >= 0
                 ? capGps
                 : capDeplacement;
+            var capTelephoneRecent =
+                Date.now() - dateDernierCapTelephone < 2500
+                && Number.isFinite(capTelephone);
+
+            if (
+                capTelephoneRecent
+                && (
+                    !Number.isFinite(capMesure)
+                    || !utilisateurEnMouvement
+                    || vitesseUtilisateurMps < 2
+                )
+            ) {
+                capMesure = capTelephone;
+            }
 
             if (Number.isFinite(capMesure) && utilisateurEnMouvement) {
                 var facteurLissage = vitesseUtilisateurMps >= 8
@@ -8324,6 +8396,21 @@ function actualiserGuidageNavigation() {
         return;
     }
 
+    var distanceRouteActuelle = distanceItineraireMetres();
+
+    if (
+        ecartDepartRouteMetres > 25
+        && distanceRouteActuelle > Math.max(30, precisionUtilisateur * 1.2)
+    ) {
+        document.getElementById("navigation-arrow").textContent = "\u2191";
+        document.getElementById("navigation-instruction").textContent =
+            "Rejoignez la route la plus proche";
+        document.getElementById("navigation-distance").textContent =
+            formaterDistanceNavigation(distanceRouteActuelle)
+            + " avant le d\u00e9but du guidage";
+        return;
+    }
+
     var etape = etapesNavigation[indexEtapeNavigation];
     var positionManeuvre = etape.maneuver.location;
     var distanceManeuvre = distanceDeplacementKm(
@@ -8477,7 +8564,18 @@ function verifierEcartItineraire() {
 
 window.demarrerNavigation = async function() {
 
-    if (!routeNavigation) {
+    await activerOrientationTelephone();
+
+    if (!routeNavigation && !destinationNavigation) {
+        return;
+    }
+
+    if (!routeNavigation && destinationNavigation) {
+        await tracerItineraire(
+            destinationNavigation.latitude,
+            destinationNavigation.longitude,
+            true
+        );
         return;
     }
 
@@ -8492,16 +8590,16 @@ window.demarrerNavigation = async function() {
     orientationAutomatiqueActive = true;
     actualiserBoutonSuiviCarte();
     document.getElementById("navigation-panel").hidden = false;
+    document.getElementById("navigation-instruction").textContent =
+        "Calcul en cours...";
+    document.getElementById("navigation-distance").textContent = "";
 
     var bouton = document.getElementById("economy-route-button");
     if (bouton) {
-        bouton.textContent = "Arr\u00eater";
-        bouton.classList.add("stop");
-        bouton.onclick = arreterNavigation;
+        bouton.disabled = true;
+        bouton.textContent = "Calcul...";
+        bouton.classList.remove("stop");
     }
-
-    recentrerSurUtilisateur();
-    actualiserGuidageNavigation();
 
     if (destinationNavigation && !relanceItineraireEnCours) {
         relanceItineraireEnCours = true;
@@ -8515,6 +8613,16 @@ window.demarrerNavigation = async function() {
             relanceItineraireEnCours = false;
         }
     }
+
+    if (bouton) {
+        bouton.disabled = false;
+        bouton.textContent = "Arr\u00eater";
+        bouton.classList.add("stop");
+        bouton.onclick = arreterNavigation;
+    }
+
+    recentrerSurUtilisateur();
+    actualiserGuidageNavigation();
 
 };
 
@@ -8607,6 +8715,14 @@ async function tracerItineraire(
         utilisateurEnMouvement
         && Date.now() - dateDernierCapFiable < 10000
         && Number.isFinite(dernierCapUtilisateur);
+    var capTelephoneRecent =
+        Date.now() - dateDernierCapTelephone < 5000
+        && Number.isFinite(capTelephone);
+    var capDepartItineraire = capRecent
+        ? dernierCapUtilisateur
+        : capTelephoneRecent
+            ? capTelephone
+            : Number.NaN;
     var url =
         "https://router.project-osrm.org/route/v1/driving/"
         + longitudeUtilisateur
@@ -8618,9 +8734,9 @@ async function tracerItineraire(
         + latitudeStation
         + "?overview=full&geometries=geojson&steps=true&continue_straight=true";
 
-    if (capRecent) {
+    if (Number.isFinite(capDepartItineraire)) {
         url += "&bearings="
-            + Math.round(dernierCapUtilisateur)
+            + Math.round(capDepartItineraire)
             + ",45;";
     }
 
@@ -8642,6 +8758,13 @@ async function tracerItineraire(
             throw new Error("route introuvable");
 
         }
+
+        ecartDepartRouteMetres =
+            data.waypoints
+            && data.waypoints[0]
+            && Number.isFinite(Number(data.waypoints[0].distance))
+                ? Number(data.waypoints[0].distance)
+                : 0;
 
         dessinerItineraire(
             route.geometry.coordinates,
