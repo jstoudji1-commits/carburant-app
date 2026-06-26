@@ -5031,6 +5031,7 @@ var interactionProgrammeCarte = false;
 var capTelephone = Number.NaN;
 var dateDernierCapTelephone = 0;
 var ecartDepartRouteMetres = 0;
+var capAffichageStabilise = Number.NaN;
 var latitudeDerniereRecherche = parseFloat(
     parametresPosition.get("latitude")
 );
@@ -5771,6 +5772,17 @@ function demarrerGeolocalisation() {
                 capAffichage = dernierCapUtilisateur;
             }
 
+            if (Number.isFinite(capAffichage)) {
+                capAffichageStabilise = Number.isFinite(capAffichageStabilise)
+                    ? lisserCap(
+                        capAffichageStabilise,
+                        capAffichage,
+                        navigationActive ? 0.32 : 0.46
+                    )
+                    : capAffichage;
+                capAffichage = capAffichageStabilise;
+            }
+
             actualiserOrientationFlecheUtilisateur(capAffichage);
 
             document.getElementById(
@@ -6478,6 +6490,22 @@ function cacherPopupStationPlusRentable() {
 
 }
 
+function effacerItineraireNavigation() {
+
+    if (itineraireLayer) {
+        map.removeLayer(itineraireLayer);
+        itineraireLayer = null;
+    }
+
+    routeNavigation = null;
+    coordonneesRouteNavigation = [];
+    etapesNavigation = [];
+    indexEtapeNavigation = 0;
+    destinationNavigation = null;
+    ecartDepartRouteMetres = 0;
+
+}
+
 function proposerStationPlusRentablePendantNavigation(
     meilleureStation,
     stationsCalculees,
@@ -6546,7 +6574,7 @@ function proposerStationPlusRentablePendantNavigation(
                 maximumFractionDigits: 2
             }
         )
-        + " \u20ac vs trajet actuel.";
+        + " \u20ac vs trajet actuel. Voulez-vous modifier l'itin\u00e9raire maintenant ?";
     popup.hidden = false;
 
 }
@@ -8032,9 +8060,9 @@ async function verifierRavitaillementPlusRentablePendantNavigation() {
                 {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                }
-            )
-            + " \u20ac net.";
+            }
+        )
+            + " \u20ac net. Voulez-vous modifier l'itin\u00e9raire maintenant ?";
         popup.hidden = false;
     } finally {
         controleRavitaillementRentableEnCours = false;
@@ -8280,6 +8308,7 @@ function dessinerItineraire(coordonnees, afficherApercu) {
     if (itineraireLayer) {
 
         map.removeLayer(itineraireLayer);
+        itineraireLayer = null;
 
     }
 
@@ -8634,17 +8663,19 @@ window.arreterNavigation = function() {
     trajetPrepare = null;
     stationNavigationActive = null;
     propositionStationPlusRentable = null;
+    capAffichageStabilise = Number.NaN;
     cacherPopupStationPlusRentable();
     effacerMarqueursRavitaillement();
     proposerRavitaillementTrajetPremium(null);
     reinitialiserDetectionEcart();
+    effacerItineraireNavigation();
     document.getElementById("navigation-panel").hidden = true;
 
     var bouton = document.getElementById("economy-route-button");
-    if (bouton && routeNavigation) {
-        bouton.textContent = "D\u00e9marrer";
+    if (bouton) {
+        bouton.disabled = false;
+        bouton.textContent = "Itin\u00e9raire";
         bouton.classList.remove("stop");
-        bouton.onclick = demarrerNavigation;
     }
 
     calculerMeilleureStation();
