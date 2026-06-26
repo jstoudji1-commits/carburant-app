@@ -21,6 +21,10 @@ REFERENCES_PRIX_JSON = BASE_DIR / "stations_prix_9h.json"
 ENRICHISSEMENT_STATIONS_JSON = BASE_DIR / "stations_enrichment.json"
 FUSEAU_PARIS = ZoneInfo("Europe/Paris")
 CARBURANTS = ["gazole", "e10", "sp98"]
+STATIONS_EXCLUES = {
+    # Prix poids lourds : ne pas afficher comme station grand public.
+    "13016007",
+}
 
 SOURCE_OFFICIELLE_URL = (
     "https://www.data.gouv.fr/api/1/datasets/r/"
@@ -481,6 +485,11 @@ def mettre_a_jour_stations():
 
     contenu = telecharger_donnees_officielles()
     lignes = _extraire_lignes(contenu)
+    lignes = [
+        station
+        for station in lignes
+        if str(station.get("id", "")) not in STATIONS_EXCLUES
+    ]
 
     if not lignes:
 
