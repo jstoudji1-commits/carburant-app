@@ -7,6 +7,7 @@ import time
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
+import statistics
 import zipfile
 import xml.etree.ElementTree as ET
 from urllib.error import URLError
@@ -18,6 +19,8 @@ BASE_DIR = Path(__file__).resolve().parent
 STATIONS_CSV = BASE_DIR / "stations.csv"
 METADATA_JSON = BASE_DIR / "stations_metadata.json"
 REFERENCES_PRIX_JSON = BASE_DIR / "stations_prix_9h.json"
+HISTORIQUE_PRIX_JSON = BASE_DIR / "stations_historique_prix.json"
+MARCHE_CARBURANT_JSON = BASE_DIR / "carburant_market_signals.json"
 ENRICHISSEMENT_STATIONS_JSON = BASE_DIR / "stations_enrichment.json"
 FUSEAU_PARIS = ZoneInfo("Europe/Paris")
 CARBURANTS = ["gazole", "e10", "sp98"]
@@ -45,6 +48,12 @@ ENTETES = [
     "tendance_gazole",
     "tendance_e10",
     "tendance_sp98",
+    "tendance_demain_gazole",
+    "confiance_demain_gazole",
+    "tendance_demain_e10",
+    "confiance_demain_e10",
+    "tendance_demain_sp98",
+    "confiance_demain_sp98",
 ]
 
 
@@ -436,6 +445,419 @@ def ajouter_tendances(lignes, references):
             )
 
 
+def _lire_json(fichier, defaut):
+
+    if not fichier.exists():
+        return defaut
+
+    try:
+        return json.loads(fichier.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return defaut
+
+
+def _prix_decimal(valeur):
+
+    try:
+        if valeur in ("", None):
+            return None
+        prix = Decimal(str(valeur).replace(",", "."))
+    except (InvalidOperation, ValueError):
+        return None
+
+    if prix <= 0 or prix == Decimal("9.999"):
+        return None
+
+    return float(prix)
+
+
+def _moyennes_nationales(lignes):
+
+    moyennes = {}
+
+    for carburant in CARBURANTS:
+        valeurs = [
+            _prix_decimal(station.get(carburant))
+            for station in lignes
+        ]
+        valeurs = [
+            valeur
+            for valeur in valeurs
+            if valeur is not None
+        ]
+        moyennes[carburant] = (
+            round(statistics.mean(valeurs), 5)
+            if valeurs
+            else None
+        )
+
+    return moyennes
+
+
+def mettre_a_jour_historique_prix(lignes):
+
+    historique = _lire_json(
+        HISTORIQUE_PRIX_JSON,
+        {"snapshots": []}
+    )
+    snapshots = historique.setdefault("snapshots", [])
+    maintenant = datetime.now(timezone.utc)
+    dernier = snapshots[-1] if snapshots else {}
+    dernier_capture = dernier.get("captured_at")
+
+    if dernier_capture:
+        try:
+            date_dernier = datetime.fromisoformat(dernier_capture)
+            if (
+                maintenant - date_dernier
+            ).total_seconds() < 55 * 60:
+                return historique
+        except ValueError:
+            pass
+
+    snapshots.append(
+        {
+            "captured_at": maintenant.isoformat(),
+            "national": _moyennes_nationales(lignes),
+            "stations": {
+                str(station.get("id", "")): {
+                    carburant: station.get(carburant, "")
+                    for carburant in CARBURANTS
+                }
+                for station in lignes
+                if station.get("id")
+            },
+        }
+    )
+
+    limite_secondes = 8 * 24 * 60 * 60
+    snapshots[:] = [
+        snapshot
+        for snapshot in snapshots
+        if snapshot.get("captured_at")
+    ]
+    snapshots[:] = [
+        snapshot
+        for snapshot in snapshots
+        if _snapshot_recent(snapshot, maintenant, limite_secondes)
+    ]
+
+    HISTORIQUE_PRIX_JSON.write_text(
+        json.dumps(
+            historique,
+            ensure_ascii=False,
+            separators=(",", ":")
+        ),
+        encoding="utf-8"
+    )
+
+    return historique
+
+
+def _snapshot_recent(snapshot, maintenant, limite_secondes):
+
+    try:
+        date_snapshot = datetime.fromisoformat(
+            snapshot.get("captured_at", "")
+        )
+    except (TypeError, ValueError):
+        return False
+
+    return (
+        maintenant - date_snapshot
+    ).total_seconds() <= limite_secondes
+
+
+def _valeur_snapshot_station(snapshot, station_id, carburant):
+
+    return _prix_decimal(
+        (
+            snapshot.get("stations", {})
+            .get(station_id, {})
+            .get(carburant)
+        )
+    )
+
+
+def _snapshot_avant(historique, heures):
+
+    snapshots = historique.get("snapshots", [])
+
+    if not snapshots:
+        return None
+
+    maintenant = datetime.fromisoformat(
+        snapshots[-1]["captured_at"]
+    )
+    cible_secondes = heures * 3600
+    meilleur = None
+    meilleur_ecart = None
+
+    for snapshot in snapshots[:-1]:
+        try:
+            date_snapshot = datetime.fromisoformat(
+                snapshot.get("captured_at", "")
+            )
+        except ValueError:
+            continue
+
+        age = (maintenant - date_snapshot).total_seconds()
+        ecart = abs(age - cible_secondes)
+
+        if meilleur is None or ecart < meilleur_ecart:
+            meilleur = snapshot
+            meilleur_ecart = ecart
+
+    if meilleur_ecart is not None and meilleur_ecart <= 8 * 3600:
+        return meilleur
+
+    return None
+
+
+def _extraire_derniere_valeur_csv(texte, index_valeur=4):
+
+    lignes = [
+        ligne.split(",")
+        for ligne in texte.splitlines()
+        if "," in ligne
+    ]
+
+    for colonnes in reversed(lignes):
+        if len(colonnes) <= index_valeur:
+            continue
+        try:
+            return float(colonnes[index_valeur])
+        except ValueError:
+            continue
+
+    return None
+
+
+def _telecharger_texte(url, timeout=12):
+
+    requete = Request(
+        url,
+        headers={"User-Agent": "OptiPlein/1.0"}
+    )
+
+    with urlopen(requete, timeout=timeout) as response:
+        return response.read().decode("utf-8", errors="ignore")
+
+
+def recuperer_signaux_marche():
+
+    signaux = _lire_json(
+        MARCHE_CARBURANT_JSON,
+        {
+            "brent_usd": None,
+            "brent_usd_previous": None,
+            "eur_usd": None,
+            "eur_usd_previous": None,
+            "updated_at": None,
+        }
+    )
+
+    try:
+        texte = _telecharger_texte(
+            "https://stooq.com/q/d/l/?s=bc.f&i=d"
+        )
+        lignes = [
+            ligne.split(",")
+            for ligne in texte.splitlines()[1:]
+            if "," in ligne
+        ]
+        valeurs = []
+        for colonnes in lignes[-7:]:
+            if len(colonnes) >= 5:
+                try:
+                    valeurs.append(float(colonnes[4]))
+                except ValueError:
+                    pass
+        if valeurs:
+            signaux["brent_usd_previous"] = (
+                valeurs[-2]
+                if len(valeurs) > 1
+                else signaux.get("brent_usd")
+            )
+            signaux["brent_usd"] = valeurs[-1]
+    except (OSError, URLError, TimeoutError, ValueError):
+        pass
+
+    try:
+        texte = _telecharger_texte(
+            "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml"
+        )
+        root = ET.fromstring(texte)
+        valeurs = []
+        for cube in root.iter():
+            if cube.attrib.get("currency") == "USD":
+                try:
+                    valeurs.append(float(cube.attrib["rate"]))
+                except (KeyError, ValueError):
+                    pass
+        if valeurs:
+            signaux["eur_usd_previous"] = (
+                valeurs[1]
+                if len(valeurs) > 1
+                else signaux.get("eur_usd")
+            )
+            signaux["eur_usd"] = valeurs[0]
+    except (OSError, URLError, TimeoutError, ET.ParseError, ValueError):
+        pass
+
+    signaux["updated_at"] = datetime.now(timezone.utc).isoformat()
+    MARCHE_CARBURANT_JSON.write_text(
+        json.dumps(signaux, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+    return signaux
+
+
+def _variation_relative(actuel, precedent):
+
+    if (
+        actuel is None
+        or precedent in (None, 0)
+    ):
+        return None
+
+    return (actuel - precedent) / precedent
+
+
+def _score_marche(signaux):
+
+    brent = _variation_relative(
+        signaux.get("brent_usd"),
+        signaux.get("brent_usd_previous")
+    )
+    eur_usd = _variation_relative(
+        signaux.get("eur_usd"),
+        signaux.get("eur_usd_previous")
+    )
+    score = 0
+    poids = 0
+
+    if brent is not None:
+        score += max(-1, min(1, brent / 0.025)) * 0.65
+        poids += 0.65
+
+    if eur_usd is not None:
+        # Euro plus fort = carburant importe moins cher.
+        score += max(-1, min(1, -eur_usd / 0.01)) * 0.25
+        poids += 0.25
+
+    demande = datetime.now(FUSEAU_PARIS).weekday()
+    if demande in (4, 5, 6):
+        score += 0.10
+        poids += 0.10
+
+    return score / poids if poids else 0
+
+
+def _classer_score(score, confiance):
+
+    if score >= 0.18:
+        return "hausse"
+
+    if score <= -0.18:
+        return "baisse"
+
+    return "stable"
+
+
+def ajouter_tendances_demain(lignes, historique, signaux):
+
+    snapshots = historique.get("snapshots", [])
+    dernier = snapshots[-1] if snapshots else None
+    snapshot_24h = _snapshot_avant(historique, 24)
+    snapshot_48h = _snapshot_avant(historique, 48)
+    score_marche = _score_marche(signaux)
+
+    for station in lignes:
+        station_id = str(station.get("id", ""))
+
+        for carburant in CARBURANTS:
+            tendance_cle = f"tendance_demain_{carburant}"
+            confiance_cle = f"confiance_demain_{carburant}"
+            station[tendance_cle] = "stable"
+            station[confiance_cle] = "1"
+
+            if not dernier:
+                continue
+
+            actuel = _prix_decimal(station.get(carburant))
+            station_24h = (
+                _valeur_snapshot_station(
+                    snapshot_24h,
+                    station_id,
+                    carburant
+                )
+                if snapshot_24h
+                else None
+            )
+            station_48h = (
+                _valeur_snapshot_station(
+                    snapshot_48h,
+                    station_id,
+                    carburant
+                )
+                if snapshot_48h
+                else None
+            )
+            national_actuel = (
+                dernier.get("national", {}).get(carburant)
+            )
+            national_24h = (
+                snapshot_24h.get("national", {}).get(carburant)
+                if snapshot_24h
+                else None
+            )
+
+            signaux_disponibles = 0
+            score = 0
+            poids = 0
+
+            if actuel is not None and station_24h is not None:
+                delta = actuel - station_24h
+                score += max(-1, min(1, delta / 0.012)) * 0.40
+                poids += 0.40
+                signaux_disponibles += 1
+
+            if station_24h is not None and station_48h is not None:
+                delta = station_24h - station_48h
+                score += max(-1, min(1, delta / 0.012)) * 0.20
+                poids += 0.20
+                signaux_disponibles += 1
+
+            if national_actuel is not None and national_24h is not None:
+                delta = national_actuel - national_24h
+                score += max(-1, min(1, delta / 0.008)) * 0.25
+                poids += 0.25
+                signaux_disponibles += 1
+
+            score += score_marche * 0.15
+            poids += 0.15
+
+            if poids:
+                score /= poids
+
+            confiance = min(
+                5,
+                max(
+                    1,
+                    int(
+                        1
+                        + signaux_disponibles
+                        + min(1, abs(score) * 1.2)
+                    )
+                )
+            )
+
+            station[tendance_cle] = _classer_score(score, confiance)
+            station[confiance_cle] = str(confiance)
+
+
 def ecrire_stations_csv(lignes):
 
     fichier_temporaire = STATIONS_CSV.with_suffix(
@@ -499,6 +921,9 @@ def mettre_a_jour_stations():
 
     references = mettre_a_jour_references_9h(lignes)
     ajouter_tendances(lignes, references)
+    historique = mettre_a_jour_historique_prix(lignes)
+    signaux_marche = recuperer_signaux_marche()
+    ajouter_tendances_demain(lignes, historique, signaux_marche)
     appliquer_enrichissements(lignes)
     ecrire_stations_csv(lignes)
     ecrire_metadata(len(lignes))

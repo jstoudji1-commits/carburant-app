@@ -1645,6 +1645,34 @@ body{
     cursor:pointer;
 }
 
+.premium-tomorrow-trend{
+    margin:0 0 7px 0;
+    padding:7px 8px;
+    border:1px solid #d9eadf;
+    border-radius:8px;
+    background:#f4fbf5;
+    color:#173346;
+    font-size:11px;
+    line-height:1.25;
+    font-weight:800;
+}
+
+.premium-tomorrow-trend strong{
+    color:#087a2c;
+}
+
+.premium-tomorrow-trend .trend-up{
+    color:#dc2626;
+}
+
+.premium-tomorrow-trend .trend-down{
+    color:#087a2c;
+}
+
+.premium-tomorrow-trend .trend-stable{
+    color:#2563eb;
+}
+
 .navigation-panel{
     position:absolute;
     top:18px;
@@ -2396,6 +2424,11 @@ body{
                         <div class="plan-comparison-cell plan-comparison-feature">Jauge r&eacute;servoir</div>
                         <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
                         <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Tendance probable demain</div>
+                        <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Oui, avec confiance /5</div>
                     </div>
                     <div class="plan-comparison-row">
                         <div class="plan-comparison-cell plan-comparison-feature">Publicit&eacute;</div>
@@ -3363,6 +3396,36 @@ window.fermerPopupTendance = function() {
 
 };
 
+function htmlTendanceDemainPremium(tendance) {
+
+    tendance = tendance || {};
+    var type = tendance.tendance || "stable";
+    var confiance = Math.max(
+        1,
+        Math.min(5, Number(tendance.confiance) || 1)
+    );
+    var libelle = {
+        hausse: "hausse probable",
+        baisse: "baisse probable",
+        stable: "prix plut\u00f4t stable"
+    }[type] || "prix plut\u00f4t stable";
+    var classe = type === "hausse"
+        ? "trend-up"
+        : type === "baisse"
+            ? "trend-down"
+            : "trend-stable";
+
+    return ''
+        + '<div class="premium-tomorrow-trend premium-only" hidden>'
+        + '<strong>Tendance demain</strong> : '
+        + '<span class="' + classe + '">' + libelle + '</span>'
+        + '<br>Indice de confiance : '
+        + confiance
+        + '/5'
+        + '</div>';
+
+}
+
 window.partagerPrixStation = async function(event, station) {
 
     if (event) {
@@ -4118,6 +4181,11 @@ var stationPartage{{ loop.index }} = {
     ville: {{ station.ville|tojson }}
 };
 
+var tendanceDemainStation{{ loop.index }} = {
+    tendance: {{ station.tendance_demain_selectionnee|default("stable", true)|tojson }},
+    confiance: Number({{ station.confiance_demain_selectionnee|default("1", true)|tojson }})
+};
+
 var nomEnseigne{{ loop.index }} = {{ station.enseigne|default("")|tojson }};
 var logoEnseigneCarte{{ loop.index }} = creerLogoEnseigne(
     nomEnseigne{{ loop.index }},
@@ -4235,6 +4303,8 @@ var marker = L.marker(
         <p class="station-popup-update">
             <span class="station-update-age">${texteAgeMiseAJour()}</span>
         </p>
+
+        ${htmlTendanceDemainPremium(tendanceDemainStation{{ loop.index }})}
 
         {% if station.distance %}
         <p class="station-popup-distance">
