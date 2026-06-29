@@ -1834,6 +1834,11 @@ body{
     margin-top:10px;
 }
 
+.trip-planner-setup[hidden],
+.trip-planner-calculate[hidden]{
+    display:none;
+}
+
 .trip-planner-field label,
 .trip-planner-gauge-label{
     color:#425463;
@@ -2847,37 +2852,39 @@ body{
                         >&times;</button>
                     </div>
 
-                    <div class="trip-planner-field">
-                        <label for="trip-destination">
-                            Destination
-                        </label>
-                        <input
-                            id="trip-destination"
-                            type="text"
-                            autocomplete="street-address"
-                            placeholder="Ville, adresse ou lieu"
-                        >
-                    </div>
-
-                    <div class="trip-planner-gauge">
-                        <div class="trip-planner-gauge-head">
-                            <span class="trip-planner-gauge-label">
-                                R&eacute;servoir pour ce trajet
-                            </span>
-                            <span
-                                id="trip-gauge-value"
-                                class="trip-planner-gauge-value"
-                            >50 %</span>
+                    <div id="trip-planner-setup" class="trip-planner-setup">
+                        <div class="trip-planner-field">
+                            <label for="trip-destination">
+                                Destination
+                            </label>
+                            <input
+                                id="trip-destination"
+                                type="text"
+                                autocomplete="street-address"
+                                placeholder="Ville, adresse ou lieu"
+                            >
                         </div>
-                        <input
-                            id="trip-gauge"
-                            type="range"
-                            min="0"
-                            max="100"
-                            step="5"
-                            value="50"
-                            oninput="actualiserJaugeTrajet()"
-                        >
+
+                        <div class="trip-planner-gauge">
+                            <div class="trip-planner-gauge-head">
+                                <span class="trip-planner-gauge-label">
+                                    R&eacute;servoir pour ce trajet
+                                </span>
+                                <span
+                                    id="trip-gauge-value"
+                                    class="trip-planner-gauge-value"
+                                >50 %</span>
+                            </div>
+                            <input
+                                id="trip-gauge"
+                                type="range"
+                                min="0"
+                                max="100"
+                                step="5"
+                                value="50"
+                                oninput="actualiserJaugeTrajet()"
+                            >
+                        </div>
                     </div>
 
                     <p
@@ -2888,7 +2895,8 @@ body{
                     <div class="trip-planner-actions">
                         <button
                             type="button"
-                            class="trip-planner-action"
+                            id="trip-calculate-button"
+                            class="trip-planner-action trip-planner-calculate"
                             onclick="calculerTrajetPrepare()"
                         >
                             Calculer
@@ -3525,6 +3533,21 @@ window.ouvrirWaze = function(latitude, longitude) {
 
 };
 
+function ouvrirWazeDestination(point) {
+
+    if (!point) {
+        return;
+    }
+
+    window.open(
+        "https://waze.com/ul?ll="
+            + encodeURIComponent(point.latitude + "," + point.longitude)
+            + "&navigate=yes&utm_source=optiplein",
+        "_blank"
+    );
+
+}
+
 window.ouvrirGoogleMaps = function(latitude, longitude) {
 
     if (!comptePremiumActif()) {
@@ -3549,6 +3572,133 @@ window.ouvrirGoogleMaps = function(latitude, longitude) {
     window.open(url, "_blank");
 
 };
+
+function normaliserPointNavigationExterne(point) {
+
+    if (!point) {
+        return null;
+    }
+
+    var latitude = Number(point.latitude);
+    var longitude = Number(point.longitude);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        return null;
+    }
+
+    return {
+        latitude: latitude,
+        longitude: longitude
+    };
+
+}
+
+function ouvrirGoogleMapsTrajet(points) {
+
+    if (!comptePremiumActif()) {
+        alert("Google Maps est inclus avec OptiPlein Premium.");
+        return;
+    }
+
+    var pointsValides = (points || [])
+        .map(normaliserPointNavigationExterne)
+        .filter(Boolean);
+
+    if (pointsValides.length < 2) {
+        return;
+    }
+
+    var origine = pointsValides[0];
+    var destination = pointsValides[pointsValides.length - 1];
+    var arrets = pointsValides.slice(1, -1);
+    var url =
+        "https://www.google.com/maps/dir/?api=1"
+        + "&origin="
+        + encodeURIComponent(origine.latitude + "," + origine.longitude)
+        + "&destination="
+        + encodeURIComponent(destination.latitude + "," + destination.longitude)
+        + "&travelmode=driving"
+        + "&dir_action=navigate";
+
+    if (arrets.length) {
+        url += "&waypoints="
+            + encodeURIComponent(
+                arrets.map(function(point) {
+                    return point.latitude + "," + point.longitude;
+                }).join("|")
+            );
+    }
+
+    window.open(url, "_blank");
+
+}
+
+function pointsTrajetPrepareNavigationExterne() {
+
+    if (
+        !trajetPrepare
+        || !trajetPrepare.destination
+        || latitudeUtilisateur === null
+        || longitudeUtilisateur === null
+    ) {
+        return [];
+    }
+
+    return [{
+        latitude: latitudeUtilisateur,
+        longitude: longitudeUtilisateur
+    }].concat(
+        (trajetPrepare.arrets || []).map(function(arret) {
+            return {
+                latitude: arret.station.latitude,
+                longitude: arret.station.longitude
+            };
+        }),
+        [{
+            latitude: trajetPrepare.destination.latitude,
+            longitude: trajetPrepare.destination.longitude
+        }]
+    );
+
+}
+
+function configurerBoutonsNavigationExterneTrajetPrepare() {
+
+    var points = pointsTrajetPrepareNavigationExterne();
+    var boutonWaze = document.getElementById("economy-waze-button");
+    var boutonGoogleMaps = document.getElementById(
+        "economy-google-button"
+    );
+
+    if (!points.length) {
+        return;
+    }
+
+    if (boutonWaze) {
+        boutonWaze.disabled = false;
+        boutonWaze.onclick = function() {
+            if (!comptePremiumActif()) {
+                alert("Waze est inclus avec OptiPlein Premium.");
+                return;
+            }
+
+            var premierObjectif = points.length > 2
+                ? points[1]
+                : points[points.length - 1];
+            ouvrirWazeDestination(premierObjectif);
+        };
+    }
+
+    if (boutonGoogleMaps) {
+        boutonGoogleMaps.disabled = false;
+        boutonGoogleMaps.onclick = function() {
+            ouvrirGoogleMapsTrajet(points);
+        };
+    }
+
+    actualiserNavigationPremium();
+
+}
 
 function actualiserNavigationPremium() {
 
@@ -3642,6 +3792,7 @@ function creerAdaptateurMapLibre() {
             style: styleCarte,
             center: [2.4, 46.6],
             zoom: 6,
+            maxZoom: 22,
             bearing: options && Number.isFinite(options.bearing)
                 ? options.bearing
                 : 0,
@@ -3757,7 +3908,9 @@ function creerAdaptateurMapLibre() {
                                 left: padding[1]
                             }
                             : padding,
-                        pitch: 58,
+                        pitch: Number.isFinite(optionsVue && optionsVue.pitch)
+                            ? optionsVue.pitch
+                            : 58,
                         duration: 450
                     }
                 );
@@ -4042,7 +4195,7 @@ L.tileLayer(
 
     {
         attribution: "",
-        maxZoom: 19
+        maxZoom: 22
     }
 
 ).addTo(map);
@@ -5080,8 +5233,8 @@ let utilisateurMarker = null;
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
-var zoomNavigation = 18.1;
-var zoomGuidageActif = 19.8;
+var zoomNavigation = 18.8;
+var zoomGuidageActif = 21.0;
 var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
 var orientationAutomatiqueActive = true;
@@ -6914,38 +7067,17 @@ function afficherProchainRavitaillementTrajet(titre, sousTitre, boutonItineraire
         return false;
     }
 
-    titre.textContent = "Station la plus \u00e9conomique : "
-        + (station.enseigne || "Station-service")
-        + (station.ville ? " \u00b7 " + station.ville : "");
+    titre.textContent = "Prochain ravitaillement";
     sousTitre.textContent =
-        (station.adresse || "")
-        + (station.adresse ? " \u00b7 " : "")
-        + prochain.distanceRouteKm.toLocaleString(
-            "fr-FR",
-            {
-                maximumFractionDigits: 0
-            }
-        )
-        + " km sur votre trajet"
-        + (
-            prochain.economieNette >= 1
-                ? " \u00b7 gain net r\u00e9el "
-                    + prochain.economieNette.toLocaleString(
-                        "fr-FR",
-                        {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }
-                    )
-                    + " \u20ac"
-                : ""
-        );
+        (station.enseigne || "Station-service")
+        + (station.ville ? " \u00b7 " + station.ville : "");
 
     boutonItineraire.hidden = false;
     boutonItineraire.disabled = false;
     boutonItineraire.textContent = "Arr\u00eater";
     boutonItineraire.classList.add("stop");
     boutonItineraire.onclick = arreterNavigation;
+    configurerBoutonsNavigationExterneTrajetPrepare();
 
     return true;
 
@@ -7836,7 +7968,7 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
             break;
         }
 
-        var candidatObligatoire = positionsStations
+        var candidatsObligatoires = positionsStations
             .filter(function(position) {
                 return position.distanceRouteKm >= debutRechercheKm
                     && position.distanceRouteKm <= limiteKm
@@ -7846,12 +7978,31 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
                                 arret.distanceRouteKm - position.distanceRouteKm
                             ) < 60;
                     });
-            })
+            });
+
+        if (premierArret && niveauDepartBas) {
+            var limiteUrgenceKm = Math.min(
+                limiteKm,
+                distanceDernierPleinKm
+                    + Math.max(8, autonomieSegmentKm * 0.45)
+            );
+            var candidatsProches = candidatsObligatoires.filter(
+                function(position) {
+                    return position.distanceRouteKm <= limiteUrgenceKm;
+                }
+            );
+
+            if (candidatsProches.length) {
+                candidatsObligatoires = candidatsProches;
+            }
+        }
+
+        var candidatObligatoire = candidatsObligatoires
             .sort(function(a, b) {
                 if (premierArret && niveauDepartBas) {
-                    return b.economieNette - a.economieNette
+                    return a.distanceRouteKm - b.distanceRouteKm
                         || a.station.prix - b.station.prix
-                        || a.distanceRouteKm - b.distanceRouteKm
+                        || b.economieNette - a.economieNette
                         || a.ecartMetres - b.ecartMetres
                         || 0;
                 }
@@ -7960,16 +8111,8 @@ function proposerRavitaillementTrajetPremium(route) {
         return;
     }
 
-    if (!comptePremiumActif() || !route || !route.geometry) {
-        element.hidden = true;
-        element.textContent = "";
-        return;
-    }
-
-    element.hidden = false;
-    element.innerHTML = htmlArretsRavitaillement(
-        calculerArretsRavitaillementRoute(route, jaugeTrajetTemporaire)
-    );
+    element.hidden = true;
+    element.textContent = "";
 
 }
 
@@ -8155,6 +8298,54 @@ function actualiserJaugeTrajet() {
 
 window.actualiserJaugeTrajet = actualiserJaugeTrajet;
 
+function afficherEtatPlanificateurCalcule(estCalcule) {
+
+    var parametres = document.getElementById("trip-planner-setup");
+    var boutonCalculer = document.getElementById("trip-calculate-button");
+    var boutonDemarrer = document.getElementById("trip-start-button");
+
+    if (parametres) {
+        parametres.hidden = estCalcule;
+    }
+
+    if (boutonCalculer) {
+        boutonCalculer.hidden = estCalcule;
+    }
+
+    if (boutonDemarrer) {
+        boutonDemarrer.textContent = estCalcule
+            ? "D\u00e9marrer"
+            : "Valider le trajet";
+    }
+
+}
+
+function pointsTrajetPrepareDepuisArrets() {
+
+    if (
+        !trajetPrepare
+        || !trajetPrepare.destination
+        || latitudeUtilisateur === null
+        || longitudeUtilisateur === null
+    ) {
+        return [];
+    }
+
+    return [{
+        latitude: latitudeUtilisateur,
+        longitude: longitudeUtilisateur
+    }].concat(
+        (trajetPrepare.arrets || []).map(function(arret) {
+            return {
+                latitude: arret.station.latitude,
+                longitude: arret.station.longitude
+            };
+        }),
+        [trajetPrepare.destination]
+    );
+
+}
+
 window.ouvrirPlanificateurTrajet = function() {
 
     var panneau = document.getElementById("trip-planner");
@@ -8174,6 +8365,7 @@ window.ouvrirPlanificateurTrajet = function() {
 
     document.getElementById("trip-planner-result").textContent = "";
     document.getElementById("trip-start-button").disabled = true;
+    afficherEtatPlanificateurCalcule(false);
     trajetPrepare = null;
     effacerMarqueursRavitaillement();
     panneau.hidden = false;
@@ -8298,11 +8490,18 @@ window.calculerTrajetPrepare = async function() {
             arrets: ravitaillement.arrets,
             route: routeDirecte
         };
+        var pointsApercu = pointsTrajetPrepareDepuisArrets();
+        var routeApercu = await calculerRouteAvecCoordonnees(pointsApercu);
+        trajetPrepare.route = routeApercu;
         afficherMarqueursRavitaillement(trajetPrepare.arrets);
+        dessinerItineraire(routeApercu.geometry.coordinates, true);
         resultat.innerHTML = htmlArretsRavitaillement(ravitaillement);
+        configurerBoutonsNavigationExterneTrajetPrepare();
         bouton.disabled = false;
+        afficherEtatPlanificateurCalcule(true);
     } catch (erreur) {
         trajetPrepare = null;
+        afficherEtatPlanificateurCalcule(false);
         resultat.textContent =
             "Impossible de calculer cette destination pour le moment.";
     }
@@ -8321,18 +8520,7 @@ window.validerTrajetPrepare = async function() {
     jaugeTrajetTemporaire = trajetPrepare.jauge;
 
     try {
-        var points = [{
-            latitude: latitudeUtilisateur,
-            longitude: longitudeUtilisateur
-        }].concat(
-            trajetPrepare.arrets.map(function(arret) {
-                return {
-                    latitude: arret.station.latitude,
-                    longitude: arret.station.longitude
-                };
-            }),
-            [trajetPrepare.destination]
-        );
+        var points = pointsTrajetPrepareDepuisArrets();
         var route = await calculerRouteAvecCoordonnees(points);
         routeNavigation = route;
         stationNavigationActive = null;
@@ -8353,8 +8541,15 @@ window.validerTrajetPrepare = async function() {
         dessinerItineraire(route.geometry.coordinates, false);
         afficherMarqueursRavitaillement(trajetPrepare.arrets);
         proposerRavitaillementTrajetPremium(route);
+        configurerBoutonsNavigationExterneTrajetPrepare();
         fermerPlanificateurTrajet();
         navigationActive = true;
+        suiviCarteActif = true;
+        orientationAutomatiqueActive = true;
+        zoomUtilisateurManuel = false;
+        map.setPitch(inclinaisonCarteGps);
+        actualiserBoutonSuiviCarte();
+        activerOrientationTelephone();
         document.getElementById("navigation-panel").hidden = false;
         recentrerSurUtilisateur();
         actualiserGuidageNavigation();
@@ -8405,11 +8600,12 @@ function dessinerItineraire(coordonnees, afficherApercu) {
         actualiserBoutonSuiviCarte();
         capCarte = 0;
         map.setBearing(0);
-        map.setPitch(inclinaisonCarteGps);
+        map.setPitch(0);
         map.fitBounds(
             itineraireLayer.getBounds(),
             {
-                padding: [60, 60]
+                padding: [60, 60],
+                pitch: 0
             }
         );
     }
