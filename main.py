@@ -33,6 +33,10 @@ from update_data import (
 
 INTERVALLE_MISE_A_JOUR_SECONDES = 10 * 60
 logger = logging.getLogger("optiplein.update")
+MISE_A_JOUR_FOND_ACTIVE = os.getenv(
+    "OPTIPLEIN_BACKGROUND_UPDATE",
+    "false",
+).strip().lower() in {"1", "true", "yes", "on"}
 EMAIL_SIGNALEMENT = os.getenv(
     "REPORT_EMAIL",
     "optiplein5@gmail.com"
@@ -436,11 +440,17 @@ async def actualiser_prix_periodiquement():
 @asynccontextmanager
 async def duree_de_vie_application(app):
 
-    tache_mise_a_jour = asyncio.create_task(
-        actualiser_prix_periodiquement()
-    )
+    tache_mise_a_jour = None
+
+    if MISE_A_JOUR_FOND_ACTIVE:
+        tache_mise_a_jour = asyncio.create_task(
+            actualiser_prix_periodiquement()
+        )
 
     yield
+
+    if not tache_mise_a_jour:
+        return
 
     tache_mise_a_jour.cancel()
 
