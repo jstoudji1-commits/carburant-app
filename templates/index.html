@@ -1466,6 +1466,22 @@ body{
     white-space:nowrap;
 }
 
+.ravitaillement-pin.apercu{
+    min-width:168px;
+    padding:10px 13px;
+    border-width:3px;
+    border-color:#08a238;
+    background:linear-gradient(180deg, #ffffff, #e6fbea);
+    color:#065f25;
+    font-size:15px;
+    box-shadow:0 12px 28px rgba(8,122,44,0.34);
+}
+
+.ravitaillement-pin.apercu::before{
+    width:22px;
+    height:22px;
+}
+
 .ravitaillement-pin::before{
     content:"";
     width:18px;
@@ -1968,6 +1984,25 @@ body{
     border:1px solid rgba(220,228,234,0.9);
     border-radius:12px;
     box-shadow:var(--shadow);
+}
+
+.bottom-cancel{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:30px;
+    height:30px;
+    border:0;
+    border-radius:8px;
+    background:#edf2ef;
+    color:var(--ink);
+    font-size:20px;
+    line-height:30px;
+    cursor:pointer;
+}
+
+.bottom-cancel[hidden]{
+    display:none;
 }
 
 .bottom-icon{
@@ -2928,6 +2963,15 @@ body{
 
         {% if stations and stations[0].latitude and stations[0].longitude %}
         <div class="bottom-card">
+            <button
+                type="button"
+                id="trip-preview-cancel"
+                class="bottom-cancel"
+                onclick="annulerPreparationTrajet()"
+                aria-label="Annuler la pr&eacute;paration du trajet"
+                title="Annuler la pr&eacute;paration du trajet"
+                hidden
+            >&times;</button>
             <div class="bottom-icon">Eco</div>
             <div>
                 <p id="economy-title" class="bottom-title">
@@ -4216,6 +4260,7 @@ L.tileLayer(
 
 var markers = [];
 var markersParStation = {};
+var stationsClassiquesMasquees = false;
 var stationsEconomie = [];
 var stationsTrajetFrance = null;
 var chargementStationsTrajetFrance = null;
@@ -4541,6 +4586,43 @@ markersParStation[{{ station.id|tojson }}] = marker;
 {% endif %}
 
 {% endfor %}
+
+function masquerStationsClassiquesSurCarte() {
+
+    if (stationsClassiquesMasquees) {
+        return;
+    }
+
+    markers.forEach(function(markerStation) {
+        map.removeLayer(markerStation);
+    });
+    stationsClassiquesMasquees = true;
+
+}
+
+function afficherStationsClassiquesSurCarte() {
+
+    if (!stationsClassiquesMasquees) {
+        return;
+    }
+
+    markers.forEach(function(markerStation) {
+        markerStation.addTo(map);
+    });
+    stationsClassiquesMasquees = false;
+    actualiserNavigationPremium();
+
+}
+
+function afficherBoutonAnnulationTrajetPrepare(visible) {
+
+    var bouton = document.getElementById("trip-preview-cancel");
+
+    if (bouton) {
+        bouton.hidden = !visible;
+    }
+
+}
 
 function afficherStationPrixMinimum(event) {
     var bouton = event.currentTarget;
@@ -5500,6 +5582,9 @@ function appliquerMouvementCarteAutomatique(action) {
 function suivrePositionGpsSurCarte(latitude, longitude, capAffichage) {
 
     if (
+        trajetPrepare
+        && !navigationActive
+        ||
         !suiviCarteActif
         || !orientationAutomatiqueActive
         || !Number.isFinite(latitude)
@@ -7130,10 +7215,27 @@ function afficherTrajetPrepareDansEncadre() {
     boutonItineraire.classList.remove("stop");
     boutonItineraire.onclick = validerTrajetPrepare;
     configurerBoutonsNavigationExterneTrajetPrepare();
+    afficherBoutonAnnulationTrajetPrepare(true);
 
     return true;
 
 }
+
+window.annulerPreparationTrajet = function() {
+
+    if (itineraireLayer) {
+        map.removeLayer(itineraireLayer);
+        itineraireLayer = null;
+    }
+
+    trajetPrepare = null;
+    jaugeTrajetTemporaire = null;
+    effacerMarqueursRavitaillement();
+    afficherStationsClassiquesSurCarte();
+    afficherBoutonAnnulationTrajetPrepare(false);
+    calculerMeilleureStation();
+
+};
 
 window.calculerMeilleureStation = function() {
 
@@ -8206,6 +8308,7 @@ function afficherMarqueursRavitaillement(arrets) {
             className: "ravitaillement-marker",
             html:
                 '<div class="ravitaillement-pin'
+                + (!navigationActive ? ' apercu' : '')
                 + (index > 0 ? ' secondaire' : '')
                 + '">'
                 + echapperHtml(libelle)
@@ -8426,8 +8529,10 @@ window.ouvrirPlanificateurTrajet = function() {
     document.getElementById("trip-planner-result").textContent = "";
     document.getElementById("trip-start-button").disabled = true;
     afficherEtatPlanificateurCalcule(false);
+    afficherBoutonAnnulationTrajetPrepare(false);
     trajetPrepare = null;
     effacerMarqueursRavitaillement();
+    afficherStationsClassiquesSurCarte();
     panneau.hidden = false;
     document.getElementById("trip-destination").focus();
 
@@ -8557,6 +8662,7 @@ window.calculerTrajetPrepare = async function() {
         trajetPrepare.route = routeApercu;
         afficherMarqueursRavitaillement(trajetPrepare.arrets);
         dessinerItineraire(routeApercu.geometry.coordinates, true);
+        masquerStationsClassiquesSurCarte();
         resultat.innerHTML = htmlArretsRavitaillement(ravitaillement);
         configurerBoutonsNavigationExterneTrajetPrepare();
         bouton.disabled = false;
@@ -8602,6 +8708,8 @@ window.validerTrajetPrepare = async function() {
             []
         );
         indexEtapeNavigation = 0;
+        afficherStationsClassiquesSurCarte();
+        afficherBoutonAnnulationTrajetPrepare(false);
         dessinerItineraire(route.geometry.coordinates, false);
         afficherMarqueursRavitaillement(trajetPrepare.arrets);
         proposerRavitaillementTrajetPremium(route);
@@ -8996,6 +9104,8 @@ window.arreterNavigation = function() {
     capAffichageStabilise = Number.NaN;
     cacherPopupStationPlusRentable();
     effacerMarqueursRavitaillement();
+    afficherStationsClassiquesSurCarte();
+    afficherBoutonAnnulationTrajetPrepare(false);
     proposerRavitaillementTrajetPremium(null);
     reinitialiserDetectionEcart();
     effacerItineraireNavigation();
