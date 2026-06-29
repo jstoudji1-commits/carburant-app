@@ -1789,6 +1789,13 @@ body{
     backdrop-filter:blur(5px);
 }
 
+.trip-planner-backdrop.calculated{
+    inset:auto 12px 12px 12px;
+    background:transparent;
+    backdrop-filter:none;
+    pointer-events:none;
+}
+
 .trip-planner-backdrop[hidden]{
     display:none;
 }
@@ -1800,6 +1807,10 @@ body{
     border-radius:12px;
     background:rgba(255,255,255,0.98);
     box-shadow:var(--shadow);
+}
+
+.trip-planner-backdrop.calculated .trip-planner-panel{
+    pointer-events:auto;
 }
 
 .trip-planner-header{
@@ -7083,6 +7094,47 @@ function afficherProchainRavitaillementTrajet(titre, sousTitre, boutonItineraire
 
 }
 
+function afficherTrajetPrepareDansEncadre() {
+
+    if (
+        navigationActive
+        || !trajetPrepare
+        || !trajetPrepare.destination
+    ) {
+        return false;
+    }
+
+    var titre = document.getElementById("economy-title");
+    var sousTitre = document.getElementById("economy-subtitle");
+    var boutonItineraire = document.getElementById("economy-route-button");
+    var infoItineraire = document.getElementById("itineraire-info");
+
+    if (!titre || !sousTitre || !boutonItineraire) {
+        return false;
+    }
+
+    titre.textContent = "Pr\u00e9parer mon trajet";
+    sousTitre.innerHTML = htmlArretsRavitaillement({
+        arrets: trajetPrepare.arrets || [],
+        autonomieKm: trajetPrepare.autonomieKm || 0,
+        distanceTrajetKm: trajetPrepare.distanceTrajetKm || 0
+    });
+
+    if (infoItineraire) {
+        infoItineraire.textContent = "";
+    }
+
+    boutonItineraire.hidden = false;
+    boutonItineraire.disabled = false;
+    boutonItineraire.textContent = "D\u00e9marrer";
+    boutonItineraire.classList.remove("stop");
+    boutonItineraire.onclick = validerTrajetPrepare;
+    configurerBoutonsNavigationExterneTrajetPrepare();
+
+    return true;
+
+}
+
 window.calculerMeilleureStation = function() {
 
     var reservoir = nombreVehiculeEnregistre(
@@ -7119,7 +7171,10 @@ window.calculerMeilleureStation = function() {
         return;
     }
 
-    if (afficherProchainRavitaillementTrajet(titre, sousTitre, boutonItineraire)) {
+    if (
+        afficherProchainRavitaillementTrajet(titre, sousTitre, boutonItineraire)
+        || afficherTrajetPrepareDansEncadre()
+    ) {
         return;
     }
 
@@ -8300,9 +8355,14 @@ window.actualiserJaugeTrajet = actualiserJaugeTrajet;
 
 function afficherEtatPlanificateurCalcule(estCalcule) {
 
+    var panneau = document.getElementById("trip-planner");
     var parametres = document.getElementById("trip-planner-setup");
     var boutonCalculer = document.getElementById("trip-calculate-button");
     var boutonDemarrer = document.getElementById("trip-start-button");
+
+    if (panneau) {
+        panneau.classList.toggle("calculated", estCalcule);
+    }
 
     if (parametres) {
         parametres.hidden = estCalcule;
@@ -8488,7 +8548,9 @@ window.calculerTrajetPrepare = async function() {
             destination: destination,
             jauge: jaugeTrajet,
             arrets: ravitaillement.arrets,
-            route: routeDirecte
+            route: routeDirecte,
+            autonomieKm: ravitaillement.autonomieKm,
+            distanceTrajetKm: ravitaillement.distanceTrajetKm
         };
         var pointsApercu = pointsTrajetPrepareDepuisArrets();
         var routeApercu = await calculerRouteAvecCoordonnees(pointsApercu);
@@ -8499,6 +8561,8 @@ window.calculerTrajetPrepare = async function() {
         configurerBoutonsNavigationExterneTrajetPrepare();
         bouton.disabled = false;
         afficherEtatPlanificateurCalcule(true);
+        fermerPlanificateurTrajet();
+        afficherTrajetPrepareDansEncadre();
     } catch (erreur) {
         trajetPrepare = null;
         afficherEtatPlanificateurCalcule(false);
