@@ -9,7 +9,6 @@ on:
       - main
     paths:
       - update_data.py
-      - update_europe_data.py
       - update_stations.py
       - stations_enrichment.json
       - .github/workflows/update-stations.yml
@@ -54,30 +53,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add stations.csv stations_metadata.json stations_prix_9h.json
           git commit -m "Mise a jour automatique des prix carburants France"
-          git push
-
-      - name: Recharger la branche apres publication France
-        if: steps.france_changes.outputs.changed == 'true'
-        run: git pull --rebase
-
-      - name: Mettre a jour les donnees officielles europeennes
-        continue-on-error: true
-        run: python update_europe_data.py
-
-      - name: Verifier si les donnees Europe ont change
-        id: europe_changes
-        run: |
-          if [ -n "$(git status --porcelain -- stations_europe.csv stations_europe_metadata.json)" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Publier les nouvelles donnees Europe
-        if: steps.europe_changes.outputs.changed == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add stations_europe.csv stations_europe_metadata.json
-          git commit -m "Mise a jour automatique des prix carburants Europe"
           git push
