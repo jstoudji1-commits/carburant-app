@@ -3260,8 +3260,14 @@ async function synchroniserDateMiseAJour() {
                 afficherInfoItineraire(
                     "Nouveaux prix disponibles, actualisation..."
                 );
-                dateDonneesChargees = isoServeur;
-                actualiserStationsSelonPosition(true);
+                var actualisationOk =
+                    await actualiserStationsSelonPosition(true);
+
+                if (actualisationOk) {
+                    dateDonneesChargees = isoServeur;
+                } else if (!navigationActive && !trajetPrepare) {
+                    rechargerAvecPositionActuelle();
+                }
             }
         }
     } catch (erreur) {
@@ -6252,23 +6258,23 @@ async function actualiserStationsSelonPosition(force) {
 
     if (actualisationStationsEnCours) {
 
-        return;
+        return false;
 
     }
 
     if (navigationActive) {
-        return;
+        return false;
     }
 
     if (trajetPrepare && !navigationActive) {
-        return;
+        return false;
     }
 
     if (
         !Number.isFinite(latitudeUtilisateur)
         || !Number.isFinite(longitudeUtilisateur)
     ) {
-        return;
+        return false;
     }
 
     var positionInitialeManquante =
@@ -6298,7 +6304,7 @@ async function actualiserStationsSelonPosition(force) {
         )
     ) {
 
-        return;
+        return false;
 
     }
 
@@ -6318,21 +6324,23 @@ async function actualiserStationsSelonPosition(force) {
         );
 
         if (!reponse.ok) {
-            return;
+            return false;
         }
 
         var donnees = await reponse.json();
 
         if (!Array.isArray(donnees.stations)) {
-            return;
+            return false;
         }
 
         latitudeDerniereRecherche = latitudeUtilisateur;
         longitudeDerniereRecherche = longitudeUtilisateur;
         remplacerStationsSurCarte(donnees.stations);
         calculerMeilleureStation();
+        return true;
     } catch (erreur) {
         console.log("Actualisation silencieuse des stations indisponible");
+        return false;
     } finally {
         actualisationStationsEnCours = false;
     }
