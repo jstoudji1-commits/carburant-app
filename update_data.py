@@ -2,6 +2,7 @@
 import gzip
 import io
 import json
+import math
 import os
 import time
 from datetime import datetime, timezone
@@ -16,12 +17,14 @@ from zoneinfo import ZoneInfo
 
 
 BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = Path(os.getenv("OPTIPLEIN_DATA_DIR", "."))
 STATIONS_CSV = BASE_DIR / "stations.csv"
 METADATA_JSON = BASE_DIR / "stations_metadata.json"
 REFERENCES_PRIX_JSON = BASE_DIR / "stations_prix_9h.json"
 HISTORIQUE_PRIX_JSON = BASE_DIR / "stations_historique_prix.json"
 MARCHE_CARBURANT_JSON = BASE_DIR / "carburant_market_signals.json"
 ENRICHISSEMENT_STATIONS_JSON = BASE_DIR / "stations_enrichment.json"
+ENRICHISSEMENT_STATIONS_ADMIN_JSON = DATA_DIR / "stations_enrichment.json"
 FUSEAU_PARIS = ZoneInfo("Europe/Paris")
 CARBURANTS = ["gazole", "e10", "sp98"]
 STATIONS_EXCLUES = {
@@ -70,16 +73,22 @@ def appliquer_enrichissements(lignes):
 
     enrichissements = {}
 
-    if ENRICHISSEMENT_STATIONS_JSON.exists():
+    for fichier_enrichissement in (
+        ENRICHISSEMENT_STATIONS_JSON,
+        ENRICHISSEMENT_STATIONS_ADMIN_JSON,
+    ):
+        if not fichier_enrichissement.exists():
+            continue
+
         try:
             contenu = json.loads(
-                ENRICHISSEMENT_STATIONS_JSON.read_text(
+                fichier_enrichissement.read_text(
                     encoding="utf-8"
                 )
             )
-            enrichissements = contenu.get("stations", {})
+            enrichissements.update(contenu.get("stations", {}))
         except (OSError, ValueError, TypeError):
-            enrichissements = {}
+            continue
 
     for station in lignes:
         station["enseigne"] = ""
@@ -101,8 +110,18 @@ def appliquer_enrichissements(lignes):
         latitude = enrichissement.get("latitude_corrigee")
         longitude = enrichissement.get("longitude_corrigee")
         if latitude is not None and longitude is not None:
-            station["latitude"] = latitude
-            station["longitude"] = longitude
+            try:
+                latitude_corrigee = float(latitude)
+                longitude_corrigee = float(longitude)
+            except (TypeError, ValueError):
+                continue
+
+            if (
+                math.isfinite(latitude_corrigee)
+                and math.isfinite(longitude_corrigee)
+            ):
+                station["latitude"] = latitude_corrigee
+                station["longitude"] = longitude_corrigee
 
 
 def _prix(valeur):

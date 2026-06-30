@@ -5082,6 +5082,23 @@ function afficherBoutonAnnulationTrajetPrepare(visible) {
 
     var bouton = document.getElementById("trip-preview-cancel");
 
+    function actualiserLibelleAnnulation() {
+        if (!bouton) {
+            return;
+        }
+
+        bouton.textContent = "Annuler ("
+            + secondesAnnulationTrajetPrepare
+            + "s)";
+        bouton.setAttribute(
+            "aria-label",
+            "Annuler la preparation du trajet, "
+                + secondesAnnulationTrajetPrepare
+                + " secondes restantes"
+        );
+        bouton.title = bouton.textContent;
+    }
+
     if (minuteurAnnulationTrajetPrepare) {
         clearInterval(minuteurAnnulationTrajetPrepare);
         minuteurAnnulationTrajetPrepare = null;
@@ -5092,7 +5109,7 @@ function afficherBoutonAnnulationTrajetPrepare(visible) {
 
         if (visible) {
             secondesAnnulationTrajetPrepare = 20;
-            bouton.textContent = "Annuler (20s)";
+            actualiserLibelleAnnulation();
             minuteurAnnulationTrajetPrepare = setInterval(
                 function() {
                     secondesAnnulationTrajetPrepare -= 1;
@@ -5104,14 +5121,17 @@ function afficherBoutonAnnulationTrajetPrepare(visible) {
                         return;
                     }
 
-                    bouton.textContent = "Annuler ("
-                        + secondesAnnulationTrajetPrepare
-                        + "s)";
+                    actualiserLibelleAnnulation();
                 },
                 1000
             );
         } else {
             bouton.textContent = "Annuler";
+            bouton.setAttribute(
+                "aria-label",
+                "Annuler la preparation du trajet"
+            );
+            bouton.title = "Annuler la preparation du trajet";
         }
     }
 

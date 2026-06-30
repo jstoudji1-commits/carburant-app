@@ -12,7 +12,7 @@ services:
       - key: OPTIPLEIN_DATA_DIR
         value: /var/data
       - key: OPTIPLEIN_BACKGROUND_UPDATE
-        value: "false"
+        value: "true"
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
