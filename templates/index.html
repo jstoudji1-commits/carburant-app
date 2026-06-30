@@ -3276,6 +3276,23 @@ async function synchroniserDateMiseAJour() {
 
 }
 
+async function forcerRafraichissementStationsVisibles() {
+
+    if (navigationActive || trajetPrepare) {
+        return false;
+    }
+
+    var actualisationOk = await actualiserStationsSelonPosition(true);
+
+    if (!actualisationOk) {
+        rechargerAvecPositionActuelle();
+        return false;
+    }
+
+    return true;
+
+}
+
 actualiserCompteurMiseAJour();
 setInterval(actualiserCompteurMiseAJour, 1000);
 
@@ -3301,6 +3318,13 @@ setInterval(
         synchroniserDateMiseAJour();
     },
     30000
+);
+
+setInterval(
+    function() {
+        forcerRafraichissementStationsVisibles();
+    },
+    10 * 60 * 1000
 );
 
 window.ouvrirSignalement = function() {
