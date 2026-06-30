@@ -9,6 +9,7 @@ on:
       - main
     paths:
       - update_data.py
+      - update_europe_data.py
       - update_stations.py
       - stations_enrichment.json
       - .github/workflows/update-stations.yml
@@ -23,7 +24,7 @@ concurrency:
 jobs:
   update-stations:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Recuperer le projet
@@ -37,10 +38,13 @@ jobs:
       - name: Mettre a jour les donnees officielles
         run: python update_stations.py
 
+      - name: Mettre a jour les donnees officielles europeennes
+        run: python update_europe_data.py
+
       - name: Verifier si les donnees ont change
         id: changes
         run: |
-          if [ -n "$(git status --porcelain -- stations.csv stations_metadata.json stations_prix_9h.json)" ]; then
+          if [ -n "$(git status --porcelain -- stations.csv stations_metadata.json stations_prix_9h.json stations_europe.csv stations_europe_metadata.json)" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -51,6 +55,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add stations.csv stations_metadata.json stations_prix_9h.json
+          git add stations.csv stations_metadata.json stations_prix_9h.json stations_europe.csv stations_europe_metadata.json
           git commit -m "Mise a jour automatique des prix carburants"
           git push
