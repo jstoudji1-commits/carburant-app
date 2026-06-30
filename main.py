@@ -708,6 +708,65 @@ def distance_km(
     return rayon * c
 
 
+def preparer_stations_pour_carte(
+    stations,
+    carburant,
+    latitude=None,
+    longitude=None,
+    rayon=25,
+):
+
+    stations_preparees = []
+
+    if latitude is not None and longitude is not None:
+        for station in stations:
+            try:
+                distance = distance_km(
+                    latitude,
+                    longitude,
+                    float(station["latitude"]),
+                    float(station["longitude"]),
+                )
+            except (TypeError, ValueError, KeyError):
+                continue
+
+            if distance > rayon:
+                continue
+
+            station = station.copy()
+            station["distance"] = round(distance, 2)
+            stations_preparees.append(station)
+
+        stations_preparees.sort(key=lambda x: x["distance"])
+    else:
+        stations_preparees = [station.copy() for station in stations]
+        stations_preparees.sort(
+            key=lambda x: (
+                float(x.get(carburant, ""))
+                if x.get(carburant, "").strip()
+                else 999
+            )
+        )
+        stations_preparees = stations_preparees[:50]
+
+    for station in stations_preparees:
+        station["carburant_selectionne"] = station.get(carburant, "")
+        station["tendance_selectionnee"] = station.get(
+            f"tendance_{carburant}",
+            "",
+        )
+        station["tendance_demain_selectionnee"] = station.get(
+            f"tendance_demain_{carburant}",
+            "",
+        )
+        station["confiance_demain_selectionnee"] = station.get(
+            f"confiance_demain_{carburant}",
+            "",
+        )
+
+    return stations_preparees
+
+
 @app.get("/")
 def landing_page(request: Request):
 
@@ -934,6 +993,51 @@ def get_stations():
     )
 
     return stations
+
+
+@app.get("/api/stations-proches")
+def get_stations_proches(
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    carburant: str = "gazole",
+    rayon: int = 25,
+):
+
+    stations = preparer_stations_pour_carte(
+        charger_stations(),
+        carburant,
+        latitude,
+        longitude,
+        rayon,
+    )
+
+    return {
+        "stations": [
+            {
+                "id": station.get("id", ""),
+                "enseigne": station.get("enseigne", ""),
+                "adresse": station.get("adresse", ""),
+                "cp": station.get("cp", ""),
+                "ville": station.get("ville", ""),
+                "latitude": station.get("latitude", ""),
+                "longitude": station.get("longitude", ""),
+                "distance": station.get("distance"),
+                "prix": station.get("carburant_selectionne", ""),
+                "carburant": carburant,
+                "tendance": station.get("tendance_selectionnee", ""),
+                "tendance_demain": station.get(
+                    "tendance_demain_selectionnee",
+                    "",
+                ),
+                "confiance_demain": station.get(
+                    "confiance_demain_selectionnee",
+                    "",
+                ),
+            }
+            for station in stations
+        ],
+        "count": len(stations),
+    }
 
 
 @app.get("/api/stations-europe")
@@ -1224,125 +1328,13 @@ def page_web(
 
         ]
 
-    # Recherche autour de moi
-
-    if latitude and longitude:
-        stations_valides = []
-
-        for station in stations:
-
-            try:
-
-                distance = distance_km(
-
-                    latitude,
-                    longitude,
-
-                    float(
-                        station["latitude"]
-                    ),
-
-                    float(
-                        station["longitude"]
-                    )
-
-                )
-
-                station["distance"] = round(
-                    distance,
-                    2
-                )
-
-                station[
-                    "carburant_selectionne"
-                ] = station.get(
-                    carburant,
-                    ""
-                )
-
-                station[
-                    "tendance_selectionnee"
-                ] = station.get(
-                    f"tendance_{carburant}",
-                    ""
-                )
-                station[
-                    "tendance_demain_selectionnee"
-                ] = station.get(
-                    f"tendance_demain_{carburant}",
-                    ""
-                )
-                station[
-                    "confiance_demain_selectionnee"
-                ] = station.get(
-                    f"confiance_demain_{carburant}",
-                    ""
-                )
-
-                if distance <= rayon:
-                    stations_valides.append(station)
-
-            except:
-
-                pass
-
-        stations = stations_valides
-
-        stations.sort(
-            key=lambda x: x["distance"]
-        )
-
-    else:
-
-        for station in stations:
-
-            station[
-                "carburant_selectionne"
-            ] = station.get(
-                carburant,
-                ""
-            )
-
-            station[
-                "tendance_selectionnee"
-            ] = station.get(
-                f"tendance_{carburant}",
-                ""
-            )
-            station[
-                "tendance_demain_selectionnee"
-            ] = station.get(
-                f"tendance_demain_{carburant}",
-                ""
-            )
-            station[
-                "confiance_demain_selectionnee"
-            ] = station.get(
-                f"confiance_demain_{carburant}",
-                ""
-            )
-
-        stations.sort(
-            key=lambda x: (
-
-                float(
-                    x.get(
-                        carburant,
-                        ""
-                    )
-                )
-
-                if x.get(
-                    carburant,
-                    ""
-                ).strip()
-
-                else 999
-
-            )
-        )
-
-        stations = stations[:50]
+    stations = preparer_stations_pour_carte(
+        stations,
+        carburant,
+        latitude,
+        longitude,
+        rayon,
+    )
 
     nombre_stations = len(stations)
 
