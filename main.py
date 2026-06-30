@@ -62,6 +62,8 @@ TESTEURS_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "testeurs_landing.json"
 )
+STATIONS_REPO_CSV = Path(__file__).resolve().parent / "stations.csv"
+STATIONS_RUNTIME_CSV = DOSSIER_DONNEES_UTILISATEURS / "stations.csv"
 ENRICHISSEMENT_STATIONS_REPO_FICHIER = (
     Path(__file__).resolve().parent
     / "stations_enrichment.json"
@@ -654,14 +656,19 @@ templates = Jinja2Templates(
 )
 
 
+def chemin_stations_csv():
+
+    if STATIONS_RUNTIME_CSV.exists():
+        return STATIONS_RUNTIME_CSV
+
+    return STATIONS_REPO_CSV
+
+
 def charger_stations(appliquer_corrections=True):
 
     stations = []
 
-    with open(
-        "stations.csv",
-        encoding="utf-8"
-    ) as fichier:
+    with chemin_stations_csv().open(encoding="utf-8-sig") as fichier:
 
         lecteur = csv.DictReader(
             fichier
