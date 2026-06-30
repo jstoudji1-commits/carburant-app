@@ -27,6 +27,7 @@ import time
 from update_data import (
     date_derniere_mise_a_jour,
     mettre_a_jour_stations,
+    signature_adresse,
     texte_derniere_mise_a_jour,
 )
 
@@ -49,9 +50,25 @@ COMPTES_UTILISATEURS_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "comptes_utilisateurs.json"
 )
+STATIONS_EUROPE_CSV = (
+    Path(__file__).resolve().parent
+    / "stations_europe.csv"
+)
+STATIONS_EUROPE_METADATA_JSON = (
+    Path(__file__).resolve().parent
+    / "stations_europe_metadata.json"
+)
 TESTEURS_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "testeurs_landing.json"
+)
+ENRICHISSEMENT_STATIONS_REPO_FICHIER = (
+    Path(__file__).resolve().parent
+    / "stations_enrichment.json"
+)
+ENRICHISSEMENT_STATIONS_ADMIN_FICHIER = (
+    DOSSIER_DONNEES_UTILISATEURS
+    / "stations_enrichment.json"
 )
 ADMIN_PASSWORD = os.getenv(
     "ADMIN_PASSWORD",
@@ -111,6 +128,19 @@ class AdminChangementPlan(BaseModel):
 
     email: str = Field(min_length=5, max_length=160)
     plan: Literal["free", "premium"]
+
+
+class AdminCorrectionStation(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(min_length=1, max_length=32)
+    enseigne: str = Field(default="", max_length=120)
+    adresse: str = Field(default="", max_length=180)
+    cp: str = Field(default="", max_length=12)
+    ville: str = Field(default="", max_length=90)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class InscriptionTesteur(BaseModel):
@@ -278,6 +308,22 @@ def email_depuis_requete(request):
     return email
 
 
+def compte_premium_requis(request):
+
+    email = email_depuis_requete(request)
+    comptes = charger_comptes_utilisateurs()
+    utilisateur = comptes.get("users", {}).get(email, {})
+    donnees = utilisateur.get("data", {})
+
+    if donnees.get("plan") != "premium":
+        raise HTTPException(
+            status_code=403,
+            detail="Acces Premium requis.",
+        )
+
+    return email
+
+
 def verifier_admin(request):
 
     mot_de_passe = request.headers.get("X-Admin-Password", "")
@@ -345,6 +391,123 @@ def construire_resume_admin():
             ),
             "testeurs": len(testeurs),
         },
+    }
+
+
+def lire_fichier_enrichissement_stations(fichier):
+
+    if not fichier.exists():
+        return {"stations": {}}
+
+    try:
+        donnees = json.loads(fichier.read_text(encoding="utf-8"))
+        if isinstance(donnees, dict):
+            donnees.setdefault("stations", {})
+            return donnees
+    except (OSError, ValueError, TypeError):
+        logger.exception(
+            "Impossible de lire les enrichissements stations."
+        )
+
+    return {"stations": {}}
+
+
+def charger_enrichissements_stations():
+
+    enrichissements = {}
+
+    for fichier in (
+        ENRICHISSEMENT_STATIONS_REPO_FICHIER,
+        ENRICHISSEMENT_STATIONS_ADMIN_FICHIER,
+    ):
+        donnees = lire_fichier_enrichissement_stations(fichier)
+        enrichissements.update(donnees.get("stations", {}))
+
+    return enrichissements
+
+
+def enregistrer_enrichissement_station(station, correction):
+
+    donnees = lire_fichier_enrichissement_stations(
+        ENRICHISSEMENT_STATIONS_ADMIN_FICHIER
+    )
+    stations = donnees.setdefault("stations", {})
+    station_id = str(station.get("id", "") or correction.id)
+
+    entree = stations.setdefault(station_id, {})
+    entree.update(
+        {
+            "signature": signature_adresse(station),
+            "enseigne": correction.enseigne.strip(),
+            "adresse": correction.adresse.strip(),
+            "cp": correction.cp.strip(),
+            "ville": correction.ville.strip(),
+            "latitude_corrigee": correction.latitude,
+            "longitude_corrigee": correction.longitude,
+            "source_enseigne": "Admin OptiPlein",
+            "source_correction": "Admin OptiPlein",
+            "updated_at": datetime.now().astimezone().isoformat(),
+        }
+    )
+    donnees["generated_at"] = datetime.now().astimezone().isoformat()
+    donnees["source"] = "admin"
+
+    ENRICHISSEMENT_STATIONS_ADMIN_FICHIER.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    temporaire = ENRICHISSEMENT_STATIONS_ADMIN_FICHIER.with_suffix(
+        ".tmp"
+    )
+    temporaire.write_text(
+        json.dumps(
+            donnees,
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    temporaire.replace(ENRICHISSEMENT_STATIONS_ADMIN_FICHIER)
+
+
+def appliquer_enrichissements_admin(stations):
+
+    enrichissements = charger_enrichissements_stations()
+
+    for station in stations:
+        enrichissement = enrichissements.get(str(station.get("id", "")))
+
+        if not enrichissement:
+            continue
+
+        if enrichissement.get("signature") != signature_adresse(station):
+            continue
+
+        for champ in ("enseigne", "adresse", "cp", "ville"):
+            if champ in enrichissement:
+                station[champ] = enrichissement.get(champ) or ""
+
+        latitude = enrichissement.get("latitude_corrigee")
+        longitude = enrichissement.get("longitude_corrigee")
+
+        if latitude is not None and longitude is not None:
+            station["latitude"] = latitude
+            station["longitude"] = longitude
+
+
+def station_resume_admin(station):
+
+    return {
+        "id": station.get("id", ""),
+        "enseigne": station.get("enseigne", ""),
+        "adresse": station.get("adresse", ""),
+        "cp": station.get("cp", ""),
+        "ville": station.get("ville", ""),
+        "latitude": station.get("latitude", ""),
+        "longitude": station.get("longitude", ""),
+        "gazole": station.get("gazole", ""),
+        "e10": station.get("e10", ""),
+        "sp98": station.get("sp98", ""),
     }
 
 
@@ -473,7 +636,7 @@ templates = Jinja2Templates(
 )
 
 
-def charger_stations():
+def charger_stations(appliquer_corrections=True):
 
     stations = []
 
@@ -492,7 +655,21 @@ def charger_stations():
                 ligne
             )
 
+    if appliquer_corrections:
+        appliquer_enrichissements_admin(stations)
+
     return stations
+
+
+def charger_stations_europe():
+
+    if not STATIONS_EUROPE_CSV.exists():
+        return []
+
+    with STATIONS_EUROPE_CSV.open(
+        encoding="utf-8"
+    ) as fichier:
+        return list(csv.DictReader(fichier))
 
 
 def distance_km(
@@ -588,6 +765,99 @@ def changer_plan_admin(
     }
 
 
+@app.get("/api/admin/stations")
+def rechercher_stations_admin(
+    request: Request,
+    q: str = "",
+):
+
+    verifier_admin(request)
+    recherche = " ".join(q.casefold().split())
+    enrichissements = charger_enrichissements_stations()
+    stations = charger_stations()
+
+    if recherche:
+        stations = [
+            station
+            for station in stations
+            if recherche in " ".join(
+                str(station.get(champ, "") or "").casefold()
+                for champ in (
+                    "id",
+                    "enseigne",
+                    "adresse",
+                    "cp",
+                    "ville",
+                )
+            )
+        ]
+
+    stations = stations[:80]
+
+    return {
+        "stations": [
+            dict(
+                station_resume_admin(station),
+                corrigee=str(station.get("id", "")) in enrichissements,
+            )
+            for station in stations
+        ]
+    }
+
+
+@app.post("/api/admin/station")
+def corriger_station_admin(
+    correction: AdminCorrectionStation,
+    request: Request,
+):
+
+    verifier_admin(request)
+
+    if (
+        correction.latitude is not None
+        and not -90 <= correction.latitude <= 90
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Latitude invalide.",
+        )
+
+    if (
+        correction.longitude is not None
+        and not -180 <= correction.longitude <= 180
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Longitude invalide.",
+        )
+
+    stations_brutes = charger_stations(appliquer_corrections=False)
+    station = next(
+        (
+            ligne
+            for ligne in stations_brutes
+            if str(ligne.get("id", "")) == str(correction.id)
+        ),
+        None,
+    )
+
+    if not station:
+        raise HTTPException(
+            status_code=404,
+            detail="Station introuvable.",
+        )
+
+    enregistrer_enrichissement_station(station, correction)
+
+    station_corrigee = dict(station)
+    appliquer_enrichissements_admin([station_corrigee])
+
+    return {
+        "ok": True,
+        "station": station_resume_admin(station_corrigee),
+    }
+
+
 @app.post("/api/testeurs")
 def inscrire_testeur(inscription: InscriptionTesteur, request: Request):
 
@@ -664,6 +934,69 @@ def get_stations():
     )
 
     return stations
+
+
+@app.get("/api/stations-europe")
+def get_stations_europe(
+    request: Request,
+    country: str = "",
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    rayon: int = 25,
+):
+
+    stations = charger_stations_europe()
+    country = country.strip().upper()
+
+    if country:
+        stations = [
+            station
+            for station in stations
+            if station.get("country_code", "").upper() == country
+        ]
+
+    if latitude is not None and longitude is not None:
+        stations_autour = []
+
+        for station in stations:
+            try:
+                distance = distance_km(
+                    latitude,
+                    longitude,
+                    float(station.get("latitude") or 0),
+                    float(station.get("longitude") or 0),
+                )
+            except (TypeError, ValueError):
+                continue
+
+            if distance <= rayon:
+                station = dict(station)
+                station["distance"] = round(distance, 2)
+                stations_autour.append(station)
+
+        stations = sorted(
+            stations_autour,
+            key=lambda station: station.get("distance", 999),
+        )
+    else:
+        stations = stations[:500]
+
+    metadata = {}
+    if STATIONS_EUROPE_METADATA_JSON.exists():
+        try:
+            metadata = json.loads(
+                STATIONS_EUROPE_METADATA_JSON.read_text(
+                    encoding="utf-8"
+                )
+            )
+        except (OSError, ValueError, TypeError):
+            metadata = {}
+
+    return {
+        "stations": stations,
+        "count": len(stations),
+        "metadata": metadata,
+    }
 
 
 @app.get("/api/derniere-mise-a-jour")

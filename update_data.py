@@ -93,6 +93,11 @@ def appliquer_enrichissements(lignes):
 
         station["enseigne"] = enrichissement.get("enseigne", "")
 
+        for champ in ("adresse", "cp", "ville"):
+            valeur_corrigee = enrichissement.get(champ)
+            if valeur_corrigee is not None:
+                station[champ] = valeur_corrigee
+
         latitude = enrichissement.get("latitude_corrigee")
         longitude = enrichissement.get("longitude_corrigee")
         if latitude is not None and longitude is not None:

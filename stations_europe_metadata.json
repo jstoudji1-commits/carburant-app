@@ -1,0 +1,28 @@
+{
+  "updated_at": "2026-06-30T04:20:55.884330+00:00",
+  "count": 35411,
+  "countries": {
+    "ES": 11478,
+    "IT": 23933
+  },
+  "sources": {
+    "espagne": {
+      "country_code": "ES",
+      "url": "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/",
+      "source": "Ministerio para la Transicion Ecologica - Geoportal Hidrocarburos"
+    },
+    "italie_prix": {
+      "url": "https://www.mimit.gov.it/images/exportCSV/prezzo_alle_8.csv",
+      "source": "MIMIT - Osservaprezzi carburanti"
+    },
+    "italie_stations": {
+      "url": "https://www.mimit.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv",
+      "source": "MIMIT - Osservaprezzi carburanti"
+    }
+  },
+  "notes": {
+    "DE": "Prix temps reel MTS-K accessibles via une cle API Tankerkönig; integration a brancher avec une cle.",
+    "BE": "Prix officiels disponibles surtout en prix maximum nationaux; source station-par-station a confirmer.",
+    "LU": "Prix publics reglementes; source station-par-station a confirmer."
+  }
+}
