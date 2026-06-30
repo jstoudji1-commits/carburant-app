@@ -3938,15 +3938,15 @@ function creerAdaptateurMapLibre() {
                     carteInterne.setPaintProperty(
                         couche.id,
                         "line-color",
-                        "#8e9aa3"
+                        "#727c84"
                     );
                     if (couche.paint && couche.paint["line-opacity"] !== undefined) {
                         carteInterne.setPaintProperty(
                             couche.id,
                             "line-opacity",
                             Math.max(
-                                0.72,
-                                Number(couche.paint["line-opacity"]) || 0.72
+                                0.86,
+                                Number(couche.paint["line-opacity"]) || 0.86
                             )
                         );
                     }
@@ -3960,12 +3960,12 @@ function creerAdaptateurMapLibre() {
                     carteInterne.setPaintProperty(
                         "carto-light",
                         "raster-contrast",
-                        0.06
+                        0.12
                     );
                     carteInterne.setPaintProperty(
                         "carto-light",
                         "raster-saturation",
-                        -0.04
+                        -0.12
                     );
                 } catch (erreur) {
                     // Le fond raster reste utilisable sans ajustement.
@@ -4200,6 +4200,26 @@ function creerAdaptateurMapLibre() {
 
     var compteurGeoJson = 0;
 
+    function trouverCoucheLabels() {
+        var style = map && map._map && map._map.getStyle
+            ? map._map.getStyle()
+            : null;
+        var couches = style && Array.isArray(style.layers)
+            ? style.layers
+            : [];
+        var coucheLabel = couches.find(function(couche) {
+            var identifiant = String(couche.id || "").toLowerCase();
+            return couche.type === "symbol"
+                && (
+                    identifiant.indexOf("label") !== -1
+                    || identifiant.indexOf("name") !== -1
+                    || identifiant.indexOf("place") !== -1
+                );
+        });
+
+        return coucheLabel ? coucheLabel.id : undefined;
+    }
+
     function creerGeoJson(donnees, options) {
         compteurGeoJson += 1;
         var identifiant = "route-" + Date.now() + "-" + compteurGeoJson;
@@ -4238,7 +4258,7 @@ function creerAdaptateurMapLibre() {
                             "line-width": epaisseur,
                             "line-opacity": opacite
                         }
-                    });
+                    }, trouverCoucheLabels());
                 }
 
                 if (carte._map.isStyleLoaded()) {
@@ -4346,7 +4366,7 @@ var map = L.map(
     positionInitialeCarteDisponible
         ? [latitudeInitialeCarte, longitudeInitialeCarte]
         : [46.6, 2.4],
-    positionInitialeCarteDisponible ? 17.2 : 6
+    positionInitialeCarteDisponible ? 15.2 : 6
 );
 
 L.tileLayer(
@@ -5793,8 +5813,8 @@ let utilisateurMarker = null;
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
-var zoomNavigation = 18.8;
-var zoomGuidageActif = 21.0;
+var zoomNavigation = 16.8;
+var zoomGuidageActif = 18.2;
 var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
 var orientationAutomatiqueActive = true;
@@ -9305,9 +9325,9 @@ function dessinerItineraire(coordonnees, afficherApercu) {
         donneesItineraire,
         {
             style: {
-                color: "#f7fff9",
-                weight: navigationActive ? 20 : 16,
-                opacity: 0.96
+                color: "#063f1f",
+                weight: navigationActive ? 18 : 14,
+                opacity: 0.78
             }
         }
     ).addTo(map);
@@ -9315,8 +9335,8 @@ function dessinerItineraire(coordonnees, afficherApercu) {
         donneesItineraire,
         {
             style: {
-                color: "#119c35",
-                weight: navigationActive ? 12 : 9,
+                color: "#08712e",
+                weight: navigationActive ? 13 : 10,
                 opacity: 0.98
             }
         }
