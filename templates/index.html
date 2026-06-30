@@ -1347,18 +1347,11 @@ body{
     width:100%;
     z-index:1;
     touch-action:none;
-    --map-filter:contrast(1.13) saturate(1.12) brightness(0.98);
-    --map-night-filter:brightness(0.72) contrast(1.28) saturate(0.72) hue-rotate(176deg);
-}
-
-#map .maplibregl-canvas,
-#map .leaflet-tile-pane{
-    filter:var(--map-filter);
 }
 
 #map.map-night .maplibregl-canvas,
 #map.map-night .leaflet-tile-pane{
-    filter:var(--map-night-filter);
+    filter:brightness(0.82) contrast(1.12) saturate(0.78);
 }
 
 .leaflet-control-zoom{
@@ -1386,8 +1379,8 @@ body{
 
 .gps-position-arrow{
     position:relative;
-    width:36px;
-    height:42px;
+    width:34px;
+    height:40px;
     transform-origin:50% 50%;
     transition:transform 180ms linear;
     filter:drop-shadow(0 4px 5px rgba(8,45,85,0.34));
@@ -1397,9 +1390,7 @@ body{
 .gps-position-arrow::after{
     content:"";
     position:absolute;
-    border-radius:18px 18px 13px 13px;
     clip-path:polygon(50% 0, 96% 100%, 50% 80%, 4% 100%);
-    clip-path:path("M18 0 C21 0 24 2 25.5 5 L35 38 C36 41.5 32.2 44 29.2 42 L18 34.5 L6.8 42 C3.8 44 0 41.5 1 38 L10.5 5 C12 2 15 0 18 0 Z");
 }
 
 .gps-position-arrow::before{
@@ -3838,10 +3829,10 @@ function creerAdaptateurMapLibre() {
             "carto-light": {
                 type: "raster",
                 tiles: [
-                    "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-                    "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-                    "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-                    "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
+                    "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                    "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                    "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                    "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
                 ],
                 tileSize: 256,
                 attribution: "&copy; contributeurs OpenStreetMap"
@@ -3851,11 +3842,7 @@ function creerAdaptateurMapLibre() {
             {
                 id: "carto-light",
                 type: "raster",
-                source: "carto-light",
-                paint: {
-                    "raster-contrast": 0.12,
-                    "raster-saturation": 0.08
-                }
+                source: "carto-light"
             }
         ]
     };
@@ -3916,6 +3903,78 @@ function creerAdaptateurMapLibre() {
             }),
             "bottom-right"
         );
+
+        var routesRenforcees = false;
+
+        function renforcerRoutes() {
+            if (routesRenforcees || !carteInterne.isStyleLoaded()) {
+                return;
+            }
+
+            routesRenforcees = true;
+            var style = carteInterne.getStyle();
+            var couches = style && Array.isArray(style.layers)
+                ? style.layers
+                : [];
+
+            couches.forEach(function(couche) {
+                var identifiant = String(couche.id || "").toLowerCase();
+                var sourceLayer = String(couche["source-layer"] || "").toLowerCase();
+                var estRoute =
+                    couche.type === "line"
+                    && (
+                        identifiant.indexOf("road") !== -1
+                        || identifiant.indexOf("street") !== -1
+                        || identifiant.indexOf("transport") !== -1
+                        || sourceLayer.indexOf("road") !== -1
+                        || sourceLayer.indexOf("transport") !== -1
+                    );
+
+                if (!estRoute || identifiant.indexOf("route-") === 0) {
+                    return;
+                }
+
+                try {
+                    carteInterne.setPaintProperty(
+                        couche.id,
+                        "line-color",
+                        "#8e9aa3"
+                    );
+                    if (couche.paint && couche.paint["line-opacity"] !== undefined) {
+                        carteInterne.setPaintProperty(
+                            couche.id,
+                            "line-opacity",
+                            Math.max(
+                                0.72,
+                                Number(couche.paint["line-opacity"]) || 0.72
+                            )
+                        );
+                    }
+                } catch (erreur) {
+                    // Certaines couches de style ne permettent pas ces proprietes.
+                }
+            });
+
+            if (carteInterne.getLayer("carto-light")) {
+                try {
+                    carteInterne.setPaintProperty(
+                        "carto-light",
+                        "raster-contrast",
+                        0.06
+                    );
+                    carteInterne.setPaintProperty(
+                        "carto-light",
+                        "raster-saturation",
+                        -0.04
+                    );
+                } catch (erreur) {
+                    // Le fond raster reste utilisable sans ajustement.
+                }
+            }
+        }
+
+        carteInterne.on("load", renforcerRoutes);
+        carteInterne.on("styledata", renforcerRoutes);
 
         var adaptateur = {
             _map: carteInterne,
@@ -4292,7 +4351,7 @@ var map = L.map(
 
 L.tileLayer(
 
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
 
     {
         attribution: "",
@@ -4303,18 +4362,16 @@ L.tileLayer(
 
 function calculerMinutesSoleil(date, latitude, longitude, lever) {
 
-    var jourDebutAnnee = new Date(date.getFullYear(), 0, 0);
-    var numeroJour = Math.floor(
-        (date - jourDebutAnnee) / 86400000
-    );
-    var lngHour = longitude / 15;
-    var tempsApproximatif = numeroJour + (
-        (lever ? 6 : 18) - lngHour
-    ) / 24;
+    var debutAnnee = new Date(date.getFullYear(), 0, 0);
+    var jour = Math.floor((date - debutAnnee) / 86400000);
+    var longitudeHeure = longitude / 15;
+    var tempsApproximatif =
+        jour + ((lever ? 6 : 18) - longitudeHeure) / 24;
     var anomalie = (0.9856 * tempsApproximatif) - 3.289;
-    var longitudeSoleil = anomalie
-        + (1.916 * Math.sin(anomalie * Math.PI / 180))
-        + (0.020 * Math.sin(2 * anomalie * Math.PI / 180))
+    var longitudeSoleil =
+        anomalie
+        + 1.916 * Math.sin(anomalie * Math.PI / 180)
+        + 0.020 * Math.sin(2 * anomalie * Math.PI / 180)
         + 282.634;
     longitudeSoleil = (longitudeSoleil + 360) % 360;
 
@@ -4322,40 +4379,39 @@ function calculerMinutesSoleil(date, latitude, longitude, lever) {
         0.91764 * Math.tan(longitudeSoleil * Math.PI / 180)
     ) * 180 / Math.PI;
     ascensionDroite = (ascensionDroite + 360) % 360;
-    ascensionDroite += (
+    ascensionDroite +=
         Math.floor(longitudeSoleil / 90) * 90
-        - Math.floor(ascensionDroite / 90) * 90
-    );
+        - Math.floor(ascensionDroite / 90) * 90;
     ascensionDroite /= 15;
 
     var declinaisonSinus =
         0.39782 * Math.sin(longitudeSoleil * Math.PI / 180);
-    var declinaisonCosinus =
-        Math.cos(Math.asin(declinaisonSinus));
-    var cosH = (
+    var declinaisonCosinus = Math.cos(Math.asin(declinaisonSinus));
+    var cosinusHeure = (
         Math.cos(90.833 * Math.PI / 180)
         - declinaisonSinus * Math.sin(latitude * Math.PI / 180)
     ) / (
         declinaisonCosinus * Math.cos(latitude * Math.PI / 180)
     );
 
-    if (cosH < -1 || cosH > 1) {
+    if (cosinusHeure < -1 || cosinusHeure > 1) {
         return lever ? 7 * 60 : 21 * 60;
     }
 
     var angleHeure = lever
-        ? 360 - Math.acos(cosH) * 180 / Math.PI
-        : Math.acos(cosH) * 180 / Math.PI;
+        ? 360 - Math.acos(cosinusHeure) * 180 / Math.PI
+        : Math.acos(cosinusHeure) * 180 / Math.PI;
     var tempsLocalMoyen =
         angleHeure / 15 + ascensionDroite
-        - (0.06571 * tempsApproximatif) - 6.622;
-    var utc = (tempsLocalMoyen - lngHour + 24) % 24;
-    var decalageLocalHeures = -date.getTimezoneOffset() / 60;
-    return ((utc + decalageLocalHeures + 24) % 24) * 60;
+        - 0.06571 * tempsApproximatif - 6.622;
+    var utc = (tempsLocalMoyen - longitudeHeure + 24) % 24;
+    var decalageLocal = -date.getTimezoneOffset() / 60;
+
+    return ((utc + decalageLocal + 24) % 24) * 60;
 
 }
 
-function actualiserStyleCarteSelonHeure() {
+function actualiserModeNuitCarte() {
 
     var conteneurCarte = map.getContainer ? map.getContainer() : null;
 
@@ -4384,13 +4440,15 @@ function actualiserStyleCarteSelonHeure() {
         longitudeReference,
         false
     );
-    var nuit = minutesActuelles < lever || minutesActuelles > coucher;
 
-    conteneurCarte.classList.toggle("map-night", nuit);
+    conteneurCarte.classList.toggle(
+        "map-night",
+        minutesActuelles < lever || minutesActuelles > coucher
+    );
 
 }
 
-window.setInterval(actualiserStyleCarteSelonHeure, 10 * 60 * 1000);
+window.setInterval(actualiserModeNuitCarte, 10 * 60 * 1000);
 // ========================
 // Marqueurs stations
 // ========================
@@ -5735,8 +5793,8 @@ let utilisateurMarker = null;
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
-var zoomNavigation = 18.4;
-var zoomGuidageActif = 20.4;
+var zoomNavigation = 18.8;
+var zoomGuidageActif = 21.0;
 var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
 var orientationAutomatiqueActive = true;
@@ -5757,9 +5815,6 @@ var capTelephone = Number.NaN;
 var dateDernierCapTelephone = 0;
 var ecartDepartRouteMetres = 0;
 var capAffichageStabilise = Number.NaN;
-var positionRouteAffichee = null;
-var derniereCameraGps = 0;
-var delaiCameraGpsMs = 850;
 var latitudeDerniereRecherche = parseFloat(
     parametresPosition.get("latitude")
 );
@@ -5991,58 +6046,6 @@ function appliquerMouvementCarteAutomatique(action) {
 
 }
 
-function calculerPositionAfficheeUtilisateur(latitude, longitude) {
-
-    if (
-        navigationActive
-        && coordonneesRouteNavigation.length > 1
-    ) {
-        var projectionRoute = trouverPointRouteLePlusProche(
-            latitude,
-            longitude
-        );
-        var toleranceRoute = Math.max(
-            35,
-            precisionUtilisateur * 2.2
-        );
-
-        if (
-            projectionRoute
-            && projectionRoute.distanceMetres <= toleranceRoute
-        ) {
-            var cible = {
-                latitude: projectionRoute.latitude,
-                longitude: projectionRoute.longitude
-            };
-
-            if (!positionRouteAffichee) {
-                positionRouteAffichee = cible;
-            } else {
-                var facteurLissage = utilisateurEnMouvement ? 0.42 : 0.25;
-                positionRouteAffichee = {
-                    latitude:
-                        positionRouteAffichee.latitude
-                        + (cible.latitude - positionRouteAffichee.latitude)
-                        * facteurLissage,
-                    longitude:
-                        positionRouteAffichee.longitude
-                        + (cible.longitude - positionRouteAffichee.longitude)
-                        * facteurLissage
-                };
-            }
-
-            return positionRouteAffichee;
-        }
-    }
-
-    positionRouteAffichee = {
-        latitude: latitude,
-        longitude: longitude
-    };
-    return positionRouteAffichee;
-
-}
-
 function suivrePositionGpsSurCarte(latitude, longitude, capAffichage) {
 
     if (
@@ -6061,25 +6064,12 @@ function suivrePositionGpsSurCarte(latitude, longitude, capAffichage) {
         capCarte = (capAffichage + 360) % 360;
     }
 
-    var maintenant = Date.now();
-
-    if (
-        navigationActive
-        && utilisateurEnMouvement
-        && maintenant - derniereCameraGps < delaiCameraGpsMs
-    ) {
-        actualiserOrientationFlecheUtilisateur(capAffichage);
-        return;
-    }
-
-    derniereCameraGps = maintenant;
-
     var conteneur = map.getContainer ? map.getContainer() : null;
     var hauteurCarte = conteneur
         ? conteneur.clientHeight
         : window.innerHeight;
     var decalageVertical = navigationActive
-        ? Math.round(hauteurCarte * 0.30)
+        ? Math.round(hauteurCarte * 0.24)
         : Math.round(hauteurCarte * 0.14);
 
     appliquerMouvementCarteAutomatique(
@@ -6100,11 +6090,7 @@ function suivrePositionGpsSurCarte(latitude, longitude, capAffichage) {
                             0,
                             decalageVertical
                         ],
-                        duration: navigationActive
-                            ? 900
-                            : utilisateurEnMouvement
-                                ? 650
-                                : 350
+                        duration: utilisateurEnMouvement ? 550 : 300
                     }
                 );
             } else {
@@ -6147,33 +6133,6 @@ function deplacerMarqueurUtilisateur(
     capAffichage
 ) {
 
-    var positionAffichee = calculerPositionAfficheeUtilisateur(
-        nouvelleLatitude,
-        nouvelleLongitude
-    );
-
-    if (navigationActive) {
-        if (animationPositionUtilisateur) {
-            cancelAnimationFrame(
-                animationPositionUtilisateur
-            );
-            animationPositionUtilisateur = null;
-        }
-
-        marqueurUtilisateur.setLatLng([
-            positionAffichee.latitude,
-            positionAffichee.longitude
-        ]);
-
-        suivrePositionGpsSurCarte(
-            positionAffichee.latitude,
-            positionAffichee.longitude,
-            capAffichage
-        );
-
-        return;
-    }
-
     if (animationPositionUtilisateur) {
 
         cancelAnimationFrame(
@@ -6186,7 +6145,7 @@ function deplacerMarqueurUtilisateur(
     var latitudeDepart = depart.lat;
     var longitudeDepart = depart.lng;
     var debutAnimation = performance.now();
-    var dureeAnimation = 650;
+    var dureeAnimation = 900;
 
     function animerPosition(tempsActuel) {
 
@@ -6200,12 +6159,12 @@ function deplacerMarqueurUtilisateur(
 
         var latitudeActuelle =
             latitudeDepart
-            + (positionAffichee.latitude - latitudeDepart)
+            + (nouvelleLatitude - latitudeDepart)
             * progressionAdoucie;
 
         var longitudeActuelle =
             longitudeDepart
-            + (positionAffichee.longitude - longitudeDepart)
+            + (nouvelleLongitude - longitudeDepart)
             * progressionAdoucie;
 
         marqueurUtilisateur.setLatLng([
@@ -6227,11 +6186,11 @@ function deplacerMarqueurUtilisateur(
     animationPositionUtilisateur =
         requestAnimationFrame(
             animerPosition
-        );
+    );
 
     suivrePositionGpsSurCarte(
-        positionAffichee.latitude,
-        positionAffichee.longitude,
+        nouvelleLatitude,
+        nouvelleLongitude,
         capAffichage
     );
 
@@ -6655,7 +6614,7 @@ function demarrerGeolocalisation() {
                 "position"
             ).innerHTML = "";
 
-            actualiserStyleCarteSelonHeure();
+            actualiserModeNuitCarte();
             actualiserStationsSelonPosition();
             calculerMeilleureStation();
             actualiserGuidageNavigation();
@@ -6740,7 +6699,7 @@ function demarrerGeolocalisation() {
 
 window.addEventListener(
     "load",
-    actualiserStyleCarteSelonHeure
+    actualiserModeNuitCarte
 );
 
 window.addEventListener(
@@ -7367,8 +7326,6 @@ function effacerItineraireNavigation() {
     indexEtapeNavigation = 0;
     destinationNavigation = null;
     ecartDepartRouteMetres = 0;
-    positionRouteAffichee = null;
-    derniereCameraGps = 0;
 
 }
 
@@ -9337,9 +9294,6 @@ function dessinerItineraire(coordonnees, afficherApercu) {
 
     }
 
-    positionRouteAffichee = null;
-    derniereCameraGps = 0;
-
     var donneesItineraire = {
         type: "Feature",
         geometry: {
@@ -9714,8 +9668,6 @@ window.arreterNavigation = function() {
     stationNavigationActive = null;
     propositionStationPlusRentable = null;
     capAffichageStabilise = Number.NaN;
-    positionRouteAffichee = null;
-    derniereCameraGps = 0;
     cacherPopupStationPlusRentable();
     effacerMarqueursRavitaillement();
     afficherStationsClassiquesSurCarte(true);
