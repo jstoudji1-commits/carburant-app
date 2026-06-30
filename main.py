@@ -446,6 +446,7 @@ def enregistrer_enrichissement_station(station, correction):
             "longitude_corrigee": correction.longitude,
             "source_enseigne": "Admin OptiPlein",
             "source_correction": "Admin OptiPlein",
+            "forcer_correction": True,
             "updated_at": datetime.now().astimezone().isoformat(),
         }
     )
@@ -480,7 +481,14 @@ def appliquer_enrichissements_admin(stations):
         if not enrichissement:
             continue
 
-        if enrichissement.get("signature") != signature_adresse(station):
+        signature = enrichissement.get("signature")
+
+        if (
+            not enrichissement.get("forcer_correction")
+            and enrichissement.get("source_correction") != "Admin OptiPlein"
+            and signature
+            and signature != signature_adresse(station)
+        ):
             continue
 
         for champ in ("enseigne", "adresse", "cp", "ville"):

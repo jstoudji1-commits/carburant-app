@@ -97,7 +97,14 @@ def appliquer_enrichissements(lignes):
             {}
         )
 
-        if enrichissement.get("signature") != signature_adresse(station):
+        signature = enrichissement.get("signature")
+
+        if (
+            not enrichissement.get("forcer_correction")
+            and enrichissement.get("source_correction") != "Admin OptiPlein"
+            and signature
+            and signature != signature_adresse(station)
+        ):
             continue
 
         station["enseigne"] = enrichissement.get("enseigne", "")
