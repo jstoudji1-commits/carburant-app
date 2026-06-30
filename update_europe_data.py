@@ -234,8 +234,19 @@ def lignes_italie():
 
 def lignes_europe():
 
-    yield from lignes_espagne()
-    yield from lignes_italie()
+    sources = (
+        ("Espagne", lignes_espagne),
+        ("Italie", lignes_italie),
+    )
+
+    for nom_source, fonction_source in sources:
+        try:
+            yield from fonction_source()
+        except Exception as erreur:
+            print(
+                f"Source Europe ignoree temporairement ({nom_source}) : "
+                f"{erreur}"
+            )
 
 
 def ecrire_stations_europe(lignes):
@@ -264,6 +275,12 @@ def ecrire_stations_europe(lignes):
 def mettre_a_jour_stations_europe():
 
     lignes = list(lignes_europe())
+
+    if not lignes:
+        raise RuntimeError(
+            "Aucune station europeenne telechargee."
+        )
+
     ecrire_stations_europe(lignes)
 
     pays = {}
