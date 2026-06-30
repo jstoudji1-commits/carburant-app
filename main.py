@@ -491,8 +491,18 @@ def appliquer_enrichissements_admin(stations):
         longitude = enrichissement.get("longitude_corrigee")
 
         if latitude is not None and longitude is not None:
-            station["latitude"] = latitude
-            station["longitude"] = longitude
+            try:
+                latitude_corrigee = float(latitude)
+                longitude_corrigee = float(longitude)
+            except (TypeError, ValueError):
+                continue
+
+            if (
+                math.isfinite(latitude_corrigee)
+                and math.isfinite(longitude_corrigee)
+            ):
+                station["latitude"] = latitude_corrigee
+                station["longitude"] = longitude_corrigee
 
 
 def station_resume_admin(station):
@@ -718,6 +728,12 @@ def preparer_stations_pour_carte(
 
     stations_preparees = []
 
+    def prix_tri(station):
+        try:
+            return float(str(station.get(carburant, "")).replace(",", "."))
+        except (TypeError, ValueError):
+            return 999
+
     if latitude is not None and longitude is not None:
         for station in stations:
             try:
@@ -741,11 +757,7 @@ def preparer_stations_pour_carte(
     else:
         stations_preparees = [station.copy() for station in stations]
         stations_preparees.sort(
-            key=lambda x: (
-                float(x.get(carburant, ""))
-                if x.get(carburant, "").strip()
-                else 999
-            )
+            key=prix_tri
         )
         stations_preparees = stations_preparees[:50]
 
