@@ -17,12 +17,16 @@ from zoneinfo import ZoneInfo
 
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = Path(os.getenv("OPTIPLEIN_DATA_DIR", "."))
-STATIONS_CSV = BASE_DIR / "stations.csv"
-METADATA_JSON = BASE_DIR / "stations_metadata.json"
-REFERENCES_PRIX_JSON = BASE_DIR / "stations_prix_9h.json"
-HISTORIQUE_PRIX_JSON = BASE_DIR / "stations_historique_prix.json"
-MARCHE_CARBURANT_JSON = BASE_DIR / "carburant_market_signals.json"
+DATA_DIR_ENV = os.getenv("OPTIPLEIN_DATA_DIR", "").strip()
+DATA_DIR = Path(DATA_DIR_ENV) if DATA_DIR_ENV else BASE_DIR
+REPO_STATIONS_CSV = BASE_DIR / "stations.csv"
+REPO_METADATA_JSON = BASE_DIR / "stations_metadata.json"
+REPO_REFERENCES_PRIX_JSON = BASE_DIR / "stations_prix_9h.json"
+STATIONS_CSV = DATA_DIR / "stations.csv"
+METADATA_JSON = DATA_DIR / "stations_metadata.json"
+REFERENCES_PRIX_JSON = DATA_DIR / "stations_prix_9h.json"
+HISTORIQUE_PRIX_JSON = DATA_DIR / "stations_historique_prix.json"
+MARCHE_CARBURANT_JSON = DATA_DIR / "carburant_market_signals.json"
 ENRICHISSEMENT_STATIONS_JSON = BASE_DIR / "stations_enrichment.json"
 ENRICHISSEMENT_STATIONS_ADMIN_JSON = DATA_DIR / "stations_enrichment.json"
 FUSEAU_PARIS = ZoneInfo("Europe/Paris")
@@ -365,14 +369,19 @@ def _instantane_prix(lignes, date_reference):
 
 def _lire_references_prix():
 
-    if not REFERENCES_PRIX_JSON.exists():
+    fichier = REFERENCES_PRIX_JSON
+
+    if not fichier.exists() and REPO_REFERENCES_PRIX_JSON.exists():
+        fichier = REPO_REFERENCES_PRIX_JSON
+
+    if not fichier.exists():
 
         return {}
 
     try:
 
         return json.loads(
-            REFERENCES_PRIX_JSON.read_text(
+            fichier.read_text(
                 encoding="utf-8"
             )
         )
@@ -384,6 +393,7 @@ def _lire_references_prix():
 
 def _ecrire_references_prix(references):
 
+    REFERENCES_PRIX_JSON.parent.mkdir(parents=True, exist_ok=True)
     REFERENCES_PRIX_JSON.write_text(
         json.dumps(
             references,
@@ -573,6 +583,7 @@ def mettre_a_jour_historique_prix(lignes):
         if _snapshot_recent(snapshot, maintenant, limite_secondes)
     ]
 
+    HISTORIQUE_PRIX_JSON.parent.mkdir(parents=True, exist_ok=True)
     HISTORIQUE_PRIX_JSON.write_text(
         json.dumps(
             historique,
@@ -737,6 +748,7 @@ def recuperer_signaux_marche():
         pass
 
     signaux["updated_at"] = datetime.now(timezone.utc).isoformat()
+    MARCHE_CARBURANT_JSON.parent.mkdir(parents=True, exist_ok=True)
     MARCHE_CARBURANT_JSON.write_text(
         json.dumps(signaux, ensure_ascii=False, indent=2),
         encoding="utf-8"
@@ -891,6 +903,7 @@ def ajouter_tendances_demain(lignes, historique, signaux):
 
 def ecrire_stations_csv(lignes):
 
+    STATIONS_CSV.parent.mkdir(parents=True, exist_ok=True)
     fichier_temporaire = STATIONS_CSV.with_suffix(
         ".csv.tmp"
     )
@@ -924,6 +937,7 @@ def ecrire_metadata(nombre_stations):
         ).isoformat(),
     }
 
+    METADATA_JSON.parent.mkdir(parents=True, exist_ok=True)
     METADATA_JSON.write_text(
         json.dumps(
             metadata,
@@ -966,12 +980,17 @@ def mettre_a_jour_stations():
 
 def date_derniere_mise_a_jour():
 
-    if METADATA_JSON.exists():
+    metadata_fichier = METADATA_JSON
+
+    if not metadata_fichier.exists() and REPO_METADATA_JSON.exists():
+        metadata_fichier = REPO_METADATA_JSON
+
+    if metadata_fichier.exists():
 
         try:
 
             metadata = json.loads(
-                METADATA_JSON.read_text(
+                metadata_fichier.read_text(
                     encoding="utf-8"
                 )
             )
@@ -989,12 +1008,17 @@ def date_derniere_mise_a_jour():
 
             pass
 
-    if not STATIONS_CSV.exists():
+    stations_fichier = STATIONS_CSV
+
+    if not stations_fichier.exists() and REPO_STATIONS_CSV.exists():
+        stations_fichier = REPO_STATIONS_CSV
+
+    if not stations_fichier.exists():
 
         return None
 
     return datetime.fromtimestamp(
-        STATIONS_CSV.stat().st_mtime,
+        stations_fichier.stat().st_mtime,
         timezone.utc
     )
 
