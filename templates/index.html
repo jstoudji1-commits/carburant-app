@@ -4060,10 +4060,10 @@ function creerAdaptateurMapLibre() {
             "carto-light": {
                 type: "raster",
                 tiles: [
-                    "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-                    "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-                    "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-                    "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+                    "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+                    "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+                    "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+                    "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
                 ],
                 tileSize: 256,
                 attribution: "&copy; contributeurs OpenStreetMap"
@@ -4134,95 +4134,6 @@ function creerAdaptateurMapLibre() {
             }),
             "bottom-right"
         );
-
-        var routesRenforcees = false;
-
-        function renforcerRoutes() {
-            if (routesRenforcees || !carteInterne.isStyleLoaded()) {
-                return;
-            }
-
-            routesRenforcees = true;
-            var style = carteInterne.getStyle();
-            var couches = style && Array.isArray(style.layers)
-                ? style.layers
-                : [];
-
-            couches.forEach(function(couche) {
-                var identifiant = String(couche.id || "").toLowerCase();
-                var sourceLayer = String(couche["source-layer"] || "").toLowerCase();
-                var estRoute =
-                    couche.type === "line"
-                    && (
-                        identifiant.indexOf("road") !== -1
-                        || identifiant.indexOf("street") !== -1
-                        || identifiant.indexOf("transport") !== -1
-                        || sourceLayer.indexOf("road") !== -1
-                        || sourceLayer.indexOf("transport") !== -1
-                    );
-
-                if (!estRoute || identifiant.indexOf("route-") === 0) {
-                    return;
-                }
-
-                try {
-                    carteInterne.setPaintProperty(
-                        couche.id,
-                        "line-color",
-                        "#555f68"
-                    );
-                    if (couche.paint && couche.paint["line-opacity"] !== undefined) {
-                        carteInterne.setPaintProperty(
-                            couche.id,
-                            "line-opacity",
-                            Math.max(
-                                0.94,
-                                Number(couche.paint["line-opacity"]) || 0.94
-                            )
-                        );
-                    }
-                    if (couche.paint && couche.paint["line-width"] !== undefined) {
-                        carteInterne.setPaintProperty(
-                            couche.id,
-                            "line-width",
-                            [
-                                "interpolate",
-                                ["linear"],
-                                ["zoom"],
-                                10,
-                                1.2,
-                                14,
-                                2.4,
-                                17,
-                                4.2
-                            ]
-                        );
-                    }
-                } catch (erreur) {
-                    // Certaines couches de style ne permettent pas ces proprietes.
-                }
-            });
-
-            if (carteInterne.getLayer("carto-light")) {
-                try {
-                    carteInterne.setPaintProperty(
-                        "carto-light",
-                        "raster-contrast",
-                        0.28
-                    );
-                    carteInterne.setPaintProperty(
-                        "carto-light",
-                        "raster-saturation",
-                        -0.18
-                    );
-                } catch (erreur) {
-                    // Le fond raster reste utilisable sans ajustement.
-                }
-            }
-        }
-
-        carteInterne.on("load", renforcerRoutes);
-        carteInterne.on("styledata", renforcerRoutes);
 
         var adaptateur = {
             _map: carteInterne,
@@ -4486,8 +4397,11 @@ function creerAdaptateurMapLibre() {
                     : 0.92;
 
                 function ajouter() {
+                    if (carte._map.getLayer(identifiant)) {
+                        carte._map.removeLayer(identifiant);
+                    }
                     if (carte._map.getSource(identifiant)) {
-                        return;
+                        carte._map.removeSource(identifiant);
                     }
                     carte._map.addSource(identifiant, {
                         type: "geojson",
@@ -4506,7 +4420,7 @@ function creerAdaptateurMapLibre() {
                             "line-width": epaisseur,
                             "line-opacity": opacite
                         }
-                    }, trouverCoucheLabels());
+                    });
                 }
 
                 if (carte._map.isStyleLoaded()) {
@@ -4619,7 +4533,7 @@ var map = L.map(
 
 L.tileLayer(
 
-    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
 
     {
         attribution: "",
@@ -9898,6 +9812,24 @@ async function geocoderDestinationTrajet(destination) {
 
 async function calculerRouteAvecCoordonnees(points) {
 
+    var donnees = await demanderRouteItineraire(points, null, "auto");
+    var route = normaliserRouteItineraire(donnees);
+
+    if (!route) {
+        donnees = await demanderRouteItineraire(points, null, "osrm");
+        route = normaliserRouteItineraire(donnees);
+    }
+
+    if (!route) {
+        throw new Error("route introuvable");
+    }
+
+    return route;
+
+}
+
+async function demanderRouteItineraire(points, capDepart, moteur) {
+
     var reponse = await fetch(
         "/api/itineraire",
         {
@@ -9906,7 +9838,9 @@ async function calculerRouteAvecCoordonnees(points) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                points: points
+                points: points,
+                cap_depart: Number.isFinite(capDepart) ? capDepart : null,
+                moteur: moteur || "auto"
             })
         }
     );
@@ -9915,13 +9849,39 @@ async function calculerRouteAvecCoordonnees(points) {
         throw new Error("route indisponible");
     }
 
-    var donnees = await reponse.json();
+    return await reponse.json();
+
+}
+
+function normaliserRouteItineraire(donnees) {
+
     var route = donnees.routes && donnees.routes[0];
 
-    if (!route) {
-        throw new Error("route introuvable");
+    if (
+        !route
+        || !route.geometry
+        || !Array.isArray(route.geometry.coordinates)
+    ) {
+        return null;
     }
 
+    route.geometry.coordinates = route.geometry.coordinates
+        .map(function(point) {
+            return [
+                Number(point[0]),
+                Number(point[1])
+            ];
+        })
+        .filter(function(point) {
+            return Number.isFinite(point[0])
+                && Number.isFinite(point[1]);
+        });
+
+    if (route.geometry.coordinates.length < 2) {
+        return null;
+    }
+
+    route.provider = route.provider || donnees.provider || "";
     return route;
 
 }
@@ -10084,9 +10044,9 @@ function dessinerItineraire(coordonnees, afficherApercu) {
         donneesItineraire,
         {
             style: {
-                color: "#063f1f",
-                weight: navigationActive ? 18 : 14,
-                opacity: 0.78
+                color: "#032714",
+                weight: navigationActive ? 26 : 22,
+                opacity: 0.88
             }
         }
     ).addTo(map);
@@ -10094,9 +10054,9 @@ function dessinerItineraire(coordonnees, afficherApercu) {
         donneesItineraire,
         {
             style: {
-                color: "#08712e",
-                weight: navigationActive ? 13 : 10,
-                opacity: 0.98
+                color: "#078f35",
+                weight: navigationActive ? 18 : 15,
+                opacity: 1
             }
         }
     ).addTo(map);
@@ -10545,44 +10505,34 @@ async function tracerItineraire(
             : Number.NaN;
     try {
 
-        var response = await fetch(
-            "/api/itineraire",
+        var pointsItineraire = [
             {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    points: [
-                        {
-                            latitude: latitudeUtilisateur,
-                            longitude: longitudeUtilisateur
-                        },
-                        {
-                            latitude: latitudeStation,
-                            longitude: longitudeStation
-                        }
-                    ],
-                    cap_depart: Number.isFinite(capDepartItineraire)
-                        ? capDepartItineraire
-                        : null
-                })
+                latitude: latitudeUtilisateur,
+                longitude: longitudeUtilisateur
+            },
+            {
+                latitude: latitudeStation,
+                longitude: longitudeStation
             }
+        ];
+        var data = await demanderRouteItineraire(
+            pointsItineraire,
+            capDepartItineraire,
+            "auto"
         );
-
-        if (!response.ok) {
-
-            throw new Error("route indisponible");
-
-        }
-
-        var data = await response.json();
-        var route = data.routes && data.routes[0];
+        var route = normaliserRouteItineraire(data);
 
         if (!route) {
+            data = await demanderRouteItineraire(
+                pointsItineraire,
+                capDepartItineraire,
+                "osrm"
+            );
+            route = normaliserRouteItineraire(data);
+        }
 
+        if (!route) {
             throw new Error("route introuvable");
-
         }
 
         ecartDepartRouteMetres =

@@ -150,6 +150,7 @@ class RequeteItineraire(BaseModel):
 
     points: list[PointItineraire] = Field(min_length=2, max_length=5)
     cap_depart: Optional[float] = None
+    moteur: Literal["auto", "graphhopper", "osrm"] = "auto"
 
 
 class SauvegardeCompte(BaseModel):
@@ -1269,7 +1270,10 @@ def calculer_itineraire_osrm(points, cap_depart=None):
 async def calculer_itineraire(requete: RequeteItineraire):
 
     try:
-        if GRAPHHOPPER_API_KEY:
+        if (
+            requete.moteur in {"auto", "graphhopper"}
+            and GRAPHHOPPER_API_KEY
+        ):
             return await asyncio.to_thread(
                 calculer_itineraire_graphhopper,
                 requete.points,
@@ -1278,6 +1282,12 @@ async def calculer_itineraire(requete: RequeteItineraire):
         logger.exception(
             "GraphHopper indisponible, bascule sur OSRM."
         )
+
+        if requete.moteur == "graphhopper":
+            raise HTTPException(
+                status_code=502,
+                detail="GraphHopper indisponible",
+            )
 
     try:
         return await asyncio.to_thread(
