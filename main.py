@@ -1281,6 +1281,18 @@ async def calculer_itineraire(requete: RequeteItineraire):
         ) from erreur
 
 
+@app.get("/api/itineraire/statut")
+def statut_itineraire():
+
+    return {
+        "graphhopper_configure": bool(GRAPHHOPPER_API_KEY),
+        "moteur_prioritaire": (
+            "graphhopper" if GRAPHHOPPER_API_KEY else "osrm"
+        ),
+        "fallback": "osrm",
+    }
+
+
 @app.get("/api/stations-proches")
 def get_stations_proches(
     latitude: Optional[float] = None,
