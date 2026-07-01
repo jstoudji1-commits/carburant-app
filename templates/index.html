@@ -3446,6 +3446,11 @@ async function synchroniserDateMiseAJour() {
         }
 
         var donnees = await reponse.json();
+        if (donnees.update_pending) {
+            afficherInfoItineraire("Mise a jour des prix en cours...");
+            window.setTimeout(synchroniserDateMiseAJour, 30000);
+        }
+
         if (donnees.updated_at) {
             var dateServeur = new Date(donnees.updated_at);
             if (Number.isNaN(dateServeur.getTime())) {
@@ -9803,11 +9808,36 @@ async function geocoderDestinationTrajet(destination) {
 
 async function calculerRouteAvecCoordonnees(points) {
 
-    var donnees = await demanderRouteItineraire(points, null, "auto");
-    var route = normaliserRouteItineraire(donnees);
+    var pointsValides = (points || []).map(function(point) {
+        return {
+            latitude: Number(point.latitude),
+            longitude: Number(point.longitude)
+        };
+    }).filter(function(point) {
+        return Number.isFinite(point.latitude)
+            && Number.isFinite(point.longitude);
+    });
+
+    if (pointsValides.length < 2) {
+        throw new Error("coordonnees invalides");
+    }
+
+    if (pointsValides.length > 12) {
+        throw new Error("trop d'etapes pour calculer ce trajet");
+    }
+
+    var donnees = null;
+    var route = null;
+
+    try {
+        donnees = await demanderRouteItineraire(pointsValides, null, "auto");
+        route = normaliserRouteItineraire(donnees);
+    } catch (erreurAuto) {
+        route = null;
+    }
 
     if (!route) {
-        donnees = await demanderRouteItineraire(points, null, "osrm");
+        donnees = await demanderRouteItineraire(pointsValides, null, "osrm");
         route = normaliserRouteItineraire(donnees);
     }
 
@@ -9837,7 +9867,14 @@ async function demanderRouteItineraire(points, capDepart, moteur) {
     );
 
     if (!reponse.ok) {
-        throw new Error("route indisponible");
+        var message = "route indisponible";
+        try {
+            var erreur = await reponse.json();
+            message = erreur.detail || message;
+        } catch (lectureErreur) {
+            message = reponse.status + " " + message;
+        }
+        throw new Error(message);
     }
 
     return await reponse.json();
@@ -9946,7 +9983,10 @@ window.calculerTrajetPrepare = async function() {
         trajetPrepare = null;
         afficherEtatPlanificateurCalcule(false);
         resultat.textContent =
-            "Impossible de calculer cette destination pour le moment.";
+            "Impossible de calculer cette destination : "
+            + (erreur && erreur.message
+                ? erreur.message
+                : "itineraire indisponible");
     }
 
 };
