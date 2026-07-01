@@ -35,7 +35,17 @@ jobs:
           python-version: "3.12"
 
       - name: Mettre a jour les donnees officielles
-        run: python update_stations.py
+        run: |
+          for tentative in 1 2 3; do
+            echo "Tentative de mise a jour France $tentative/3"
+            if python update_stations.py; then
+              exit 0
+            fi
+            if [ "$tentative" != "3" ]; then
+              sleep $((tentative * 20))
+            fi
+          done
+          exit 1
 
       - name: Verifier si les donnees France ont change
         id: france_changes

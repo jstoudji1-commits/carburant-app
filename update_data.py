@@ -36,10 +36,24 @@ STATIONS_EXCLUES = {
     "13016007",
 }
 
+SOURCE_OFFICIELLE_URLS = [
+    (
+        "https://donnees.roulez-eco.fr/opendata/instantane"
+    ),
+    (
+        "https://donnees.roulez-eco.fr/opendata/instantane.zip"
+    ),
+    (
+        "https://www.data.gouv.fr/api/1/datasets/r/"
+        "edd67f5b-46d0-4663-9de9-e5db1c880160"
+    ),
+]
 SOURCE_OFFICIELLE_URL = (
     "https://www.data.gouv.fr/api/1/datasets/r/"
     "edd67f5b-46d0-4663-9de9-e5db1c880160"
 )
+NOMBRE_MINIMUM_STATIONS = 8000
+NOMBRE_MINIMUM_STATIONS_AVEC_PRIX = 6000
 
 ENTETES = [
     "id",
@@ -224,9 +238,17 @@ def _lignes_depuis_xml(contenu):
 
 def _lignes_depuis_csv(contenu):
 
-    texte = contenu.decode(
-        "utf-8-sig"
-    )
+    for encodage in ("utf-8-sig", "utf-8", "latin-1"):
+        try:
+            texte = contenu.decode(encodage)
+            break
+        except UnicodeDecodeError:
+            texte = ""
+
+    if not texte:
+        raise ValueError(
+            "Impossible de decoder le fichier CSV officiel."
+        )
 
     lecteur = csv.DictReader(
         texte.splitlines(),
@@ -329,10 +351,10 @@ def _extraire_lignes(contenu):
     )
 
 
-def telecharger_donnees_officielles():
+def _telecharger_url_officielle(url):
 
     requete = Request(
-        SOURCE_OFFICIELLE_URL,
+        url,
         headers={
             "User-Agent": "OptiPlein/1.0"
         }
@@ -347,7 +369,14 @@ def telecharger_donnees_officielles():
                 timeout=90
             ) as response:
 
-                return response.read()
+                contenu = response.read()
+
+                if not contenu:
+                    raise RuntimeError(
+                        f"Source officielle vide: {url}"
+                    )
+
+                return contenu
 
         except (URLError, TimeoutError, OSError):
 
@@ -355,6 +384,22 @@ def telecharger_donnees_officielles():
                 raise
 
             time.sleep(5 * (tentative + 1))
+
+
+def telecharger_donnees_officielles():
+
+    erreurs = []
+
+    for url in SOURCE_OFFICIELLE_URLS:
+        try:
+            return _telecharger_url_officielle(url)
+        except Exception as erreur:
+            erreurs.append(f"{url}: {erreur}")
+
+    raise RuntimeError(
+        "Impossible de telecharger les donnees officielles France. "
+        + " | ".join(erreurs)
+    )
 
 
 def _instantane_prix(lignes, date_reference):
@@ -930,7 +975,8 @@ def ecrire_stations_csv(lignes):
 
         writer = csv.DictWriter(
             fichier,
-            fieldnames=ENTETES
+            fieldnames=ENTETES,
+            lineterminator="\n"
         )
         writer.writeheader()
         writer.writerows(lignes)
@@ -952,7 +998,8 @@ def ecrire_metadata(nombre_stations):
     }
 
     METADATA_JSON.parent.mkdir(parents=True, exist_ok=True)
-    METADATA_JSON.write_text(
+    fichier_temporaire = METADATA_JSON.with_suffix(".json.tmp")
+    fichier_temporaire.write_text(
         json.dumps(
             metadata,
             ensure_ascii=False,
@@ -960,6 +1007,41 @@ def ecrire_metadata(nombre_stations):
         ),
         encoding="utf-8"
     )
+    os.replace(fichier_temporaire, METADATA_JSON)
+
+
+def valider_lignes_officielles(lignes):
+
+    if len(lignes) < NOMBRE_MINIMUM_STATIONS:
+        raise RuntimeError(
+            "Mise a jour refusee: seulement "
+            f"{len(lignes)} stations extraites."
+        )
+
+    stations_avec_prix = [
+        station
+        for station in lignes
+        if any(_prix_decimal(station.get(carburant)) is not None
+               for carburant in CARBURANTS)
+    ]
+
+    if len(stations_avec_prix) < NOMBRE_MINIMUM_STATIONS_AVEC_PRIX:
+        raise RuntimeError(
+            "Mise a jour refusee: seulement "
+            f"{len(stations_avec_prix)} stations avec prix valide."
+        )
+
+    stations_sans_coordonnees = [
+        station
+        for station in lignes
+        if station.get("latitude") in ("", None)
+        or station.get("longitude") in ("", None)
+    ]
+
+    if len(stations_sans_coordonnees) > len(lignes) * 0.15:
+        raise RuntimeError(
+            "Mise a jour refusee: trop de stations sans coordonnees GPS."
+        )
 
 
 def mettre_a_jour_stations():
@@ -978,12 +1060,26 @@ def mettre_a_jour_stations():
             "Aucune station trouvee dans les donnees officielles."
         )
 
+    valider_lignes_officielles(lignes)
     references = mettre_a_jour_references_9h(lignes)
     ajouter_tendances(lignes, references)
     historique = mettre_a_jour_historique_prix(lignes)
-    signaux_marche = recuperer_signaux_marche()
+    try:
+        signaux_marche = recuperer_signaux_marche()
+    except Exception:
+        signaux_marche = _lire_json(
+            MARCHE_CARBURANT_JSON,
+            {
+                "brent_usd": None,
+                "brent_usd_previous": None,
+                "eur_usd": None,
+                "eur_usd_previous": None,
+                "updated_at": None,
+            }
+        )
     ajouter_tendances_demain(lignes, historique, signaux_marche)
     appliquer_enrichissements(lignes)
+    valider_lignes_officielles(lignes)
     ecrire_stations_csv(lignes)
     ecrire_metadata(len(lignes))
 

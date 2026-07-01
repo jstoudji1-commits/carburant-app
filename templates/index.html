@@ -1879,6 +1879,7 @@ body{
     stroke-width:2.2;
     stroke-linecap:round;
     stroke-linejoin:round;
+    stroke:currentColor;
     fill:none;
 }
 
@@ -5436,39 +5437,35 @@ function libelleTypeLieuTrajet(type) {
 
 }
 
-function lieuTrajetDepuisPositionActuelle(type) {
+async function enregistrerLieuTrajetDepuisAdresse(type) {
 
-    if (
-        latitudeUtilisateur === null
-        || longitudeUtilisateur === null
-    ) {
-        demarrerGeolocalisation();
-        alert("Position GPS en attente pour enregistrer " + libelleTypeLieuTrajet(type).toLowerCase() + ".");
-        return null;
-    }
+    var libelle = libelleTypeLieuTrajet(type);
+    var adresse = window.prompt(
+        "Adresse " + libelle.toLowerCase(),
+        ""
+    );
 
-    return {
-        type: type,
-        libelle: libelleTypeLieuTrajet(type),
-        latitude: latitudeUtilisateur,
-        longitude: longitudeUtilisateur,
-        date: new Date().toISOString()
-    };
-
-}
-
-function enregistrerLieuTrajetDepuisPosition(type) {
-
-    var lieu = lieuTrajetDepuisPositionActuelle(type);
-
-    if (!lieu) {
+    if (!adresse || !adresse.trim()) {
         return false;
     }
 
-    var lieux = lireLieuxTrajet();
-    lieux[type] = lieu;
-    enregistrerLieuxTrajet(lieux);
-    return true;
+    try {
+        var destination = await geocoderDestinationTrajet(adresse.trim());
+        var lieux = lireLieuxTrajet();
+        lieux[type] = {
+            type: type,
+            libelle: libelle + " - " + adresse.trim(),
+            adresse: adresse.trim(),
+            latitude: destination.latitude,
+            longitude: destination.longitude,
+            date: new Date().toISOString()
+        };
+        enregistrerLieuxTrajet(lieux);
+        return true;
+    } catch (erreur) {
+        alert("Adresse introuvable. Essayez avec une adresse plus pr\u00e9cise.");
+        return false;
+    }
 
 }
 
@@ -5493,8 +5490,9 @@ function actualiserLieuxTrajet() {
 
         bouton.classList.toggle("configured", Boolean(configure));
         bouton.title = configure
-            ? libelleTypeLieuTrajet(type) + " - appui long pour remplacer"
-            : "Enregistrer " + libelleTypeLieuTrajet(type).toLowerCase();
+            ? (lieu.adresse || lieu.libelle || libelleTypeLieuTrajet(type))
+                + " - appui long pour modifier"
+            : "Enregistrer une adresse " + libelleTypeLieuTrajet(type).toLowerCase();
         bouton.setAttribute(
             "aria-label",
             bouton.title
@@ -5531,7 +5529,7 @@ window.utiliserLieuTrajet = function(type) {
         || !Number.isFinite(Number(lieu.latitude))
         || !Number.isFinite(Number(lieu.longitude))
     ) {
-        enregistrerLieuTrajetDepuisPosition(type);
+        enregistrerLieuTrajetDepuisAdresse(type);
         return;
     }
 
@@ -5568,7 +5566,7 @@ function initialiserBoutonsLieuxTrajet() {
             minuteurAppuiLong = window.setTimeout(function() {
                 minuteurAppuiLong = null;
                 bouton.dataset.appuiLong = "1";
-                enregistrerLieuTrajetDepuisPosition(type);
+                enregistrerLieuTrajetDepuisAdresse(type);
             }, 750);
         });
         ["pointerup", "pointerleave", "pointercancel"].forEach(
