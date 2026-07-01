@@ -346,6 +346,26 @@
 
             <section class="panel">
                 <div class="panel-head">
+                    <div>
+                        <h2>Mise &agrave; jour des stations</h2>
+                        <p class="muted">
+                            Force la r&eacute;cup&eacute;ration des prix officiels fran&ccedil;ais
+                            et r&eacute;applique les corrections admin.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        id="force-update-button"
+                        onclick="forcerMiseAJourStations()"
+                    >
+                        Forcer la mise &agrave; jour
+                    </button>
+                </div>
+                <p class="status" id="force-update-status"></p>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
                     <h2>Comptes utilisateurs</h2>
                     <button type="button" onclick="chargerAdmin()">
                         Actualiser
@@ -473,7 +493,14 @@
 
             var response = await fetch(url, options);
             if (!response.ok) {
-                throw new Error("Accès admin refusé.");
+                var message = "Acces admin refuse.";
+                try {
+                    var erreur = await response.json();
+                    message = erreur.detail || message;
+                } catch (exception) {
+                    message = response.statusText || message;
+                }
+                throw new Error(message);
             }
             return response.json();
         }
@@ -693,6 +720,40 @@
             afficherTesteurs(donnees.testeurs || []);
             loginCard.hidden = true;
             dashboard.hidden = false;
+        }
+
+        async function forcerMiseAJourStations() {
+            var bouton = document.getElementById("force-update-button");
+            var statut = document.getElementById("force-update-status");
+
+            if (!bouton || !statut) {
+                return;
+            }
+
+            bouton.disabled = true;
+            statut.textContent =
+                "Mise a jour en cours... cela peut prendre quelques secondes.";
+
+            try {
+                var donnees = await requeteAdmin(
+                    "/api/admin/forcer-mise-a-jour",
+                    {
+                        method: "POST"
+                    }
+                );
+                statut.textContent =
+                    "Mise a jour terminee : "
+                    + Number(donnees.stations || 0)
+                    + " stations, "
+                    + texteDate(donnees.updated_at)
+                    + ".";
+                await rechercherStationsAdmin();
+            } catch (erreur) {
+                statut.textContent = erreur.message
+                    || "Mise a jour impossible.";
+            } finally {
+                bouton.disabled = false;
+            }
         }
 
         async function connexionAdmin() {
