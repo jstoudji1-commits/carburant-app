@@ -23,7 +23,9 @@ import re
 import secrets
 import smtplib
 import ssl
+import threading
 import time
+import requests as http_requests
 from update_data import (
     date_derniere_mise_a_jour,
     mettre_a_jour_stations,
@@ -43,6 +45,7 @@ EMAIL_SIGNALEMENT = os.getenv(
     "optiplein5@gmail.com"
 )
 signalements_recents = {}
+mise_a_jour_admin_lock = threading.Lock()
 DOSSIER_DONNEES_UTILISATEURS = Path(
     os.getenv("OPTIPLEIN_DATA_DIR", ".")
 )
@@ -76,6 +79,10 @@ ADMIN_PASSWORD = os.getenv(
     "ADMIN_PASSWORD",
     "",
 )
+GRAPHHOPPER_API_KEY = os.getenv(
+    "GRAPHHOPPER_API_KEY",
+    "",
+).strip()
 SESSIONS_UTILISATEURS = {}
 PBKDF2_ITERATIONS = 260000
 
@@ -115,6 +122,22 @@ class DonneesCompte(BaseModel):
     vehicule_actif: str = ""
     plan: Literal["free", "premium"] = "free"
     historique_economies: list = Field(default_factory=list)
+
+
+class PointItineraire(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    latitude: float
+    longitude: float
+
+
+class RequeteItineraire(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    points: list[PointItineraire] = Field(min_length=2, max_length=5)
+    cap_depart: Optional[float] = None
 
 
 class SauvegardeCompte(BaseModel):
@@ -418,12 +441,26 @@ def charger_enrichissements_stations():
 
     enrichissements = {}
 
-    for fichier in (
-        ENRICHISSEMENT_STATIONS_REPO_FICHIER,
-        ENRICHISSEMENT_STATIONS_ADMIN_FICHIER,
+    for fichier, source_admin in (
+        (ENRICHISSEMENT_STATIONS_REPO_FICHIER, False),
+        (ENRICHISSEMENT_STATIONS_ADMIN_FICHIER, True),
     ):
         donnees = lire_fichier_enrichissement_stations(fichier)
-        enrichissements.update(donnees.get("stations", {}))
+        for station_id, correction in donnees.get("stations", {}).items():
+            correction = dict(correction or {})
+
+            if source_admin:
+                correction["source_correction"] = (
+                    correction.get("source_correction")
+                    or "Admin OptiPlein"
+                )
+                correction["source_enseigne"] = (
+                    correction.get("source_enseigne")
+                    or "Admin OptiPlein"
+                )
+                correction["forcer_correction"] = True
+
+            enrichissements[str(station_id)] = correction
 
     return enrichissements
 
@@ -437,6 +474,16 @@ def enregistrer_enrichissement_station(station, correction):
     station_id = str(station.get("id", "") or correction.id)
 
     entree = stations.setdefault(station_id, {})
+    latitude_corrigee = (
+        correction.latitude
+        if correction.latitude is not None
+        else entree.get("latitude_corrigee")
+    )
+    longitude_corrigee = (
+        correction.longitude
+        if correction.longitude is not None
+        else entree.get("longitude_corrigee")
+    )
     entree.update(
         {
             "signature": signature_adresse(station),
@@ -444,8 +491,8 @@ def enregistrer_enrichissement_station(station, correction):
             "adresse": correction.adresse.strip(),
             "cp": correction.cp.strip(),
             "ville": correction.ville.strip(),
-            "latitude_corrigee": correction.latitude,
-            "longitude_corrigee": correction.longitude,
+            "latitude_corrigee": latitude_corrigee,
+            "longitude_corrigee": longitude_corrigee,
             "source_enseigne": "Admin OptiPlein",
             "source_correction": "Admin OptiPlein",
             "forcer_correction": True,
@@ -601,14 +648,22 @@ async def actualiser_prix_periodiquement():
 
         debut = boucle.time()
 
-        try:
-            await asyncio.to_thread(
-                mettre_a_jour_stations
+        if not mise_a_jour_admin_lock.acquire(blocking=False):
+            logger.info(
+                "Mise a jour automatique ignoree : "
+                "une mise a jour est deja en cours."
             )
-        except Exception:
-            logger.exception(
-                "La mise a jour automatique des prix a echoue."
-            )
+        else:
+            try:
+                await asyncio.to_thread(
+                    mettre_a_jour_stations
+                )
+            except Exception:
+                logger.exception(
+                    "La mise a jour automatique des prix a echoue."
+                )
+            finally:
+                mise_a_jour_admin_lock.release()
 
         duree = boucle.time() - debut
 
@@ -944,6 +999,45 @@ def corriger_station_admin(
     }
 
 
+@app.post("/api/admin/forcer-mise-a-jour")
+async def forcer_mise_a_jour_admin(request: Request):
+
+    verifier_admin(request)
+
+    if not mise_a_jour_admin_lock.acquire(blocking=False):
+        raise HTTPException(
+            status_code=409,
+            detail="Une mise a jour est deja en cours.",
+        )
+
+    try:
+        await asyncio.to_thread(mettre_a_jour_stations)
+        stations = charger_stations()
+        date_mise_a_jour = date_derniere_mise_a_jour()
+        return {
+            "ok": True,
+            "stations": len(stations),
+            "updated_at": (
+                date_mise_a_jour.isoformat()
+                if date_mise_a_jour
+                else None
+            ),
+        }
+    except Exception as erreur:
+        logger.exception(
+            "La mise a jour forcee depuis l'admin a echoue."
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Mise a jour impossible pour le moment : "
+                + str(erreur)
+            ),
+        ) from erreur
+    finally:
+        mise_a_jour_admin_lock.release()
+
+
 @app.post("/api/testeurs")
 def inscrire_testeur(inscription: InscriptionTesteur, request: Request):
 
@@ -1020,6 +1114,171 @@ def get_stations():
     )
 
     return stations
+
+
+def signe_graphhopper_vers_maneuvre(signe):
+
+    correspondance = {
+        -3: ("turn", "sharp left"),
+        -2: ("turn", "left"),
+        -1: ("turn", "slight left"),
+        0: ("continue", "straight"),
+        1: ("turn", "slight right"),
+        2: ("turn", "right"),
+        3: ("turn", "sharp right"),
+        4: ("arrive", "straight"),
+        5: ("arrive", "straight"),
+        6: ("roundabout", "right"),
+        7: ("roundabout", "right"),
+        -7: ("roundabout", "left"),
+        -6: ("roundabout", "left"),
+    }
+
+    return correspondance.get(
+        int(signe or 0),
+        ("continue", "straight"),
+    )
+
+
+def convertir_route_graphhopper(donnees):
+
+    chemin = (donnees.get("paths") or [None])[0]
+
+    if not chemin:
+        raise ValueError("route GraphHopper introuvable")
+
+    points = chemin.get("points") or {}
+    coordonnees = points.get("coordinates") or []
+    instructions = chemin.get("instructions") or []
+    etapes = []
+
+    for instruction in instructions:
+        intervalle = instruction.get("interval") or [0, 0]
+        index_point = max(0, min(int(intervalle[0] or 0), len(coordonnees) - 1))
+        coordonnee = coordonnees[index_point] if coordonnees else [0, 0]
+        type_maneuvre, modificateur = signe_graphhopper_vers_maneuvre(
+            instruction.get("sign")
+        )
+        etapes.append(
+            {
+                "distance": instruction.get("distance", 0),
+                "duration": (instruction.get("time", 0) or 0) / 1000,
+                "name": instruction.get("street_name", "") or "",
+                "maneuver": {
+                    "type": type_maneuvre,
+                    "modifier": modificateur,
+                    "location": coordonnee,
+                },
+            }
+        )
+
+    return {
+        "distance": chemin.get("distance", 0),
+        "duration": (chemin.get("time", 0) or 0) / 1000,
+        "geometry": {
+            "type": "LineString",
+            "coordinates": coordonnees,
+        },
+        "legs": [
+            {
+                "steps": etapes,
+            }
+        ],
+        "provider": "graphhopper",
+    }
+
+
+def calculer_itineraire_graphhopper(points):
+
+    if not GRAPHHOPPER_API_KEY:
+        raise ValueError("clé GraphHopper absente")
+
+    parametres = [
+        ("vehicle", "car"),
+        ("locale", "fr"),
+        ("points_encoded", "false"),
+        ("instructions", "true"),
+        ("calc_points", "true"),
+        ("key", GRAPHHOPPER_API_KEY),
+    ]
+    parametres.extend(
+        ("point", f"{point.latitude},{point.longitude}")
+        for point in points
+    )
+
+    reponse = http_requests.get(
+        "https://graphhopper.com/api/1/route",
+        params=parametres,
+        timeout=10,
+    )
+    reponse.raise_for_status()
+
+    return {
+        "routes": [
+            convertir_route_graphhopper(reponse.json())
+        ],
+        "waypoints": [],
+        "provider": "graphhopper",
+    }
+
+
+def calculer_itineraire_osrm(points, cap_depart=None):
+
+    coordonnees = ";".join(
+        f"{point.longitude},{point.latitude}"
+        for point in points
+    )
+    url = (
+        "https://router.project-osrm.org/route/v1/driving/"
+        + coordonnees
+    )
+    parametres = {
+        "overview": "full",
+        "geometries": "geojson",
+        "steps": "true",
+        "continue_straight": "true",
+    }
+
+    if cap_depart is not None and math.isfinite(cap_depart):
+        parametres["bearings"] = f"{round(cap_depart)},45;"
+
+    reponse = http_requests.get(
+        url,
+        params=parametres,
+        timeout=10,
+    )
+    reponse.raise_for_status()
+    donnees = reponse.json()
+    donnees["provider"] = "osrm"
+    return donnees
+
+
+@app.post("/api/itineraire")
+async def calculer_itineraire(requete: RequeteItineraire):
+
+    try:
+        if GRAPHHOPPER_API_KEY:
+            return await asyncio.to_thread(
+                calculer_itineraire_graphhopper,
+                requete.points,
+            )
+    except Exception:
+        logger.exception(
+            "GraphHopper indisponible, bascule sur OSRM."
+        )
+
+    try:
+        return await asyncio.to_thread(
+            calculer_itineraire_osrm,
+            requete.points,
+            requete.cap_depart,
+        )
+    except Exception as erreur:
+        logger.exception("Itinéraire indisponible.")
+        raise HTTPException(
+            status_code=502,
+            detail="itinéraire indisponible",
+        ) from erreur
 
 
 @app.get("/api/stations-proches")

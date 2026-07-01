@@ -77,9 +77,9 @@ def appliquer_enrichissements(lignes):
 
     enrichissements = {}
 
-    for fichier_enrichissement in (
-        ENRICHISSEMENT_STATIONS_JSON,
-        ENRICHISSEMENT_STATIONS_ADMIN_JSON,
+    for fichier_enrichissement, source_admin in (
+        (ENRICHISSEMENT_STATIONS_JSON, False),
+        (ENRICHISSEMENT_STATIONS_ADMIN_JSON, True),
     ):
         if not fichier_enrichissement.exists():
             continue
@@ -90,7 +90,21 @@ def appliquer_enrichissements(lignes):
                     encoding="utf-8"
                 )
             )
-            enrichissements.update(contenu.get("stations", {}))
+            for station_id, correction in contenu.get("stations", {}).items():
+                correction = dict(correction or {})
+
+                if source_admin:
+                    correction["source_correction"] = (
+                        correction.get("source_correction")
+                        or "Admin OptiPlein"
+                    )
+                    correction["source_enseigne"] = (
+                        correction.get("source_enseigne")
+                        or "Admin OptiPlein"
+                    )
+                    correction["forcer_correction"] = True
+
+                enrichissements[str(station_id)] = correction
         except (OSError, ValueError, TypeError):
             continue
 

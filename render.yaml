@@ -23,5 +23,7 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      - key: GRAPHHOPPER_API_KEY
+        sync: false
       - key: REPORT_EMAIL
         value: optiplein5@gmail.com
