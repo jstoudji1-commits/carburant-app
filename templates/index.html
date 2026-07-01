@@ -1369,14 +1369,9 @@ body{
     touch-action:none;
 }
 
-#map .maplibregl-canvas,
-#map .leaflet-tile-pane{
-    filter:brightness(0.98) contrast(1.16) saturate(0.88);
-}
-
 #map.map-night .maplibregl-canvas,
 #map.map-night .leaflet-tile-pane{
-    filter:brightness(0.72) contrast(1.28) saturate(0.70);
+    filter:brightness(0.82) contrast(1.12) saturate(0.78);
 }
 
 .leaflet-control-zoom{
@@ -1862,11 +1857,14 @@ body{
 .trip-place-button{
     width:43px;
     height:43px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
     border:1px solid rgba(10,56,78,0.14);
     border-radius:9px;
     background:rgba(255,255,255,0.96);
     box-shadow:0 8px 18px rgba(16,37,54,0.14);
-    color:var(--green-dark);
     cursor:pointer;
 }
 
@@ -1875,59 +1873,21 @@ body{
     background:linear-gradient(180deg, #f5fff7, #ffffff);
 }
 
-.trip-place-icon{
-    position:relative;
-    display:block;
-    width:21px;
-    height:21px;
-    margin:0 auto;
+.trip-place-button svg{
+    width:23px;
+    height:23px;
+    stroke-width:2.2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    fill:none;
 }
 
-.trip-place-icon.home::before{
-    content:"";
-    position:absolute;
-    left:2px;
-    top:8px;
-    width:17px;
-    height:11px;
-    border-radius:3px 3px 2px 2px;
-    background:currentColor;
+.trip-place-button.home svg{
+    color:#149f38;
 }
 
-.trip-place-icon.home::after{
-    content:"";
-    position:absolute;
-    left:3px;
-    top:2px;
-    width:15px;
-    height:15px;
-    border-radius:2px;
-    background:currentColor;
-    transform:rotate(45deg);
-    clip-path:polygon(0 0, 100% 0, 100% 58%, 0 58%);
-}
-
-.trip-place-icon.work::before{
-    content:"";
-    position:absolute;
-    left:2px;
-    top:7px;
-    width:17px;
-    height:12px;
-    border-radius:3px;
-    background:currentColor;
-}
-
-.trip-place-icon.work::after{
-    content:"";
-    position:absolute;
-    left:7px;
-    top:2px;
-    width:7px;
-    height:6px;
-    border:2px solid currentColor;
-    border-bottom:0;
-    border-radius:3px 3px 0 0;
+.trip-place-button.work svg{
+    color:#32566b;
 }
 
 .trip-planner-open[hidden]{
@@ -3024,22 +2984,32 @@ body{
                 <button
                     type="button"
                     id="trip-home-button"
-                    class="trip-place-button"
+                    class="trip-place-button home"
                     onclick="utiliserLieuTrajet('home')"
                     aria-label="Domicile"
                     title="Domicile"
                 >
-                    <span class="trip-place-icon home"></span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 11.5 12 5l8 6.5"></path>
+                        <path d="M6.5 10.5V20h11v-9.5"></path>
+                        <path d="M10 20v-5h4v5"></path>
+                    </svg>
                 </button>
                 <button
                     type="button"
                     id="trip-work-button"
-                    class="trip-place-button"
+                    class="trip-place-button work"
                     onclick="utiliserLieuTrajet('work')"
                     aria-label="Travail"
                     title="Travail"
                 >
-                    <span class="trip-place-icon work"></span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 20h16"></path>
+                        <path d="M5 20V9l5 3V9l5 3V7h4v13"></path>
+                        <path d="M8 16h1"></path>
+                        <path d="M12 16h1"></path>
+                        <path d="M16 16h1"></path>
+                    </svg>
                 </button>
             </div>
 
@@ -4090,10 +4060,10 @@ function creerAdaptateurMapLibre() {
             "carto-light": {
                 type: "raster",
                 tiles: [
-                    "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-                    "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-                    "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-                    "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
+                    "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                    "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                    "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                    "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
                 ],
                 tileSize: 256,
                 attribution: "&copy; contributeurs OpenStreetMap"
@@ -4649,7 +4619,7 @@ var map = L.map(
 
 L.tileLayer(
 
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
 
     {
         attribution: "",
