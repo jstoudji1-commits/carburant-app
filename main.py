@@ -35,6 +35,7 @@ from update_data import (
 
 
 INTERVALLE_MISE_A_JOUR_SECONDES = 10 * 60
+RETARD_MISE_A_JOUR_TOLERE_SECONDES = 60
 logger = logging.getLogger("optiplein.update")
 MISE_A_JOUR_FOND_ACTIVE = os.getenv(
     "OPTIPLEIN_BACKGROUND_UPDATE",
@@ -315,7 +316,7 @@ class RequeteItineraire(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    points: list[PointItineraire] = Field(min_length=2, max_length=5)
+    points: list[PointItineraire] = Field(min_length=2, max_length=12)
     cap_depart: Optional[float] = None
     moteur: Literal["auto", "graphhopper", "osrm"] = "auto"
 
@@ -853,6 +854,57 @@ async def actualiser_prix_periodiquement():
                 INTERVALLE_MISE_A_JOUR_SECONDES - duree
             )
         )
+
+
+def mise_a_jour_stations_en_retard():
+
+    date_mise_a_jour = lire_date_metadata(
+        chemin_metadata_stations()
+    ) or date_derniere_mise_a_jour()
+
+    if not date_mise_a_jour:
+        return True
+
+    if date_mise_a_jour.tzinfo is None:
+        date_mise_a_jour = date_mise_a_jour.replace(
+            tzinfo=datetime.now().astimezone().tzinfo
+        )
+
+    age_secondes = (
+        datetime.now(date_mise_a_jour.tzinfo) - date_mise_a_jour
+    ).total_seconds()
+
+    return age_secondes > (
+        INTERVALLE_MISE_A_JOUR_SECONDES
+        + RETARD_MISE_A_JOUR_TOLERE_SECONDES
+    )
+
+
+def lancer_mise_a_jour_stations_si_retard():
+
+    if not mise_a_jour_stations_en_retard():
+        return False
+
+    if not mise_a_jour_admin_lock.acquire(blocking=False):
+        return False
+
+    def executer():
+        try:
+            mettre_a_jour_stations()
+        except Exception:
+            logger.exception(
+                "La mise a jour automatique de rattrapage a echoue."
+            )
+        finally:
+            mise_a_jour_admin_lock.release()
+
+    threading.Thread(
+        target=executer,
+        name="optiplein-stations-rattrapage",
+        daemon=True,
+    ).start()
+
+    return True
 
 
 @asynccontextmanager
@@ -1649,6 +1701,7 @@ def get_stations_proches(
 @app.get("/api/derniere-mise-a-jour")
 def get_derniere_mise_a_jour():
 
+    rattrapage_lance = lancer_mise_a_jour_stations_si_retard()
     date_mise_a_jour = lire_date_metadata(
         chemin_metadata_stations()
     ) or date_derniere_mise_a_jour()
@@ -1658,7 +1711,8 @@ def get_derniere_mise_a_jour():
             date_mise_a_jour.isoformat()
             if date_mise_a_jour
             else None
-        )
+        ),
+        "update_pending": rattrapage_lance,
     }
 
 
