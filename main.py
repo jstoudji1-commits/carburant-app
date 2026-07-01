@@ -53,14 +53,6 @@ COMPTES_UTILISATEURS_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "comptes_utilisateurs.json"
 )
-STATIONS_EUROPE_CSV = (
-    Path(__file__).resolve().parent
-    / "stations_europe.csv"
-)
-STATIONS_EUROPE_METADATA_JSON = (
-    Path(__file__).resolve().parent
-    / "stations_europe_metadata.json"
-)
 TESTEURS_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "testeurs_landing.json"
@@ -754,17 +746,6 @@ def charger_stations(appliquer_corrections=True):
     return stations
 
 
-def charger_stations_europe():
-
-    if not STATIONS_EUROPE_CSV.exists():
-        return []
-
-    with STATIONS_EUROPE_CSV.open(
-        encoding="utf-8"
-    ) as fichier:
-        return list(csv.DictReader(fichier))
-
-
 def distance_km(
     lat1,
     lon1,
@@ -1363,69 +1344,6 @@ def get_stations_proches(
             for station in stations
         ],
         "count": len(stations),
-    }
-
-
-@app.get("/api/stations-europe")
-def get_stations_europe(
-    request: Request,
-    country: str = "",
-    latitude: Optional[float] = None,
-    longitude: Optional[float] = None,
-    rayon: int = 25,
-):
-
-    stations = charger_stations_europe()
-    country = country.strip().upper()
-
-    if country:
-        stations = [
-            station
-            for station in stations
-            if station.get("country_code", "").upper() == country
-        ]
-
-    if latitude is not None and longitude is not None:
-        stations_autour = []
-
-        for station in stations:
-            try:
-                distance = distance_km(
-                    latitude,
-                    longitude,
-                    float(station.get("latitude") or 0),
-                    float(station.get("longitude") or 0),
-                )
-            except (TypeError, ValueError):
-                continue
-
-            if distance <= rayon:
-                station = dict(station)
-                station["distance"] = round(distance, 2)
-                stations_autour.append(station)
-
-        stations = sorted(
-            stations_autour,
-            key=lambda station: station.get("distance", 999),
-        )
-    else:
-        stations = stations[:500]
-
-    metadata = {}
-    if STATIONS_EUROPE_METADATA_JSON.exists():
-        try:
-            metadata = json.loads(
-                STATIONS_EUROPE_METADATA_JSON.read_text(
-                    encoding="utf-8"
-                )
-            )
-        except (OSError, ValueError, TypeError):
-            metadata = {}
-
-    return {
-        "stations": stations,
-        "count": len(stations),
-        "metadata": metadata,
     }
 
 
