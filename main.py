@@ -79,10 +79,22 @@ ADMIN_PASSWORD = os.getenv(
     "ADMIN_PASSWORD",
     "",
 )
-GRAPHHOPPER_API_KEY = os.getenv(
-    "GRAPHHOPPER_API_KEY",
-    "",
-).strip()
+def lire_variable_graphhopper():
+
+    for nom_variable in (
+        "GRAPHHOPPER_API_KEY",
+        "GRAPH_HOPPER_API_KEY",
+        "GRAPHHOPPER_KEY",
+        "GRAPHOPPER_API_KEY",
+    ):
+        valeur = os.getenv(nom_variable, "").strip()
+        if valeur:
+            return valeur
+
+    return ""
+
+
+GRAPHHOPPER_API_KEY = lire_variable_graphhopper()
 SESSIONS_UTILISATEURS = {}
 PBKDF2_ITERATIONS = 260000
 
@@ -1290,6 +1302,12 @@ def statut_itineraire():
             "graphhopper" if GRAPHHOPPER_API_KEY else "osrm"
         ),
         "fallback": "osrm",
+        "variables_acceptees": [
+            "GRAPHHOPPER_API_KEY",
+            "GRAPH_HOPPER_API_KEY",
+            "GRAPHHOPPER_KEY",
+            "GRAPHOPPER_API_KEY",
+        ],
     }
 
 
