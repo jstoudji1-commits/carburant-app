@@ -690,7 +690,9 @@
                 .value.trim();
             var statut = document.getElementById("station-status");
 
-            statut.textContent = "Enregistrement...";
+            statut.textContent =
+                "Enregistrement... si une mise a jour est en cours, "
+                + "la correction attendra sa fin.";
 
             await requeteAdmin(
                 "/api/admin/station",

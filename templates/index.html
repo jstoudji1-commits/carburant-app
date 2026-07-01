@@ -9537,11 +9537,7 @@ function afficherSuggestionsTrajet(suggestions) {
 
 async function chargerSuggestionsDestinationTrajet(recherche) {
 
-    var url = "https://nominatim.openstreetmap.org/search?format=json"
-        + "&addressdetails=1"
-        + "&limit=5"
-        + "&countrycodes=fr,be,lu,de,es,it"
-        + "&q="
+    var url = "/api/adresses?limit=6&q="
         + encodeURIComponent(recherche);
     var reponse = await fetch(url, {
         headers: {
@@ -9553,13 +9549,13 @@ async function chargerSuggestionsDestinationTrajet(recherche) {
         return [];
     }
 
-    var resultats = await reponse.json();
+    var donnees = await reponse.json();
 
-    return (resultats || []).map(function(resultat) {
+    return (donnees.suggestions || []).map(function(resultat) {
         return {
-            latitude: Number(resultat.lat),
-            longitude: Number(resultat.lon),
-            libelle: resultat.display_name || recherche
+            latitude: Number(resultat.latitude),
+            longitude: Number(resultat.longitude),
+            libelle: resultat.libelle || recherche
         };
     }).filter(function(resultat) {
         return Number.isFinite(resultat.latitude)
@@ -9778,10 +9774,7 @@ async function geocoderDestinationTrajet(destination) {
         return destinationTrajetSelectionnee;
     }
 
-    var url = "https://nominatim.openstreetmap.org/search?format=json"
-        + "&limit=1"
-        + "&countrycodes=fr,be,lu,de,es,it"
-        + "&q="
+    var url = "/api/adresses?limit=1&q="
         + encodeURIComponent(destination);
     var reponse = await fetch(url, {
         headers: {
@@ -9793,17 +9786,17 @@ async function geocoderDestinationTrajet(destination) {
         throw new Error("destination introuvable");
     }
 
-    var resultats = await reponse.json();
-    var premier = resultats && resultats[0];
+    var donnees = await reponse.json();
+    var premier = donnees.suggestions && donnees.suggestions[0];
 
     if (!premier) {
         throw new Error("destination introuvable");
     }
 
     return {
-        latitude: Number(premier.lat),
-        longitude: Number(premier.lon),
-        libelle: premier.display_name || destination
+        latitude: Number(premier.latitude),
+        longitude: Number(premier.longitude),
+        libelle: premier.libelle || destination
     };
 
 }

@@ -46,6 +46,7 @@ EMAIL_SIGNALEMENT = os.getenv(
 )
 signalements_recents = {}
 mise_a_jour_admin_lock = threading.Lock()
+ATTENTE_VERROU_ADMIN_SECONDES = 45
 DOSSIER_DONNEES_UTILISATEURS = Path(
     os.getenv("OPTIPLEIN_DATA_DIR", ".")
 )
@@ -134,6 +135,180 @@ class PointItineraire(BaseModel):
 
     latitude: float
     longitude: float
+
+
+def formater_libelle_adresse_francaise(feature, recherche):
+
+    proprietes = feature.get("properties", {})
+    ville = " ".join(
+        morceau
+        for morceau in (
+            proprietes.get("postcode", ""),
+            proprietes.get("city", ""),
+        )
+        if morceau
+    )
+    libelle = ", ".join(
+        morceau
+        for morceau in (
+            proprietes.get("name", ""),
+            ville,
+        )
+        if morceau
+    )
+    return libelle or proprietes.get("label") or recherche
+
+
+def rechercher_adresses_francaises(recherche, limite):
+
+    reponse = http_requests.get(
+        "https://api-adresse.data.gouv.fr/search/",
+        params={
+            "q": recherche,
+            "limit": limite,
+            "autocomplete": 1,
+        },
+        timeout=8,
+    )
+    reponse.raise_for_status()
+
+    suggestions = []
+    for feature in reponse.json().get("features", []):
+        coordonnees = feature.get("geometry", {}).get("coordinates", [])
+        if len(coordonnees) < 2:
+            continue
+
+        longitude, latitude = coordonnees[:2]
+        score = feature.get("properties", {}).get("score", 0)
+        if score < 0.28:
+            continue
+
+        suggestions.append({
+            "latitude": latitude,
+            "longitude": longitude,
+            "libelle": formater_libelle_adresse_francaise(
+                feature,
+                recherche,
+            ),
+            "source": "adresse.data.gouv.fr",
+            "score": score,
+        })
+
+    return suggestions
+
+
+def formater_libelle_adresse_osm(resultat, recherche):
+
+    adresse = resultat.get("address", {}) or {}
+    nom = (
+        resultat.get("name")
+        or adresse.get("amenity")
+        or adresse.get("building")
+        or adresse.get("road")
+        or recherche
+    )
+    ville = (
+        adresse.get("city")
+        or adresse.get("town")
+        or adresse.get("village")
+        or adresse.get("municipality")
+    )
+    code_postal = adresse.get("postcode", "")
+    localisation = " ".join(
+        morceau for morceau in (code_postal, ville) if morceau
+    )
+
+    if localisation:
+        return f"{nom}, {localisation}"
+
+    return resultat.get("display_name") or recherche
+
+
+def rechercher_adresses_osm(recherche, limite):
+
+    reponse = http_requests.get(
+        "https://nominatim.openstreetmap.org/search",
+        params={
+            "format": "json",
+            "addressdetails": 1,
+            "limit": limite,
+            "countrycodes": "fr,be,lu,de,es,it",
+            "q": recherche,
+        },
+        headers={
+            "User-Agent": "OptiPlein/1.0",
+            "Accept": "application/json",
+        },
+        timeout=4,
+    )
+    reponse.raise_for_status()
+
+    suggestions = []
+    for resultat in reponse.json() or []:
+        try:
+            latitude = float(resultat.get("lat"))
+            longitude = float(resultat.get("lon"))
+        except (TypeError, ValueError):
+            continue
+
+        suggestions.append({
+            "latitude": latitude,
+            "longitude": longitude,
+            "libelle": formater_libelle_adresse_osm(resultat, recherche),
+            "source": "openstreetmap",
+            "score": float(resultat.get("importance") or 0),
+        })
+
+    return suggestions
+
+
+def dedoublonner_adresses(suggestions, limite):
+
+    adresses = []
+    signatures = set()
+
+    for suggestion in suggestions:
+        libelle_signature = suggestion["libelle"].strip().lower()
+        signature = (
+            round(float(suggestion["latitude"]), 4),
+            round(float(suggestion["longitude"]), 4),
+            libelle_signature,
+        )
+        if signature in signatures or libelle_signature in signatures:
+            continue
+
+        signatures.add(signature)
+        signatures.add(libelle_signature)
+        adresses.append(suggestion)
+
+        if len(adresses) >= limite:
+            break
+
+    return adresses
+
+
+def recherche_ressemble_a_adresse(recherche):
+
+    texte = recherche.lower()
+    mots_adresse = (
+        "rue",
+        "avenue",
+        "av ",
+        "boulevard",
+        "bd ",
+        "chemin",
+        "route",
+        "impasse",
+        "allee",
+        "allée",
+        "place",
+        "quai",
+        "cours",
+    )
+
+    return bool(re.search(r"\d", texte)) or any(
+        mot in texte for mot in mots_adresse
+    )
 
 
 class RequeteItineraire(BaseModel):
@@ -718,10 +893,69 @@ templates = Jinja2Templates(
 
 def chemin_stations_csv():
 
-    if STATIONS_RUNTIME_CSV.exists():
+    if not STATIONS_RUNTIME_CSV.exists():
+        return STATIONS_REPO_CSV
+
+    if not STATIONS_REPO_CSV.exists():
         return STATIONS_RUNTIME_CSV
 
-    return STATIONS_REPO_CSV
+    try:
+        metadata_runtime = STATIONS_RUNTIME_CSV.with_name(
+            "stations_metadata.json"
+        )
+        metadata_repo = STATIONS_REPO_CSV.with_name(
+            "stations_metadata.json"
+        )
+        date_runtime = lire_date_metadata(metadata_runtime)
+        date_repo = lire_date_metadata(metadata_repo)
+
+        if date_repo and (not date_runtime or date_repo > date_runtime):
+            return STATIONS_REPO_CSV
+    except Exception:
+        logger.exception(
+            "Impossible de comparer les fichiers stations."
+        )
+
+    return STATIONS_RUNTIME_CSV
+
+
+def chemin_metadata_stations():
+
+    metadata_runtime = STATIONS_RUNTIME_CSV.with_name(
+        "stations_metadata.json"
+    )
+    metadata_repo = STATIONS_REPO_CSV.with_name(
+        "stations_metadata.json"
+    )
+    date_runtime = lire_date_metadata(metadata_runtime)
+    date_repo = lire_date_metadata(metadata_repo)
+
+    if date_repo and (not date_runtime or date_repo > date_runtime):
+        return metadata_repo
+
+    if metadata_runtime.exists():
+        return metadata_runtime
+
+    return metadata_repo
+
+
+def lire_date_metadata(fichier):
+
+    if not fichier.exists():
+        return None
+
+    try:
+        texte = json.loads(
+            fichier.read_text(encoding="utf-8")
+        ).get("updated_at")
+        if not texte:
+            return None
+
+        return datetime.fromisoformat(
+            texte.replace("Z", "+00:00")
+        )
+    except (OSError, ValueError, TypeError):
+        return None
 
 
 def charger_stations(appliquer_corrections=True):
@@ -966,31 +1200,47 @@ def corriger_station_admin(
             detail="Longitude invalide.",
         )
 
-    stations_brutes = charger_stations(appliquer_corrections=False)
-    station = next(
-        (
-            ligne
-            for ligne in stations_brutes
-            if str(ligne.get("id", "")) == str(correction.id)
-        ),
-        None,
+    verrou_obtenu = mise_a_jour_admin_lock.acquire(
+        timeout=ATTENTE_VERROU_ADMIN_SECONDES
     )
 
-    if not station:
+    if not verrou_obtenu:
         raise HTTPException(
-            status_code=404,
-            detail="Station introuvable.",
+            status_code=409,
+            detail=(
+                "Une mise a jour des stations est en cours. "
+                "Reessayez dans quelques secondes."
+            ),
         )
 
-    enregistrer_enrichissement_station(station, correction)
+    try:
+        stations_brutes = charger_stations(appliquer_corrections=False)
+        station = next(
+            (
+                ligne
+                for ligne in stations_brutes
+                if str(ligne.get("id", "")) == str(correction.id)
+            ),
+            None,
+        )
 
-    station_corrigee = dict(station)
-    appliquer_enrichissements_admin([station_corrigee])
+        if not station:
+            raise HTTPException(
+                status_code=404,
+                detail="Station introuvable.",
+            )
 
-    return {
-        "ok": True,
-        "station": station_resume_admin(station_corrigee),
-    }
+        enregistrer_enrichissement_station(station, correction)
+
+        station_corrigee = dict(station)
+        appliquer_enrichissements_admin([station_corrigee])
+
+        return {
+            "ok": True,
+            "station": station_resume_admin(station_corrigee),
+        }
+    finally:
+        mise_a_jour_admin_lock.release()
 
 
 @app.post("/api/admin/forcer-mise-a-jour")
@@ -1302,6 +1552,55 @@ def statut_itineraire():
     }
 
 
+@app.get("/api/adresses")
+async def rechercher_adresses(q: str, limit: int = 5):
+
+    recherche = q.strip()
+    limite = max(1, min(limit, 8))
+
+    if len(recherche) < 3:
+        return {
+            "suggestions": []
+        }
+
+    suggestions_francaises = []
+    suggestions_osm = []
+    est_adresse = recherche_ressemble_a_adresse(recherche)
+
+    try:
+        suggestions_francaises.extend(
+            await asyncio.to_thread(
+                rechercher_adresses_francaises,
+                recherche,
+                limite,
+            )
+        )
+    except Exception:
+        logger.exception("Recherche d'adresse francaise indisponible.")
+
+    if not est_adresse or len(suggestions_francaises) < limite:
+        try:
+            suggestions_osm.extend(
+                await asyncio.to_thread(
+                    rechercher_adresses_osm,
+                    recherche,
+                    limite,
+                )
+            )
+        except Exception:
+            logger.exception("Recherche d'adresse OSM indisponible.")
+
+    suggestions = (
+        suggestions_francaises + suggestions_osm
+        if est_adresse
+        else suggestions_osm + suggestions_francaises
+    )
+
+    return {
+        "suggestions": dedoublonner_adresses(suggestions, limite)
+    }
+
+
 @app.get("/api/stations-proches")
 def get_stations_proches(
     latitude: Optional[float] = None,
@@ -1350,7 +1649,9 @@ def get_stations_proches(
 @app.get("/api/derniere-mise-a-jour")
 def get_derniere_mise_a_jour():
 
-    date_mise_a_jour = date_derniere_mise_a_jour()
+    date_mise_a_jour = lire_date_metadata(
+        chemin_metadata_stations()
+    ) or date_derniere_mise_a_jour()
 
     return {
         "updated_at": (
