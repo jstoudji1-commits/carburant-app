@@ -2011,6 +2011,10 @@ body{
     font-weight:700;
 }
 
+.trip-planner-gauge-help[hidden]{
+    display:none;
+}
+
 .trip-planner-field input{
     width:100%;
     padding:11px 12px;
@@ -3192,12 +3196,6 @@ body{
                                     <span class="trip-planner-gauge-label">
                                         R&eacute;servoir pour ce trajet
                                     </span>
-                                    <span
-                                        class="trip-planner-gauge-help"
-                                        id="trip-place-save-help"
-                                    >
-                                        Appui long sur domicile ou travail pour enregistrer l'adresse.
-                                    </span>
                                 </span>
                                 <span
                                     id="trip-gauge-value"
@@ -3213,6 +3211,12 @@ body{
                                 value="50"
                                 oninput="actualiserJaugeTrajet()"
                             >
+                            <span
+                                class="trip-planner-gauge-help"
+                                id="trip-place-save-help"
+                            >
+                                Appui long sur domicile ou travail pour enregistrer l'adresse.
+                            </span>
                         </div>
                     </div>
 
@@ -5449,11 +5453,11 @@ function planCompteActuel() {
 
 function comptePremiumActif() {
 
-    return (
-        modeDecouvertePremiumActif
-        && compteUtilisateurConnecte()
-    )
-        || planCompteActuel() === "premium";
+    return compteUtilisateurConnecte()
+        && (
+            modeDecouvertePremiumActif
+            || planCompteActuel() === "premium"
+        );
 
 }
 
