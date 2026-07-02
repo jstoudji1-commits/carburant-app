@@ -7127,13 +7127,41 @@ function demarrerGeolocalisation() {
             verifierEcartItineraire();
             verifierRavitaillementPlusRentablePendantNavigation();
 
+            var positionRouteAffichee = positionAfficheeUtilisateurSurRoute(
+                latitudeUtilisateur,
+                longitudeUtilisateur,
+                capFlecheStabilise
+            );
+            var latitudeAffichee = positionRouteAffichee
+                ? positionRouteAffichee.latitude
+                : latitudeUtilisateur;
+            var longitudeAffichee = positionRouteAffichee
+                ? positionRouteAffichee.longitude
+                : longitudeUtilisateur;
+            var capFlecheAffiche = positionRouteAffichee
+                && Number.isFinite(positionRouteAffichee.cap)
+                    ? lisserCap(
+                        capFlecheStabilise,
+                        positionRouteAffichee.cap,
+                        0.62
+                    )
+                    : capFlecheStabilise;
+            var capCarteAffiche = positionRouteAffichee
+                && Number.isFinite(positionRouteAffichee.cap)
+                    ? lisserCap(
+                        capCarteStabilise,
+                        positionRouteAffichee.cap,
+                        0.34
+                    )
+                    : capCarteStabilise;
+
             if (marqueurUtilisateur) {
 
                 deplacerMarqueurUtilisateur(
-                    latitudeUtilisateur,
-                    longitudeUtilisateur,
-                    capCarteStabilise,
-                    capFlecheStabilise
+                    latitudeAffichee,
+                    longitudeAffichee,
+                    capCarteAffiche,
+                    capFlecheAffiche
                 );
 
             } else {
@@ -7154,8 +7182,8 @@ function demarrerGeolocalisation() {
                     L.marker(
 
                         [
-                            latitudeUtilisateur,
-                            longitudeUtilisateur
+                            latitudeAffichee,
+                            longitudeAffichee
                         ],
 
                         {
@@ -8929,7 +8957,7 @@ function calculerCapItineraireDevant() {
 
 }
 
-function trouverPointRouteLePlusProche(latitude, longitude) {
+function trouverPointRouteLePlusProche(latitude, longitude, capReference) {
 
     if (
         !coordonneesRouteNavigation.length
@@ -8951,6 +8979,12 @@ function trouverPointRouteLePlusProche(latitude, longitude) {
     ) {
         var depart = coordonneesRouteNavigation[index];
         var arrivee = coordonneesRouteNavigation[index + 1];
+        var capSegment = calculerCapDeplacement(
+            depart[1],
+            depart[0],
+            arrivee[1],
+            arrivee[0]
+        );
         var segmentX =
             (arrivee[0] - depart[0]) * conversionLongitude;
         var segmentY =
@@ -8976,16 +9010,35 @@ function trouverPointRouteLePlusProche(latitude, longitude) {
         var ecartX = positionX - progression * segmentX;
         var ecartY = positionY - progression * segmentY;
         var distanceCarree = ecartX * ecartX + ecartY * ecartY;
+        var penaliteSens = 0;
+
+        if (
+            Number.isFinite(capReference)
+            && Number.isFinite(capSegment)
+        ) {
+            var ecartCap = Math.abs(
+                ((capReference - capSegment + 540) % 360) - 180
+            );
+
+            if (ecartCap > 100) {
+                penaliteSens = 2500;
+            } else if (ecartCap > 65) {
+                penaliteSens = 625;
+            }
+        }
+        var scoreSegment = distanceCarree + penaliteSens;
 
         if (
             !meilleurSegment
-            || distanceCarree < meilleurSegment.distanceCarree
+            || scoreSegment < meilleurSegment.scoreSegment
         ) {
             meilleurSegment = {
                 index: index,
                 progression: progression,
                 distanceCarree: distanceCarree,
                 distanceMetres: Math.sqrt(distanceCarree),
+                capSegment: capSegment,
+                scoreSegment: scoreSegment,
                 longitude:
                     depart[0]
                     + (arrivee[0] - depart[0]) * progression,
@@ -8997,6 +9050,49 @@ function trouverPointRouteLePlusProche(latitude, longitude) {
     }
 
     return meilleurSegment;
+
+}
+
+function positionAfficheeUtilisateurSurRoute(latitude, longitude, capReference) {
+
+    if (
+        !navigationActive
+        || !coordonneesRouteNavigation.length
+    ) {
+        return null;
+    }
+
+    var pointRoute = trouverPointRouteLePlusProche(
+        latitude,
+        longitude,
+        capReference
+    );
+
+    if (!pointRoute || pointRoute.distanceMetres > 35) {
+        return null;
+    }
+
+    if (
+        Number.isFinite(capReference)
+        && Number.isFinite(pointRoute.capSegment)
+    ) {
+        var ecartCap = Math.abs(
+            ((capReference - pointRoute.capSegment + 540) % 360) - 180
+        );
+
+        if (ecartCap > 80 && pointRoute.distanceMetres > 12) {
+            return null;
+        }
+    }
+
+    return {
+        latitude: pointRoute.latitude,
+        longitude: pointRoute.longitude,
+        cap: Number.isFinite(pointRoute.capSegment)
+            ? pointRoute.capSegment
+            : capReference,
+        distanceMetres: pointRoute.distanceMetres
+    };
 
 }
 
@@ -10250,9 +10346,9 @@ function dessinerItineraire(coordonnees, afficherApercu) {
         donneesItineraire,
         {
             style: {
-                color: "#032714",
-                weight: navigationActive ? 26 : 22,
-                opacity: 0.88
+                color: "#087a2c",
+                weight: navigationActive ? 12 : 10,
+                opacity: 0.82
             }
         }
     ).addTo(map);
@@ -10260,8 +10356,8 @@ function dessinerItineraire(coordonnees, afficherApercu) {
         donneesItineraire,
         {
             style: {
-                color: "#078f35",
-                weight: navigationActive ? 18 : 15,
+                color: "#149f38",
+                weight: navigationActive ? 8 : 6,
                 opacity: 1
             }
         }
