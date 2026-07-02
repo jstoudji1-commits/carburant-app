@@ -2625,7 +2625,11 @@ body{
                     ></p>
                 </div>
 
-                <div class="account-plan" aria-label="Type de compte">
+                <div
+                    class="account-plan"
+                    aria-label="Type de compte"
+                    hidden
+                >
                     <p class="account-plan-label">
                         Choisir ma formule
                     </p>
@@ -2653,6 +2657,7 @@ body{
                     class="plan-comparison"
                     id="plan-comparison"
                     aria-label="Comparatif des formules"
+                    hidden
                 >
                     <div class="plan-comparison-row plan-comparison-head">
                         <div class="plan-comparison-cell">Options</div>
@@ -2708,11 +2713,6 @@ body{
                         <div class="plan-comparison-cell plan-comparison-feature">Tendance probable demain</div>
                         <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
                         <div class="plan-comparison-cell plan-comparison-premium">Oui, avec confiance /5</div>
-                    </div>
-                    <div class="plan-comparison-row">
-                        <div class="plan-comparison-cell plan-comparison-feature">Publicit&eacute;</div>
-                        <div class="plan-comparison-cell plan-comparison-free">Oui</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">Bandeau discret en test</div>
                     </div>
                 </div>
 
@@ -2861,12 +2861,11 @@ body{
                 <section class="premium-offer" id="premium-note">
                     <p class="premium-offer-title">
                         <span>D&eacute;couverte Premium</span>
-                        <span class="premium-price">Compte requis</span>
+                        <span class="premium-price">0 &euro; tout l'&eacute;t&eacute;</span>
                     </p>
                     <p class="premium-offer-copy">
                         Cr&eacute;ez votre compte pour tester gratuitement toutes les
-                        fonctions Premium avant le lancement officiel. Un bandeau
-                        publicitaire discret reste affich&eacute; pendant la phase test.
+                        fonctions Premium avant le lancement officiel.
                     </p>
                     <ul class="premium-benefits">
                         <li>5 v&eacute;hicules, favoris illimit&eacute;s et historique des &eacute;conomies.</li>
@@ -5424,6 +5423,7 @@ var lieuxTrajetCle = "optiplein-lieux-trajet";
 var compteTokenCle = "optiplein-compte-token";
 var compteEmailCle = "optiplein-compte-email";
 var modeDecouvertePremiumActif = true;
+var choixFormuleMasquePendantTest = true;
 var publiciteAdsenseActive = {{ adsense_active|tojson }};
 var nombreMaximumFavorisGratuit = 3;
 var nombreMaximumVehiculesGratuit = 1;
@@ -5724,7 +5724,7 @@ function donneesCompteLocales() {
         favoris: lireFavoris(),
         vehicules: lireVehicules(),
         vehicule_actif: localStorage.getItem(vehiculeActifCle) || "",
-        plan: planCompteActuel(),
+        plan: compteUtilisateurConnecte() ? "premium" : planCompteActuel(),
         historique_economies: lireHistoriqueEconomies(),
         lieux_trajet: lireLieuxTrajet()
     };
@@ -7738,6 +7738,7 @@ window.viderHistoriqueEconomies = function() {
 function actualiserPlanCompte() {
 
     var premium = comptePremiumActif();
+    var blocChoixFormule = document.querySelector(".account-plan");
     var boutonGratuit = document.getElementById("plan-free-button");
     var boutonPremium = document.getElementById("plan-premium-button");
     var comparatifPlan = document.getElementById("plan-comparison");
@@ -7753,12 +7754,17 @@ function actualiserPlanCompte() {
         boutonPremium.classList.toggle("active", premium);
     }
 
+    if (blocChoixFormule) {
+        blocChoixFormule.hidden = choixFormuleMasquePendantTest;
+    }
+
     if (pub) {
         pub.hidden = false;
     }
 
     if (comparatifPlan) {
-        comparatifPlan.hidden = premium;
+        comparatifPlan.hidden =
+            choixFormuleMasquePendantTest || premium;
     }
 
     if (offrePremium) {

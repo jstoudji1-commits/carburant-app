@@ -101,6 +101,7 @@ def lire_variable_graphhopper():
 GRAPHHOPPER_API_KEY = lire_variable_graphhopper()
 SESSIONS_UTILISATEURS = {}
 PBKDF2_ITERATIONS = 260000
+PREMIUM_TEST_ACTIF = True
 
 
 class SignalementProbleme(BaseModel):
@@ -790,8 +791,18 @@ def limiter_donnees_compte(donnees):
     donnees.favoris = donnees.favoris[:500]
     donnees.vehicules = donnees.vehicules[:5]
     donnees.historique_economies = donnees.historique_economies[:300]
+    if PREMIUM_TEST_ACTIF:
+        donnees.plan = "premium"
 
     return donnees.model_dump()
+
+
+def donnees_compte_premium_test(donnees):
+
+    donnees = dict(donnees or {})
+    if PREMIUM_TEST_ACTIF:
+        donnees["plan"] = "premium"
+    return donnees
 
 
 def envoyer_signalement_email(signalement):
@@ -1780,7 +1791,9 @@ def creer_compte(identifiants: CompteIdentifiants):
         "ok": True,
         "email": email,
         "token": creer_session(email),
-        "donnees": utilisateurs[email]["data"],
+        "donnees": donnees_compte_premium_test(
+            utilisateurs[email]["data"]
+        ),
     }
 
 
@@ -1804,7 +1817,9 @@ def connecter_compte(identifiants: CompteIdentifiants):
         "ok": True,
         "email": email,
         "token": creer_session(email),
-        "donnees": utilisateur.get("data", {}),
+        "donnees": donnees_compte_premium_test(
+            utilisateur.get("data", {})
+        ),
     }
 
 
@@ -1824,7 +1839,9 @@ def lire_donnees_compte(request: Request):
     return {
         "ok": True,
         "email": email,
-        "donnees": utilisateur.get("data", {}),
+        "donnees": donnees_compte_premium_test(
+            utilisateur.get("data", {})
+        ),
     }
 
 
@@ -1853,6 +1870,9 @@ def sauvegarder_donnees_compte(
     return {
         "ok": True,
         "updated_at": utilisateur["updated_at"],
+        "donnees": donnees_compte_premium_test(
+            utilisateur.get("data", {})
+        ),
     }
 
 
