@@ -4105,13 +4105,10 @@ function creerAdaptateurMapLibre() {
         : {
         version: 8,
         sources: {
-            "carto-light": {
+            "osm-standard": {
                 type: "raster",
                 tiles: [
-                    "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-                    "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-                    "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-                    "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
+                    "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
                 ],
                 tileSize: 256,
                 attribution: "&copy; contributeurs OpenStreetMap"
@@ -4119,9 +4116,9 @@ function creerAdaptateurMapLibre() {
         },
         layers: [
             {
-                id: "carto-light",
+                id: "osm-standard",
                 type: "raster",
-                source: "carto-light"
+                source: "osm-standard"
             }
         ]
     };
@@ -4581,10 +4578,10 @@ var map = L.map(
 
 L.tileLayer(
 
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 
     {
-        attribution: "",
+        attribution: "&copy; contributeurs OpenStreetMap",
         maxZoom: 22
     }
 
