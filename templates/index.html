@@ -1338,6 +1338,7 @@ body{
     position:relative;
     min-width:0;
     min-height:0;
+    --map-tools-top:104px;
 }
 
 .ad-banner{
@@ -1843,7 +1844,7 @@ body{
 
 .trip-planner-open{
     position:absolute;
-    top:18px;
+    top:var(--map-tools-top);
     left:18px;
     z-index:860;
     padding:11px 14px;
@@ -1858,7 +1859,7 @@ body{
 
 .trip-quick-places{
     position:absolute;
-    top:18px;
+    top:var(--map-tools-top);
     left:186px;
     z-index:860;
     display:flex;
@@ -1992,6 +1993,14 @@ body{
     color:#425463;
     font-size:12px;
     font-weight:800;
+}
+
+.trip-planner-gauge-help{
+    display:block;
+    margin-top:3px;
+    color:#657485;
+    font-size:11px;
+    font-weight:700;
 }
 
 .trip-planner-field input{
@@ -2410,6 +2419,22 @@ body{
     .map-stage{
         height:58vh;
         min-height:420px;
+        --map-tools-top:96px;
+    }
+
+    .trip-planner-open{
+        left:12px;
+        padding:10px 11px;
+        font-size:13px;
+    }
+
+    .trip-quick-places{
+        left:164px;
+        gap:6px;
+    }
+
+    .trip-quick-places.no-trip-button{
+        left:12px;
     }
 
     .stat-card{
@@ -2489,6 +2514,11 @@ body{
 }
 
 @media (max-width: 360px){
+    .trip-quick-places{
+        top:calc(var(--map-tools-top) + 48px);
+        left:12px;
+    }
+
     .stat-label{
         font-size:16px;
     }
@@ -3151,8 +3181,16 @@ body{
 
                         <div class="trip-planner-gauge">
                             <div class="trip-planner-gauge-head">
-                                <span class="trip-planner-gauge-label">
-                                    R&eacute;servoir pour ce trajet
+                                <span>
+                                    <span class="trip-planner-gauge-label">
+                                        R&eacute;servoir pour ce trajet
+                                    </span>
+                                    <span
+                                        class="trip-planner-gauge-help"
+                                        id="trip-place-save-help"
+                                    >
+                                        Appui long sur domicile ou travail pour enregistrer l'adresse.
+                                    </span>
                                 </span>
                                 <span
                                     id="trip-gauge-value"
@@ -5547,6 +5585,12 @@ async function enregistrerLieuTrajetDepuisAdresse(type) {
 function actualiserLieuxTrajet() {
 
     var lieux = lireLieuxTrajet();
+    var tousLesLieuxConfigures = ["home", "work"].every(function(type) {
+        var lieu = lieux[type];
+        return lieu
+            && Number.isFinite(Number(lieu.latitude))
+            && Number.isFinite(Number(lieu.longitude));
+    });
 
     [
         ["home", "trip-home-button"],
@@ -5573,6 +5617,11 @@ function actualiserLieuxTrajet() {
             bouton.title
         );
     });
+
+    var aideEnregistrement = document.getElementById("trip-place-save-help");
+    if (aideEnregistrement) {
+        aideEnregistrement.hidden = tousLesLieuxConfigures;
+    }
 
     var raccourcis = document.getElementById("trip-quick-places");
     if (raccourcis) {
@@ -6282,6 +6331,9 @@ var dateDernierCapFiable = 0;
 var utilisateurEnMouvement = false;
 var vitesseUtilisateurMps = 0;
 var precisionUtilisateur = 20;
+var latitudeAffichageUtilisateur = Number.NaN;
+var longitudeAffichageUtilisateur = Number.NaN;
+var dernierCentrageCarteMs = 0;
 var animationOrientationCarte = null;
 var boutonSuiviCarte = null;
 var zoomUtilisateurManuel = false;
@@ -6522,9 +6574,63 @@ function appliquerMouvementCarteAutomatique(action) {
             function() {
                 interactionProgrammeCarte = false;
             },
-            700
+            1400
         );
     }
+
+}
+
+function lisserPositionAffichee(latitude, longitude) {
+
+    if (
+        !Number.isFinite(latitudeAffichageUtilisateur)
+        || !Number.isFinite(longitudeAffichageUtilisateur)
+    ) {
+        latitudeAffichageUtilisateur = latitude;
+        longitudeAffichageUtilisateur = longitude;
+        return {
+            latitude: latitude,
+            longitude: longitude
+        };
+    }
+
+    var distanceMetres = distanceDeplacementKm(
+        latitudeAffichageUtilisateur,
+        longitudeAffichageUtilisateur,
+        latitude,
+        longitude
+    ) * 1000;
+
+    if (distanceMetres < 0.8) {
+        return {
+            latitude: latitudeAffichageUtilisateur,
+            longitude: longitudeAffichageUtilisateur
+        };
+    }
+
+    var facteur = navigationActive
+        ? vitesseUtilisateurMps >= 19
+            ? 0.28
+            : vitesseUtilisateurMps >= 10
+                ? 0.36
+                : 0.52
+        : 0.65;
+
+    if (distanceMetres > 80) {
+        facteur = 0.86;
+    }
+
+    latitudeAffichageUtilisateur += (
+        latitude - latitudeAffichageUtilisateur
+    ) * facteur;
+    longitudeAffichageUtilisateur += (
+        longitude - longitudeAffichageUtilisateur
+    ) * facteur;
+
+    return {
+        latitude: latitudeAffichageUtilisateur,
+        longitude: longitudeAffichageUtilisateur
+    };
 
 }
 
@@ -6558,6 +6664,15 @@ function suivrePositionGpsSurCarte(
     var decalageVertical = navigationActive
         ? Math.round(hauteurCarte * 0.29)
         : Math.round(hauteurCarte * 0.14);
+    var dureeSuivi = navigationActive
+        ? vitesseUtilisateurMps >= 19
+            ? 1250
+            : vitesseUtilisateurMps >= 10
+                ? 1100
+                : 850
+        : utilisateurEnMouvement
+            ? 650
+            : 300;
 
     appliquerMouvementCarteAutomatique(
         function() {
@@ -6577,11 +6692,7 @@ function suivrePositionGpsSurCarte(
                             0,
                             decalageVertical
                         ],
-                        duration: navigationActive
-                            ? 850
-                            : utilisateurEnMouvement
-                                ? 650
-                                : 300
+                        duration: dureeSuivi
                     }
                 );
             } else {
@@ -6640,8 +6751,31 @@ function deplacerMarqueurUtilisateur(
     var depart = marqueurUtilisateur.getLatLng();
     var latitudeDepart = depart.lat;
     var longitudeDepart = depart.lng;
+    var distanceAnimationMetres = distanceDeplacementKm(
+        latitudeDepart,
+        longitudeDepart,
+        nouvelleLatitude,
+        nouvelleLongitude
+    ) * 1000;
+
+    if (distanceAnimationMetres < 0.6) {
+        suivrePositionGpsSurCarte(
+            nouvelleLatitude,
+            nouvelleLongitude,
+            capAffichageCarte,
+            capAffichageFleche
+        );
+        return;
+    }
+
     var debutAnimation = performance.now();
-    var dureeAnimation = 900;
+    var dureeAnimation = navigationActive
+        ? vitesseUtilisateurMps >= 19
+            ? 1250
+            : vitesseUtilisateurMps >= 10
+                ? 1080
+                : 880
+        : 650;
 
     function animerPosition(tempsActuel) {
 
@@ -7132,12 +7266,16 @@ function demarrerGeolocalisation() {
                 longitudeUtilisateur,
                 capFlecheStabilise
             );
-            var latitudeAffichee = positionRouteAffichee
-                ? positionRouteAffichee.latitude
-                : latitudeUtilisateur;
-            var longitudeAffichee = positionRouteAffichee
-                ? positionRouteAffichee.longitude
-                : longitudeUtilisateur;
+            var positionAfficheeLisse = lisserPositionAffichee(
+                positionRouteAffichee
+                    ? positionRouteAffichee.latitude
+                    : latitudeUtilisateur,
+                positionRouteAffichee
+                    ? positionRouteAffichee.longitude
+                    : longitudeUtilisateur
+            );
+            var latitudeAffichee = positionAfficheeLisse.latitude;
+            var longitudeAffichee = positionAfficheeLisse.longitude;
             var capFlecheAffiche = positionRouteAffichee
                 && Number.isFinite(positionRouteAffichee.cap)
                     ? lisserCap(
