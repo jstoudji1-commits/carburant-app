@@ -3581,6 +3581,7 @@ async function forcerRafraichissementStationsVisibles() {
 }
 
 actualiserCompteurMiseAJour();
+window.setTimeout(synchroniserDateMiseAJour, 0);
 setInterval(actualiserCompteurMiseAJour, 1000);
 
 function intervalleSynchronisationPrixMs() {
@@ -3613,6 +3614,12 @@ setInterval(
     },
     10 * 60 * 1000
 );
+
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "visible") {
+        synchroniserDateMiseAJour();
+    }
+});
 
 window.ouvrirSignalement = function() {
 
