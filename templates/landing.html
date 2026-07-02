@@ -9,6 +9,13 @@
         content="Rejoignez les testeurs OptiPlein, l'application qui aide les conducteurs à choisir la station carburant la plus rentable."
     >
     <link rel="icon" href="/static/favicon.png">
+    {% if adsense_client %}
+    <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_client }}"
+        crossorigin="anonymous"
+    ></script>
+    {% endif %}
     <style>
         :root{
             --ink:#102536;
