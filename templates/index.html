@@ -7871,10 +7871,11 @@ function proposerStationPlusRentablePendantNavigation(
 
     var economieSupplementaire =
         stationCourante.coutTotal - meilleureStation.coutTotal;
+    var stationCouranteDepassee = Boolean(stationCourante.stationDepassee);
 
     if (
         !Number.isFinite(economieSupplementaire)
-        || economieSupplementaire < 0.50
+        || economieSupplementaire < (stationCouranteDepassee ? 0.05 : 0.50)
     ) {
         return;
     }
@@ -7900,18 +7901,26 @@ function proposerStationPlusRentablePendantNavigation(
         return;
     }
 
-    texte.textContent =
-        (meilleureStation.enseigne || "Une station")
-        + (meilleureStation.ville ? " \u00e0 " + meilleureStation.ville : "")
-        + " : +"
-        + economieSupplementaire.toLocaleString(
-            "fr-FR",
-            {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }
+    texte.textContent = stationCouranteDepassee
+        ? (
+            "La station suivie est derri\u00e8re vous et le demi-tour n'est plus rentable. "
+            + (meilleureStation.enseigne || "Une autre station")
+            + (meilleureStation.ville ? " \u00e0 " + meilleureStation.ville : "")
+            + " devient le meilleur choix. Modifier l'itin\u00e9raire maintenant ?"
         )
-        + " \u20ac vs trajet actuel. Voulez-vous modifier l'itin\u00e9raire maintenant ?";
+        : (
+            (meilleureStation.enseigne || "Une station")
+            + (meilleureStation.ville ? " \u00e0 " + meilleureStation.ville : "")
+            + " : +"
+            + economieSupplementaire.toLocaleString(
+                "fr-FR",
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }
+            )
+            + " \u20ac vs trajet actuel. Voulez-vous modifier l'itin\u00e9raire maintenant ?"
+        );
     popup.hidden = false;
 
 }
@@ -8062,6 +8071,39 @@ function calculerRentabiliteStations(
         },
         0
     ) / stationsDisponibles.length;
+    var niveauCarburantDepart = Math.max(
+        0,
+        Math.min(reservoir, reservoir - litresACompleter)
+    );
+    var destinationCalcul = (
+        comptePremiumActif()
+        && destinationNavigation
+        && !destinationNavigation.stationId
+        && Number.isFinite(Number(destinationNavigation.latitude))
+        && Number.isFinite(Number(destinationNavigation.longitude))
+    )
+        ? {
+            latitude: Number(destinationNavigation.latitude),
+            longitude: Number(destinationNavigation.longitude)
+        }
+        : null;
+    var routePourProgression = (
+        navigationActive
+        && routeNavigation
+        && routeNavigation.geometry
+        && Array.isArray(routeNavigation.geometry.coordinates)
+    )
+        ? routeNavigation.geometry.coordinates
+        : null;
+    var progressionUtilisateur = routePourProgression
+        ? positionStationSurRoute(
+            {
+                latitude: latitudeCalcul,
+                longitude: longitudeCalcul
+            },
+            routePourProgression
+        )
+        : null;
     var stationsCalculees = stationsDisponibles.map(
         function(station) {
 
@@ -8073,10 +8115,61 @@ function calculerRentabiliteStations(
             );
             var carburantTrajet =
                 distance * 2 * consommation / 100;
+            var distanceDestinationApresStation = destinationCalcul
+                ? distanceDeplacementKm(
+                    station.latitude,
+                    station.longitude,
+                    destinationCalcul.latitude,
+                    destinationCalcul.longitude
+                )
+                : 0;
+            var carburantAvantStation = distance * consommation / 100;
+            var carburantApresStation = distanceDestinationApresStation
+                * consommation / 100;
+            var carburantTotalDestination =
+                carburantAvantStation + carburantApresStation;
+            var carburantRestantDestination = Math.max(
+                0,
+                niveauCarburantDepart
+                    + litresACompleter
+                    - carburantTotalDestination
+            );
+            var positionRouteStation = routePourProgression
+                ? positionStationSurRoute(
+                    station,
+                    routePourProgression
+                )
+                : null;
+            var stationDepassee = Boolean(
+                navigationActive
+                && progressionUtilisateur
+                && positionRouteStation
+                && positionRouteStation.distanceRouteKm
+                    < progressionUtilisateur.distanceRouteKm - 0.4
+            );
+            var penaliteDemiTourKm = stationDepassee
+                ? Math.max(
+                    distance * 2,
+                    (
+                        progressionUtilisateur.distanceRouteKm
+                        - positionRouteStation.distanceRouteKm
+                    ) * 2
+                )
+                : 0;
+            var coutDemiTour = penaliteDemiTourKm
+                * consommation / 100
+                * prixTrajetReference;
 
             return Object.assign({}, station, {
                 distanceCalculee: distance,
-                carburantTrajet: carburantTrajet
+                carburantTrajet: carburantTrajet,
+                carburantTotalDestination: carburantTotalDestination,
+                carburantRestantDestination: carburantRestantDestination,
+                valeurCarburantRestantDestination:
+                    carburantRestantDestination * prixTrajetReference,
+                stationDepassee: stationDepassee,
+                penaliteDemiTourKm: penaliteDemiTourKm,
+                coutDemiTour: coutDemiTour
             });
 
         }
@@ -8087,7 +8180,9 @@ function calculerRentabiliteStations(
 
             station.coutTotal =
                 litresACompleter * station.prix
-                + station.carburantTrajet * prixTrajetReference;
+                + station.carburantTrajet * prixTrajetReference
+                + station.coutDemiTour
+                - station.valeurCarburantRestantDestination;
 
         }
     );
@@ -8102,6 +8197,8 @@ function calculerRentabiliteStations(
                         coutTotal:
                             litresACompleter * station.prix
                             + station.carburantTrajet * prixTrajetReference
+                            + station.coutDemiTour
+                            - station.valeurCarburantRestantDestination
                     });
                 }
             ),
@@ -8119,6 +8216,8 @@ function calculerRentabiliteStations(
                     litresACompleter * stationReference.prix
                     + stationReference.carburantTrajet
                         * prixTrajetReference
+                    + stationReference.coutDemiTour
+                    - stationReference.valeurCarburantRestantDestination
             };
         }
     );
@@ -8378,19 +8477,6 @@ window.calculerMeilleureStation = function() {
         stationReferenceAffichee ? stationReferenceAffichee.prix || "" : "",
         litresACompleter.toFixed(2)
     ].join("|");
-
-    if (
-        comptePremiumActif()
-        && !navigationActive
-        && cleStationRentable === stationRentableAfficheeCle
-        && Number.isFinite(economieRentableAffichee)
-        && Number.isFinite(distanceStationRentableAffichee)
-        && meilleureStation.distanceCalculee <= distanceStationRentableAffichee + 0.05
-        && economie < economieRentableAffichee
-    ) {
-        economie = economieRentableAffichee;
-        meilleureStation.economieComparee = economie;
-    }
 
     if (!navigationActive) {
         stationRentableAfficheeCle = cleStationRentable;
