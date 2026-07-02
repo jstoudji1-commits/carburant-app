@@ -1,5 +1,6 @@
 ﻿from fastapi import FastAPI, Request
 from fastapi import HTTPException
+from fastapi.responses import PlainTextResponse
 from fastapi.templating import Jinja2Templates
 
 from typing import Literal, Optional
@@ -45,6 +46,11 @@ EMAIL_SIGNALEMENT = os.getenv(
     "REPORT_EMAIL",
     "optiplein5@gmail.com"
 )
+ADSENSE_CLIENT = os.getenv(
+    "ADSENSE_CLIENT",
+    "ca-pub-4904497922619715",
+).strip()
+ADSENSE_SLOT_MAP = os.getenv("ADSENSE_SLOT_MAP", "").strip()
 signalements_recents = {}
 mise_a_jour_admin_lock = threading.Lock()
 ATTENTE_VERROU_ADMIN_SECONDES = 45
@@ -1980,11 +1986,30 @@ def page_web(
                 date_derniere_mise_a_jour().isoformat()
                 if date_derniere_mise_a_jour()
                 else None
-            )
+            ),
+
+            "adsense_client": ADSENSE_CLIENT,
+
+            "adsense_slot_map": ADSENSE_SLOT_MAP,
+
+            "adsense_active": bool(ADSENSE_CLIENT),
 
         }
 
     )    
+
+
+@app.get("/ads.txt")
+def ads_txt():
+
+    identifiant_editeur = ADSENSE_CLIENT.replace("ca-", "")
+
+    return PlainTextResponse(
+        "google.com, "
+        + identifiant_editeur
+        + ", DIRECT, f08c47fec0942fa0\n",
+        media_type="text/plain",
+    )
 
 
 

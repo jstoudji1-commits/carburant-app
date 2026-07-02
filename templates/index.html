@@ -5,6 +5,13 @@
     <meta charset="utf-8">
     <title>Comparateur Carburant</title>
     <link rel="icon" type="image/png" href="/static/favicon.png">
+    {% if adsense_client %}
+    <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_client }}"
+        crossorigin="anonymous"
+    ></script>
+    {% endif %}
 
 <style>
 
@@ -1340,11 +1347,12 @@ body{
     z-index:850;
     transform:translateX(-50%);
     width:min(620px, calc(100% - 32px));
-    min-height:54px;
+    min-height:50px;
+    max-height:78px;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:11px 18px;
+    padding:6px 12px;
     border:1px solid rgba(220,228,234,0.96);
     border-radius:10px;
     background:rgba(255,255,255,0.96);
@@ -1354,10 +1362,21 @@ body{
     text-align:center;
     box-shadow:0 8px 22px rgba(16,37,54,0.14);
     backdrop-filter:blur(8px);
+    overflow:hidden;
 }
 
 .ad-banner[hidden]{
     display:none;
+}
+
+.ad-banner .adsbygoogle{
+    display:block;
+    width:100%;
+    min-height:50px;
+}
+
+.ad-fallback{
+    padding:8px 10px;
 }
 
 #map{
@@ -2663,7 +2682,7 @@ body{
                     <div class="plan-comparison-row">
                         <div class="plan-comparison-cell plan-comparison-feature">Publicit&eacute;</div>
                         <div class="plan-comparison-cell plan-comparison-free">Oui</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">Supprim&eacute;e</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Bandeau discret en test</div>
                     </div>
                 </div>
 
@@ -2811,18 +2830,18 @@ body{
 
                 <section class="premium-offer" id="premium-note">
                     <p class="premium-offer-title">
-                        <span>OptiPlein Premium</span>
-                        <span class="premium-price">3,99 &euro;/an</span>
+                        <span>D&eacute;couverte Premium</span>
+                        <span class="premium-price">Compte requis</span>
                     </p>
                     <p class="premium-offer-copy">
-                        Passez en mode malin : suppression de la pub, plus de suivi,
-                        et recalcul de la station la plus rentable toutes les
-                        15 secondes au lieu de 3 minutes.
+                        Cr&eacute;ez votre compte pour tester gratuitement toutes les
+                        fonctions Premium avant le lancement officiel. Un bandeau
+                        publicitaire discret reste affich&eacute; pendant la phase test.
                     </p>
                     <ul class="premium-benefits">
                         <li>5 v&eacute;hicules, favoris illimit&eacute;s et historique des &eacute;conomies.</li>
                         <li>Jauge de r&eacute;servoir pour calculer l'&eacute;conomie r&eacute;elle.</li>
-                        <li>Guidage au choix : OptiPlein, Waze ou Google Maps.</li>
+                        <li>Recalcul avanc&eacute;, trajets pr&eacute;par&eacute;s et guidage au choix.</li>
                     </ul>
                 </section>
             </section>
@@ -2965,7 +2984,20 @@ body{
                 class="ad-banner"
                 role="complementary"
             >
-                Publicit&eacute; - Passez Premium pour retirer les annonces.
+                {% if adsense_client and adsense_slot_map %}
+                <ins
+                    class="adsbygoogle"
+                    data-ad-client="{{ adsense_client }}"
+                    data-ad-slot="{{ adsense_slot_map }}"
+                    data-ad-format="auto"
+                    data-full-width-responsive="true"
+                ></ins>
+                {% else %}
+                <span class="ad-fallback">
+                    Publicit&eacute; discr&egrave;te - D&eacute;couverte Premium gratuite
+                    avec compte.
+                </span>
+                {% endif %}
             </div>
             <div id="map"></div>
             <button
@@ -5339,6 +5371,8 @@ var historiqueEconomiesCle = "optiplein-historique-economies";
 var lieuxTrajetCle = "optiplein-lieux-trajet";
 var compteTokenCle = "optiplein-compte-token";
 var compteEmailCle = "optiplein-compte-email";
+var modeDecouvertePremiumActif = true;
+var publiciteAdsenseActive = {{ adsense_active|tojson }};
 var nombreMaximumFavorisGratuit = 3;
 var nombreMaximumVehiculesGratuit = 1;
 var nombreMaximumVehiculesPremium = 5;
@@ -5355,7 +5389,11 @@ function planCompteActuel() {
 
 function comptePremiumActif() {
 
-    return planCompteActuel() === "premium";
+    return (
+        modeDecouvertePremiumActif
+        && compteUtilisateurConnecte()
+    )
+        || planCompteActuel() === "premium";
 
 }
 
@@ -5386,6 +5424,31 @@ function compteUtilisateurConnecte() {
     return Boolean(jetonCompte());
 
 }
+
+function initialiserDiffuseurPublicite() {
+
+    if (!publiciteAdsenseActive || !window.adsbygoogle) {
+        return;
+    }
+
+    document.querySelectorAll(".ad-banner .adsbygoogle").forEach(
+        function(emplacement) {
+            if (emplacement.dataset.initialise === "1") {
+                return;
+            }
+
+            emplacement.dataset.initialise = "1";
+            try {
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+            } catch (erreur) {
+                console.log("Diffuseur publicitaire indisponible");
+            }
+        }
+    );
+
+}
+
+window.addEventListener("load", initialiserDiffuseurPublicite);
 
 function definirStatutCompte(message, type) {
 
@@ -5685,7 +5748,7 @@ function actualiserInterfaceCompte() {
     definirStatutCompte(
         connecte
             ? "Sauvegarde active pour " + email + "."
-            : "Non connect\u00e9 : les donn\u00e9es restent sur ce t\u00e9l\u00e9phone.",
+            : "Cr\u00e9ez un compte pour d\u00e9bloquer la d\u00e9couverte Premium.",
         connecte ? "success" : ""
     );
 
@@ -5784,9 +5847,8 @@ window.creerCompteOptiPlein = async function(event) {
         );
         await finaliserConnexionCompte(resultat, true);
         definirStatutCompte(
-            "Compte "
-            + (comptePremiumActif() ? "Premium" : "Gratuit")
-            + " cr\u00e9\u00e9 et donn\u00e9es sauvegard\u00e9es.",
+            "Compte cr\u00e9\u00e9 : d\u00e9couverte Premium activ\u00e9e "
+            + "et donn\u00e9es sauvegard\u00e9es.",
             "success"
         );
     } catch (erreur) {
@@ -5831,6 +5893,8 @@ window.deconnecterCompteOptiPlein = function(event) {
     localStorage.removeItem(compteTokenCle);
     localStorage.removeItem(compteEmailCle);
     actualiserInterfaceCompte();
+    actualiserPlanCompte();
+    calculerMeilleureStation();
 
 };
 
@@ -7508,7 +7572,7 @@ function actualiserPlanCompte() {
     }
 
     if (pub) {
-        pub.hidden = premium;
+        pub.hidden = false;
     }
 
     if (comparatifPlan) {
@@ -7516,7 +7580,7 @@ function actualiserPlanCompte() {
     }
 
     if (offrePremium) {
-        offrePremium.hidden = premium;
+        offrePremium.hidden = false;
     }
 
     if (nouveauVehiculeBouton) {
