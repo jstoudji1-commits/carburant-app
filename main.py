@@ -1141,7 +1141,10 @@ def landing_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="landing.html",
-        context={}
+        context={
+            "adsense_client": ADSENSE_CLIENT,
+            "adsense_active": bool(ADSENSE_CLIENT),
+        }
     )
 
 
