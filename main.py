@@ -1962,6 +1962,9 @@ def page_web(
         else None
     )
     prix_min = station_prix_min[0] if station_prix_min else None
+    date_mise_a_jour = lire_date_metadata(
+        chemin_metadata_stations()
+    ) or date_derniere_mise_a_jour()
 
     return templates.TemplateResponse(
 
@@ -1983,11 +1986,11 @@ def page_web(
 
             "rayon": rayon,
 
-            "texte_verification": texte_derniere_mise_a_jour(),
+            "texte_verification": "vérification en attente",
 
             "date_verification": (
-                date_derniere_mise_a_jour().isoformat()
-                if date_derniere_mise_a_jour()
+                date_mise_a_jour.isoformat()
+                if date_mise_a_jour
                 else None
             ),
 
