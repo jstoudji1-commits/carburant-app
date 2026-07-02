@@ -75,6 +75,10 @@ ENRICHISSEMENT_STATIONS_ADMIN_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "stations_enrichment.json"
 )
+CORRECTIONS_STATIONS_ADMIN_FICHIER = (
+    DOSSIER_DONNEES_UTILISATEURS
+    / "stations_admin_overrides.json"
+)
 ADMIN_PASSWORD = os.getenv(
     "ADMIN_PASSWORD",
     "",
@@ -624,6 +628,24 @@ def lire_fichier_enrichissement_stations(fichier):
     return {"stations": {}}
 
 
+def ecrire_fichier_enrichissement_stations(fichier, donnees):
+
+    fichier.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    temporaire = fichier.with_suffix(".tmp")
+    temporaire.write_text(
+        json.dumps(
+            donnees,
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    temporaire.replace(fichier)
+
+
 def charger_enrichissements_stations():
 
     enrichissements = {}
@@ -631,6 +653,7 @@ def charger_enrichissements_stations():
     for fichier, source_admin in (
         (ENRICHISSEMENT_STATIONS_REPO_FICHIER, False),
         (ENRICHISSEMENT_STATIONS_ADMIN_FICHIER, True),
+        (CORRECTIONS_STATIONS_ADMIN_FICHIER, True),
     ):
         donnees = lire_fichier_enrichissement_stations(fichier)
         for station_id, correction in donnees.get("stations", {}).items():
@@ -671,40 +694,37 @@ def enregistrer_enrichissement_station(station, correction):
         if correction.longitude is not None
         else entree.get("longitude_corrigee")
     )
-    entree.update(
-        {
-            "signature": signature_adresse(station),
-            "enseigne": correction.enseigne.strip(),
-            "adresse": correction.adresse.strip(),
-            "cp": correction.cp.strip(),
-            "ville": correction.ville.strip(),
-            "latitude_corrigee": latitude_corrigee,
-            "longitude_corrigee": longitude_corrigee,
-            "source_enseigne": "Admin OptiPlein",
-            "source_correction": "Admin OptiPlein",
-            "forcer_correction": True,
-            "updated_at": datetime.now().astimezone().isoformat(),
-        }
-    )
+    entree_correction = {
+        "signature": signature_adresse(station),
+        "enseigne": correction.enseigne.strip(),
+        "adresse": correction.adresse.strip(),
+        "cp": correction.cp.strip(),
+        "ville": correction.ville.strip(),
+        "latitude_corrigee": latitude_corrigee,
+        "longitude_corrigee": longitude_corrigee,
+        "source_enseigne": "Admin OptiPlein",
+        "source_correction": "Admin OptiPlein",
+        "forcer_correction": True,
+        "updated_at": datetime.now().astimezone().isoformat(),
+    }
+    entree.update(entree_correction)
     donnees["generated_at"] = datetime.now().astimezone().isoformat()
     donnees["source"] = "admin"
+    ecrire_fichier_enrichissement_stations(
+        ENRICHISSEMENT_STATIONS_ADMIN_FICHIER,
+        donnees,
+    )
 
-    ENRICHISSEMENT_STATIONS_ADMIN_FICHIER.parent.mkdir(
-        parents=True,
-        exist_ok=True,
+    corrections = lire_fichier_enrichissement_stations(
+        CORRECTIONS_STATIONS_ADMIN_FICHIER
     )
-    temporaire = ENRICHISSEMENT_STATIONS_ADMIN_FICHIER.with_suffix(
-        ".tmp"
+    corrections.setdefault("stations", {})[station_id] = entree_correction
+    corrections["generated_at"] = datetime.now().astimezone().isoformat()
+    corrections["source"] = "admin-overrides"
+    ecrire_fichier_enrichissement_stations(
+        CORRECTIONS_STATIONS_ADMIN_FICHIER,
+        corrections,
     )
-    temporaire.write_text(
-        json.dumps(
-            donnees,
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-    temporaire.replace(ENRICHISSEMENT_STATIONS_ADMIN_FICHIER)
 
 
 def appliquer_enrichissements_admin(stations):
