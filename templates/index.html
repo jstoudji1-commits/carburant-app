@@ -8369,8 +8369,7 @@ function calculerRentabiliteStations(
             station.coutTotal =
                 litresACompleter * station.prix
                 + station.carburantTrajet * prixTrajetReference
-                + station.coutDemiTour
-                - station.valeurCarburantRestantDestination;
+                + station.coutDemiTour;
 
         }
     );
@@ -8386,7 +8385,6 @@ function calculerRentabiliteStations(
                             litresACompleter * station.prix
                             + station.carburantTrajet * prixTrajetReference
                             + station.coutDemiTour
-                            - station.valeurCarburantRestantDestination
                     });
                 }
             ),
@@ -8405,7 +8403,6 @@ function calculerRentabiliteStations(
                     + stationReference.carburantTrajet
                         * prixTrajetReference
                     + stationReference.coutDemiTour
-                    - stationReference.valeurCarburantRestantDestination
             };
         }
     );
