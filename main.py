@@ -1,6 +1,6 @@
 ﻿from fastapi import FastAPI, Request
 from fastapi import HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from typing import Literal, Optional
@@ -1167,6 +1167,12 @@ def preparer_stations_pour_carte(
 
 
 @app.get("/")
+def rediriger_vers_application():
+
+    return RedirectResponse(url="/web", status_code=307)
+
+
+@app.get("/landing")
 def landing_page(request: Request):
 
     return templates.TemplateResponse(
