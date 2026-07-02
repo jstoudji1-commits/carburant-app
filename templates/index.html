@@ -3479,7 +3479,10 @@ async function synchroniserDateMiseAJour() {
 
         var donnees = await reponse.json();
         if (donnees.update_pending) {
-            afficherInfoItineraire("Mise a jour des prix en cours...");
+            afficherInfoItineraire(
+                "Mise a jour des prix en cours...",
+                12000
+            );
             window.setTimeout(synchroniserDateMiseAJour, 30000);
         }
 
@@ -3497,15 +3500,22 @@ async function synchroniserDateMiseAJour() {
                 && isoServeur !== dateDonneesChargees
             ) {
                 afficherInfoItineraire(
-                    "Nouveaux prix disponibles, actualisation..."
+                    "Nouveaux prix disponibles, actualisation...",
+                    12000
                 );
                 var actualisationOk =
                     await actualiserStationsSelonPosition(true);
 
                 if (actualisationOk) {
                     dateDonneesChargees = isoServeur;
+                    afficherInfoItineraire(
+                        "Prix actualises.",
+                        4500
+                    );
                 } else if (!navigationActive && !trajetPrepare) {
                     rechargerAvecPositionActuelle();
+                } else {
+                    afficherInfoItineraire("", 0);
                 }
             }
         }
@@ -6294,6 +6304,8 @@ var distanceActualisationKm = 0.5;
 var delaiActualisationMs = 30000;
 var derniereActualisationStations = 0;
 var actualisationStationsEnCours = false;
+var minuteurInfoItineraire = null;
+var sequenceInfoItineraire = 0;
 
 function calculerCapDeplacement(
     latitudeDepart,
@@ -8905,15 +8917,31 @@ function trouverPointRouteLePlusProche(latitude, longitude) {
 
 }
 
-function afficherInfoItineraire(message) {
+function afficherInfoItineraire(message, dureeMs) {
 
     var info = document.getElementById(
         "itineraire-info"
     );
 
+    sequenceInfoItineraire += 1;
+    var sequenceCourante = sequenceInfoItineraire;
+
+    if (minuteurInfoItineraire) {
+        window.clearTimeout(minuteurInfoItineraire);
+        minuteurInfoItineraire = null;
+    }
+
     if (info) {
 
-        info.textContent = message;
+        info.textContent = message || "";
+
+        if (message && Number.isFinite(dureeMs) && dureeMs > 0) {
+            minuteurInfoItineraire = window.setTimeout(function() {
+                if (sequenceInfoItineraire === sequenceCourante) {
+                    info.textContent = "";
+                }
+            }, dureeMs);
+        }
 
     }
 
