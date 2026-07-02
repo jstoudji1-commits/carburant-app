@@ -46,6 +46,7 @@ EMAIL_SIGNALEMENT = os.getenv(
     "REPORT_EMAIL",
     "optiplein5@gmail.com"
 )
+APP_BASE_URL = os.getenv("APP_BASE_URL", "").strip().rstrip("/")
 ADSENSE_CLIENT = os.getenv(
     "ADSENSE_CLIENT",
     "ca-pub-4904497922619715",
@@ -102,6 +103,7 @@ GRAPHHOPPER_API_KEY = lire_variable_graphhopper()
 SESSIONS_UTILISATEURS = {}
 PBKDF2_ITERATIONS = 260000
 PREMIUM_TEST_ACTIF = True
+DELAI_VALIDATION_EMAIL_SECONDES = 24 * 60 * 60
 
 
 class SignalementProbleme(BaseModel):
@@ -805,7 +807,7 @@ def donnees_compte_premium_test(donnees):
     return donnees
 
 
-def envoyer_signalement_email(signalement):
+def envoyer_email(message):
 
     hote = os.getenv("SMTP_HOST", "smtp.gmail.com")
     port = int(os.getenv("SMTP_PORT", "587"))
@@ -815,6 +817,36 @@ def envoyer_signalement_email(signalement):
 
     if not utilisateur or not mot_de_passe or not expediteur:
         raise RuntimeError("Configuration SMTP absente")
+
+    if not message.get("From"):
+        message["From"] = expediteur
+
+    contexte_ssl = ssl.create_default_context()
+
+    if port == 465:
+        with smtplib.SMTP_SSL(
+            hote,
+            port,
+            timeout=20,
+            context=contexte_ssl,
+        ) as serveur:
+            serveur.login(utilisateur, mot_de_passe)
+            serveur.send_message(message)
+    else:
+        with smtplib.SMTP(hote, port, timeout=20) as serveur:
+            serveur.ehlo()
+            serveur.starttls(context=contexte_ssl)
+            serveur.ehlo()
+            serveur.login(utilisateur, mot_de_passe)
+            serveur.send_message(message)
+
+
+def envoyer_signalement_email(signalement):
+
+    expediteur = os.getenv(
+        "SMTP_FROM",
+        os.getenv("SMTP_USER", ""),
+    )
 
     message = EmailMessage()
     message["Subject"] = (
@@ -838,24 +870,128 @@ def envoyer_signalement_email(signalement):
         f"{signalement.description.strip()}\n"
     )
 
-    contexte_ssl = ssl.create_default_context()
+    envoyer_email(message)
 
-    if port == 465:
-        with smtplib.SMTP_SSL(
-            hote,
-            port,
-            timeout=20,
-            context=contexte_ssl,
-        ) as serveur:
-            serveur.login(utilisateur, mot_de_passe)
-            serveur.send_message(message)
-    else:
-        with smtplib.SMTP(hote, port, timeout=20) as serveur:
-            serveur.ehlo()
-            serveur.starttls(context=contexte_ssl)
-            serveur.ehlo()
-            serveur.login(utilisateur, mot_de_passe)
-            serveur.send_message(message)
+
+def creer_jeton_validation_email():
+
+    jeton = secrets.token_urlsafe(32)
+    empreinte = hashlib.sha256(
+        jeton.encode("utf-8")
+    ).hexdigest()
+    expiration = time.time() + DELAI_VALIDATION_EMAIL_SECONDES
+
+    return jeton, empreinte, expiration
+
+
+def url_base_application(request):
+
+    if APP_BASE_URL:
+        return APP_BASE_URL
+
+    return str(request.base_url).rstrip("/")
+
+
+def html_logo_email(base_url):
+
+    return (
+        '<p style="margin:0 0 24px 0;">'
+        f'<img src="{base_url}/static/logo.png" alt="OptiPlein" '
+        'style="display:block;max-width:210px;height:auto;">'
+        "</p>"
+    )
+
+
+def envoyer_email_validation_compte(email, lien_validation, base_url):
+
+    expediteur = os.getenv(
+        "SMTP_FROM",
+        os.getenv("SMTP_USER", ""),
+    )
+    message = EmailMessage()
+    message["Subject"] = "Validez votre compte OptiPlein"
+    message["From"] = expediteur
+    message["To"] = email
+    message.set_content(
+        "Bienvenue sur OptiPlein.\n\n"
+        "Pour activer votre compte et debloquer la decouverte Premium, "
+        "cliquez sur ce lien :\n"
+        f"{lien_validation}\n\n"
+        "Ce lien est valable 24 heures. Si vous n'etes pas a l'origine "
+        "de cette demande, ignorez simplement cet e-mail.\n"
+    )
+    message.add_alternative(
+        '<div style="font-family:Arial,sans-serif;color:#102536;'
+        'line-height:1.55;font-size:16px;">'
+        + html_logo_email(base_url)
+        + "<h1 style=\"font-size:22px;margin:0 0 12px 0;\">"
+        "Validez votre compte OptiPlein"
+        "</h1>"
+        "<p>Bienvenue sur OptiPlein.</p>"
+        "<p>Pour activer votre compte et d&eacute;bloquer la "
+        "d&eacute;couverte Premium, cliquez sur le bouton ci-dessous.</p>"
+        '<p style="margin:24px 0;">'
+        f'<a href="{lien_validation}" '
+        'style="display:inline-block;background:#149f38;color:#ffffff;'
+        'text-decoration:none;font-weight:700;padding:12px 18px;'
+        'border-radius:8px;">Valider mon e-mail</a>'
+        "</p>"
+        "<p>Ce lien est valable 24 heures. Si vous n'etes pas a "
+        "l'origine de cette demande, ignorez simplement cet e-mail.</p>"
+        "</div>",
+        subtype="html",
+    )
+
+    envoyer_email(message)
+
+
+def envoyer_email_bienvenue_premium(email, base_url):
+
+    expediteur = os.getenv(
+        "SMTP_FROM",
+        os.getenv("SMTP_USER", ""),
+    )
+    message = EmailMessage()
+    message["Subject"] = "Votre acces Premium OptiPlein est active"
+    message["From"] = expediteur
+    message["To"] = email
+    message.set_content(
+        "Votre compte OptiPlein est valide.\n\n"
+        "Pendant la phase de test de cet ete, vous avez acces gratuitement "
+        "aux fonctions Premium : preparation de trajet, calcul de la station "
+        "la plus rentable, historique des economies, plusieurs vehicules, "
+        "favoris illimites, tendances de prix et suggestions de "
+        "ravitaillement.\n\n"
+        "Vos retours vont aider a ameliorer l'application avant son "
+        "lancement officiel. Merci de faire partie des premiers testeurs.\n\n"
+        f"Acceder a l'application : {base_url}/web\n"
+    )
+    message.add_alternative(
+        '<div style="font-family:Arial,sans-serif;color:#102536;'
+        'line-height:1.55;font-size:16px;">'
+        + html_logo_email(base_url)
+        + "<h1 style=\"font-size:22px;margin:0 0 12px 0;\">"
+        "Bienvenue dans la decouverte Premium"
+        "</h1>"
+        "<p>Votre compte OptiPlein est valide et votre acces Premium est "
+        "active gratuitement pendant la phase de test de cet ete.</p>"
+        "<p>Vous pouvez maintenant profiter des fonctions avancees : "
+        "preparation de trajet, calcul de la station la plus rentable, "
+        "historique des economies, plusieurs vehicules, favoris illimites, "
+        "tendances de prix et suggestions de ravitaillement.</p>"
+        "<p>Vos retours vont aider a ameliorer l'application avant son "
+        "lancement officiel. Merci de faire partie des premiers testeurs.</p>"
+        '<p style="margin:24px 0;">'
+        f'<a href="{base_url}/web" '
+        'style="display:inline-block;background:#149f38;color:#ffffff;'
+        'text-decoration:none;font-weight:700;padding:12px 18px;'
+        'border-radius:8px;">Ouvrir OptiPlein</a>'
+        "</p>"
+        "</div>",
+        subtype="html",
+    )
+
+    envoyer_email(message)
 
 
 async def actualiser_prix_periodiquement():
@@ -1763,7 +1899,10 @@ def get_derniere_mise_a_jour():
 
 
 @app.post("/api/compte/inscription")
-def creer_compte(identifiants: CompteIdentifiants):
+def creer_compte(
+    identifiants: CompteIdentifiants,
+    request: Request,
+):
 
     email = normaliser_email(identifiants.email)
 
@@ -1776,30 +1915,70 @@ def creer_compte(identifiants: CompteIdentifiants):
     comptes = charger_comptes_utilisateurs()
     utilisateurs = comptes.setdefault("users", {})
 
-    if email in utilisateurs:
+    utilisateur_existant = utilisateurs.get(email)
+
+    if utilisateur_existant and utilisateur_existant.get(
+        "email_verified",
+        True,
+    ):
         raise HTTPException(
             status_code=409,
             detail="Un compte existe deja avec cette adresse.",
         )
+
+    jeton_validation, empreinte_validation, expiration_validation = (
+        creer_jeton_validation_email()
+    )
+    base_url = url_base_application(request)
+    lien_validation = (
+        f"{base_url}/api/compte/validation-email"
+        f"?token={jeton_validation}"
+    )
+    maintenant = datetime.now().astimezone().isoformat()
 
     utilisateurs[email] = {
         "email": email,
         "password": hasher_mot_de_passe(
             identifiants.mot_de_passe
         ),
-        "created_at": datetime.now().astimezone().isoformat(),
-        "updated_at": datetime.now().astimezone().isoformat(),
-        "data": limiter_donnees_compte(DonneesCompte()),
+        "created_at": utilisateur_existant.get(
+            "created_at",
+            maintenant,
+        ) if utilisateur_existant else maintenant,
+        "updated_at": maintenant,
+        "email_verified": False,
+        "email_verification_hash": empreinte_validation,
+        "email_verification_expires_at": expiration_validation,
+        "data": utilisateur_existant.get(
+            "data",
+            limiter_donnees_compte(DonneesCompte()),
+        ) if utilisateur_existant else limiter_donnees_compte(
+            DonneesCompte()
+        ),
     }
+
+    try:
+        envoyer_email_validation_compte(
+            email,
+            lien_validation,
+            base_url,
+        )
+    except Exception as erreur:
+        logger.exception("Impossible d'envoyer l'e-mail de validation.")
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "L'e-mail de validation n'a pas pu etre envoye. "
+                "Reessayez dans quelques instants."
+            ),
+        ) from erreur
+
     enregistrer_comptes_utilisateurs(comptes)
 
     return {
         "ok": True,
         "email": email,
-        "token": creer_session(email),
-        "donnees": donnees_compte_premium_test(
-            utilisateurs[email]["data"]
-        ),
+        "verification_required": True,
     }
 
 
@@ -1819,6 +1998,14 @@ def connecter_compte(identifiants: CompteIdentifiants):
             detail="Adresse e-mail ou mot de passe incorrect.",
         )
 
+    if not utilisateur.get("email_verified", True):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Validez d'abord votre adresse e-mail avec le lien recu."
+            ),
+        )
+
     return {
         "ok": True,
         "email": email,
@@ -1827,6 +2014,60 @@ def connecter_compte(identifiants: CompteIdentifiants):
             utilisateur.get("data", {})
         ),
     }
+
+
+@app.get("/api/compte/validation-email")
+def valider_email_compte(token: str, request: Request):
+
+    empreinte = hashlib.sha256(
+        token.encode("utf-8")
+    ).hexdigest()
+    comptes = charger_comptes_utilisateurs()
+    utilisateurs = comptes.setdefault("users", {})
+
+    for email, utilisateur in utilisateurs.items():
+        if not hmac.compare_digest(
+            utilisateur.get("email_verification_hash", ""),
+            empreinte,
+        ):
+            continue
+
+        if time.time() > float(
+            utilisateur.get("email_verification_expires_at", 0)
+        ):
+            raise HTTPException(
+                status_code=410,
+                detail=(
+                    "Le lien de validation a expire. "
+                    "Creez a nouveau votre compte pour recevoir un nouveau lien."
+                ),
+            )
+
+        utilisateur["email_verified"] = True
+        utilisateur.pop("email_verification_hash", None)
+        utilisateur.pop("email_verification_expires_at", None)
+        utilisateur["updated_at"] = datetime.now().astimezone().isoformat()
+        enregistrer_comptes_utilisateurs(comptes)
+
+        try:
+            envoyer_email_bienvenue_premium(
+                email,
+                url_base_application(request),
+            )
+        except Exception:
+            logger.exception(
+                "Impossible d'envoyer l'e-mail de bienvenue Premium."
+            )
+
+        return RedirectResponse(
+            url="/web?email_verifie=1",
+            status_code=303,
+        )
+
+    raise HTTPException(
+        status_code=400,
+        detail="Lien de validation invalide.",
+    )
 
 
 @app.get("/api/compte/donnees")

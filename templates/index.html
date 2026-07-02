@@ -5920,6 +5920,16 @@ window.creerCompteOptiPlein = async function(event) {
                 )
             }
         );
+        if (resultat.verification_required) {
+            document.getElementById("account-password").value = "";
+            definirStatutCompte(
+                "Compte cr\u00e9\u00e9. Cliquez sur le lien envoy\u00e9 par e-mail "
+                + "pour activer la d\u00e9couverte Premium.",
+                "success"
+            );
+            return;
+        }
+
         await finaliserConnexionCompte(resultat, true);
         definirStatutCompte(
             "Compte cr\u00e9\u00e9 : d\u00e9couverte Premium activ\u00e9e "
@@ -6049,6 +6059,37 @@ async function restaurerSessionCompte() {
     }
 
 }
+
+function afficherRetourValidationEmail() {
+
+    window.setTimeout(
+        function() {
+            var parametres = new URLSearchParams(window.location.search);
+
+            if (parametres.get("email_verifie") !== "1") {
+                return;
+            }
+
+            definirStatutCompte(
+                "Adresse e-mail valid\u00e9e. Vous pouvez maintenant vous connecter.",
+                "success"
+            );
+
+            parametres.delete("email_verifie");
+            var nouvelleUrl = window.location.pathname
+                + (parametres.toString() ? "?" + parametres.toString() : "")
+                + window.location.hash;
+            window.history.replaceState({}, "", nouvelleUrl);
+        },
+        150
+    );
+
+}
+
+window.addEventListener(
+    "load",
+    afficherRetourValidationEmail
+);
 
 function lireFavoris() {
 
