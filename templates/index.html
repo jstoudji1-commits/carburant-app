@@ -10876,6 +10876,24 @@ function formaterDistanceNavigation(distanceMetres) {
 
 }
 
+function formaterDistanceRestanteNavigation(distanceMetres) {
+
+    var kilometres = distanceMetres / 1000;
+    var texteDistance = kilometres.toLocaleString(
+        "fr-FR",
+        kilometres >= 10
+            ? { maximumFractionDigits: 0 }
+            : { maximumFractionDigits: 1 }
+    ) + " km";
+
+    return texteDistance + (
+        kilometres >= 2
+            ? " restants"
+            : " restant"
+    );
+
+}
+
 function symboleManeuvre(maneuvre) {
 
     var modificateur = maneuvre.modifier || "straight";
@@ -11023,26 +11041,17 @@ function actualiserGuidageNavigation() {
         distanceTotaleMetres - progressionMetres
     );
 
-    var dureeRestante = etapesNavigation
-        .slice(indexEtapeNavigation)
-        .reduce(
-            function(total, prochaineEtape) {
-                return total + (prochaineEtape.duration || 0);
-            },
-            0
-        );
+    var instruction = texteManeuvre(etape);
+    var prefixeDistanceInstruction = distanceManeuvre > 20
+        ? formaterDistanceNavigation(distanceManeuvre) + " \u00b7 "
+        : "";
 
     document.getElementById("navigation-arrow").textContent =
         symboleManeuvre(etape.maneuver || {});
     document.getElementById("navigation-instruction").textContent =
-        texteManeuvre(etape);
+        prefixeDistanceInstruction + instruction;
     document.getElementById("navigation-distance").textContent =
-        formaterDistanceNavigation(distanceRestanteMetres)
-        + " restantes \u00b7 "
-        + formaterDistanceNavigation(distanceManeuvre)
-        + " avant instruction \u00b7 "
-        + formaterDuree(dureeRestante / 60)
-        + " restantes";
+        formaterDistanceRestanteNavigation(distanceRestanteMetres);
 
 }
 
