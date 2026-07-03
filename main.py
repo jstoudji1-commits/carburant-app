@@ -814,10 +814,14 @@ def donnees_compte_premium_test(donnees):
     return donnees
 
 
-def envoyer_email(message):
+def lire_configuration_smtp():
 
     hote = os.getenv("SMTP_HOST", "smtp.gmail.com").strip()
-    port = int(os.getenv("SMTP_PORT", "587").strip())
+    port_brut = os.getenv("SMTP_PORT", "587").strip()
+    try:
+        port = int(port_brut)
+    except ValueError:
+        port = 0
     utilisateur = os.getenv("SMTP_USER", "").strip()
     mot_de_passe = re.sub(
         r"\s+",
@@ -826,10 +830,116 @@ def envoyer_email(message):
     )
     expediteur = os.getenv("SMTP_FROM", utilisateur).strip()
 
-    if not utilisateur or not mot_de_passe or not expediteur:
+    return {
+        "host": hote,
+        "port": port,
+        "port_raw": port_brut,
+        "user": utilisateur,
+        "password": mot_de_passe,
+        "from": expediteur,
+    }
+
+
+def masquer_email_admin(email):
+
+    if not email or "@" not in email:
+        return email or ""
+
+    nom, domaine = email.split("@", 1)
+    if len(nom) <= 2:
+        nom_masque = nom[:1] + "*"
+    else:
+        nom_masque = nom[:2] + "***" + nom[-1:]
+
+    return nom_masque + "@" + domaine
+
+
+def resume_configuration_smtp():
+
+    configuration = lire_configuration_smtp()
+    mot_de_passe = configuration["password"]
+    utilisateur = configuration["user"]
+    expediteur = configuration["from"]
+    port = configuration["port"]
+
+    champs_manquants = [
+        nom
+        for nom, valeur in (
+            ("SMTP_USER", utilisateur),
+            ("SMTP_PASSWORD", mot_de_passe),
+            ("SMTP_FROM", expediteur),
+        )
+        if not valeur
+    ]
+
+    if port <= 0:
+        champs_manquants.append("SMTP_PORT")
+
+    return {
+        "host": configuration["host"],
+        "port": port or configuration["port_raw"],
+        "user": masquer_email_admin(utilisateur),
+        "from": masquer_email_admin(expediteur),
+        "password_configured": bool(mot_de_passe),
+        "password_length": len(mot_de_passe),
+        "ready": not champs_manquants,
+        "missing": champs_manquants,
+        "app_base_url": APP_BASE_URL,
+    }
+
+
+def message_erreur_smtp(erreur):
+
+    if isinstance(erreur, smtplib.SMTPAuthenticationError):
+        detail = ""
+        if getattr(erreur, "smtp_error", None):
+            detail = erreur.smtp_error.decode(
+                "utf-8",
+                errors="replace",
+            )
+        return (
+            "Authentification SMTP refusée par Gmail. "
+            "Vérifiez que SMTP_USER est optiplein5@gmail.com et que "
+            "SMTP_PASSWORD est bien un mot de passe d’application Google "
+            "à 16 caractères, sans le mot de passe normal du compte."
+            + (f" Réponse Gmail : {detail}" if detail else "")
+        )
+
+    if isinstance(erreur, smtplib.SMTPConnectError):
+        return (
+            "Connexion au serveur SMTP impossible. Vérifiez SMTP_HOST "
+            "et SMTP_PORT sur Render."
+        )
+
+    if isinstance(erreur, smtplib.SMTPServerDisconnected):
+        return (
+            "Le serveur SMTP a coupé la connexion. Vérifiez le port SMTP "
+            "et relancez le déploiement Render."
+        )
+
+    if isinstance(erreur, (TimeoutError, OSError)):
+        return (
+            "Connexion SMTP impossible depuis Render pour le moment. "
+            "Vérifiez le réseau, SMTP_HOST et SMTP_PORT."
+        )
+
+    return f"Erreur SMTP ({type(erreur).__name__}) : {erreur}"
+
+
+def envoyer_email(message):
+
+    configuration = lire_configuration_smtp()
+    hote = configuration["host"]
+    port = configuration["port"]
+    utilisateur = configuration["user"]
+    mot_de_passe = configuration["password"]
+    expediteur = configuration["from"]
+
+    if port <= 0 or not utilisateur or not mot_de_passe or not expediteur:
         champs_manquants = [
             nom
             for nom, valeur in (
+                ("SMTP_PORT", port),
                 ("SMTP_USER", utilisateur),
                 ("SMTP_PASSWORD", mot_de_passe),
                 ("SMTP_FROM", expediteur),
@@ -1598,6 +1708,13 @@ async def forcer_mise_a_jour_admin(request: Request):
         mise_a_jour_admin_lock.release()
 
 
+@app.get("/api/admin/email-status")
+def statut_email_admin(request: Request):
+
+    verifier_admin(request)
+    return resume_configuration_smtp()
+
+
 @app.post("/api/admin/test-email")
 async def tester_email_admin(test: AdminTestEmail, request: Request):
 
@@ -1625,10 +1742,7 @@ async def tester_email_admin(test: AdminTestEmail, request: Request):
         logger.exception("Test e-mail admin échoué : %s", erreur)
         raise HTTPException(
             status_code=503,
-            detail=(
-                "L’e-mail de test n’a pas pu être envoyé. "
-                "Vérifiez SMTP_USER, SMTP_PASSWORD et SMTP_FROM sur Render."
-            ),
+            detail=message_erreur_smtp(erreur),
         ) from erreur
 
     return {"ok": True, "email": email}
@@ -2126,8 +2240,9 @@ def creer_compte(
         )
     except Exception as erreur:
         logger.exception(
-            "Impossible d’envoyer l’e-mail de validation : %s",
+            "Impossible d’envoyer l’e-mail de validation : %s | SMTP=%s",
             erreur,
+            resume_configuration_smtp(),
         )
         raise HTTPException(
             status_code=503,

@@ -390,6 +390,9 @@
                         </button>
                     </div>
                 </div>
+                <p class="status" id="email-config-status">
+                    Configuration SMTP non v&eacute;rifi&eacute;e.
+                </p>
                 <p class="status" id="test-email-status"></p>
             </section>
 
@@ -749,6 +752,7 @@
             afficherStats(donnees.stats || {});
             afficherComptes(donnees.comptes || []);
             afficherTesteurs(donnees.testeurs || []);
+            await chargerStatutEmailAdmin();
             loginCard.hidden = true;
             dashboard.hidden = false;
         }
@@ -784,6 +788,66 @@
                     || "Mise a jour impossible.";
             } finally {
                 bouton.disabled = false;
+            }
+        }
+
+        function afficherStatutEmailAdmin(configuration) {
+            var statut = document.getElementById("email-config-status");
+
+            if (!statut) {
+                return;
+            }
+
+            var morceaux = [];
+            var manquants = configuration.missing || [];
+
+            if (configuration.ready) {
+                morceaux.push("SMTP pret");
+            } else {
+                morceaux.push(
+                    "SMTP incomplet : " + (manquants.join(", ") || "inconnu")
+                );
+            }
+
+            morceaux.push(
+                "compte " + (configuration.user || "non renseigne")
+            );
+            morceaux.push(
+                "mot de passe "
+                + (
+                    configuration.password_configured
+                        ? configuration.password_length + " caracteres"
+                        : "absent"
+                )
+            );
+            morceaux.push(
+                "serveur " + configuration.host + ":" + configuration.port
+            );
+
+            if (
+                configuration.password_configured
+                && configuration.password_length !== 16
+            ) {
+                morceaux.push(
+                    "attention : un mot de passe d'application Google "
+                    + "fait normalement 16 caracteres"
+                );
+            }
+
+            statut.textContent = morceaux.join(" - ");
+        }
+
+        async function chargerStatutEmailAdmin() {
+            var statut = document.getElementById("email-config-status");
+
+            try {
+                var configuration = await requeteAdmin("/api/admin/email-status");
+                afficherStatutEmailAdmin(configuration);
+            } catch (erreur) {
+                if (statut) {
+                    statut.textContent = erreur.message
+                        || "Configuration SMTP impossible a verifier.";
+                }
             }
         }
 
