@@ -3734,12 +3734,12 @@ window.envoyerSignalement = async function(event) {
         if (!reponse.ok) {
             throw new Error(
                 resultat.detail
-                || "Le message n'a pas pu etre envoye."
+                || "Le message n’a pas pu être envoyé."
             );
         }
 
         formulaire.reset();
-        statut.textContent = "Merci, votre signalement a bien ete envoye.";
+        statut.textContent = "Merci, votre signalement a bien été envoyé.";
         statut.className = "problem-status success";
     } catch (erreur) {
         statut.textContent = erreur.message;
