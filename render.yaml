@@ -19,8 +19,12 @@ services:
         value: "587"
       - key: SMTP_USER
         value: optiplein5@gmail.com
+      - key: SMTP_FROM
+        value: optiplein5@gmail.com
       - key: SMTP_PASSWORD
         sync: false
+      - key: APP_BASE_URL
+        value: https://optiplein.fr
       - key: ADMIN_PASSWORD
         sync: false
       - key: GRAPHHOPPER_API_KEY

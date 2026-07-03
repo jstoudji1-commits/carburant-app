@@ -521,7 +521,7 @@ def email_depuis_requete(request):
     if not email:
         raise HTTPException(
             status_code=401,
-            detail="Session expiree. Reconnectez-vous.",
+            detail="Session expirée. Reconnectez-vous.",
         )
 
     return email
@@ -809,14 +809,26 @@ def donnees_compte_premium_test(donnees):
 
 def envoyer_email(message):
 
-    hote = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    port = int(os.getenv("SMTP_PORT", "587"))
-    utilisateur = os.getenv("SMTP_USER", "")
-    mot_de_passe = os.getenv("SMTP_PASSWORD", "")
-    expediteur = os.getenv("SMTP_FROM", utilisateur)
+    hote = os.getenv("SMTP_HOST", "smtp.gmail.com").strip()
+    port = int(os.getenv("SMTP_PORT", "587").strip())
+    utilisateur = os.getenv("SMTP_USER", "").strip()
+    mot_de_passe = os.getenv("SMTP_PASSWORD", "").strip()
+    expediteur = os.getenv("SMTP_FROM", utilisateur).strip()
 
     if not utilisateur or not mot_de_passe or not expediteur:
-        raise RuntimeError("Configuration SMTP absente")
+        champs_manquants = [
+            nom
+            for nom, valeur in (
+                ("SMTP_USER", utilisateur),
+                ("SMTP_PASSWORD", mot_de_passe),
+                ("SMTP_FROM", expediteur),
+            )
+            if not valeur
+        ]
+        raise RuntimeError(
+            "Configuration SMTP incomplète : "
+            + ", ".join(champs_manquants)
+        )
 
     if not message.get("From"):
         message["From"] = expediteur
@@ -914,10 +926,10 @@ def envoyer_email_validation_compte(email, lien_validation, base_url):
     message["To"] = email
     message.set_content(
         "Bienvenue sur OptiPlein.\n\n"
-        "Pour activer votre compte et debloquer la decouverte Premium, "
+        "Pour activer votre compte et débloquer la découverte Premium, "
         "cliquez sur ce lien :\n"
         f"{lien_validation}\n\n"
-        "Ce lien est valable 24 heures. Si vous n'etes pas a l'origine "
+        "Ce lien est valable 24 heures. Si vous n’êtes pas à l’origine "
         "de cette demande, ignorez simplement cet e-mail.\n"
     )
     message.add_alternative(
@@ -936,8 +948,8 @@ def envoyer_email_validation_compte(email, lien_validation, base_url):
         'text-decoration:none;font-weight:700;padding:12px 18px;'
         'border-radius:8px;">Valider mon e-mail</a>'
         "</p>"
-        "<p>Ce lien est valable 24 heures. Si vous n'etes pas a "
-        "l'origine de cette demande, ignorez simplement cet e-mail.</p>"
+        "<p>Ce lien est valable 24 heures. Si vous n’&ecirc;tes pas &agrave; "
+        "l’origine de cette demande, ignorez simplement cet e-mail.</p>"
         "</div>",
         subtype="html",
     )
@@ -952,34 +964,34 @@ def envoyer_email_bienvenue_premium(email, base_url):
         os.getenv("SMTP_USER", ""),
     )
     message = EmailMessage()
-    message["Subject"] = "Votre acces Premium OptiPlein est active"
+    message["Subject"] = "Votre accès Premium OptiPlein est activé"
     message["From"] = expediteur
     message["To"] = email
     message.set_content(
-        "Votre compte OptiPlein est valide.\n\n"
-        "Pendant la phase de test de cet ete, vous avez acces gratuitement "
-        "aux fonctions Premium : preparation de trajet, calcul de la station "
-        "la plus rentable, historique des economies, plusieurs vehicules, "
-        "favoris illimites, tendances de prix et suggestions de "
+        "Votre compte OptiPlein est validé.\n\n"
+        "Pendant la phase de test de cet été, vous avez accès gratuitement "
+        "aux fonctions Premium : préparation de trajet, calcul de la station "
+        "la plus rentable, historique des économies, plusieurs véhicules, "
+        "favoris illimités, tendances de prix et suggestions de "
         "ravitaillement.\n\n"
-        "Vos retours vont aider a ameliorer l'application avant son "
+        "Vos retours vont aider à améliorer l’application avant son "
         "lancement officiel. Merci de faire partie des premiers testeurs.\n\n"
-        f"Acceder a l'application : {base_url}/web\n"
+        f"Accéder à l’application : {base_url}/web\n"
     )
     message.add_alternative(
         '<div style="font-family:Arial,sans-serif;color:#102536;'
         'line-height:1.55;font-size:16px;">'
         + html_logo_email(base_url)
         + "<h1 style=\"font-size:22px;margin:0 0 12px 0;\">"
-        "Bienvenue dans la decouverte Premium"
+        "Bienvenue dans la d&eacute;couverte Premium"
         "</h1>"
-        "<p>Votre compte OptiPlein est valide et votre acces Premium est "
-        "active gratuitement pendant la phase de test de cet ete.</p>"
-        "<p>Vous pouvez maintenant profiter des fonctions avancees : "
-        "preparation de trajet, calcul de la station la plus rentable, "
-        "historique des economies, plusieurs vehicules, favoris illimites, "
+        "<p>Votre compte OptiPlein est valid&eacute; et votre acc&egrave;s Premium est "
+        "activ&eacute; gratuitement pendant la phase de test de cet &eacute;t&eacute;.</p>"
+        "<p>Vous pouvez maintenant profiter des fonctions avanc&eacute;es : "
+        "pr&eacute;paration de trajet, calcul de la station la plus rentable, "
+        "historique des &eacute;conomies, plusieurs v&eacute;hicules, favoris illimit&eacute;s, "
         "tendances de prix et suggestions de ravitaillement.</p>"
-        "<p>Vos retours vont aider a ameliorer l'application avant son "
+        "<p>Vos retours vont aider &agrave; am&eacute;liorer l’application avant son "
         "lancement officiel. Merci de faire partie des premiers testeurs.</p>"
         '<p style="margin:24px 0;">'
         f'<a href="{base_url}/web" '
@@ -1482,8 +1494,8 @@ def corriger_station_admin(
         raise HTTPException(
             status_code=409,
             detail=(
-                "Une mise a jour des stations est en cours. "
-                "Reessayez dans quelques secondes."
+                "Une mise à jour des stations est en cours. "
+                "Réessayez dans quelques secondes."
             ),
         )
 
@@ -2039,12 +2051,15 @@ def creer_compte(
             base_url,
         )
     except Exception as erreur:
-        logger.exception("Impossible d'envoyer l'e-mail de validation.")
+        logger.exception(
+            "Impossible d’envoyer l’e-mail de validation : %s",
+            erreur,
+        )
         raise HTTPException(
             status_code=503,
             detail=(
-                "L'e-mail de validation n'a pas pu etre envoye. "
-                "Reessayez dans quelques instants."
+                "L’e-mail de validation n’a pas pu être envoyé. "
+                "Réessayez dans quelques instants."
             ),
         ) from erreur
 
@@ -2077,7 +2092,7 @@ def connecter_compte(identifiants: CompteIdentifiants):
         raise HTTPException(
             status_code=403,
             detail=(
-                "Validez d'abord votre adresse e-mail avec le lien recu."
+                "Validez d’abord votre adresse e-mail avec le lien reçu."
             ),
         )
 
@@ -2113,8 +2128,8 @@ def valider_email_compte(token: str, request: Request):
             raise HTTPException(
                 status_code=410,
                 detail=(
-                    "Le lien de validation a expire. "
-                    "Creez a nouveau votre compte pour recevoir un nouveau lien."
+                    "Le lien de validation a expiré. "
+                    "Créez à nouveau votre compte pour recevoir un nouveau lien."
                 ),
             )
 
@@ -2131,7 +2146,7 @@ def valider_email_compte(token: str, request: Request):
             )
         except Exception:
             logger.exception(
-                "Impossible d'envoyer l'e-mail de bienvenue Premium."
+                "Impossible d’envoyer l’e-mail de bienvenue Premium."
             )
 
         return RedirectResponse(
@@ -2248,13 +2263,13 @@ async def signaler_probleme(
     except RuntimeError:
         raise HTTPException(
             status_code=503,
-            detail="L'envoi des signalements n'est pas encore configure.",
+            detail="L’envoi des signalements n’est pas encore configuré.",
         )
     except Exception:
-        logger.exception("L'envoi du signalement a echoue.")
+        logger.exception("L’envoi du signalement a échoué.")
         raise HTTPException(
             status_code=502,
-            detail="Le message n'a pas pu etre envoye. Reessayez plus tard.",
+            detail="Le message n’a pas pu être envoyé. Réessayez plus tard.",
         )
 
     signalements_recents[adresse_client] = maintenant
