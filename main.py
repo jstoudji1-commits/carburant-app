@@ -976,17 +976,11 @@ def envoyer_email(message):
 
 def envoyer_signalement_email(signalement):
 
-    expediteur = os.getenv(
-        "SMTP_FROM",
-        os.getenv("SMTP_USER", ""),
-    )
-
     message = EmailMessage()
     message["Subject"] = (
         "[OptiPlein] Signalement - "
         + signalement.categorie
     )
-    message["From"] = expediteur
     message["To"] = EMAIL_SIGNALEMENT
 
     if signalement.email:
@@ -1037,13 +1031,8 @@ def html_logo_email(base_url):
 
 def envoyer_email_validation_compte(email, lien_validation, base_url):
 
-    expediteur = os.getenv(
-        "SMTP_FROM",
-        os.getenv("SMTP_USER", ""),
-    )
     message = EmailMessage()
     message["Subject"] = "Validez votre compte OptiPlein"
-    message["From"] = expediteur
     message["To"] = email
     message.set_content(
         "Bienvenue sur OptiPlein.\n\n"
@@ -1080,13 +1069,8 @@ def envoyer_email_validation_compte(email, lien_validation, base_url):
 
 def envoyer_email_bienvenue_premium(email, base_url):
 
-    expediteur = os.getenv(
-        "SMTP_FROM",
-        os.getenv("SMTP_USER", ""),
-    )
     message = EmailMessage()
     message["Subject"] = "Votre accès Premium OptiPlein est activé"
-    message["From"] = expediteur
     message["To"] = email
     message.set_content(
         "Votre compte OptiPlein est validé.\n\n"
