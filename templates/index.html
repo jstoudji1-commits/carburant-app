@@ -3440,11 +3440,42 @@ body{
 <script>
 
 var dateDerniereMiseAJour = {% if date_verification %}new Date({{ date_verification|tojson }}){% else %}null{% endif %};
-var dateDonneesChargees = dateDerniereMiseAJour
-    ? dateDerniereMiseAJour.toISOString()
-    : "";
+var ageMiseAJourServeurSecondes = {{ age_verification_secondes|tojson }};
+if (
+    Number.isFinite(ageMiseAJourServeurSecondes)
+    && ageMiseAJourServeurSecondes >= 0
+) {
+    dateDerniereMiseAJour = new Date(
+        Date.now() - ageMiseAJourServeurSecondes * 1000
+    );
+}
+var dateDonneesChargees = {% if date_verification %}{{ date_verification|tojson }}{% else %}""{% endif %};
 var rechargementPrixEnCours = false;
 var derniereSynchronisationPrix = 0;
+
+function appliquerDateMiseAJourServeur(donnees) {
+
+    if (
+        Number.isFinite(Number(donnees.age_seconds))
+        && Number(donnees.age_seconds) >= 0
+    ) {
+        dateDerniereMiseAJour = new Date(
+            Date.now() - Number(donnees.age_seconds) * 1000
+        );
+        return donnees.updated_at || dateDerniereMiseAJour.toISOString();
+    }
+
+    if (donnees.updated_at) {
+        var dateServeur = new Date(donnees.updated_at);
+        if (!Number.isNaN(dateServeur.getTime())) {
+            dateDerniereMiseAJour = dateServeur;
+            return dateServeur.toISOString();
+        }
+    }
+
+    return "";
+
+}
 
 function texteAgeMiseAJour() {
 
@@ -3535,13 +3566,11 @@ async function synchroniserDateMiseAJour() {
             window.setTimeout(synchroniserDateMiseAJour, 30000);
         }
 
-        if (donnees.updated_at) {
-            var dateServeur = new Date(donnees.updated_at);
-            if (Number.isNaN(dateServeur.getTime())) {
+        if (donnees.updated_at || Number.isFinite(Number(donnees.age_seconds))) {
+            var isoServeur = appliquerDateMiseAJourServeur(donnees);
+            if (!isoServeur) {
                 return;
             }
-            var isoServeur = dateServeur.toISOString();
-            dateDerniereMiseAJour = dateServeur;
             actualiserCompteurMiseAJour();
 
             if (
