@@ -9275,6 +9275,7 @@ var controleRavitaillementRentableEnCours = false;
 var dernierControleRavitaillementRentable = 0;
 var trajetPrepare = null;
 var jaugeTrajetTemporaire = null;
+var validationTrajetPrepareEnCours = false;
 var coordonneesRouteNavigation = [];
 var positionsHorsItineraire = 0;
 var derniereRelanceItineraire = 0;
@@ -10741,17 +10742,35 @@ window.calculerTrajetPrepare = async function() {
 window.validerTrajetPrepare = async function() {
 
     var resultat = document.getElementById("trip-planner-result");
+    var boutonItineraire = document.getElementById("economy-route-button");
+    var boutonDemarrer = document.getElementById("trip-start-button");
 
-    if (!trajetPrepare || !resultat) {
+    if (!trajetPrepare || !resultat || validationTrajetPrepareEnCours) {
         return;
     }
 
+    validationTrajetPrepareEnCours = true;
     resultat.textContent = "Validation du trajet...";
     jaugeTrajetTemporaire = trajetPrepare.jauge;
 
+    if (boutonItineraire) {
+        boutonItineraire.disabled = true;
+        boutonItineraire.textContent = "Calcul...";
+        boutonItineraire.classList.remove("stop");
+    }
+
+    if (boutonDemarrer) {
+        boutonDemarrer.disabled = true;
+        boutonDemarrer.textContent = "Calcul...";
+    }
+
     try {
         var points = pointsTrajetPrepareDepuisArrets();
-        var route = await calculerRouteAvecCoordonnees(points);
+        var route = trajetPrepare.route
+            && trajetPrepare.route.geometry
+            && Array.isArray(trajetPrepare.route.geometry.coordinates)
+                ? trajetPrepare.route
+                : await calculerRouteAvecCoordonnees(points);
         routeNavigation = route;
         stationNavigationActive = null;
         destinationNavigation = {
@@ -10764,7 +10783,6 @@ window.validerTrajetPrepare = async function() {
         definirEtapesNavigationDepuisRoute(route);
         afficherStationsClassiquesSurCarte(true);
         afficherBoutonAnnulationTrajetPrepare(false);
-        dessinerItineraire(route.geometry.coordinates, false);
         afficherMarqueursRavitaillement(trajetPrepare.arrets);
         proposerRavitaillementTrajetPremium(route);
         configurerBoutonsNavigationExterneTrajetPrepare();
@@ -10774,13 +10792,14 @@ window.validerTrajetPrepare = async function() {
         orientationAutomatiqueActive = true;
         stabiliserCapDepartNavigation();
         zoomUtilisateurManuel = false;
+        dessinerItineraire(route.geometry.coordinates, false);
         map.setPitch(inclinaisonCarteGps);
         actualiserBoutonSuiviCarte();
         activerOrientationTelephone();
         document.getElementById("navigation-panel").hidden = false;
         recentrerSurUtilisateur();
+        redessinerItineraireNavigationApresCamera();
         actualiserGuidageNavigation();
-        var boutonItineraire = document.getElementById("economy-route-button");
         if (boutonItineraire) {
             boutonItineraire.hidden = false;
             boutonItineraire.disabled = false;
@@ -10791,6 +10810,17 @@ window.validerTrajetPrepare = async function() {
     } catch (erreur) {
         resultat.textContent =
             "Impossible de valider cet itin\u00e9raire pour le moment.";
+        if (boutonItineraire) {
+            boutonItineraire.disabled = false;
+            boutonItineraire.textContent = "D\u00e9marrer";
+            boutonItineraire.classList.remove("stop");
+        }
+        if (boutonDemarrer) {
+            boutonDemarrer.disabled = false;
+            boutonDemarrer.textContent = "D\u00e9marrer";
+        }
+    } finally {
+        validationTrajetPrepareEnCours = false;
     }
 
 };
@@ -10857,6 +10887,45 @@ function dessinerItineraire(coordonnees, afficherApercu) {
             }
         );
     }
+
+}
+
+function redessinerItineraireNavigationApresCamera() {
+
+    if (
+        !navigationActive
+        || !routeNavigation
+        || !routeNavigation.geometry
+        || !Array.isArray(routeNavigation.geometry.coordinates)
+    ) {
+        return;
+    }
+
+    window.requestAnimationFrame(
+        function() {
+            if (!navigationActive || !routeNavigation) {
+                return;
+            }
+
+            dessinerItineraire(
+                routeNavigation.geometry.coordinates,
+                false
+            );
+        }
+    );
+    window.setTimeout(
+        function() {
+            if (!navigationActive || !routeNavigation) {
+                return;
+            }
+
+            dessinerItineraire(
+                routeNavigation.geometry.coordinates,
+                false
+            );
+        },
+        450
+    );
 
 }
 
@@ -11407,6 +11476,7 @@ async function tracerItineraire(
             suiviCarteActif = true;
             actualiserBoutonSuiviCarte();
             recentrerSurUtilisateur();
+            redessinerItineraireNavigationApresCamera();
             actualiserGuidageNavigation();
         }
 
