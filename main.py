@@ -1031,9 +1031,7 @@ async def actualiser_prix_periodiquement():
 
 def mise_a_jour_stations_en_retard():
 
-    date_mise_a_jour = lire_date_metadata(
-        chemin_metadata_stations()
-    ) or date_derniere_mise_a_jour()
+    date_mise_a_jour = date_mise_a_jour_stations()
 
     if not date_mise_a_jour:
         return True
@@ -1181,6 +1179,48 @@ def lire_date_metadata(fichier):
         )
     except (OSError, ValueError, TypeError):
         return None
+
+
+def normaliser_date_utc(date):
+
+    if not date:
+        return None
+
+    if date.tzinfo is None:
+        return date.replace(tzinfo=datetime.now().astimezone().tzinfo)
+
+    return date.astimezone(datetime.now().astimezone().tzinfo)
+
+
+def date_mise_a_jour_stations():
+
+    dates = [
+        lire_date_metadata(chemin_metadata_stations()),
+        date_derniere_mise_a_jour(),
+    ]
+
+    for fichier in (
+        STATIONS_RUNTIME_CSV,
+        STATIONS_REPO_CSV,
+    ):
+        try:
+            if fichier.exists():
+                dates.append(
+                    datetime.fromtimestamp(
+                        fichier.stat().st_mtime,
+                        datetime.now().astimezone().tzinfo,
+                    )
+                )
+        except OSError:
+            continue
+
+    dates_valides = [
+        normaliser_date_utc(date)
+        for date in dates
+        if normaliser_date_utc(date)
+    ]
+
+    return max(dates_valides) if dates_valides else None
 
 
 def charger_stations(appliquer_corrections=True):
@@ -1913,9 +1953,13 @@ def get_stations_proches(
 def get_derniere_mise_a_jour():
 
     rattrapage_lance = lancer_mise_a_jour_stations_si_retard()
-    date_mise_a_jour = lire_date_metadata(
-        chemin_metadata_stations()
-    ) or date_derniere_mise_a_jour()
+    date_mise_a_jour = date_mise_a_jour_stations()
+    maintenant = datetime.now().astimezone()
+    age_secondes = (
+        max(0, int((maintenant - date_mise_a_jour).total_seconds()))
+        if date_mise_a_jour
+        else None
+    )
 
     return {
         "updated_at": (
@@ -1923,6 +1967,8 @@ def get_derniere_mise_a_jour():
             if date_mise_a_jour
             else None
         ),
+        "server_now": maintenant.isoformat(),
+        "age_seconds": age_secondes,
         "update_pending": rattrapage_lance,
     }
 
@@ -2278,9 +2324,8 @@ def page_web(
         else None
     )
     prix_min = station_prix_min[0] if station_prix_min else None
-    date_mise_a_jour = lire_date_metadata(
-        chemin_metadata_stations()
-    ) or date_derniere_mise_a_jour()
+    date_mise_a_jour = date_mise_a_jour_stations()
+    maintenant = datetime.now().astimezone()
 
     return templates.TemplateResponse(
 
@@ -2306,6 +2351,12 @@ def page_web(
 
             "date_verification": (
                 date_mise_a_jour.isoformat()
+                if date_mise_a_jour
+                else None
+            ),
+            "date_serveur": maintenant.isoformat(),
+            "age_verification_secondes": (
+                max(0, int((maintenant - date_mise_a_jour).total_seconds()))
                 if date_mise_a_jour
                 else None
             ),
