@@ -3450,6 +3450,7 @@ if (
     );
 }
 var dateDonneesChargees = {% if date_verification %}{{ date_verification|tojson }}{% else %}""{% endif %};
+var versionDonneesChargees = {{ data_version|tojson }};
 var rechargementPrixEnCours = false;
 var derniereSynchronisationPrix = 0;
 
@@ -3571,11 +3572,12 @@ async function synchroniserDateMiseAJour() {
             if (!isoServeur) {
                 return;
             }
+            var versionServeur = donnees.data_version || isoServeur;
             actualiserCompteurMiseAJour();
 
             if (
-                dateDonneesChargees
-                && isoServeur !== dateDonneesChargees
+                versionServeur
+                && versionServeur !== versionDonneesChargees
             ) {
                 afficherInfoItineraire(
                     "Nouveaux prix disponibles, actualisation...",
@@ -3586,6 +3588,7 @@ async function synchroniserDateMiseAJour() {
 
                 if (actualisationOk) {
                     dateDonneesChargees = isoServeur;
+                    versionDonneesChargees = versionServeur;
                     afficherInfoItineraire(
                         "Prix actualises.",
                         4500
@@ -7191,9 +7194,16 @@ async function actualiserStationsSelonPosition(force) {
         return false;
     }
 
+    var latitudeRecherche = Number.isFinite(latitudeUtilisateur)
+        ? latitudeUtilisateur
+        : latitudeDerniereRecherche;
+    var longitudeRecherche = Number.isFinite(longitudeUtilisateur)
+        ? longitudeUtilisateur
+        : longitudeDerniereRecherche;
+
     if (
-        !Number.isFinite(latitudeUtilisateur)
-        || !Number.isFinite(longitudeUtilisateur)
+        !Number.isFinite(latitudeRecherche)
+        || !Number.isFinite(longitudeRecherche)
     ) {
         return false;
     }
@@ -7207,8 +7217,8 @@ async function actualiserStationsSelonPosition(force) {
         : distanceDeplacementKm(
             latitudeDerniereRecherche,
             longitudeDerniereRecherche,
-            latitudeUtilisateur,
-            longitudeUtilisateur
+            latitudeRecherche,
+            longitudeRecherche
         );
 
     var maintenant = Date.now();
@@ -7234,8 +7244,8 @@ async function actualiserStationsSelonPosition(force) {
 
     try {
         var parametres = new URLSearchParams();
-        parametres.set("latitude", String(latitudeUtilisateur));
-        parametres.set("longitude", String(longitudeUtilisateur));
+        parametres.set("latitude", String(latitudeRecherche));
+        parametres.set("longitude", String(longitudeRecherche));
         parametres.set("carburant", carburantSelectionne);
         parametres.set("rayon", String(rayonCalculEconomieKm));
         parametres.set("_", String(Date.now()));
@@ -7255,14 +7265,17 @@ async function actualiserStationsSelonPosition(force) {
             return false;
         }
 
-        latitudeDerniereRecherche = latitudeUtilisateur;
-        longitudeDerniereRecherche = longitudeUtilisateur;
+        latitudeDerniereRecherche = latitudeRecherche;
+        longitudeDerniereRecherche = longitudeRecherche;
         if (donnees.updated_at) {
             dateDonneesChargees = donnees.updated_at;
             appliquerDateMiseAJourServeur({
                 updated_at: donnees.updated_at
             });
             actualiserCompteurMiseAJour();
+        }
+        if (donnees.data_version) {
+            versionDonneesChargees = donnees.data_version;
         }
         remplacerStationsSurCarte(donnees.stations);
         calculerMeilleureStation();

@@ -1246,6 +1246,24 @@ def date_mise_a_jour_stations():
     return max(dates_valides) if dates_valides else None
 
 
+def version_donnees_stations():
+
+    fichier = chemin_stations_csv()
+    date_mise_a_jour = date_mise_a_jour_stations()
+
+    try:
+        stat = fichier.stat()
+        return "|".join(
+            (
+                date_mise_a_jour.isoformat() if date_mise_a_jour else "",
+                str(stat.st_mtime_ns),
+                str(stat.st_size),
+            )
+        )
+    except OSError:
+        return date_mise_a_jour.isoformat() if date_mise_a_jour else ""
+
+
 def charger_stations(appliquer_corrections=True):
 
     stations = []
@@ -1563,6 +1581,7 @@ async def forcer_mise_a_jour_admin(request: Request):
                 if date_mise_a_jour
                 else None
             ),
+            "data_version": version_donnees_stations(),
         }
     except Exception as erreur:
         logger.exception(
@@ -2011,6 +2030,7 @@ def get_stations_proches(
             if date_mise_a_jour
             else None
         ),
+        "data_version": version_donnees_stations(),
     }
 
 
@@ -2034,6 +2054,7 @@ def get_derniere_mise_a_jour():
         ),
         "server_now": maintenant.isoformat(),
         "age_seconds": age_secondes,
+        "data_version": version_donnees_stations(),
         "update_pending": rattrapage_lance,
     }
 
@@ -2428,6 +2449,7 @@ def page_web(
                 if date_mise_a_jour
                 else None
             ),
+            "data_version": version_donnees_stations(),
 
             "adsense_client": ADSENSE_CLIENT,
 
