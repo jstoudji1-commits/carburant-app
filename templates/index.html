@@ -3626,9 +3626,7 @@ setInterval(actualiserCompteurMiseAJour, 1000);
 
 function intervalleSynchronisationPrixMs() {
 
-    return comptePremiumActif()
-        ? 30 * 1000
-        : 3 * 60 * 1000;
+    return 30 * 1000;
 
 }
 
@@ -7240,6 +7238,7 @@ async function actualiserStationsSelonPosition(force) {
         parametres.set("longitude", String(longitudeUtilisateur));
         parametres.set("carburant", carburantSelectionne);
         parametres.set("rayon", String(rayonCalculEconomieKm));
+        parametres.set("_", String(Date.now()));
 
         var reponse = await fetch(
             "/api/stations-proches?" + parametres.toString(),
@@ -7258,6 +7257,13 @@ async function actualiserStationsSelonPosition(force) {
 
         latitudeDerniereRecherche = latitudeUtilisateur;
         longitudeDerniereRecherche = longitudeUtilisateur;
+        if (donnees.updated_at) {
+            dateDonneesChargees = donnees.updated_at;
+            appliquerDateMiseAJourServeur({
+                updated_at: donnees.updated_at
+            });
+            actualiserCompteurMiseAJour();
+        }
         remplacerStationsSurCarte(donnees.stations);
         calculerMeilleureStation();
         return true;

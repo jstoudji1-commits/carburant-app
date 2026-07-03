@@ -362,6 +362,13 @@ class AdminCorrectionStation(BaseModel):
     longitude: Optional[float] = None
 
 
+class AdminTestEmail(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(min_length=5, max_length=160)
+
+
 class InscriptionTesteur(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
@@ -812,7 +819,11 @@ def envoyer_email(message):
     hote = os.getenv("SMTP_HOST", "smtp.gmail.com").strip()
     port = int(os.getenv("SMTP_PORT", "587").strip())
     utilisateur = os.getenv("SMTP_USER", "").strip()
-    mot_de_passe = os.getenv("SMTP_PASSWORD", "").strip()
+    mot_de_passe = re.sub(
+        r"\s+",
+        "",
+        os.getenv("SMTP_PASSWORD", ""),
+    )
     expediteur = os.getenv("SMTP_FROM", utilisateur).strip()
 
     if not utilisateur or not mot_de_passe or not expediteur:
@@ -1543,7 +1554,7 @@ async def forcer_mise_a_jour_admin(request: Request):
     try:
         await asyncio.to_thread(mettre_a_jour_stations)
         stations = charger_stations()
-        date_mise_a_jour = date_derniere_mise_a_jour()
+        date_mise_a_jour = date_mise_a_jour_stations()
         return {
             "ok": True,
             "stations": len(stations),
@@ -1566,6 +1577,42 @@ async def forcer_mise_a_jour_admin(request: Request):
         ) from erreur
     finally:
         mise_a_jour_admin_lock.release()
+
+
+@app.post("/api/admin/test-email")
+async def tester_email_admin(test: AdminTestEmail, request: Request):
+
+    verifier_admin(request)
+    email = normaliser_email(test.email)
+
+    if not email_valide(email):
+        raise HTTPException(
+            status_code=422,
+            detail="L'adresse e-mail n'est pas valide.",
+        )
+
+    message = EmailMessage()
+    message["Subject"] = "Test e-mail OptiPlein"
+    message["To"] = email
+    message.set_content(
+        "Test d'envoi OptiPlein réussi.\n\n"
+        "Si vous recevez ce message, la configuration SMTP de Render "
+        "fonctionne pour les e-mails de validation de compte.\n"
+    )
+
+    try:
+        await asyncio.to_thread(envoyer_email, message)
+    except Exception as erreur:
+        logger.exception("Test e-mail admin échoué : %s", erreur)
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "L’e-mail de test n’a pas pu être envoyé. "
+                "Vérifiez SMTP_USER, SMTP_PASSWORD et SMTP_FROM sur Render."
+            ),
+        ) from erreur
+
+    return {"ok": True, "email": email}
 
 
 @app.post("/api/testeurs")
@@ -1924,6 +1971,7 @@ def get_stations_proches(
     rayon: int = 25,
 ):
 
+    date_mise_a_jour = date_mise_a_jour_stations()
     stations = preparer_stations_pour_carte(
         charger_stations(),
         carburant,
@@ -1958,6 +2006,11 @@ def get_stations_proches(
             for station in stations
         ],
         "count": len(stations),
+        "updated_at": (
+            date_mise_a_jour.isoformat()
+            if date_mise_a_jour
+            else None
+        ),
     }
 
 

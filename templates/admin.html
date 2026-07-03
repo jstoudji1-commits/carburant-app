@@ -366,6 +366,35 @@
 
             <section class="panel">
                 <div class="panel-head">
+                    <div>
+                        <h2>Test e-mail</h2>
+                        <p class="muted">
+                            V&eacute;rifie la configuration SMTP utilis&eacute;e pour les
+                            validations de compte.
+                        </p>
+                    </div>
+                    <div class="login-row">
+                        <input
+                            id="test-email"
+                            type="email"
+                            autocomplete="email"
+                            placeholder="Adresse de test"
+                            value="optiplein5@gmail.com"
+                        >
+                        <button
+                            type="button"
+                            id="test-email-button"
+                            onclick="testerEmailAdmin()"
+                        >
+                            Tester
+                        </button>
+                    </div>
+                </div>
+                <p class="status" id="test-email-status"></p>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
                     <h2>Comptes utilisateurs</h2>
                     <button type="button" onclick="chargerAdmin()">
                         Actualiser
@@ -753,6 +782,39 @@
             } catch (erreur) {
                 statut.textContent = erreur.message
                     || "Mise a jour impossible.";
+            } finally {
+                bouton.disabled = false;
+            }
+        }
+
+        async function testerEmailAdmin() {
+            var bouton = document.getElementById("test-email-button");
+            var statut = document.getElementById("test-email-status");
+            var email = document.getElementById("test-email").value.trim();
+
+            if (!bouton || !statut || !email) {
+                return;
+            }
+
+            bouton.disabled = true;
+            statut.textContent = "Envoi de l'e-mail de test...";
+
+            try {
+                await requeteAdmin(
+                    "/api/admin/test-email",
+                    {
+                        method: "POST",
+                        body: JSON.stringify({
+                            email: email
+                        })
+                    }
+                );
+                statut.textContent =
+                    "E-mail de test envoy\u00e9. V\u00e9rifiez la bo\u00eete "
+                    + email + ".";
+            } catch (erreur) {
+                statut.textContent = erreur.message
+                    || "E-mail de test impossible.";
             } finally {
                 bouton.disabled = false;
             }
