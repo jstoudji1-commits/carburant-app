@@ -1618,6 +1618,27 @@ def signe_graphhopper_vers_maneuvre(signe):
     )
 
 
+def ajuster_maneuvre_graphhopper(instruction, type_maneuvre, modificateur):
+
+    texte = " ".join(
+        str(instruction.get(cle, "") or "").lower()
+        for cle in ("text", "street_name", "heading")
+    )
+
+    if "sortie" in texte or "exit" in texte:
+        return "off ramp", modificateur
+
+    if "bretelle" in texte and (
+        "prenez" in texte or "take" in texte
+    ):
+        return "off ramp", modificateur
+
+    if "restez" in texte or "keep" in texte:
+        return "fork", modificateur
+
+    return type_maneuvre, modificateur
+
+
 def convertir_route_graphhopper(donnees):
 
     chemin = (donnees.get("paths") or [None])[0]
@@ -1637,11 +1658,19 @@ def convertir_route_graphhopper(donnees):
         type_maneuvre, modificateur = signe_graphhopper_vers_maneuvre(
             instruction.get("sign")
         )
+        type_maneuvre, modificateur = ajuster_maneuvre_graphhopper(
+            instruction,
+            type_maneuvre,
+            modificateur,
+        )
         etapes.append(
             {
                 "distance": instruction.get("distance", 0),
                 "duration": (instruction.get("time", 0) or 0) / 1000,
-                "name": instruction.get("street_name", "") or "",
+                "name": instruction.get("street_name", "")
+                    or instruction.get("text", "")
+                    or "",
+                "instruction": instruction.get("text", "") or "",
                 "maneuver": {
                     "type": type_maneuvre,
                     "modifier": modificateur,
