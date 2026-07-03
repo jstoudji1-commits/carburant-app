@@ -4292,11 +4292,13 @@ function creerAdaptateurMapLibre() {
                     duration: Number.isFinite(optionsSuivi.duration)
                         ? optionsSuivi.duration
                         : 450,
-                    easing: function(t) {
-                        return t < 0.5
-                            ? 2 * t * t
-                            : 1 - Math.pow(-2 * t + 2, 2) / 2;
-                    }
+                    easing: typeof optionsSuivi.easing === "function"
+                        ? optionsSuivi.easing
+                        : function(t) {
+                            return t < 0.5
+                                ? 2 * t * t
+                                : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                        }
                 });
                 return adaptateur;
             },
@@ -6378,6 +6380,8 @@ var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
 var zoomNavigation = 16.8;
 var zoomGuidageActif = 18.2;
+var zoomGuidageLonguePortion = 15.7;
+var distanceProchaineInstructionMetres = Number.POSITIVE_INFINITY;
 var premierCentrageUtilisateur = !positionInitialeCarteDisponible;
 var suiviCarteActif = true;
 var orientationAutomatiqueActive = true;
@@ -6393,6 +6397,13 @@ var vitesseUtilisateurMps = 0;
 var precisionUtilisateur = 20;
 var latitudeAffichageUtilisateur = Number.NaN;
 var longitudeAffichageUtilisateur = Number.NaN;
+var latitudeCameraUtilisateur = Number.NaN;
+var longitudeCameraUtilisateur = Number.NaN;
+var latitudeDerniereCameraEnvoyee = Number.NaN;
+var longitudeDerniereCameraEnvoyee = Number.NaN;
+var dernierCapCameraEnvoye = Number.NaN;
+var dernierZoomCameraEnvoye = Number.NaN;
+var zoomGuidageLisse = Number.NaN;
 var dernierCentrageCarteMs = 0;
 var animationOrientationCarte = null;
 var boutonSuiviCarte = null;
@@ -6482,6 +6493,33 @@ function memoriserCapTelephone(event) {
 
     capTelephone = (cap + 360) % 360;
     dateDernierCapTelephone = Date.now();
+
+}
+
+function capTelephoneFiable(delaiMs) {
+
+    return Date.now() - dateDernierCapTelephone < delaiMs
+        && Number.isFinite(capTelephone);
+
+}
+
+function capNavigationFiable(delaiTelephoneMs) {
+
+    if (capTelephoneFiable(delaiTelephoneMs || 6000)) {
+        return capTelephone;
+    }
+
+    if (
+        utilisateurEnMouvement
+        && Date.now() - dateDernierCapFiable < 8000
+        && Number.isFinite(dernierCapUtilisateur)
+    ) {
+        return dernierCapUtilisateur;
+    }
+
+    return Number.isFinite(dernierCapUtilisateur)
+        ? dernierCapUtilisateur
+        : Number.NaN;
 
 }
 
@@ -6602,6 +6640,18 @@ function actualiserOrientationFlecheUtilisateur(capCible) {
 
 }
 
+function stabiliserCapDepartNavigation() {
+
+    var capDepartNavigation = capNavigationFiable(8000);
+
+    capCarteStabilise = Number.isFinite(capDepartNavigation)
+        ? capDepartNavigation
+        : dernierCapUtilisateur;
+    capFlecheStabilise = capCarteStabilise;
+    capAffichageStabilise = capCarteStabilise;
+
+}
+
 function actualiserBoutonSuiviCarte() {
 
     if (!boutonSuiviCarte) {
@@ -6694,6 +6744,144 @@ function lisserPositionAffichee(latitude, longitude) {
 
 }
 
+function reinitialiserCameraSuivi() {
+
+    latitudeCameraUtilisateur = Number.NaN;
+    longitudeCameraUtilisateur = Number.NaN;
+    latitudeDerniereCameraEnvoyee = Number.NaN;
+    longitudeDerniereCameraEnvoyee = Number.NaN;
+    dernierCapCameraEnvoye = Number.NaN;
+    dernierZoomCameraEnvoye = Number.NaN;
+    zoomGuidageLisse = Number.NaN;
+    dernierCentrageCarteMs = 0;
+
+}
+
+function lisserZoomSuiviNavigation(zoomCible) {
+
+    if (!navigationActive) {
+        zoomGuidageLisse = Number.NaN;
+        return zoomCible;
+    }
+
+    if (!Number.isFinite(zoomGuidageLisse)) {
+        zoomGuidageLisse = zoomCible;
+        return zoomCible;
+    }
+
+    var difference = zoomCible - zoomGuidageLisse;
+
+    if (Math.abs(difference) < 0.03) {
+        zoomGuidageLisse = zoomCible;
+        return zoomCible;
+    }
+
+    zoomGuidageLisse += difference * (
+        difference > 0 ? 0.34 : 0.20
+    );
+
+    return zoomGuidageLisse;
+
+}
+
+function lisserPositionCameraSuivi(latitude, longitude, zoomSuivi) {
+
+    if (
+        !Number.isFinite(latitudeCameraUtilisateur)
+        || !Number.isFinite(longitudeCameraUtilisateur)
+    ) {
+        latitudeCameraUtilisateur = latitude;
+        longitudeCameraUtilisateur = longitude;
+        return {
+            latitude: latitude,
+            longitude: longitude
+        };
+    }
+
+    var distanceMetres = distanceDeplacementKm(
+        latitudeCameraUtilisateur,
+        longitudeCameraUtilisateur,
+        latitude,
+        longitude
+    ) * 1000;
+    var seuilMicroMouvement = navigationActive
+        ? zoomSuivi >= 17.8
+            ? vitesseUtilisateurMps >= 15 ? 5.5 : 4.2
+            : zoomSuivi >= 17
+                ? 2.8
+                : 1.4
+        : 0.8;
+
+    if (distanceMetres < seuilMicroMouvement) {
+        return {
+            latitude: latitudeCameraUtilisateur,
+            longitude: longitudeCameraUtilisateur
+        };
+    }
+
+    var facteur = navigationActive
+        ? zoomSuivi >= 17.8
+            ? 0.18
+            : zoomSuivi >= 17
+                ? 0.26
+                : 0.42
+        : 0.65;
+
+    if (distanceMetres > 80) {
+        facteur = 0.86;
+    } else if (distanceMetres > 35) {
+        facteur = Math.max(facteur, 0.58);
+    }
+
+    latitudeCameraUtilisateur += (
+        latitude - latitudeCameraUtilisateur
+    ) * facteur;
+    longitudeCameraUtilisateur += (
+        longitude - longitudeCameraUtilisateur
+    ) * facteur;
+
+    return {
+        latitude: latitudeCameraUtilisateur,
+        longitude: longitudeCameraUtilisateur
+    };
+
+}
+
+function calculerZoomGuidageDynamique() {
+
+    var distance = Number(distanceProchaineInstructionMetres);
+    var zoomLonguePortion = vitesseUtilisateurMps >= 19
+        ? zoomGuidageLonguePortion - 0.3
+        : zoomGuidageLonguePortion;
+
+    if (!Number.isFinite(distance)) {
+        return lisserZoomSuiviNavigation(zoomGuidageActif - 0.8);
+    }
+
+    if (distance > 3000) {
+        return lisserZoomSuiviNavigation(zoomLonguePortion);
+    }
+
+    if (distance > 1800) {
+        return lisserZoomSuiviNavigation(zoomLonguePortion + 0.4);
+    }
+
+    if (distance > 900) {
+        return lisserZoomSuiviNavigation(16.7);
+    }
+
+    if (distance > 450) {
+        return lisserZoomSuiviNavigation(17.3);
+    }
+
+    if (distance > 220) {
+        return lisserZoomSuiviNavigation(17.8);
+    }
+
+    return lisserZoomSuiviNavigation(zoomGuidageActif);
+
+}
+
 function suivrePositionGpsSurCarte(
     latitude,
     longitude,
@@ -6733,44 +6921,85 @@ function suivrePositionGpsSurCarte(
         : utilisateurEnMouvement
             ? 650
             : 300;
-
-    appliquerMouvementCarteAutomatique(
-        function() {
-            if (typeof map.suivrePosition === "function") {
-                map.suivrePosition(
-                    [
-                        latitude,
-                        longitude
-                    ],
-                    {
-                        zoom: navigationActive
-                            ? zoomGuidageActif
-                            : zoomNavigation,
-                        bearing: capCarte,
-                        pitch: inclinaisonCarteGps,
-                        offset: [
-                            0,
-                            decalageVertical
-                        ],
-                        duration: dureeSuivi
-                    }
-                );
-            } else {
-                map.setView(
-                    [
-                        latitude,
-                        longitude
-                    ],
-                    navigationActive
-                        ? zoomGuidageActif
-                        : zoomNavigation,
-                    {
-                        animate: true
-                    }
-                );
-            }
-        }
+    var zoomSuivi = navigationActive
+        ? calculerZoomGuidageDynamique()
+        : zoomNavigation;
+    var positionCamera = lisserPositionCameraSuivi(
+        latitude,
+        longitude,
+        zoomSuivi
     );
+    var maintenantSuivi = Date.now();
+    var distanceCameraEnvoyee = Number.isFinite(latitudeDerniereCameraEnvoyee)
+        && Number.isFinite(longitudeDerniereCameraEnvoyee)
+            ? distanceDeplacementKm(
+                latitudeDerniereCameraEnvoyee,
+                longitudeDerniereCameraEnvoyee,
+                positionCamera.latitude,
+                positionCamera.longitude
+            ) * 1000
+            : Number.POSITIVE_INFINITY;
+    var ecartCapCamera = Number.isFinite(dernierCapCameraEnvoye)
+        ? Math.abs(
+            ((capCarte - dernierCapCameraEnvoye + 540) % 360) - 180
+        )
+        : Number.POSITIVE_INFINITY;
+    var ecartZoomCamera = Number.isFinite(dernierZoomCameraEnvoye)
+        ? Math.abs(zoomSuivi - dernierZoomCameraEnvoye)
+        : Number.POSITIVE_INFINITY;
+    var ignorerCameraStable =
+        navigationActive
+        && maintenantSuivi - dernierCentrageCarteMs < 1250
+        && distanceCameraEnvoyee < (zoomSuivi >= 17.8 ? 3.2 : 1.8)
+        && ecartCapCamera < 3.5
+        && ecartZoomCamera < 0.06;
+
+    if (!ignorerCameraStable) {
+        latitudeDerniereCameraEnvoyee = positionCamera.latitude;
+        longitudeDerniereCameraEnvoyee = positionCamera.longitude;
+        dernierCapCameraEnvoye = capCarte;
+        dernierZoomCameraEnvoye = zoomSuivi;
+        dernierCentrageCarteMs = maintenantSuivi;
+
+        appliquerMouvementCarteAutomatique(
+            function() {
+                if (typeof map.suivrePosition === "function") {
+                    map.suivrePosition(
+                        [
+                            positionCamera.latitude,
+                            positionCamera.longitude
+                        ],
+                        {
+                            zoom: zoomSuivi,
+                            bearing: capCarte,
+                            pitch: inclinaisonCarteGps,
+                            offset: [
+                                0,
+                                decalageVertical
+                            ],
+                            duration: dureeSuivi,
+                            easing: navigationActive
+                                ? function(t) {
+                                    return t;
+                                }
+                                : null
+                        }
+                    );
+                } else {
+                    map.setView(
+                        [
+                            positionCamera.latitude,
+                            positionCamera.longitude
+                        ],
+                        zoomSuivi,
+                        {
+                            animate: true
+                        }
+                    );
+                }
+            }
+        );
+    }
 
     actualiserOrientationFlecheUtilisateur(
         Number.isFinite(capAffichageFleche)
@@ -7027,6 +7256,7 @@ function recentrerSurUtilisateur() {
     suiviCarteActif = true;
     orientationAutomatiqueActive = true;
     zoomUtilisateurManuel = false;
+    reinitialiserCameraSuivi();
     actualiserBoutonSuiviCarte();
     suivrePositionGpsSurCarte(
         latitudeUtilisateur,
@@ -7230,14 +7460,15 @@ function demarrerGeolocalisation() {
             var capMesure = Number.isFinite(capGps) && capGps >= 0
                 ? capGps
                 : capDeplacement;
-            var capTelephoneRecent =
-                Date.now() - dateDernierCapTelephone < 2500
-                && Number.isFinite(capTelephone);
+            var capTelephoneRecent = capTelephoneFiable(
+                navigationActive ? 7000 : 2500
+            );
 
             if (
                 capTelephoneRecent
                 && (
-                    !Number.isFinite(capMesure)
+                    navigationActive
+                    || !Number.isFinite(capMesure)
                     || !utilisateurEnMouvement
                     || vitesseUtilisateurMps < 2
                 )
@@ -7261,10 +7492,6 @@ function demarrerGeolocalisation() {
                 dateDernierCapFiable = Date.now();
             }
 
-            var capReelRecent =
-                utilisateurEnMouvement
-                && Date.now() - dateDernierCapFiable < 5000
-                && Number.isFinite(dernierCapUtilisateur);
             var capItineraire = navigationActive
                 ? calculerCapItineraireDevant()
                 : Number.NaN;
@@ -7272,10 +7499,19 @@ function demarrerGeolocalisation() {
                 && Number.isFinite(capItineraire)
                 && distanceItineraireMetres()
                     <= Math.max(85, precisionUtilisateur * 2);
+            var capReelNavigation = navigationActive
+                ? capNavigationFiable(7000)
+                : (
+                    utilisateurEnMouvement
+                    && Date.now() - dateDernierCapFiable < 5000
+                    && Number.isFinite(dernierCapUtilisateur)
+                        ? dernierCapUtilisateur
+                        : Number.NaN
+                );
             var capCible = utilisateurSurItineraire
                 ? capItineraire
-                : capReelRecent
-                    ? dernierCapUtilisateur
+                : Number.isFinite(capReelNavigation)
+                    ? capReelNavigation
                     : capItineraire;
 
             if (!Number.isFinite(capCible)) {
@@ -7324,7 +7560,9 @@ function demarrerGeolocalisation() {
             var positionRouteAffichee = positionAfficheeUtilisateurSurRoute(
                 latitudeUtilisateur,
                 longitudeUtilisateur,
-                capFlecheStabilise
+                navigationActive
+                    ? capNavigationFiable(7000)
+                    : capFlecheStabilise
             );
             var positionAfficheeLisse = lisserPositionAffichee(
                 positionRouteAffichee
@@ -8229,13 +8467,7 @@ async function accepterRavitaillementPlusRentable(station, arret, economie) {
         routeNavigation = route;
         stationNavigationActive = null;
         coordonneesRouteNavigation = route.geometry.coordinates;
-        etapesNavigation = (route.legs || []).reduce(
-            function(toutesLesEtapes, trajet) {
-                return toutesLesEtapes.concat(trajet.steps || []);
-            },
-            []
-        );
-        indexEtapeNavigation = 0;
+        definirEtapesNavigationDepuisRoute(route);
         trajetPrepare = trajetPrepare || {};
         trajetPrepare.arrets = arret ? [arret] : [{
             station: station,
@@ -9051,6 +9283,37 @@ var debutEcartItineraire = 0;
 var minuteurRecalculItineraire = null;
 var delaiRecalculItineraireMs = 2500;
 
+function definirEtapesNavigationDepuisRoute(route) {
+
+    etapesNavigation = (route.legs || []).reduce(
+        function(toutesLesEtapes, trajet) {
+            return toutesLesEtapes.concat(trajet.steps || []);
+        },
+        []
+    );
+    etapesNavigation.forEach(
+        function(etape) {
+            var position = etape.maneuver && etape.maneuver.location;
+            var projection = position && position.length >= 2
+                ? positionStationSurRoute(
+                    {
+                        latitude: Number(position[1]),
+                        longitude: Number(position[0])
+                    },
+                    route.geometry.coordinates
+                )
+                : null;
+
+            etape.distanceRouteMetres = projection
+                && Number.isFinite(projection.distanceRouteKm)
+                    ? projection.distanceRouteKm * 1000
+                    : 0;
+        }
+    );
+    indexEtapeNavigation = 0;
+
+}
+
 function reinitialiserDetectionEcart() {
 
     positionsHorsItineraire = 0;
@@ -9172,6 +9435,7 @@ function trouverPointRouteLePlusProche(latitude, longitude, capReference) {
         111320 * Math.cos(latitude * Math.PI / 180);
     var conversionLatitude = 110540;
     var meilleurSegment = null;
+    var distanceCumuleeMetres = 0;
 
     for (
         var index = 0;
@@ -9196,6 +9460,12 @@ function trouverPointRouteLePlusProche(latitude, longitude, capReference) {
             (latitude - depart[1]) * conversionLatitude;
         var longueurCarree =
             segmentX * segmentX + segmentY * segmentY;
+        var longueurSegmentMetres = distanceDeplacementKm(
+            depart[1],
+            depart[0],
+            arrivee[1],
+            arrivee[0]
+        ) * 1000;
         var progression = longueurCarree > 0
             ? Math.max(
                 0,
@@ -9238,6 +9508,9 @@ function trouverPointRouteLePlusProche(latitude, longitude, capReference) {
                 progression: progression,
                 distanceCarree: distanceCarree,
                 distanceMetres: Math.sqrt(distanceCarree),
+                distanceRouteMetres:
+                    distanceCumuleeMetres
+                    + longueurSegmentMetres * progression,
                 capSegment: capSegment,
                 scoreSegment: scoreSegment,
                 longitude:
@@ -9248,6 +9521,8 @@ function trouverPointRouteLePlusProche(latitude, longitude, capReference) {
                     + (arrivee[1] - depart[1]) * progression
             };
         }
+
+        distanceCumuleeMetres += longueurSegmentMetres;
     }
 
     return meilleurSegment;
@@ -10486,13 +10761,7 @@ window.validerTrajetPrepare = async function() {
             ville: ""
         };
         coordonneesRouteNavigation = route.geometry.coordinates;
-        etapesNavigation = (route.legs || []).reduce(
-            function(toutesLesEtapes, trajet) {
-                return toutesLesEtapes.concat(trajet.steps || []);
-            },
-            []
-        );
-        indexEtapeNavigation = 0;
+        definirEtapesNavigationDepuisRoute(route);
         afficherStationsClassiquesSurCarte(true);
         afficherBoutonAnnulationTrajetPrepare(false);
         dessinerItineraire(route.geometry.coordinates, false);
@@ -10503,8 +10772,7 @@ window.validerTrajetPrepare = async function() {
         navigationActive = true;
         suiviCarteActif = true;
         orientationAutomatiqueActive = true;
-        capCarteStabilise = dernierCapUtilisateur;
-        capFlecheStabilise = dernierCapUtilisateur;
+        stabiliserCapDepartNavigation();
         zoomUtilisateurManuel = false;
         map.setPitch(inclinaisonCarteGps);
         actualiserBoutonSuiviCarte();
@@ -10630,11 +10898,35 @@ function texteManeuvre(etape) {
     var maneuvre = etape.maneuver || {};
     var voie = etape.name ? " sur " + etape.name : "";
     var modificateur = maneuvre.modifier || "straight";
+    var type = maneuvre.type || "";
+    var sortie = etape.exits || maneuvre.exit || "";
+    var instruction = (etape.instruction || "").trim();
 
     if (maneuvre.type === "arrive") {
         return "Vous \u00eates arriv\u00e9";
     }
-    if (maneuvre.type === "roundabout" || maneuvre.type === "rotary") {
+    if (
+        instruction
+        && type === "continue"
+        && instruction.toLowerCase() !== "continue"
+    ) {
+        return instruction;
+    }
+    if (type === "off ramp") {
+        return "Prenez la sortie" + (sortie ? " " + sortie : "") + voie;
+    }
+    if (type === "on ramp") {
+        return "Prenez l'entr\u00e9e" + voie;
+    }
+    if (type === "merge") {
+        return "Ins\u00e9rez-vous" + voie;
+    }
+    if (type === "fork") {
+        return modificateur.includes("left")
+            ? "Restez \u00e0 gauche" + voie
+            : "Restez \u00e0 droite" + voie;
+    }
+    if (type === "roundabout" || type === "rotary") {
         return "Au rond-point, prenez la sortie "
             + (maneuvre.exit || "indiqu\u00e9e")
             + voie;
@@ -10668,6 +10960,7 @@ function actualiserGuidageNavigation() {
         || latitudeUtilisateur === null
         || longitudeUtilisateur === null
     ) {
+        distanceProchaineInstructionMetres = Number.POSITIVE_INFINITY;
         return;
     }
 
@@ -10686,29 +10979,49 @@ function actualiserGuidageNavigation() {
         return;
     }
 
-    var etape = etapesNavigation[indexEtapeNavigation];
-    var positionManeuvre = etape.maneuver.location;
-    var distanceManeuvre = distanceDeplacementKm(
+    var progression = trouverPointRouteLePlusProche(
         latitudeUtilisateur,
         longitudeUtilisateur,
-        positionManeuvre[1],
-        positionManeuvre[0]
-    ) * 1000;
+        capNavigationFiable(7000)
+    );
+    var progressionMetres = progression
+        && Number.isFinite(progression.distanceRouteMetres)
+            ? progression.distanceRouteMetres
+            : 0;
+    var distanceTotaleMetres = routeNavigation
+        && Number.isFinite(Number(routeNavigation.distance))
+            ? Number(routeNavigation.distance)
+            : Math.max(progressionMetres, 0);
+    var indexProchaineEtape = etapesNavigation.findIndex(
+        function(etapeNavigation, index) {
+            if (index === 0 && etapeNavigation.maneuver
+                && etapeNavigation.maneuver.type === "depart") {
+                return false;
+            }
+            return Number(etapeNavigation.distanceRouteMetres)
+                > progressionMetres + 30;
+        }
+    );
 
-    while (
-        distanceManeuvre < 35
-        && indexEtapeNavigation < etapesNavigation.length - 1
-    ) {
-        indexEtapeNavigation += 1;
-        etape = etapesNavigation[indexEtapeNavigation];
-        positionManeuvre = etape.maneuver.location;
-        distanceManeuvre = distanceDeplacementKm(
-            latitudeUtilisateur,
-            longitudeUtilisateur,
-            positionManeuvre[1],
-            positionManeuvre[0]
-        ) * 1000;
+    if (indexProchaineEtape < 0) {
+        indexProchaineEtape = etapesNavigation.length - 1;
     }
+
+    indexEtapeNavigation = Math.max(
+        indexEtapeNavigation,
+        indexProchaineEtape
+    );
+
+    var etape = etapesNavigation[indexEtapeNavigation];
+    var distanceManeuvre = Math.max(
+        0,
+        Number(etape.distanceRouteMetres || 0) - progressionMetres
+    );
+    distanceProchaineInstructionMetres = distanceManeuvre;
+    var distanceRestanteMetres = Math.max(
+        0,
+        distanceTotaleMetres - progressionMetres
+    );
 
     var dureeRestante = etapesNavigation
         .slice(indexEtapeNavigation)
@@ -10724,8 +11037,10 @@ function actualiserGuidageNavigation() {
     document.getElementById("navigation-instruction").textContent =
         texteManeuvre(etape);
     document.getElementById("navigation-distance").textContent =
-        formaterDistanceNavigation(distanceManeuvre)
-        + " \u00b7 "
+        formaterDistanceNavigation(distanceRestanteMetres)
+        + " restantes \u00b7 "
+        + formaterDistanceNavigation(distanceManeuvre)
+        + " avant instruction \u00b7 "
         + formaterDuree(dureeRestante / 60)
         + " restantes";
 
@@ -10863,8 +11178,7 @@ window.demarrerNavigation = async function() {
     navigationActive = true;
     suiviCarteActif = true;
     orientationAutomatiqueActive = true;
-    capCarteStabilise = dernierCapUtilisateur;
-    capFlecheStabilise = dernierCapUtilisateur;
+    stabiliserCapDepartNavigation();
     actualiserBoutonSuiviCarte();
     document.getElementById("navigation-panel").hidden = false;
     document.getElementById("navigation-instruction").textContent =
@@ -10912,8 +11226,9 @@ window.arreterNavigation = function() {
     stationNavigationActive = null;
     propositionStationPlusRentable = null;
     capAffichageStabilise = Number.NaN;
-    capCarteStabilise = dernierCapUtilisateur;
-    capFlecheStabilise = dernierCapUtilisateur;
+    distanceProchaineInstructionMetres = Number.POSITIVE_INFINITY;
+    stabiliserCapDepartNavigation();
+    reinitialiserCameraSuivi();
     cacherPopupStationPlusRentable();
     effacerMarqueursRavitaillement();
     afficherStationsClassiquesSurCarte(true);
@@ -10994,18 +11309,7 @@ async function tracerItineraire(
         boutonItineraire.disabled = true;
     }
 
-    var capRecent =
-        utilisateurEnMouvement
-        && Date.now() - dateDernierCapFiable < 10000
-        && Number.isFinite(dernierCapUtilisateur);
-    var capTelephoneRecent =
-        Date.now() - dateDernierCapTelephone < 5000
-        && Number.isFinite(capTelephone);
-    var capDepartItineraire = capRecent
-        ? dernierCapUtilisateur
-        : capTelephoneRecent
-            ? capTelephone
-            : Number.NaN;
+    var capDepartItineraire = capNavigationFiable(8000);
     try {
 
         var pointsItineraire = [
@@ -11064,13 +11368,7 @@ async function tracerItineraire(
         };
         coordonneesRouteNavigation = route.geometry.coordinates;
         proposerRavitaillementTrajetPremium(route);
-        etapesNavigation = (route.legs || []).reduce(
-            function(toutesLesEtapes, trajet) {
-                return toutesLesEtapes.concat(trajet.steps || []);
-            },
-            []
-        );
-        indexEtapeNavigation = 0;
+        definirEtapesNavigationDepuisRoute(route);
 
         var distanceKm = (
             route.distance / 1000
