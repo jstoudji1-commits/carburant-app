@@ -13,6 +13,7 @@ import csv
 from contextlib import asynccontextmanager, suppress
 from datetime import datetime
 from email.message import EmailMessage
+from email.utils import getaddresses
 import hashlib
 import hmac
 import json
@@ -845,6 +846,20 @@ def lire_configuration_smtp():
     }
 
 
+def lire_configuration_email_api():
+
+    brevo_api_key = os.getenv("BREVO_API_KEY", "").strip()
+    resend_api_key = os.getenv("RESEND_API_KEY", "").strip()
+
+    return {
+        "provider": "brevo" if brevo_api_key else (
+            "resend" if resend_api_key else "smtp"
+        ),
+        "brevo_api_key": brevo_api_key,
+        "resend_api_key": resend_api_key,
+    }
+
+
 def masquer_email_admin(email):
 
     if not email or "@" not in email:
@@ -881,6 +896,7 @@ def resume_configuration_smtp():
         champs_manquants.append("SMTP_PORT")
 
     return {
+        "provider": lire_configuration_email_api()["provider"],
         "host": configuration["host"],
         "port": port or configuration["port_raw"],
         "user": masquer_email_admin(utilisateur),
@@ -965,7 +981,86 @@ def message_erreur_smtp(erreur):
     return f"Erreur SMTP ({type(erreur).__name__}) : {erreur}"
 
 
+def extraire_contenu_email(message):
+
+    texte = ""
+    html = ""
+
+    corps_texte = message.get_body(preferencelist=("plain",))
+    corps_html = message.get_body(preferencelist=("html",))
+
+    if corps_texte:
+        texte = corps_texte.get_content()
+    elif not message.is_multipart():
+        texte = message.get_content()
+
+    if corps_html:
+        html = corps_html.get_content()
+
+    return texte, html
+
+
+def adresses_destinataires_email(message):
+
+    adresses = getaddresses(message.get_all("To", []))
+    return [
+        email
+        for _nom, email in adresses
+        if email
+    ]
+
+
+def envoyer_email_brevo(message, api_key):
+
+    configuration = lire_configuration_smtp()
+    expediteur = message.get("From") or configuration["from"]
+    destinataires = adresses_destinataires_email(message)
+    texte, html = extraire_contenu_email(message)
+
+    if not expediteur:
+        raise RuntimeError("Configuration e-mail incomplète : SMTP_FROM")
+
+    if not destinataires:
+        raise RuntimeError("Aucun destinataire e-mail.")
+
+    payload = {
+        "sender": {"email": expediteur},
+        "to": [{"email": email} for email in destinataires],
+        "subject": message.get("Subject", "OptiPlein"),
+    }
+
+    if html:
+        payload["htmlContent"] = html
+
+    if texte:
+        payload["textContent"] = texte
+
+    reponse = http_requests.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers={
+            "accept": "application/json",
+            "api-key": api_key,
+            "content-type": "application/json",
+        },
+        json=payload,
+        timeout=20,
+    )
+
+    if reponse.status_code >= 400:
+        detail = reponse.text[:500]
+        raise RuntimeError(
+            "Brevo a refusé l'envoi e-mail "
+            f"({reponse.status_code}) : {detail}"
+        )
+
+
 def envoyer_email(message):
+
+    configuration_api = lire_configuration_email_api()
+
+    if configuration_api["brevo_api_key"]:
+        envoyer_email_brevo(message, configuration_api["brevo_api_key"])
+        return
 
     configuration = lire_configuration_smtp()
     hote = configuration["host"]
