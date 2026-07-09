@@ -829,11 +829,10 @@ def lire_configuration_smtp():
     except ValueError:
         port = 0
     utilisateur = os.getenv("SMTP_USER", "").strip()
-    mot_de_passe = re.sub(
-        r"\s+",
-        "",
-        os.getenv("SMTP_PASSWORD", ""),
-    )
+    mot_de_passe_brut = os.getenv("SMTP_PASSWORD", "")
+    mot_de_passe = mot_de_passe_brut.strip()
+    if "gmail" in hote.lower() or utilisateur.lower().endswith("@gmail.com"):
+        mot_de_passe = re.sub(r"\s+", "", mot_de_passe_brut)
     expediteur = os.getenv("SMTP_FROM", utilisateur).strip()
 
     return {
@@ -904,11 +903,11 @@ def message_erreur_smtp(erreur):
                 errors="replace",
             )
         return (
-            "Authentification SMTP refusée par Gmail. "
-            "Vérifiez que SMTP_USER est optiplein5@gmail.com et que "
-            "SMTP_PASSWORD est bien un mot de passe d’application Google "
-            "à 16 caractères, sans le mot de passe normal du compte."
-            + (f" Réponse Gmail : {detail}" if detail else "")
+            "Authentification SMTP refusée. Vérifiez que SMTP_USER est "
+            "l'adresse e-mail complète, que SMTP_PASSWORD est le mot de passe "
+            "de cette boîte mail, et que SMTP_FROM utilise la même adresse "
+            "ou un alias autorisé."
+            + (f" Réponse SMTP : {detail}" if detail else "")
         )
 
     if isinstance(erreur, smtplib.SMTPConnectError):
@@ -921,6 +920,25 @@ def message_erreur_smtp(erreur):
         return (
             "Le serveur SMTP a coupé la connexion. Vérifiez le port SMTP "
             "et relancez le déploiement Render."
+        )
+
+    if isinstance(erreur, smtplib.SMTPNotSupportedError):
+        return (
+            "Le serveur SMTP ne prend pas en charge la sécurité demandée. "
+            "Essayez SMTP_PORT=465 avec SSL, ou vérifiez le serveur sortant "
+            "fourni par votre boîte mail."
+        )
+
+    if isinstance(erreur, smtplib.SMTPRecipientsRefused):
+        return (
+            "Le serveur SMTP a refusé le destinataire. Testez avec une autre "
+            "adresse e-mail et vérifiez que la boîte d'envoi est active."
+        )
+
+    if isinstance(erreur, smtplib.SMTPSenderRefused):
+        return (
+            "Le serveur SMTP a refusé l'expéditeur. Mettez SMTP_FROM égal à "
+            "SMTP_USER sur Render."
         )
 
     if isinstance(erreur, (TimeoutError, OSError)):
