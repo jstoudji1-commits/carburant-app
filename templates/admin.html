@@ -827,6 +827,10 @@
             if (
                 configuration.password_configured
                 && configuration.password_length !== 16
+                && (
+                    String(configuration.host || "").toLowerCase().indexOf("gmail") >= 0
+                    || String(configuration.user || "").toLowerCase().indexOf("gmail") >= 0
+                )
             ) {
                 morceaux.push(
                     "attention : un mot de passe d'application Google "

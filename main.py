@@ -895,6 +895,11 @@ def resume_configuration_smtp():
 
 def message_erreur_smtp(erreur):
 
+    configuration = lire_configuration_smtp()
+    hote = configuration["host"]
+    port = configuration["port"]
+    hote_minuscule = hote.lower()
+
     if isinstance(erreur, smtplib.SMTPAuthenticationError):
         detail = ""
         if getattr(erreur, "smtp_error", None):
@@ -912,8 +917,8 @@ def message_erreur_smtp(erreur):
 
     if isinstance(erreur, smtplib.SMTPConnectError):
         return (
-            "Connexion au serveur SMTP impossible. Vérifiez SMTP_HOST "
-            "et SMTP_PORT sur Render."
+            f"Connexion au serveur SMTP impossible ({hote}:{port}). "
+            "Vérifiez SMTP_HOST et SMTP_PORT sur Render."
         )
 
     if isinstance(erreur, smtplib.SMTPServerDisconnected):
@@ -942,9 +947,19 @@ def message_erreur_smtp(erreur):
         )
 
     if isinstance(erreur, (TimeoutError, OSError)):
+        if hote_minuscule.startswith("pro") and hote_minuscule.endswith(
+            ".mail.ovh.net"
+        ) and port == 465:
+            return (
+                "Connexion SMTP impossible : OVH Email Pro utilise "
+                f"{hote}:587 en STARTTLS. Mettez SMTP_PORT=587 sur Render, "
+                "puis Save, rebuild, and deploy."
+            )
+
         return (
-            "Connexion SMTP impossible depuis Render pour le moment. "
-            "Vérifiez le réseau, SMTP_HOST et SMTP_PORT."
+            f"Connexion SMTP impossible depuis Render vers {hote}:{port}. "
+            "Pour OVH Email Pro, utilisez SMTP_HOST=pro2.mail.ovh.net "
+            "et SMTP_PORT=587."
         )
 
     return f"Erreur SMTP ({type(erreur).__name__}) : {erreur}"
