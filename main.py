@@ -141,6 +141,8 @@ class DonneesCompte(BaseModel):
     vehicule_actif: str = ""
     plan: Literal["free", "premium"] = "free"
     historique_economies: list = Field(default_factory=list)
+    lieux_trajet: dict = Field(default_factory=dict)
+    rayon_stations: int = 25
 
 
 class PointItineraire(BaseModel):
@@ -800,6 +802,10 @@ def limiter_donnees_compte(donnees):
     donnees.favoris = donnees.favoris[:500]
     donnees.vehicules = donnees.vehicules[:5]
     donnees.historique_economies = donnees.historique_economies[:300]
+    donnees.rayon_stations = max(
+        5,
+        min(50, int(donnees.rayon_stations or 25)),
+    )
     if PREMIUM_TEST_ACTIF:
         donnees.plan = "premium"
 
