@@ -800,8 +800,13 @@
 
             var morceaux = [];
             var manquants = configuration.missing || [];
+            var provider = configuration.provider || "smtp";
 
-            if (configuration.ready) {
+            morceaux.push("envoi " + provider);
+
+            if (provider !== "smtp") {
+                morceaux.push("API active");
+            } else if (configuration.ready) {
                 morceaux.push("SMTP pret");
             } else {
                 morceaux.push(

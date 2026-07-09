@@ -23,6 +23,8 @@ services:
         value: optiplein5@gmail.com
       - key: SMTP_PASSWORD
         sync: false
+      - key: BREVO_API_KEY
+        sync: false
       - key: APP_BASE_URL
         value: https://optiplein.fr
       - key: ADMIN_PASSWORD
