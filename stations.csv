@@ -300,7 +300,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 33730001,33730,VILLANDRAUT,15 Rue Lafon Isore,44.46,-0.375,TotalEnergies,1.940,,,egal,,,hausse,1,hausse,1,hausse,1
 94250001,94250,Gentilly,67 Avenue Raspail,48.814,2.348,Esso Express,2.098,2.024,2.104,egal,egal,egal,hausse,1,hausse,1,hausse,1
 77160002,77160,Provins,Avenue de la Voulzie,48.5451486,3.2893673,E.Leclerc,1.934,1.897,1.986,egal,egal,egal,hausse,1,hausse,1,hausse,1
-13090018,13090,Aix-en-Provence,1140 RTE AVIGNON QU.CELONY RN7,43.557,5.418,TotalEnergies,1.956,,1.986,egal,egal,egal,hausse,1,hausse,1,hausse,1
+13090018,13090,Aix-en-Provence,1140 RTE AVIGNON QU.CELONY RN7,43.557,5.418,TotalEnergies,1.956,,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 94380002,94380,Bonneuil-sur-Marne,ROUTE DE LA POMPADOUR,48.765,2.478,Esso Express,1.985,1.931,2.011,egal,egal,egal,hausse,1,hausse,1,hausse,1
 94370003,94370,Sucy-en-Brie,1 Rue de Paris,48.7733079,2.4982795,Esso Express,2.003,1.953,2.033,egal,egal,egal,hausse,1,hausse,1,hausse,1
 16100004,16100,COGNAC,105 Rue Basse Saint-Martin,45.6857072,-0.3393814,E.Leclerc,1.959,1.891,1.969,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -1311,13 +1311,14 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 95470008,95470,VEMARS,AUT A1 Aire de Vémars Ouest,49.071,2.551,Shell,1.952,2.040,2.022,egal,egal,egal,hausse,1,hausse,1,hausse,1
 80120004,80120,RUE,28/30 RUE PORTE DE BECRAY,50.271,1.669,Auchan,1.945,1.909,1.994,hausse,hausse,hausse,hausse,1,hausse,1,hausse,1
 15100005,15100,SAINT-FLOUR,Route d'Aurillac,45.038,3.065,Carrefour,1.998,1.935,1.999,hausse,hausse,egal,hausse,1,hausse,1,hausse,1
+95110007,95110,SANNOIS,82 BLD GABRIEL PERI,48.963,2.26,TotalEnergies,1.979,1.929,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 60260002,60260,Lamorlaye,Z.A DE LA SEIGNEURIE,49.1499936,2.4260108,Intermarché,1.949,1.929,2.029,egal,egal,egal,hausse,1,hausse,1,hausse,1
 74310002,74310,Les Houches,956 Avenue des Alpages,45.896029,6.809573,Super U,1.999,1.909,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 59300011,59300,VALENCIENNES,59 Avenue de Verdun,50.3539373,3.5350105,Auchan,1.990,,,egal,,,hausse,1,hausse,1,hausse,1
 67260007,67260,KESKASTEL,AUTOROUTE A4 - AIRE DE KESKASTEL EST,48.97188,7.06906,TotalEnergies,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
-95110007,95110,SANNOIS,82 BLD GABRIEL PERI,48.963,2.26,TotalEnergies,1.979,1.929,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 80600006,80600,Doullens,RUE MENCHON,50.156514,2.344209,E.Leclerc,1.939,1.899,1.999,hausse,egal,hausse,hausse,1,hausse,1,hausse,1
 26760001,26760,Beaumont-lès-Valence,Route de Valence,44.871,4.942,Super U,1.915,1.889,,egal,egal,,hausse,1,hausse,1,hausse,1
+79230005,79230,VOUILLE,AUTOROUTE A10 - AIRE DE POITOU CHARENTE,46.2974704,-0.3707698,Total,1.990,1.990,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 73290008,73290,La Motte-Servolex,330 avenue JEAN ROSTAND,45.592636,5.88386,Eni,2.029,2.019,2.089,egal,egal,egal,hausse,1,hausse,1,hausse,1
 26100010,26100,ROMANS SUR ISERE,56 Avenue du Maquis,45.048721,5.075208,Avia,1.998,1.949,2.019,egal,egal,egal,hausse,1,hausse,1,hausse,1
 28200002,28200,Châteaudun,8 BD DU 8 MAI,48.062,1.335,Total,2.044,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -1327,7 +1328,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 85340003,85340,Olonne-sur-Mer,87 Avenue François Mitterand,46.514,-1.778,E.Leclerc,1.890,1.877,1.959,egal,egal,egal,hausse,1,hausse,1,hausse,1
 27170002,27170,Beaumont-le-Roger,Route de Beaumont,49.02978,0.74291,Carrefour,1.899,1.890,1.998,egal,egal,egal,hausse,1,hausse,1,hausse,1
 76190003,76190,Sainte-Marie-des-Champs,"261, Avenue René COTY",49.626,0.788,Intermarché,1.959,1.909,2.009,egal,egal,egal,hausse,1,hausse,1,hausse,1
-79230005,79230,VOUILLE,AUTOROUTE A10 - AIRE DE POITOU CHARENTE,46.2974704,-0.3707698,Total,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 11600005,11600,VILLEGLY,RD 620 Lieu dit la pièce,43.282,2.437,Dyneff,1.969,1.939,,egal,egal,,hausse,1,hausse,1,hausse,1
 17600006,17600,Le Gua,"Rue Mathilde Mir, Zone d'activité Omega",45.733,-0.96,E.Leclerc,1.959,1.949,1.989,baisse,egal,egal,hausse,1,hausse,1,hausse,1
 57855003,57855,SAINT-PRIVAT-LA-MONTAGNE,A4 Aire De Metz,49.179233,6.053616,Shell,1.960,2.040,2.022,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -1359,8 +1359,8 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 72440002,72440,BOULOIRE,1 Rue Nationale,47.975,0.546,Total,1.981,1.985,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 94003002,94000,Créteil,AUTOROUTE A86 AIRE DE CARREFOUR POMPADOUR,48.779824,2.440868,Total,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 80260003,80260,FLESSELLES,RD 933 Le Champs St Pierre,50.001,2.258,Intermarché,1.894,1.889,1.970,egal,egal,egal,hausse,1,hausse,1,hausse,1
+56000009,56000,VANNES,BOULEVARD DE LA PAIX,47.661528,-2.7578995,TotalEnergies,1.933,,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 21200005,21200,BEAUNE,Rue Gustave Eiffel,47.042,4.844,E.Leclerc,1.980,1.938,1.969,egal,egal,egal,hausse,1,hausse,1,hausse,1
-56000009,56000,VANNES,BOULEVARD DE LA PAIX,47.661528,-2.7578995,TotalEnergies,1.933,,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 13100014,13100,Aix-en-Provence,122 COURS GAMBETTA,43.5189261,5.4622279,TotalEnergies,1.952,1.871,1.988,egal,egal,egal,hausse,1,hausse,1,hausse,1
 78310001,78310,Coignières,RN10,48.745,1.922,Auchan,,1.924,1.990,,egal,egal,hausse,1,hausse,1,hausse,1
 93800005,93800,EPINAY SUR SEINE,159 Route de Saint-Leu,48.954,2.335,E.Leclerc,1.941,1.933,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -1552,6 +1552,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 83670001,83670,BARJOLS,6 PLACE MARTIN FERDINAND,43.56,6.004,BP,2.079,1.966,2.026,hausse,egal,egal,hausse,1,hausse,1,hausse,1
 47160002,47160,DAMAZAN,13 AVENUE DES LANDES,44.28798,0.272237,U,2.020,1.947,2.030,egal,egal,egal,hausse,1,hausse,1,hausse,1
 40210004,40210,Labouheyre,67 allée de Genets,44.2023318,-0.9276554,E.Leclerc,1.959,1.906,,egal,egal,,hausse,1,hausse,1,hausse,1
+50240003,50240,Saint-Aubin-de-Terregatte,AUTOROUTE A84 - AIRE DU MONT SAINT MICHEL,48.58491,-1.32638,Total,1.990,1.990,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 12000015,12000,RODEZ,18 AVENUE DU SÉGALA,44.345136,2.567696,Dyneff,2.025,,,egal,,,hausse,1,hausse,1,hausse,1
 26300010,26300,Chatuzange-le-Goubet,Route du Stade,45.0024486,5.0925774,Système U,1.999,,1.999,hausse,,hausse,hausse,1,hausse,1,hausse,1
 63230002,63230,Pontgibaud,18 Avenue de la Gare,45.827,2.851,Carrefour,1.939,1.919,2.009,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -1560,17 +1561,16 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 35120002,35120,DOL-DE-BRETAGNE,RUE DU DOCTEUR GRINGOIRE,48.547429,-1.742327,Super U,1.929,1.919,1.989,hausse,hausse,hausse,hausse,1,hausse,1,hausse,1
 62128007,62128,Croisilles,Aire de st Leger Autoroute A1,50.174,2.874,Avia,1.932,1.942,2.043,egal,egal,egal,hausse,1,hausse,1,hausse,1
 54380011,54380,Dieulouard,1 Avenue du Général De Gaulle,48.8450586,6.0701082,Carrefour,1.995,,2.011,egal,,egal,hausse,1,hausse,1,hausse,1
-50240003,50240,Saint-Aubin-de-Terregatte,AUTOROUTE A84 - AIRE DU MONT SAINT MICHEL,48.58491,-1.32638,Total,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 85170006,85170,Le Poiré-sur-Vie,48 BD DES DEUX MOULINS,46.764,-1.494,E.Leclerc,1.888,1.889,1.949,egal,egal,egal,hausse,1,hausse,1,hausse,1
 51100029,51100,Reims,31 Rue de Neufchâtel,49.27198,4.02634,Carrefour Market,1.999,,2.069,egal,,egal,hausse,1,hausse,1,hausse,1
 83980001,83980,LE LAVANDOU,Avenue du Maréchal Juin,43.136,6.359,Carrefour,1.935,,1.975,egal,egal,egal,hausse,1,hausse,1,hausse,1
 30230002,30230,Bouillargues,55 route de nimes,43.800404,4.418625,Carrefour,1.969,1.872,,egal,egal,,hausse,1,hausse,1,hausse,1
+62000014,62000,ARRAS,138 PLACE DE THECOSLOVAQUIE,50.297,2.769,Total,1.941,,,egal,,egal,hausse,1,hausse,1,hausse,1
 95100034,95100,ARGENTEUIL,176 AVE STALINGRAD,48.955,2.273,TotalEnergies,1.961,1.929,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 37390004,37390,La Membrolle-sur-Choisille,81 route de Château-la-Vallière,47.442,0.624,Total,2.029,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 71480001,71480,CUISEAUX,Route de Dommartin,46.4936543,5.3835909,Système U,1.899,1.919,2.029,egal,egal,egal,hausse,1,hausse,1,hausse,1
 35800002,35800,DINARD,68 Boulevard Jules Verger,48.615,-2.07,Avia,2.010,,,egal,,,hausse,1,hausse,1,hausse,1
 42210004,42210,MONTROND LES BAINS,60 RUE DE LA SAUVETE ZAC DES BERGERES,45.654208,4.231001,Netto,1.933,1.883,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
-62000014,62000,ARRAS,138 PLACE DE THECOSLOVAQUIE,50.297,2.769,Total,1.941,,1.990,egal,,egal,hausse,1,hausse,1,hausse,1
 74320006,74320,Sevrier,754 route d'Albertville,45.8765521,6.1413755,Avia,1.989,,2.039,egal,,egal,hausse,1,hausse,1,hausse,1
 33240010,33240,ST ANDRE DE CUBZAC,AUTOROUTE A10 - AIRE DE L'ESTALOT,44.9782476,-0.4320803,TotalEnergies,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 12210001,12210,Laguiole,Rue Lavernhe,44.6856746,2.851688,Casino,1.989,,1.989,egal,,egal,hausse,1,hausse,1,hausse,1
@@ -1624,6 +1624,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 89200009,89200,AVALLON,AVENUE DE LA MORLANDE,47.4936578,3.9036766,Intermarché,1.978,1.878,,egal,egal,,hausse,1,hausse,1,hausse,1
 74910003,74910,Seyssel,Route de Genève,45.96371,5.8372305,Carrefour,1.919,,1.999,egal,,egal,hausse,1,hausse,1,hausse,1
 65330001,65330,TOURNOUS DEVANT,31 ROUTE DES PYRENEES,43.245,0.421,Dyneff,1.949,1.935,2.040,egal,egal,egal,hausse,1,hausse,1,hausse,1
+34250003,34250,Palavas-les-Flots,PONT DES 4 CANAUX - RD 986,43.529,3.931,Total,1.969,,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 76580002,76580,LE TRAIT,35 RUE DENIS PAPIN,49.483,0.807,Carrefour,1.980,,2.090,egal,,egal,hausse,1,hausse,1,hausse,1
 51130002,51130,blancs coteaux,13 avenue du general de gaulle,48.899,4.009,E.Leclerc,1.962,1.895,1.967,egal,egal,egal,hausse,1,hausse,1,hausse,1
 17320002,17320,MARENNES,Rue de la République,45.823,-1.103,E.Leclerc,1.959,,1.989,baisse,,egal,hausse,1,hausse,1,hausse,1
@@ -1631,16 +1632,15 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 59134001,59134,le maisnil,20 rue du haut quesnoy,50.613,2.883,Carrefour Contact,1.979,1.919,2.029,egal,egal,egal,hausse,1,hausse,1,hausse,1
 41100003,41100,Vendôme,ROUTE NATIONAL 10,47.805,1.071,Carrefour,1.932,1.885,1.969,hausse,hausse,egal,hausse,1,hausse,1,hausse,1
 81300006,81300,GRAULHET,ROND POINT RHIN ET DANUBE,43.761,1.97,Intermarché,1.899,1.850,1.959,egal,egal,egal,hausse,1,hausse,1,hausse,1
-34250003,34250,Palavas-les-Flots,PONT DES 4 CANAUX - RD 986,43.529,3.931,Total,1.969,1.883,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 22960001,22960,PLEDRAN,"2, RUE DU CHALLONGE",48.445538,-2.751295,Carrefour,1.929,1.929,2.009,egal,egal,egal,hausse,1,hausse,1,hausse,1
 87290002,87290,Saint-Sornin-Leulac,Route de Lavergne,46.198,1.306,Station-service Intercommunale,2.200,2.200,2.290,egal,egal,egal,hausse,1,hausse,1,hausse,1
 30800002,30800,Saint-Gilles,ROUTE D'ARLES,43.6695,4.4454237,Intermarché,1.999,1.899,1.979,egal,egal,egal,hausse,1,hausse,1,hausse,1
+25800003,25800,VALDAHON,5 ROUTE VERNIER FONTAINE,47.148,6.331,Netto,1.999,1.915,1.989,hausse,egal,egal,hausse,1,hausse,1,hausse,1
 80046003,80046,AMIENS CEDEX 2,7 AVENUE R.DUMOULIN,49.928,2.287,BP,2.029,1.969,2.119,hausse,hausse,hausse,hausse,1,hausse,1,hausse,1
 78550009,78550,MAULETTE,22 AVENUE GERARD ANNEL - D912,48.7922983,1.621245,TotalEnergies,1.989,1.929,,egal,egal,,hausse,1,hausse,1,hausse,1
 86190001,86190,Vouillé,ZAE DE VAUGENDRON,46.642,0.172,Super U,1.979,1.919,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 69680003,69680,CHASSIEU,28 Route de Lyon,45.737906,4.957315,Intermarché,1.989,1.868,,egal,egal,,hausse,1,hausse,1,hausse,1
 7190001,07190,Saint-Sauveur-de-Montagut,Grande Rue,44.8210871,4.5848983,Carrefour Contact,1.936,,1.970,egal,,egal,hausse,1,hausse,1,hausse,1
-25800003,25800,VALDAHON,5 ROUTE VERNIER FONTAINE,47.148,6.331,Netto,1.966,1.915,1.989,hausse,egal,egal,hausse,1,hausse,1,hausse,1
 32000008,32000,AUCH,17 Avenue de la Marne,43.649,0.595,PétrAM.,1.932,1.956,2.056,egal,egal,egal,hausse,1,hausse,1,hausse,1
 1300003,01300,Chazey-Bons,RN 504 - ZI de Penaye,45.778,5.689,Intermarché,1.950,1.859,1.959,egal,egal,egal,hausse,1,hausse,1,hausse,1
 49250001,49250,Beaufort-en-Vallée,ZAC Actival,47.4403401,-0.1978424,Intermarché,1.999,1.939,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -1775,7 +1775,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 84570002,84570,VILLES-SUR-AUZON,24 AVENUE JEAN JAURES,44.057793,5.231427,Station Communale Villes-sur-Auzon,1.999,,,egal,,,hausse,1,hausse,1,hausse,1
 45400004,45400,FLEURY-LES-AUBRAIS,Rue de Montaran,47.9432965,1.9188396,E.Leclerc,1.945,1.899,1.969,egal,egal,egal,hausse,1,hausse,1,hausse,1
 56100007,56100,LORIENT,2 Rue du Colonel Jean Muller,47.764,-3.396,Carrefour,1.865,1.866,1.968,egal,egal,egal,hausse,1,hausse,1,hausse,1
-59110007,59110,La Madeleine,10 Rue Bernard Ruyant,50.6613523,3.069187,Système U,1.899,1.887,1.972,egal,egal,egal,hausse,1,hausse,1,hausse,1
+59110007,59110,La Madeleine,10 Rue Bernard Ruyant,50.6613523,3.069187,Système U,1.899,,1.972,egal,egal,egal,hausse,1,hausse,1,hausse,1
 54520001,54520,LAXOU,rue de la Sapinière,48.6919004,6.127967,Auchan,1.956,1.929,,egal,egal,,hausse,1,hausse,1,hausse,1
 17530001,17530,ARVERT,Le Moulin des Justices,45.7555384,-1.1399693,Super U,1.919,1.929,2.019,egal,egal,egal,hausse,1,hausse,1,hausse,1
 57070003,57070,METZ,62 Rue du Général Metman,49.12009,6.21832,Avia,1.999,1.999,2.079,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -1859,7 +1859,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 82270002,82270,MONTALZAT,AUTOROUTE A20 - AIRE DE BOIS DE DOURRE,44.2327318,1.5282322,TotalEnergies,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 1960005,01960,SERVAS,50 RUE DES ACACIAS,46.128,5.163,Intermarché,1.995,1.885,1.985,egal,egal,egal,hausse,1,hausse,1,hausse,1
 64390002,64390,SAUVETERRE-DE-BéARN,Carrères du Dessus,43.401,-0.948,E.Leclerc,1.999,1.981,,egal,egal,,hausse,1,hausse,1,hausse,1
-77171003,77171,SOURDUN,"38, RUE DE PARIS",48.535,3.361,TotalEnergies,1.941,1.906,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+77171003,77171,SOURDUN,"38, RUE DE PARIS",48.535,3.361,TotalEnergies,1.941,1.906,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 6530002,06530,Peymeinade,94 Avenue de Boutiny,43.6443161,6.8873161,SA Sokami,1.996,1.890,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 10600002,10300,Sainte-Savine,4 Boulevard de l'Ouest,48.303062,4.0260644,Carrefour,1.999,1.979,2.069,egal,egal,egal,hausse,1,hausse,1,hausse,1
 33730003,33730,Noaillan,D8  le bourg est,44.481216,-0.367143,Carrefour,1.879,1.882,1.984,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -2616,11 +2616,11 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 73200003,73600,MOûTIERS,Avenue des Salines Royales,45.4858403,6.5247927,Carrefour,1.939,1.889,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 32000006,32000,AUCH,RUE MARGUERITE DURAS,43.664,0.618,Intermarché,1.999,1.899,2.090,egal,egal,egal,hausse,1,hausse,1,hausse,1
 59290001,59290,WASQUEHAL,AVENUE DU GRAND COTTIGNIES,50.68195,3.1281,Carrefour,2.000,1.923,2.032,egal,egal,egal,hausse,1,hausse,1,hausse,1
+69170004,69170,TARARE,RN 7 - 60 RUE EDOUARD HERRIOT,45.8902939,4.4456455,Total Access,1.949,,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 36150004,36150,Meunet-sur-Vatan,A20 AIRE DES CHAMPS D' AMOUR,47.102,1.797,Esso,2.579,2.239,,egal,egal,,hausse,1,hausse,1,hausse,1
 31390001,31390,Carbonne,Route de l'Arize,43.303161,1.220811,Auchan,1.949,1.859,1.959,egal,egal,egal,hausse,1,hausse,1,hausse,1
 20169002,20169,BONIFACIO,sennola,41.391,9.165,Ets. Botti,2.020,,,egal,,,hausse,1,hausse,1,hausse,1
 91450001,91450,ÉTIOLLES,Rond Point des Coudray,48.639,2.458,Carrefour,1.929,,2.019,hausse,,hausse,hausse,1,hausse,1,hausse,1
-69170004,69170,TARARE,RN 7 - 60 RUE EDOUARD HERRIOT,45.8902939,4.4456455,Total Access,1.949,1.889,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 20148001,20148,COZZANO,Noce,41.935,9.158,Esso,2.116,,,egal,,,hausse,1,hausse,1,hausse,1
 26300012,26300,ALIXAN,60 RUE DES MARGUERITES,45.0,5.001,TotalEnergies,1.941,,,egal,,,hausse,1,hausse,1,hausse,1
 35320003,35320,CREVIN,10 rue de Bel Air,47.934352,-1.667273,Système U,1.899,,1.999,egal,,egal,hausse,1,hausse,1,hausse,1
@@ -3048,7 +3048,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 34590001,34590,MARSILLARGUES,10 rue Alphonse Daudet,43.662,4.178,Système U,1.979,1.949,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 14310004,14310,Villers-Bocage,1 Boulevard du 21e siecle les Sauts casris,49.078,-0.645,E.Leclerc,1.982,,1.991,egal,,egal,hausse,1,hausse,1,hausse,1
 82000018,82000,Montauban,284 Avenue Jean Moulin,44.026,1.366,TotalEnergies,2.075,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
-13005013,13005,Marseille,ANGLE BD CHAVE ET SAKAKINI,43.295,5.4,TotalEnergies,1.969,1.879,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+13005013,13005,Marseille,ANGLE BD CHAVE ET SAKAKINI,43.295,5.4,TotalEnergies,1.969,,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 78660003,78660,Ablis,1 Rue de Boinville,48.515055,1.838145,Système U,1.915,,1.979,hausse,,baisse,hausse,1,hausse,1,hausse,1
 54330001,54330,VÉZELISE,"6, Avenue Jacques Leclerc",48.487,6.094,G20,1.885,,2.038,egal,,egal,hausse,1,hausse,1,hausse,1
 91710001,91710,VERT-LE-PETIT,"8, rue Berthollet",48.542027,2.366611,Intermarché,1.923,1.919,2.025,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -3113,6 +3113,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 62950001,62950,NOYELLES-GODAULT,av République,50.41371,2.98088,Auchan,1.969,1.919,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 49000015,49000,ANGERS,55 Boulevard Jacques Millot,47.455,-0.534,Intermarché,1.995,1.922,,egal,egal,,hausse,1,hausse,1,hausse,1
 6600023,06600,ANTIBES,1945 ROUTE DE GRASSE,43.598,7.088,Total,2.079,1.985,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+38150010,38150,Salaise-sur-Sanne,601 ROUTE NATIONALE 7,45.3489093,4.8041763,Esso Express,1.935,,,egal,egal,,hausse,1,hausse,1,hausse,1
 38800003,38800,Pont-de-claix,96 COURS ST ANDRE,45.138,5.702,TotalEnergies,1.962,1.879,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 86400003,86400,SAVIGNé,Route de Niort,46.16,0.311,Intermarché,1.862,1.869,,egal,egal,,hausse,1,hausse,1,hausse,1
 59149002,59149,Cousolre,72 route nationale,50.247554,4.148799,Netto,1.933,1.875,1.983,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -3124,7 +3125,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 32130004,32130,SAMATAN,1281 ROUTE DE TOULOUSE,43.4882283,0.9363125,Total,1.990,1.990,,egal,egal,,hausse,1,hausse,1,hausse,1
 29620001,29620,LANMEUR,33 Rue des Quatre Vents,48.642,-3.72,Système U,1.949,1.889,1.969,egal,egal,egal,hausse,1,hausse,1,hausse,1
 32100003,32100,Condom,lieu dit hontaut,43.965,0.367,Carrefour,1.925,1.885,2.030,egal,egal,egal,hausse,1,hausse,1,hausse,1
-38150010,38150,Salaise-sur-Sanne,601 ROUTE NATIONALE 7,45.3489093,4.8041763,Esso Express,1.935,1.864,,egal,egal,,hausse,1,hausse,1,hausse,1
 62160001,62160,AIX-NOULETTE,Impasse de l'Épinette,50.441934,2.6959223,Carrefour,1.890,,2.015,egal,,egal,hausse,1,hausse,1,hausse,1
 34570001,34570,Pignan,AVENUE GENERAL GROLLIER,43.5855845,3.7711365,Total,2.045,,1.990,egal,,egal,hausse,1,hausse,1,hausse,1
 14960001,14960,Asnelles,15 AVENUE MAURICE SCHUMANN,49.339,-0.58,Carrefour Contact,1.899,1.899,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -3150,7 +3150,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 53400001,53400,CRAON,Z.A. LA PEPINIERE,47.843,-0.971,Super U,1.895,1.950,2.023,egal,egal,egal,hausse,1,hausse,1,hausse,1
 12130001,12130,Saint-Geniez-d'Olt,AVENUE D'ESPALION,44.462668,2.9718675,Total,1.990,,,egal,,,hausse,1,hausse,1,hausse,1
 32100004,32100,condom,33 AVENUE DES PYRENEES,43.951452,0.371114,TotalEnergies,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
-50170006,50170,Pontorson,42 RUE DE LA LIBERATION,48.554,-1.501,Total,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+50170006,50170,Pontorson,42 RUE DE LA LIBERATION,48.554,-1.501,Total,1.990,,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 36700002,36700,Châtillon-sur-Indre,26 Rue Jean Lurçat,46.9861723,1.1667261,Intermarché,1.969,1.939,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 16300004,16300,BARBEZIEUX-SAINT-HILAIRE,Avenue de l'Europe,45.46704,-0.16519,E.Leclerc,1.975,1.939,1.994,egal,egal,egal,hausse,1,hausse,1,hausse,1
 21000017,21000,Dijon,1 Avenue du Mont Blanc,47.301794,5.0684838,Avia,2.099,,,egal,,,hausse,1,hausse,1,hausse,1
@@ -3326,7 +3326,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 64121003,64121,Montardon,14 Rue ALEXANDRO VOLTA,43.354,-0.38,Total Access,1.949,1.909,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 22580001,22580,PLOUHA,Le Chene Vert,48.68722,-2.9305895,Carrefour Market,1.915,,1.993,egal,,egal,hausse,1,hausse,1,hausse,1
 13320012,13320,Bouc-Bel-Air,341 AV DE LA CROIX D OR,43.462128,5.407102,TotalEnergies,2.036,1.969,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
-62710002,62710,Courrières,Rue Roger Salengro,50.460878,2.960923,Netto,1.865,1.867,1.968,egal,egal,egal,hausse,1,hausse,1,hausse,1
 37150004,37150,CIVRAY DE TOURAINE,77 RUE DE CHENONCEAUX,47.333,1.061,Total,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 1340003,01340,Jayat,"Route de Bourg, Prairie de Cezille",46.349439,5.123904,Intermarché,1.992,1.867,1.977,egal,egal,egal,hausse,1,hausse,1,hausse,1
 71520001,71520,DOMPIERRE LES ORMES,PLACE DE LA BASCULE,46.362,4.484,Les combustibles,1.909,,,egal,,,hausse,1,hausse,1,hausse,1
@@ -3335,13 +3334,14 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 44220001,44200,NANTES,75 Boulevard Joliot Curie,47.1951513,-1.5302284,Super U,1.938,,1.994,egal,,egal,hausse,1,hausse,1,hausse,1
 26740005,26740,Montboucher-sur-Jabron,20 ROUTE DE MONTELIMAR,44.548,4.807,Avia,1.979,1.939,2.019,egal,egal,egal,hausse,1,hausse,1,hausse,1
 89560001,89560,COURSON-LES-CARRIèRES,ROUTE NATIONALE 151,47.616,3.497,Total,1.990,1.990,,egal,egal,,hausse,1,hausse,1,hausse,1
+62710002,62710,Courrières,Rue Roger Salengro,50.460878,2.960923,Netto,,,1.968,egal,egal,egal,hausse,1,hausse,1,hausse,1
 31470002,31470,Saint-Lys,725 RTE DE TOULOUSE,43.518,1.183,Total,1.955,1.944,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 76600024,76600,LE HAVRE,BOULEVARD LENINGRAD,49.4944718,0.1516242,Carrefour Market,1.952,1.905,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 50200008,50200,COUTANCES,"2, AVENUE DE VERDUN",49.038,-1.446,Total,1.961,1.909,,egal,egal,,hausse,1,hausse,1,hausse,1
 13200015,13200,ARLES,N°1 AV BACHAGA SAID BOUALEM,43.6702855,4.6215273,Total,2.065,1.989,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 40230004,40230,Tosse,27 Avenue du Général de Gaulle,43.689392,-1.333004,E.Leclerc,1.937,1.909,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
+91700005,91700,FLEURY MEROGIS,RN 104 ZI DES CIROLIERS,48.624,2.37,Total Access,,,,,egal,,hausse,1,hausse,1,hausse,1
 69270004,69270,Fontaines-sur-Saône,"46, AV.DES MARRONNIERS",45.82109,4.86263,TotalEnergies,1.962,1.879,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
-91700005,91700,FLEURY MEROGIS,RN 104 ZI DES CIROLIERS,48.624,2.37,Total Access,,1.914,,,egal,,hausse,1,hausse,1,hausse,1
 64320003,64320,IDRON,Chemin Cam Marty,43.2953257,-0.3235102,Super U,1.989,1.944,1.999,hausse,hausse,egal,hausse,1,hausse,1,hausse,1
 83000006,83100,TOULON,283 Rue Henri Sainte-Claire Deville,43.1280899,5.9765068,Intermarché,1.999,1.908,2.020,egal,egal,egal,hausse,1,hausse,1,hausse,1
 76730001,76730,BACQUEVILLE-EN-CAUX,ROUTE D'ABLEMONT,49.79,0.998,Carrefour,1.969,,1.999,egal,,egal,hausse,1,hausse,1,hausse,1
@@ -3354,7 +3354,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 59270002,59270,BAILLEUL,Avenue des Nations Unies,50.7232354,2.7403767,E.Leclerc,1.937,1.887,1.956,egal,egal,egal,hausse,1,hausse,1,hausse,1
 1540001,01540,VONNAS,184 rue du 19 mars 1962,46.2169419,4.9925452,Carrefour,1.899,1.879,1.965,egal,egal,egal,hausse,1,hausse,1,hausse,1
 56860003,56860,Séné,ROUTE DE NANTES,47.6501255,-2.7218248,Total,1.909,1.909,1.979,egal,egal,egal,hausse,1,hausse,1,hausse,1
-69570005,69570,DARDILLY,AUTOROUTE A6 - AIRE DE BRUYÈRES PAISY,45.808769,4.769593,TotalEnergies,1.893,1.903,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 47480003,47480,Pont-du-Casse,974 AV DE CAHORS,44.2267554,0.6717237,Total,2.039,,,hausse,,,hausse,1,hausse,1,hausse,1
 81600003,81600,Gaillac,19 Avenue Rhin et Danube,43.913,1.902,Intermarché,1.999,1.910,1.988,egal,egal,egal,hausse,1,hausse,1,hausse,1
 20220003,20220,L'Île-Rousse,8 Avenue Paul DOUMER,42.632,8.941,Esso,1.979,,,egal,,,hausse,1,hausse,1,hausse,1
@@ -3366,6 +3365,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 69210009,69210,LENTILLY,RN 7 LE GRAND CHEMIN,45.825,4.669,Avia,2.009,,,egal,,,hausse,1,hausse,1,hausse,1
 40990001,40990,Saint-Vincent-de-Paul,RN.124,43.741,-1.018,Endesa,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 68970001,68970,Guémar,6 Route de Sélestat,48.187,7.394,Beysang,1.999,,1.999,egal,,egal,hausse,1,hausse,1,hausse,1
+69570005,69570,DARDILLY,AUTOROUTE A6 - AIRE DE BRUYÈRES PAISY,45.808769,4.769593,TotalEnergies,1.893,,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 28630004,28630,SOURS,2 rue du sénateur Jacques GAUTRON,48.413553,1.600615,CocciMarket,1.889,1.899,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 80300001,80300,ALBERT,80 AVENUE DU GENERAL FAIDHERBE,50.0049046,2.6611809,Système U,1.999,1.929,2.039,egal,egal,egal,hausse,1,hausse,1,hausse,1
 95450006,95450,SAGY,RN 14 LIEUDIT LA MARLIERE,49.06461,1.978946,TotalEnergies,1.954,1.923,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -3402,12 +3402,12 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 78000019,78000,VERSAILLES,15 AV DU GENERAL PERSHING,48.818,2.15,TotalEnergies,2.077,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 74290002,74290,Menthon-Saint-Bernard,530 Route d'Annecy,45.866,6.188,Elan,2.030,,,egal,,,hausse,1,hausse,1,hausse,1
 38490006,38490,Aoste,3390 Route de Belley,45.618,5.611,TotalEnergies,1.990,1.989,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+56100012,56100,LORIENT,"2, RUE BENOIT FRACHON",47.7352731,-3.371245,Total,1.919,,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 78280004,78280,GUYANCOURT,VOIE E8 LES SAULES - Avenue du 8 Mai 1945,48.785,2.06,Total Access,1.972,1.922,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 47200013,47200,MARMANDE,6-8 RUE FRANCOIS MAURIAC,44.5048195,0.1826987,Système U,1.965,1.909,,egal,egal,,hausse,1,hausse,1,hausse,1
 36000009,36000,CHâTEAUROUX,PARKING CARREFOUR CENTRE VILLE,46.8057323,1.698127,TotalEnergies,1.924,1.894,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 85000012,85000,Mouilleron-le-Captif,208 RUE DU CLAIR BOCAGE,46.7133925,-1.4310604,Total Access,1.919,1.882,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 24270005,24270,LANOUAILLE,LA PLANCHE,45.3856073,1.1346489,Carrefour,1.877,1.883,1.983,egal,egal,egal,hausse,1,hausse,1,hausse,1
-56100012,56100,LORIENT,"2, RUE BENOIT FRACHON",47.7352731,-3.371245,Total,1.919,1.879,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 26270004,26270,LORIOL-SUR-DRôME,Parc des Crozes,44.7606186,4.838073,Intermarché,1.989,1.879,1.959,hausse,egal,egal,hausse,1,hausse,1,hausse,1
 63360002,63360,GERZAT,FONTCHENILLE,45.818,3.154,Total,2.049,1.984,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 12100010,12100,MILLAU,25 AVENUE EDOUARD ALFRED MARTEL,44.114,3.082,Servifioul,1.979,,1.999,egal,,egal,hausse,1,hausse,1,hausse,1
@@ -3640,11 +3640,11 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 44350003,44350,Guérande,Boulevard du 19 Mars 1962,47.3392383,-2.4277753,TotalEnergies,,,,,,,hausse,1,hausse,1,hausse,1
 80260001,80260,Villers-Bocage,Rue du Château d'Eau,50.0035538,2.3137746,Carrefour,2.008,1.926,2.018,egal,egal,egal,hausse,1,hausse,1,hausse,1
 64120004,64120,Amendeuix-Oneix,40 Zone d'activité,43.329617,-1.037638,Carrefour,1.999,1.886,2.025,egal,egal,egal,hausse,1,hausse,1,hausse,1
+69800015,69800,Saint-Priest,32 ROUTE DE LYON,45.701267,4.918892,Total,1.969,,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 3300003,03300,CUSSET,rue des peupliers,46.137861,3.436216,Système U,2.015,1.959,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 38340013,38340,VOREPPE,1159 AVENUE DE JUIN 1940,45.3052992,5.6243568,Total,1.945,,,egal,,,hausse,1,hausse,1,hausse,1
 63200001,63200,MENETROL,AVENUE DE CLERMONT,45.878,3.117,Carrefour,2.013,1.900,2.009,egal,egal,egal,hausse,1,hausse,1,hausse,1
 14740001,14740,Bretteville-l'Orgueilleuse THUE ET MUE,RUE HECTOR MALOT,49.215,-0.505,Système U,1.999,1.919,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
-69800015,69800,Saint-Priest,32 ROUTE DE LYON,45.701267,4.918892,Total,1.969,1.879,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 5100008,05100,BRIANCON,AV. DU DAUPHINE,44.903718,6.629086,Total,1.969,,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 13200016,13200,ARLES,99 AVENUE DE STALINGRAD,43.691,4.638,TotalEnergies,1.933,1.869,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
 69700005,69700,Givors,48 rue Jean Ligonnet,45.595,4.771,Intermarché,1.999,1.899,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -4199,11 +4199,11 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 6220003,06220,VALLAURIS,117 Vieille Route de Cannes,43.5728564,7.0491216,Intermarché,2.076,1.935,2.060,egal,egal,egal,hausse,1,hausse,1,hausse,1
 94510001,94510,LA QUEUE-EN-BRIE,2 Rue du Général de Gaulle,48.781298,2.5714605,Total Access,1.992,1.939,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 49140001,49140,Corzé,Lieu-dit L'Aurore,47.5697052,-0.3597691,Super U,1.975,,2.019,egal,,egal,hausse,1,hausse,1,hausse,1
-76800009,76800,Saint-Étienne-du-Rouvray,63 AVENUE DES CANADIENS,49.394,1.06,Total Access,1.954,1.906,,egal,egal,,hausse,1,hausse,1,hausse,1
 49100003,49100,ANGERS,BD HENRI DUNANT,47.483,-0.527,Total Access,2.044,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 81300005,81300,GRAULHET,19 Avenue Marcel Pagnol,43.767,1.995,Intermarché,1.999,1.850,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
 18240004,18240,BOULLERET,"Les Fouchards, route des grands Prés, route de Cosne sur Loire",47.410559,2.899643,Avia,1.920,1.940,,egal,egal,,hausse,1,hausse,1,hausse,1
-68000018,68000,COLMAR,ANGLE AV CLEMENCEAU 34 RTE DE BALE,48.065,7.367,TotalEnergies,2.049,,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+68000018,68000,COLMAR,ANGLE AV CLEMENCEAU 34 RTE DE BALE,48.065,7.367,TotalEnergies,2.049,,,egal,egal,egal,hausse,1,hausse,1,hausse,1
+76800009,76800,Saint-Étienne-du-Rouvray,63 AVENUE DES CANADIENS,49.394,1.06,Total Access,1.954,,,egal,egal,,hausse,1,hausse,1,hausse,1
 88340001,88340,LE VAL-D'AJOL,22 ZA DU CENTRE,47.928,6.483,Intermarché,1.920,1.919,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 35500006,35500,VITRé,1 rue de Domalain,48.109836,-1.213771,Intermarché,1.918,1.915,1.972,hausse,hausse,hausse,hausse,1,hausse,1,hausse,1
 59554005,59554,RAILLENCOURT STE OLLE,"16 BIS, ROUTE DE BAPAUME",50.1760781,3.2027225,TotalEnergies,1.949,1.903,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -4903,7 +4903,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 69800017,69800,Saint-Priest,91 RTE DE GRENOBLE,45.70697,4.98698,Total Access,1.969,1.879,1.979,egal,egal,egal,hausse,1,hausse,1,hausse,1
 69800014,69800,Saint-Priest,RN 6- ROUTE DE GRENOBLE,45.7181,4.95269,Total Access,1.979,1.889,,egal,egal,,hausse,1,hausse,1,hausse,1
 70300011,70300,Saint-Sauveur,"37 Rue Edouard Herriot,",47.8091322,6.3834589,Eni,2.029,1.999,2.069,egal,egal,egal,hausse,1,hausse,1,hausse,1
-71210009,71210,MONTCHANIN,RN 80 ROND POINT J. ROSE,46.75547,4.48622,TotalEnergies,1.949,1.889,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+71210009,71210,MONTCHANIN,RN 80 ROND POINT J. ROSE,46.75547,4.48622,TotalEnergies,1.949,1.889,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 94700007,94700,MAISONS-ALFORT,99 AVENUE DU GL LECLERC,48.8114897,2.4306533,Avia,2.099,2.149,2.249,egal,egal,egal,hausse,1,hausse,1,hausse,1
 70110001,70110,Villersexel,Rue du 13 Septembre 1944,47.54533,6.42992,Intermarché,1.899,1.919,,egal,egal,,hausse,1,hausse,1,hausse,1
 84310003,84310,MORIèRES-LèS-AVIGNON,502 Avenue Jean Monnet,43.941,4.897,Doulmet,1.990,1.950,2.010,hausse,egal,egal,hausse,1,hausse,1,hausse,1
@@ -4986,7 +4986,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 6250011,06250,MOUGINS,1064-1126 AVENUE SAINT MARTIN,43.612,6.978,Esso,2.029,1.949,2.119,egal,egal,egal,hausse,1,hausse,1,hausse,1
 83570001,83570,Carcès,route de Brignoles,43.4739857,6.1759706,Intermarché,1.892,1.865,,egal,egal,,hausse,1,hausse,1,hausse,1
 84000017,84000,AVIGNON,191 Route de Tarascon,43.918929,4.809416,La Durance,1.957,1.883,2.009,hausse,egal,egal,hausse,1,hausse,1,hausse,1
-77120006,77120,COULOMMIERS,AVENUE DE STRASBOURG,48.801,3.087,Total Access,1.939,1.902,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+77120006,77120,COULOMMIERS,AVENUE DE STRASBOURG,48.801,3.087,Total Access,1.939,,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 21320006,21320,POUILLY-EN-AUXOIS,LES PORTES DE BOURGOGNE,47.248,4.565,Avia,1.999,1.949,2.059,egal,egal,egal,hausse,1,hausse,1,hausse,1
 84200003,84380,MAZAN,La Venue de Carpentras,44.05877,5.11102,Independent,2.049,,2.094,egal,,egal,hausse,1,hausse,1,hausse,1
 84220002,84220,Gordes,Les Imberts,43.8844638,5.1686548,Relais du Ventoux,1.940,,,egal,,,hausse,1,hausse,1,hausse,1
@@ -5420,8 +5420,8 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 34400007,34400,LUNEL,Avenue des 4 Saisons,43.6770609,4.116264,Super U,1.929,1.929,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 61400004,61400,Mortagne-au-Perche,16 Rue du Faubourg Saint Eloi,48.52283,0.542421,Elan,1.969,,,egal,,,hausse,1,hausse,1,hausse,1
 58410001,58410,Entrains-sur-Nohain,ROUTE DE CLAMECY,47.463,3.26,Station du Nohain,1.935,1.909,,egal,egal,,hausse,1,hausse,1,hausse,1
-78280003,78280,GUYANCOURT,10 AV DE L'EUROPE,48.77,2.06,Total,2.061,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 24110002,24110,SAINT-ASTIER,Bd mallebay,45.1499335,0.5277796,E.Leclerc,1.899,1.934,1.979,egal,egal,egal,hausse,1,hausse,1,hausse,1
+78280003,78280,GUYANCOURT,10 AV DE L'EUROPE,48.77,2.06,Total,2.061,1.990,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 68390003,68390,SAUSHEIM,10 CD 201,47.789,7.387,Avia,1.949,1.959,2.049,egal,egal,egal,hausse,1,hausse,1,hausse,1
 25650002,25650,Gilley,ZA LES CAVES,47.04739,6.497533,Sarl Guinchard Jacquin,1.949,1.976,,egal,egal,,hausse,1,hausse,1,hausse,1
 29403001,29400,LANDIVISIAU,Boulevard de la République,48.5040125,-4.072489,E.Leclerc,1.909,1.889,1.969,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -5604,6 +5604,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 34070003,34070,MONTPELLIER,1742 Route de Toulouse,43.5901576,3.8547344,Carrefour,1.943,1.883,1.974,egal,egal,egal,hausse,1,hausse,1,hausse,1
 59800002,59000,LILLE,94 Rue de Lannoy,50.634,3.098,E.Leclerc,1.919,1.899,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 14160002,14160,DIVES-SUR-MER,Boulevard Maurice Thorez,49.2854137,-0.1092664,TotalEnergies,1.899,1.889,1.979,egal,egal,egal,hausse,1,hausse,1,hausse,1
+17570001,17570,LES MATHES,4 AVENUE ROYAN,45.687,-1.171,TotalEnergies,1.990,,,egal,,egal,hausse,1,hausse,1,hausse,1
 87240001,87240,Ambazac,Rue de la Libération,45.9550944,1.3975215,Super U,1.999,1.966,2.040,egal,egal,egal,hausse,1,hausse,1,hausse,1
 42290002,42290,Sorbiers,1 Rue du Moulin Gillier,45.481,4.444,Carrefour,2.079,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 4200009,04200,Aubignosc,AIRE D AUBIGNOSC,44.133509,5.977534,Avia,2.169,2.019,2.119,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -5614,7 +5615,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 37110003,37110,Château-Renault,Rue du Petit Versailles,47.591,0.899,Intermarché,1.939,1.934,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 64310002,64310,Saint-Pée-sur-Nivelle,PLACE DU CHÂTEAU,43.352,-1.55,Netto,1.899,1.879,,egal,egal,,hausse,1,hausse,1,hausse,1
 13710004,13710,Fuveau,Chemin du Jas de Bassas,43.445,5.553,Intermarché,1.985,1.920,,egal,egal,,hausse,1,hausse,1,hausse,1
-17570001,17570,LES MATHES,4 AVENUE ROYAN,45.687,-1.171,TotalEnergies,1.990,,1.990,egal,,egal,hausse,1,hausse,1,hausse,1
 55500003,55500,Velaines,91 rue de Ligny,48.699,5.306,Avia,1.999,,,egal,,,hausse,1,hausse,1,hausse,1
 26450003,26450,Cleon D'Andran,"690, Avenue Resistance de la Déportation",44.6102984,4.936011,TotalEnergies,1.990,,,egal,,,hausse,1,hausse,1,hausse,1
 17170003,17170,Ferrières,AV DE LA JUILLERIE,46.2273275,-0.873315,Carrefour Market,1.992,,1.999,egal,,egal,hausse,1,hausse,1,hausse,1
@@ -6003,7 +6003,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 34450001,34450,VIAS,Avenue de Béziers,43.314,3.417,Total,1.985,1.980,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 14200008,14200,Hérouville-Saint-Clair,Avenue de Garbsen,49.213347,-0.342028,Auchan,1.939,1.906,1.990,hausse,baisse,egal,hausse,1,hausse,1,hausse,1
 24320002,24320,La Tour-Blanche,11 rue Passadour,45.369,0.446,Avia,2.031,,2.110,hausse,,hausse,hausse,1,hausse,1,hausse,1
-33300005,33300,BORDEAUX,140 BOULEVARD GODARD,44.8619,-0.58572,Total Access,1.959,,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+33300005,33300,BORDEAUX,140 BOULEVARD GODARD,44.8619,-0.58572,Total Access,1.959,,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 31620007,31620,CASTELNAU D'ESTRETEFONDS,"1, rue de l'Ourméde",43.765375,1.369974,FAL Distri,1.959,1.909,,egal,egal,,hausse,1,hausse,1,hausse,1
 60240001,60240,Chaumont-en-Vexin,ZAC du moulin d'Angean,49.272,1.874,Match,1.985,1.910,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 87000002,87000,LIMOGES,Avenue du Roussillon,45.8165074,1.2233491,Carrefour,,,,,,,hausse,1,hausse,1,hausse,1
@@ -6033,7 +6033,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 34530001,34530,MONTAGNAC,128 Avenue Capitaine Pierre Azema,43.4755574,3.4893592,Tabac Station Service Lopez,1.969,1.965,2.076,egal,egal,egal,hausse,1,hausse,1,hausse,1
 3290002,03290,DOMPIERRE SUR BESBRE,464 ROUTE DE DIOU,46.517,3.692,Système U,1.955,,1.999,hausse,,hausse,hausse,1,hausse,1,hausse,1
 84350002,84350,COURTHEZON,ROUTE DE CHATEAUNEUF DU PAPE,44.079711,4.878857,Système U,1.899,1.905,1.995,egal,egal,egal,hausse,1,hausse,1,hausse,1
-59850002,59850,Nieppe,Drève Du Bailly,50.6855837,2.8419171,Système U,1.959,,1.969,egal,,egal,hausse,1,hausse,1,hausse,1
+59850002,59850,Nieppe,Drève Du Bailly,50.6855837,2.8419171,Système U,1.959,,,egal,,egal,hausse,1,hausse,1,hausse,1
 41300001,41300,SALBRIS,74 BD REPUBLIQUE,47.4222755,2.0531529,Carrefour Market,1.949,,2.039,egal,,egal,hausse,1,hausse,1,hausse,1
 1360002,01360,BALAN,316 Route de Lyon,45.849,5.12,Total,1.949,,1.990,egal,,egal,hausse,1,hausse,1,hausse,1
 3290003,03290,DOMPIERRE SUR BESBRE,223 RUE NATIONALE,46.523,3.68,Esso,1.958,,2.066,egal,,egal,hausse,1,hausse,1,hausse,1
@@ -6284,8 +6284,8 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 42310001,42310,La Pacaudière,ROUTE DE VIVANS,46.176231,3.871521,Avia XPress,1.969,,2.019,egal,,egal,hausse,1,hausse,1,hausse,1
 49306001,49300,Cholet,"1, Avenue du Maréchal Koenig",47.0510529,-0.8490351,E.Leclerc,1.909,1.889,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
 28310004,28310,FRESNAY-L'ÉVêQUE,AUT A 10 - AIRE DE VAL NEUVY,48.2752106,1.8555697,Shell,2.382,2.387,2.537,egal,egal,egal,hausse,1,hausse,1,hausse,1
-73420005,73100,Mouxy,AUTOROUTE A41N - AIRE DE DRUMETTAZ,45.67291,5.92696,Total,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 62510002,62510,ARQUES,Avenue Georges Brassens,50.7380351,2.2813153,Carrefour,,,1.976,,,egal,hausse,1,hausse,1,hausse,1
+73420005,73100,Mouxy,AUTOROUTE A41N - AIRE DE DRUMETTAZ,45.67291,5.92696,Total,1.990,1.990,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 1220001,01220,Divonne-les-Bains,691 AVENUE DU CRET D'EAU,46.343,6.141,Carrefour,1.958,,2.024,egal,,egal,hausse,1,hausse,1,hausse,1
 44100005,44100,NANTES,49-61 BLD DALBY,47.2239,-1.52985,TotalEnergies,2.039,,1.990,egal,,egal,hausse,1,hausse,1,hausse,1
 80290006,80290,Poix-de-Picardie,2 RUE DE MENESVILLERS,49.774,1.99,Intermarché,1.999,1.939,2.031,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -7135,7 +7135,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 66430002,66430,BOMPAS,ROUTE DE TORREILLES,42.7213928,2.932979,Super U,1.949,,1.999,egal,,egal,hausse,1,hausse,1,hausse,1
 78980001,78980,Bréval,31 rue René Dhal,48.945,1.524,Intermarché,1.999,1.930,2.030,egal,egal,egal,hausse,1,hausse,1,hausse,1
 27130005,27130,VERNEUIL-SUR-AVRE,RN12 Route de Montagne,48.733,0.921,Intermarché,1.939,1.909,1.979,egal,egal,egal,hausse,1,hausse,1,hausse,1
-35770006,35770,Vern-sur-Seiche,18 rue du Champ Martin,48.055,-1.611,TotalEnergies,1.926,1.889,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+35770006,35770,Vern-sur-Seiche,18 rue du Champ Martin,48.055,-1.611,TotalEnergies,1.926,1.889,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 59222001,59222,BOUSIES,RUE DE LANDRECIES,50.1507067,3.6241441,Carrefour,1.899,,2.029,egal,,egal,hausse,1,hausse,1,hausse,1
 62630004,62630,Étaples-sur-Mer,CD 940,50.526,1.628,E.Leclerc,1.938,1.898,1.975,egal,egal,egal,hausse,1,hausse,1,hausse,1
 95100029,95200,SARCELLES,141 Av. de la Division Leclerc,48.983615,2.369971,Auchan,1.945,1.941,,egal,egal,,hausse,1,hausse,1,hausse,1
@@ -7252,8 +7252,8 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 45160005,45160,Olivet,RN 20 AVENUE DE SOLOGNE,47.841,1.913,E.Leclerc,1.935,1.889,1.969,hausse,egal,egal,hausse,1,hausse,1,hausse,1
 30104001,30100,ALèS,QUAI DU MAS D'HOURS,44.111,4.096,Carrefour,1.997,1.879,1.969,egal,egal,egal,hausse,1,hausse,1,hausse,1
 10130001,10130,Ervy-le-Châtel,ROUTE DE DAVREY,48.046,3.924,Avia,1.999,,1.999,egal,,egal,hausse,1,hausse,1,hausse,1
+44340005,44340,BOUGUENAIS,ROCADE SUD,47.1650995,-1.5704515,Total Access,1.926,,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 16100001,16100,Châteaubernard,40 rue de l'Annisserie,45.6848678,-0.3047063,Auchan,1.959,1.891,1.969,egal,egal,egal,hausse,1,hausse,1,hausse,1
-44340005,44340,BOUGUENAIS,ROCADE SUD,47.1650995,-1.5704515,Total Access,1.926,1.899,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 26120004,26120,Montélier,1 ALLEE VENTURI,44.929,5.022,Intermarché,1.934,1.887,1.986,egal,egal,egal,hausse,1,hausse,1,hausse,1
 57050002,57050,METZ,66 Route de Woippy,49.1331185,6.1626177,Auchan,1.969,1.913,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 1090001,01090,MONTCEAUX,1 ROUTE DE FRANCHELEINS,46.0969153,4.7734545,Auchan,1.999,1.889,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -7463,6 +7463,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 29390002,29390,SCAER,23 RUE DU GENERAL DE GAULLE,48.02,-3.719,E.Leclerc,1.900,,1.978,egal,,egal,hausse,1,hausse,1,hausse,1
 38300021,38300,BOURGOIN,Le rivet,45.59,5.242,Intermarché,1.949,1.939,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 88500007,88500,Mirecourt,RUE SAINT MAURICE,48.3085122,6.1366003,Intermarché,2.029,1.949,2.028,egal,egal,egal,hausse,1,hausse,1,hausse,1
+71260005,71260,Fleurville,RD 906,46.445,4.885,Esso,1.951,1.873,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 80230002,80230,Saint-Valery-sur-Somme,Rue Cavée Lévesque,50.1751969,1.6378573,Intermarché,2.000,1.912,2.021,egal,egal,egal,hausse,1,hausse,1,hausse,1
 68110006,68110,ILLZACH,77 AVENUE DE FRIBOURG,47.768071,7.383058,Total Access,1.979,1.909,,egal,egal,,hausse,1,hausse,1,hausse,1
 87270005,87270,COUZEIX,187 Avenue de Limoges,45.879,1.238,Intermarché,1.889,1.919,1.979,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -7475,7 +7476,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 62131001,62131,VERQUIN,D 937 ZAC DU BEAUPRE,50.502,2.652,Intermarché,1.919,1.909,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 69150004,69150,Décines-Charpieu,397 avenue jean jaures,45.772,4.98,TotalEnergies,1.979,1.961,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 59720001,59720,LOUVROIL,Rue Jules Stephenne,50.254,3.937,Auchan,1.966,1.922,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
-71260005,71260,Fleurville,RD 906,46.445,4.885,Esso,1.951,1.873,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 30420001,30420,Calvisson,163 route de sommieres,43.781,4.201,Total,2.033,1.976,1.990,hausse,baisse,egal,hausse,1,hausse,1,hausse,1
 84013001,84140,AVIGNON,Route de Marseille,43.92126,4.867018,Auchan,1.874,1.839,1.930,egal,egal,egal,hausse,1,hausse,1,hausse,1
 56130001,56130,Marzan,LE PONT,47.5266395,-2.3110972,Total,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -7685,9 +7685,9 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 62137001,62137,Coulogne,2246 route de St Omer,50.928,1.901,,1.934,1.902,,egal,egal,,hausse,1,hausse,1,hausse,1
 87000006,87000,LIMOGES,RUE BERNART DE VENTADOUR,45.815,1.269,Intermarché,1.890,,1.995,egal,,egal,hausse,1,hausse,1,hausse,1
 38420003,38420,Domene,1 avenue Aristide Berges,45.207,5.828,Intermarché,2.050,1.929,2.040,egal,egal,egal,hausse,1,hausse,1,hausse,1
-62780004,62780,CUCQ,209 AVENUE DE L'EUROPE,50.5093907,1.6281114,TotalEnergies,1.949,,,egal,,egal,hausse,1,hausse,1,hausse,1
 52000006,52000,Chaumont,Faubourg du Moulin Neuf,48.1252083,5.1526711,E.Leclerc,2.029,1.989,2.029,egal,egal,egal,hausse,1,hausse,1,hausse,1
 77700001,77700,Serris,14 Cours du Danube,48.8530248,2.7770802,Auchan,1.947,1.924,2.048,egal,egal,egal,hausse,1,hausse,1,hausse,1
+62780004,62780,CUCQ,209 AVENUE DE L'EUROPE,50.5093907,1.6281114,TotalEnergies,1.949,,,egal,,egal,hausse,1,hausse,1,hausse,1
 13730001,13730,SAINT-VICTORET,ZAC DE LA LAUVE,43.418,5.234,Carrefour Market,1.949,1.899,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 42153002,42153,RIORGES,274 avenue Galliéni,46.0438807,4.0539064,E.Leclerc,1.989,,1.998,egal,,egal,hausse,1,hausse,1,hausse,1
 95340003,95340,PERSAN,Rue du 8 Mai 1945,49.146,2.282,E.Leclerc,1.919,1.928,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -7706,8 +7706,8 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 78600004,78600,Le Mesnil-le-Roi,101 AV.DE POISSY - RN.306,48.943,2.129,Total Access,1.979,1.925,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 1430005,01430,CEIGNES,AUTOROUTE A40 - AIRE DE CEIGNES CERDON,46.1237,5.49956,Total,1.990,1.990,,egal,egal,,hausse,1,hausse,1,hausse,1
 78980002,78980,LONGNES,39 ROUTE DE MANTES,48.9223681,1.5944103,Total,1.990,1.990,,egal,egal,,hausse,1,hausse,1,hausse,1
-35400010,35400,Saint-Malo,"18, RUE DE LA BALUE",48.629,-2.005,Total Access,1.936,1.895,1.990,egal,,,hausse,1,hausse,1,hausse,1
 2340001,02340,LISLET,14 ROUTE DE MONTCORNET,49.688056,4.0229548,Carrefour,1.895,1.910,2.020,egal,egal,egal,hausse,1,hausse,1,hausse,1
+35400010,35400,Saint-Malo,"18, RUE DE LA BALUE",48.629,-2.005,Total Access,1.936,,1.990,egal,,,hausse,1,hausse,1,hausse,1
 33700025,33700,Mérignac,Domaine de Peychotte2 Allée des Conviviales,44.8268275,-0.619793,Auchan,1.917,1.889,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
 19240002,19240,Varetz,8 AV 11 NOVEMBRE,45.19264,1.45208,Carrefour Contact,1.898,,2.068,egal,,egal,hausse,1,hausse,1,hausse,1
 85330003,85330,Noirmoutier-en-l'Île,"148, ROUTE NATIONALE",47.002,-2.259,Système U,1.888,1.899,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -7742,13 +7742,13 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 89340003,89340,VILLENEUVE-LA-GUYARD,1 rue Guillaume des Barres,48.335,3.065,Intermarché,2.059,1.959,2.079,egal,egal,egal,hausse,1,hausse,1,hausse,1
 15400004,15400,Riom-es-Montagnes,"route de murat, station-service BAR",45.28,2.665,Total,1.990,1.990,1.990,hausse,hausse,hausse,hausse,1,hausse,1,hausse,1
 17120005,17120,SEMUSSAC,1 ZA LE PRE CHARDON,45.6036529,-0.9127149,Système U,2.004,1.936,2.023,egal,egal,egal,hausse,1,hausse,1,hausse,1
+3120004,03120,Lapalisse,zac les pres de la grand route,46.245522,3.611569,TotalEnergies,1.966,1.880,,hausse,egal,egal,hausse,1,hausse,1,hausse,1
 85270001,85270,SAINT-HILAIRE-DE-RIEZ,Avenue du Terre Fort Face Hyper U,46.713,-1.961,Système U,1.899,1.899,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
 69220001,69220,BELLEVILLE,AVENUE DE VERDUN,46.1059379,4.7467783,Carrefour,2.036,1.917,2.007,egal,egal,egal,hausse,1,hausse,1,hausse,1
 72350001,72350,BRûLON,ROUTE DE SILLE,47.9749304,-0.2299485,Total,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 31250004,31250,REVEL,3 RUE CLEMENCE ISAURE,43.4528986,1.9940607,Intermarché,1.889,1.828,1.947,egal,egal,egal,hausse,1,hausse,1,hausse,1
 29570001,29570,Camaret-sur-Mer,RUE DES SARDINIERS,48.27454,-4.59482,Système U,1.846,1.856,2.003,egal,egal,egal,hausse,1,hausse,1,hausse,1
 11000018,11000,Carcassonne,Centre Commercial Salvaza ZI la Bouriette,43.208,2.311,Auchan,1.939,1.880,,baisse,baisse,,hausse,1,hausse,1,hausse,1
-3120004,03120,Lapalisse,zac les pres de la grand route,46.245522,3.611569,TotalEnergies,1.966,1.880,1.990,hausse,egal,egal,hausse,1,hausse,1,hausse,1
 43410001,43410,Lempdes-sur-Allagnon,RN 102,45.373,3.291,TotalEnergies,2.012,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 68600002,68600,VOLGELSHEIM,RUE DES ARTISANS,48.0112488,7.5358394,Intermarché,2.011,1.938,2.007,egal,egal,egal,hausse,1,hausse,1,hausse,1
 35400009,35400,Saint-Malo,"126, BOULEVARD DES TALARDS",48.639,-2.009,TotalEnergies,2.041,1.990,,egal,egal,,hausse,1,hausse,1,hausse,1
@@ -8253,7 +8253,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 50000007,50000,Saint-Lô,1214 Avenue de Paris,49.116302,-1.058331,Bazin Bariteaud,1.959,1.929,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 38160003,38160,SAINT-SAUVEUR,"28, route de Grenoble",45.1578845,5.334332,Intermarché,1.936,1.866,1.977,hausse,egal,egal,hausse,1,hausse,1,hausse,1
 41170002,41170,Mondoubleau,Route de Cloyes,47.9823961,0.9075174,Super U,1.983,1.995,2.063,hausse,hausse,hausse,hausse,1,hausse,1,hausse,1
-13010011,13010,MARSEILLE,171 BD PAUL CLAUDEL,43.2683121,5.4165683,TotalEnergies,1.959,1.879,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 30000006,30900,Nîmes,47 Boulevard Talabot,43.838,4.372,Esso Express,1.948,1.893,1.994,egal,egal,egal,hausse,1,hausse,1,hausse,1
 81100004,81100,Castres,BOULEVARD CARNOT,43.607,2.245,Esso Express,1.964,1.954,2.004,hausse,hausse,egal,hausse,1,hausse,1,hausse,1
 31400006,31400,TOULOUSE,90 Route de Revel,43.575,1.49,Esso,1.973,1.893,1.973,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -8262,6 +8261,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 10250002,10250,Mussy-sur-Seine,3 Rue Paul Terillon,47.975,4.494,Carrefour,1.963,,,egal,,,hausse,1,hausse,1,hausse,1
 56000004,56000,Vannes,ZC PARC LANN,47.666,-2.794,E.Leclerc,1.919,1.909,1.969,egal,egal,egal,hausse,1,hausse,1,hausse,1
 25150002,25150,Pont-de-Roide,26 Rue des Bouleaux,47.3883128,6.7674265,Intermarché,1.943,1.885,2.005,egal,egal,egal,hausse,1,hausse,1,hausse,1
+13010011,13010,MARSEILLE,171 BD PAUL CLAUDEL,43.2683121,5.4165683,TotalEnergies,1.959,1.879,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 59100003,59100,Roubaix,70 Avenue des Nations Unies,50.694,3.183,Esso,1.964,1.930,2.010,hausse,egal,egal,hausse,1,hausse,1,hausse,1
 50130001,50130,Cherbourg-Octeville,Avenue de Normandie,49.6272676,-1.6350147,Esso Express,1.944,1.908,2.013,egal,egal,egal,hausse,1,hausse,1,hausse,1
 77100008,77100,Meaux,AV PRESIDENT SALVADOR ALLENDE,48.957,2.885,Esso Express,1.941,1.909,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -8702,17 +8702,18 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 90000002,90000,Belfort,4 Faubourg de Brisach,47.64,6.868,TotalEnergies,2.019,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 10310001,10310,VILLE SOUS LA FERTE,54 ROUTE DE DIJON,48.123856,4.790028,TotalEnergies,1.970,,,egal,,,hausse,1,hausse,1,hausse,1
 66962002,66962,Perpignan,2130 avenue du Languedoc,42.742,2.892,E.Leclerc,1.899,,1.969,egal,,egal,hausse,1,hausse,1,hausse,1
-13105001,13105,MIMET,Chemin des Fabres,43.4290426,5.4723345,Intermarché,1.915,1.925,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 57590003,57590,DELME,RUE RAYMOND POINCARE,48.888629,6.389459,DATS 24,2.039,1.939,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 22290003,22290,TRESSIGNAUX,LA LANDE,48.613707,-2.96403,Goëlo Services,1.970,,2.040,hausse,,egal,hausse,1,hausse,1,hausse,1
 44350006,44350,GUéRANDE,Route de la Baule,47.3045938,-2.4083381,Intermarché,1.909,1.915,2.019,egal,egal,egal,hausse,1,hausse,1,hausse,1
 34600004,34600,BEDARIEUX,57 Route de Clermont l'herault,43.611862,3.170898,U,1.979,1.900,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 63210002,63210,Rochefort-Montagne,RTE N 89,45.6879013,2.8060506,Avia,1.995,,2.045,egal,,egal,hausse,1,hausse,1,hausse,1
+13105001,13105,MIMET,Chemin des Fabres,43.4290426,5.4723345,Intermarché,1.915,1.925,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 8190003,08190,Asfeld,1 Rue Chantereine,49.47064,4.12341,Carrefour,1.990,,2.020,egal,,egal,hausse,1,hausse,1,hausse,1
 42150001,42150,La Ricamarie,La Béraudière,45.413,4.374,Carrefour,2.000,1.894,1.940,baisse,egal,egal,hausse,1,hausse,1,hausse,1
 95712003,95700,Roissy-en-France,VOIE P5 ET F2 BP 20212,49.0,2.523,Total,2.075,1.990,,egal,egal,,hausse,1,hausse,1,hausse,1
 30470001,30470,Aimargues,Route des Plages,43.6933748,4.2023315,Super U,1.989,1.909,1.959,egal,egal,egal,hausse,1,hausse,1,hausse,1
 45300003,45300,PITHIVIERS,Avenue du 11 Novembre,48.18391,2.25072,E.Leclerc,1.999,1.909,2.015,egal,egal,egal,hausse,1,hausse,1,hausse,1
+44600009,44600,Saint-Nazaire,LIEU DIT RETON,47.271,-2.25,Total Access,1.911,1.892,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 60690001,60690,MARSEILLE EN BEAUVAISIS,145 DU GENERAL LECLERC,49.582,1.954,Intermarché,2.026,1.936,2.049,egal,egal,egal,hausse,1,hausse,1,hausse,1
 72650004,72650,La Bazoge,11 avenue du mans,48.091,0.157,Système U,2.019,,2.049,egal,,egal,hausse,1,hausse,1,hausse,1
 59157002,59157,Beauvois-en-Cambrésis,RD 643 LE JEUNE BOIS,50.138,3.395,TotalEnergies,2.052,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -8720,7 +8721,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 54260003,54260,LONGUYON,ROUTE D'ARRANCY,49.431691,5.615898,Esso,1.941,1.924,,egal,egal,,hausse,1,hausse,1,hausse,1
 49570001,49570,MONTJEAN SUR LOIRE,24 rue d'Anjou,47.3893994,-0.8628318,Total,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 34120001,34120,Pézenas,26 AVENUE DE VERDUN,43.454,3.421,Total,2.059,,,egal,,,hausse,1,hausse,1,hausse,1
-44600009,44600,Saint-Nazaire,LIEU DIT RETON,47.271,-2.25,Total Access,1.911,1.892,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 29460001,29460,DAOULAS,Vern Deredec,48.3609636,-4.2595607,TotalEnergies,1.889,1.889,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
 79200003,79200,CHâTILLON-SUR-THOUET,Route de Bressuire,46.6670009,-0.252996,E.Leclerc,1.959,,1.959,egal,,egal,hausse,1,hausse,1,hausse,1
 56300010,56300,Pontivy,114 AVENUE GENERAL LECLERC,48.081,-2.949,Total,2.046,1.989,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -9129,8 +9129,8 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 62500001,62500,SAINT-MARTIN-AU-LAëRT,Avenue Joffre,50.7546453,2.2445765,Carrefour,2.036,1.950,,egal,egal,,hausse,1,hausse,1,hausse,1
 48120001,48120,saint alban sur limagnole,avenue de Saint Chely,44.779255,3.384013,Spar,1.999,1.959,2.029,egal,egal,egal,hausse,1,hausse,1,hausse,1
 42100018,42100,Saint-Étienne,100 RUE DE LA MONTAT,45.442,4.41,TotalEnergies,1.945,1.881,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+84000020,84000,AVIGNON,COURTINE OUEST-ROCADE CH. DE GAU,43.932,4.783,Total Access,1.959,,,egal,,egal,hausse,1,hausse,1,hausse,1
 61700004,61700,Domfront en Poiraie,111 Rue du Maréchal Foch,48.589,-0.635,Total,1.990,1.990,,egal,egal,,hausse,1,hausse,1,hausse,1
-84000020,84000,AVIGNON,COURTINE OUEST-ROCADE CH. DE GAU,43.932,4.783,Total Access,1.959,,1.989,egal,,egal,hausse,1,hausse,1,hausse,1
 78150013,78150,ROCQUENCOURT,18 ROUTE DE MAULE- D 307,48.8361171,2.0959879,Total Access,1.983,1.931,,egal,egal,,hausse,1,hausse,1,hausse,1
 41260001,41260,LA CHAUSSéE-SAINT-VICTOR,1 route Nationale 152,47.6042335,1.3511879,Carrefour,1.999,1.929,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 77220005,77220,Tournan-en-Brie,RUE DE LA LIBERATION,48.74,2.777,Carrefour,1.999,1.939,2.029,hausse,hausse,hausse,hausse,1,hausse,1,hausse,1
@@ -9162,12 +9162,12 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 13220003,13220,CHATEAUNEUF-LES-MARTIGUES,RN 568,43.3940417,5.1323468,Carrefour,1.964,1.888,1.952,egal,egal,egal,hausse,1,hausse,1,hausse,1
 67460001,67460,SOUFFELWEYERSHEIM,67 Route de Brumath,48.627676,7.7297883,TotalEnergies,1.989,1.929,,egal,egal,,hausse,1,hausse,1,hausse,1
 36140002,36140,Aigurande,La Combette,46.437,1.827,Intermarché,1.919,1.909,1.998,egal,egal,egal,hausse,1,hausse,1,hausse,1
+92400017,92400,COURBEVOIE,72 BLD DE VERDUN,48.902,2.259,Total,2.076,,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 91290007,91180,Saint-Germain-lès-Arpajon,25 ROUTE D'ORLEANS RN 20,48.603201,2.247815,Total Access,1.966,1.911,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 83440005,83440,TOURRETTES,Quartier Les Grandes Terrasses,43.624,6.702,Intermarché,1.959,1.919,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 22360001,22360,LANGUEUX,Rue Jules Verne,48.496,-2.728,Carrefour,1.970,1.918,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 60740001,60740,SAINT-MAXIMIN,RD1016,49.239,2.471,Carrefour,1.987,1.913,2.007,egal,egal,egal,hausse,1,hausse,1,hausse,1
 27930002,27930,GUICHAINVILLE,Route Nationnale 13,49.015,1.174,Carrefour,2.030,1.950,2.030,egal,egal,egal,hausse,1,hausse,1,hausse,1
-92400017,92400,COURBEVOIE,72 BLD DE VERDUN,48.902,2.259,Total,2.076,1.990,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 22730001,22730,TRéGASTEL,RUE POUL PALUD,48.824,-3.498,Système U,1.979,,1.979,egal,,egal,hausse,1,hausse,1,hausse,1
 35460001,35460,Saint-Brice-en-Coglès,Rue de la Croix Rouge,48.41268,-1.37195,Super U,1.905,1.909,1.989,egal,egal,egal,hausse,1,hausse,1,hausse,1
 76450003,76450,Cany-Barville,30 ROUTE DE VEULETTE,49.789897,0.639558,TotalEnergies,1.990,,,egal,,,hausse,1,hausse,1,hausse,1
@@ -9233,10 +9233,10 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 57000022,57050,METZ,10 RUE DES ALLIES,49.13,6.165,TotalEnergies,1.969,1.913,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 29000011,29000,QUIMPER,52 AVENUE DE LA LIBERATION,47.993,-4.084,Total,2.053,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 13011016,13011,Marseille,AUTOROUTE A50 - AIRE DE LA POMME,43.2924113,5.459237,Intermarché,1.990,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+76240006,76240,LE MESNIL ESNARD,37 ROUTE DE PARIS,49.4065835,1.1491015,Total Access,1.956,1.896,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 30820002,30820,Caveirac,1 bis chemin des Rôles,43.8216336,4.2617248,Intermarché,1.949,1.899,1.979,egal,egal,egal,hausse,1,hausse,1,hausse,1
 83330006,83330,LE BEAUSSET,RN 8,43.166,5.829,Avia,1.989,1.939,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
 6650004,06650,LE ROURET,4 ROUTE DE NICE,43.672993,6.99406,Intermarché,1.888,1.869,1.965,egal,egal,egal,hausse,1,hausse,1,hausse,1
-76240006,76240,LE MESNIL ESNARD,37 ROUTE DE PARIS,49.4065835,1.1491015,Total Access,1.956,1.896,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 33170008,33170,GRADIGNAN,62 COURS DU GENERAL DE GAULLE,44.777,-0.61,TotalEnergies,1.955,1.891,,egal,egal,,hausse,1,hausse,1,hausse,1
 44160003,44160,Pontchâteau,Route de Nantes-CS 20077,47.432,-2.083,E.Leclerc,1.949,1.899,1.969,egal,egal,egal,hausse,1,hausse,1,hausse,1
 67700005,67700,SAVERNE,38 Rue de Dettwiller,48.74041,7.37466,TotalEnergies,1.970,1.960,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -9506,8 +9506,8 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 60160002,60160,MONTATAIRE,Rue André Ginisti,49.253,2.428,E.Leclerc,1.986,1.912,1.992,egal,egal,egal,hausse,1,hausse,1,hausse,1
 33920006,33920,SAUGON,A10 aire de saugon ouest,45.188854,-0.492614,Avia,2.140,2.120,2.220,egal,egal,egal,hausse,1,hausse,1,hausse,1
 13920010,13920,Saint mitre les rempart,cd5 chemin Emplaniers,43.4644876,5.0030621,Dyneff,1.899,,,egal,,,hausse,1,hausse,1,hausse,1
+35400011,35400,Saint-servan-sur-mer,RN 137 - COTE OUEST - DIRECTION,48.615,-1.984,TotalEnergies,,,1.990,,egal,egal,hausse,1,hausse,1,hausse,1
 74130018,74130,VOUGY,1612 ROUTE DU MONT-BLANC,46.066,6.511,Les Clus,1.959,1.929,1.999,egal,egal,egal,hausse,1,hausse,1,hausse,1
-35400011,35400,Saint-servan-sur-mer,RN 137 - COTE OUEST - DIRECTION,48.615,-1.984,TotalEnergies,,1.893,1.990,,egal,egal,hausse,1,hausse,1,hausse,1
 60200012,60200,COMPIEGNE,142 RUE DE PARIS,49.407,2.813,Total,1.929,,,egal,,,hausse,1,hausse,1,hausse,1
 64350003,64350,LEMBEYE,Rue des Pelhans,43.450533,-0.10784,Carrefour Contact,2.039,,2.049,hausse,,egal,hausse,1,hausse,1,hausse,1
 60650007,60650,Saint Aubin en Bray,58 route nationale,49.438949,1.887184,Esso,1.854,1.894,1.974,egal,egal,egal,hausse,1,hausse,1,hausse,1
@@ -9690,10 +9690,10 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,tendance_gazole,
 26600016,26600,TAIN L'HERMITAGE,20 AVENUE PRESIDENT ROOSEVELT,45.068,4.845,Avia,1.969,,2.019,egal,,egal,hausse,1,hausse,1,hausse,1
 51500007,51500,LUDES,8 RUE PUISIEULX,49.161872,4.080778,Carrefour,1.936,,2.075,egal,,egal,hausse,1,hausse,1,hausse,1
 93100014,93100,MONTREUIL,48-54 BOULEVARD THEOPHILE SUEUR,48.86885,2.47055,Total,1.994,1.959,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
-31770005,31770,COLOMIERS,BOULEVARD EUGENE MONTEL,43.608,1.336,Total,1.959,1.883,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 69100022,69100,VILLEURBANNE,283 RTE DE GENAS,45.74977,4.91257,TotalEnergies,1.969,1.879,1.983,,,,hausse,1,hausse,1,hausse,1
 92230011,92230,GENNEVILLIERS,37 AVENUE LUCIEN LANTERNIER,48.932,2.29,Total Access,1.994,1.955,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 69350003,69350,LA MULATIERE,66 RUE STEPHANE DECHANT,45.726,4.815,Total,2.079,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
+31770005,31770,COLOMIERS,BOULEVARD EUGENE MONTEL,43.608,1.336,Total,1.959,,,egal,egal,egal,hausse,1,hausse,1,hausse,1
 1100007,01100,OYONNAX,174 COURS DE VERDUN,46.25,5.641,Total,2.049,1.979,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 21000027,21000,DIJON,"170, RUE D'AUXONNE",47.30728,5.05757,TotalEnergies,2.069,1.990,1.990,egal,egal,egal,hausse,1,hausse,1,hausse,1
 24000011,24000,PERIGUEUX,138 RUE PIERRE SEMARD LE TOULON,45.197,0.701,TotalEnergies,1.953,1.889,,egal,egal,,hausse,1,hausse,1,hausse,1
