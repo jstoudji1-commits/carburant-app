@@ -29,6 +29,8 @@ services:
         value: https://optiplein.fr
       - key: ADMIN_PASSWORD
         sync: false
+      - key: ACCOUNT_TOKEN_SECRET
+        sync: false
       - key: GRAPHHOPPER_API_KEY
         sync: false
       - key: REPORT_EMAIL
