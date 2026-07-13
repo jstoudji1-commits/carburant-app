@@ -6097,6 +6097,8 @@ function appliquerDonneesCompte(donnees) {
 function actualiserInterfaceCompte() {
 
     var email = localStorage.getItem(compteEmailCle) || "";
+    var titreCompte = document.querySelector(".account-sync-title");
+    var texteCompte = document.querySelector(".account-sync-copy");
     var champEmail = document.getElementById("account-email");
     var champMotDePasse = document.getElementById("account-password");
     var boutonConnexion = document.getElementById("account-login-button");
@@ -6108,8 +6110,24 @@ function actualiserInterfaceCompte() {
         champEmail.value = email;
     }
 
+    if (titreCompte) {
+        titreCompte.hidden = connecte;
+    }
+
+    if (texteCompte) {
+        texteCompte.hidden = connecte;
+    }
+
+    if (champEmail) {
+        champEmail.hidden = connecte;
+    }
+
     if (champMotDePasse && connecte) {
         champMotDePasse.value = "";
+    }
+
+    if (champMotDePasse) {
+        champMotDePasse.hidden = connecte;
     }
 
     if (boutonConnexion) {
@@ -8425,7 +8443,7 @@ function actualiserPlanCompte() {
     }
 
     if (offrePremium) {
-        offrePremium.hidden = false;
+        offrePremium.hidden = compteUtilisateurConnecte();
     }
 
     if (nouveauVehiculeBouton) {

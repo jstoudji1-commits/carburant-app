@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager, suppress
 from datetime import datetime
 from email.message import EmailMessage
 from email.utils import getaddresses
+import base64
 import hashlib
 import hmac
 import json
@@ -105,6 +106,7 @@ SESSIONS_UTILISATEURS = {}
 PBKDF2_ITERATIONS = 260000
 PREMIUM_TEST_ACTIF = True
 DELAI_VALIDATION_EMAIL_SECONDES = 24 * 60 * 60
+DUREE_SESSION_COMPTE_SECONDES = 90 * 24 * 60 * 60
 
 
 class SignalementProbleme(BaseModel):
@@ -506,12 +508,90 @@ def verifier_mot_de_passe(mot_de_passe, securite):
     return hmac.compare_digest(obtenu, attendu)
 
 
+def secret_session_compte():
+
+    secret = (
+        os.getenv("ACCOUNT_TOKEN_SECRET", "").strip()
+        or ADMIN_PASSWORD
+        or APP_BASE_URL
+        or "optiplein-session-locale"
+    )
+
+    return secret.encode("utf-8")
+
+
+def encoder_base64_url(donnees):
+
+    return base64.urlsafe_b64encode(donnees).decode("ascii").rstrip("=")
+
+
+def decoder_base64_url(texte):
+
+    padding = "=" * (-len(texte) % 4)
+    return base64.urlsafe_b64decode((texte + padding).encode("ascii"))
+
+
+def signer_session_compte(corps):
+
+    signature = hmac.new(
+        secret_session_compte(),
+        corps.encode("ascii"),
+        hashlib.sha256,
+    ).digest()
+
+    return encoder_base64_url(signature)
+
+
 def creer_session(email):
 
-    jeton = secrets.token_urlsafe(32)
+    maintenant = int(time.time())
+    payload = {
+        "email": email,
+        "iat": maintenant,
+        "exp": maintenant + DUREE_SESSION_COMPTE_SECONDES,
+    }
+    corps = encoder_base64_url(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    )
+    signature = signer_session_compte(corps)
+    jeton = f"v1.{corps}.{signature}"
     SESSIONS_UTILISATEURS[jeton] = email
 
     return jeton
+
+
+def email_depuis_session_signee(jeton):
+
+    try:
+        version, corps, signature = jeton.split(".", 2)
+    except ValueError:
+        return None
+
+    if version != "v1":
+        return None
+
+    signature_attendue = signer_session_compte(corps)
+    if not hmac.compare_digest(signature, signature_attendue):
+        return None
+
+    try:
+        payload = json.loads(
+            decoder_base64_url(corps).decode("utf-8")
+        )
+    except (ValueError, TypeError, UnicodeDecodeError):
+        return None
+
+    email = normaliser_email(payload.get("email", ""))
+    expiration = int(payload.get("exp", 0) or 0)
+
+    if not email or time.time() > expiration:
+        return None
+
+    return email
 
 
 def email_depuis_requete(request):
@@ -526,7 +606,10 @@ def email_depuis_requete(request):
         )
 
     jeton = autorisation[len(prefixe):].strip()
-    email = SESSIONS_UTILISATEURS.get(jeton)
+    email = email_depuis_session_signee(jeton)
+
+    if not email:
+        email = SESSIONS_UTILISATEURS.get(jeton)
 
     if not email:
         raise HTTPException(
