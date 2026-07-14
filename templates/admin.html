@@ -343,6 +343,7 @@
                     <span>Testeurs inscrits</span>
                 </div>
             </div>
+            <p class="status" id="config-status"></p>
 
             <section class="panel">
                 <div class="panel-head">
@@ -544,6 +545,42 @@
                 stats.premium || 0;
             document.getElementById("stat-testeurs").textContent =
                 stats.testeurs || 0;
+        }
+
+        function afficherConfigurationServeur(stockage, adsense) {
+            var statut = document.getElementById("config-status");
+
+            if (!statut) {
+                return;
+            }
+
+            var morceaux = [];
+            morceaux.push(
+                "Comptes : "
+                + (stockage && stockage.accounts_file_exists
+                    ? "fichier OK"
+                    : "fichier absent")
+            );
+            morceaux.push(
+                "sauvegarde : "
+                + (stockage && stockage.accounts_backup_exists
+                    ? "OK"
+                    : "absente")
+            );
+            morceaux.push(
+                "dossier : "
+                + (stockage && stockage.data_dir
+                    ? stockage.data_dir
+                    : "non renseigne")
+            );
+            morceaux.push(
+                "AdSense slot : "
+                + (adsense && adsense.slot_map_configured
+                    ? "OK"
+                    : "manquant")
+            );
+
+            statut.textContent = morceaux.join(" - ");
         }
 
         function afficherComptes(comptes) {
@@ -750,6 +787,10 @@
         async function chargerAdmin() {
             var donnees = await requeteAdmin("/api/admin/donnees");
             afficherStats(donnees.stats || {});
+            afficherConfigurationServeur(
+                donnees.stockage || {},
+                donnees.adsense || {}
+            );
             afficherComptes(donnees.comptes || []);
             afficherTesteurs(donnees.testeurs || []);
             await chargerStatutEmailAdmin();
