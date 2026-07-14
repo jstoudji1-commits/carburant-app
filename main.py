@@ -24,6 +24,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import shutil
 import smtplib
 import ssl
 import threading
@@ -53,16 +54,50 @@ ADSENSE_CLIENT = os.getenv(
     "ADSENSE_CLIENT",
     "ca-pub-4904497922619715",
 ).strip()
-ADSENSE_SLOT_MAP = os.getenv("ADSENSE_SLOT_MAP", "").strip()
+
+
+def lire_variable_adsense_slot():
+
+    for nom_variable in (
+        "ADSENSE_SLOT_MAP",
+        "ADSENSE_SLOT",
+        "ADSENSE_AD_SLOT",
+        "GOOGLE_AD_SLOT",
+    ):
+        valeur = os.getenv(nom_variable, "").strip()
+        if valeur:
+            return valeur
+
+    return ""
+
+
+ADSENSE_SLOT_MAP = lire_variable_adsense_slot()
 signalements_recents = {}
 mise_a_jour_admin_lock = threading.Lock()
 ATTENTE_VERROU_ADMIN_SECONDES = 45
-DOSSIER_DONNEES_UTILISATEURS = Path(
-    os.getenv("OPTIPLEIN_DATA_DIR", ".")
-)
+
+
+def resoudre_dossier_donnees_utilisateurs():
+
+    dossier_env = os.getenv("OPTIPLEIN_DATA_DIR", "").strip()
+    if dossier_env:
+        return Path(dossier_env)
+
+    dossier_render = Path("/var/data")
+    if dossier_render.exists():
+        return dossier_render
+
+    return Path(".")
+
+
+DOSSIER_DONNEES_UTILISATEURS = resoudre_dossier_donnees_utilisateurs()
 COMPTES_UTILISATEURS_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "comptes_utilisateurs.json"
+)
+COMPTES_UTILISATEURS_BACKUP_FICHIER = (
+    DOSSIER_DONNEES_UTILISATEURS
+    / "comptes_utilisateurs.backup.json"
 )
 TESTEURS_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
@@ -397,13 +432,13 @@ def email_valide(email):
     )
 
 
-def charger_comptes_utilisateurs():
+def lire_comptes_utilisateurs_depuis_fichier(fichier):
 
-    if not COMPTES_UTILISATEURS_FICHIER.exists():
-        return {"users": {}}
+    if not fichier.exists():
+        return None
 
     try:
-        with COMPTES_UTILISATEURS_FICHIER.open(
+        with fichier.open(
             encoding="utf-8"
         ) as fichier:
             donnees = json.load(fichier)
@@ -413,6 +448,36 @@ def charger_comptes_utilisateurs():
         logger.exception(
             "Impossible de lire les comptes utilisateurs."
         )
+
+    return None
+
+
+def charger_comptes_utilisateurs():
+
+    donnees = lire_comptes_utilisateurs_depuis_fichier(
+        COMPTES_UTILISATEURS_FICHIER
+    )
+    if donnees is not None:
+        return donnees
+
+    sauvegarde = lire_comptes_utilisateurs_depuis_fichier(
+        COMPTES_UTILISATEURS_BACKUP_FICHIER
+    )
+    if sauvegarde is not None:
+        try:
+            COMPTES_UTILISATEURS_FICHIER.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+            shutil.copy2(
+                COMPTES_UTILISATEURS_BACKUP_FICHIER,
+                COMPTES_UTILISATEURS_FICHIER,
+            )
+        except OSError:
+            logger.exception(
+                "Impossible de restaurer la sauvegarde des comptes."
+            )
+        return sauvegarde
 
     return {"users": {}}
 
@@ -436,6 +501,16 @@ def enregistrer_comptes_utilisateurs(donnees):
         )
 
     temporaire.replace(COMPTES_UTILISATEURS_FICHIER)
+
+    try:
+        shutil.copy2(
+            COMPTES_UTILISATEURS_FICHIER,
+            COMPTES_UTILISATEURS_BACKUP_FICHIER,
+        )
+    except OSError:
+        logger.exception(
+            "Impossible de créer la sauvegarde des comptes utilisateurs."
+        )
 
 
 def charger_testeurs_landing():
@@ -702,6 +777,18 @@ def construire_resume_admin():
                 if ligne.get("plan") == "premium"
             ),
             "testeurs": len(testeurs),
+        },
+        "stockage": {
+            "data_dir": str(DOSSIER_DONNEES_UTILISATEURS),
+            "accounts_file": str(COMPTES_UTILISATEURS_FICHIER),
+            "accounts_file_exists": COMPTES_UTILISATEURS_FICHIER.exists(),
+            "accounts_backup_exists": (
+                COMPTES_UTILISATEURS_BACKUP_FICHIER.exists()
+            ),
+        },
+        "adsense": {
+            "client_configured": bool(ADSENSE_CLIENT),
+            "slot_map_configured": bool(ADSENSE_SLOT_MAP),
         },
     }
 
