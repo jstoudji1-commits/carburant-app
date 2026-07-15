@@ -1387,27 +1387,29 @@ body{
 
 .ad-banner{
     position:absolute;
-    top:16px;
+    top:12px;
     left:50%;
     z-index:850;
     transform:translateX(-50%);
-    width:min(620px, calc(100% - 32px));
-    min-height:50px;
-    max-height:78px;
+    width:min(468px, calc(100% - 96px));
+    height:60px;
+    min-height:0;
+    max-height:60px;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:6px 12px;
-    border:1px solid rgba(220,228,234,0.96);
-    border-radius:10px;
-    background:rgba(255,255,255,0.96);
+    padding:0;
+    border:1px solid rgba(220,228,234,0.82);
+    border-radius:8px;
+    background:rgba(255,255,255,0.86);
     color:#425463;
-    font-size:14px;
+    font-size:12px;
     font-weight:bold;
     text-align:center;
-    box-shadow:0 8px 22px rgba(16,37,54,0.14);
-    backdrop-filter:blur(8px);
+    box-shadow:0 6px 16px rgba(16,37,54,0.10);
+    backdrop-filter:blur(4px);
     overflow:hidden;
+    pointer-events:auto;
 }
 
 .ad-banner[hidden]{
@@ -1417,11 +1419,13 @@ body{
 .ad-banner .adsbygoogle{
     display:block;
     width:100%;
-    min-height:50px;
+    height:60px;
+    max-height:60px;
+    overflow:hidden;
 }
 
 .ad-fallback{
-    padding:8px 10px;
+    padding:6px 10px;
 }
 
 .bottom-ad-slot{
@@ -1439,9 +1443,10 @@ body{
     z-index:auto;
     transform:none;
     width:100%;
-    min-height:42px;
-    max-height:66px;
-    padding:5px 10px;
+    height:52px;
+    min-height:0;
+    max-height:52px;
+    padding:0;
     border-radius:8px;
     background:rgba(247,251,248,0.98);
     box-shadow:none;
@@ -2502,6 +2507,19 @@ body{
         --map-tools-top:96px;
     }
 
+    .ad-banner{
+        top:8px;
+        width:min(320px, calc(100% - 118px));
+        height:50px;
+        max-height:50px;
+        font-size:11px;
+    }
+
+    .ad-banner .adsbygoogle{
+        height:50px;
+        max-height:50px;
+    }
+
     .trip-planner-open{
         left:12px;
         padding:10px 11px;
@@ -3118,10 +3136,11 @@ body{
                 {% if adsense_client and adsense_slot_map %}
                 <ins
                     class="adsbygoogle"
+                    style="display:block;width:100%;height:60px;"
                     data-ad-client="{{ adsense_client }}"
                     data-ad-slot="{{ adsense_slot_map }}"
-                    data-ad-format="auto"
-                    data-full-width-responsive="true"
+                    data-ad-format="horizontal"
+                    data-full-width-responsive="false"
                 ></ins>
                 {% else %}
                 <span class="ad-fallback">
