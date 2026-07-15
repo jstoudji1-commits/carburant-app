@@ -5676,6 +5676,7 @@ var compteEmailCle = "optiplein-compte-email";
 var modeDecouvertePremiumActif = true;
 var choixFormuleMasquePendantTest = true;
 var publiciteAdsenseActive = {{ adsense_active|tojson }};
+var publiciteAdsenseMasqueeVide = false;
 var nombreMaximumFavorisGratuit = 3;
 var nombreMaximumVehiculesGratuit = 1;
 var nombreMaximumVehiculesPremium = 5;
@@ -5806,9 +5807,72 @@ function compteUtilisateurConnecte() {
 
 }
 
+function masquerPubliciteVide() {
+
+    var pub = document.getElementById("ad-banner");
+    var emplacementBloc = document.getElementById("bottom-ad-slot");
+
+    publiciteAdsenseMasqueeVide = true;
+
+    if (pub) {
+        pub.hidden = true;
+    }
+
+    if (emplacementBloc) {
+        emplacementBloc.hidden = true;
+    }
+
+}
+
+function verifierRemplissagePublicite(force) {
+
+    var pub = document.getElementById("ad-banner");
+    var annonce = pub ? pub.querySelector(".adsbygoogle") : null;
+    var statut = annonce ? annonce.getAttribute("data-ad-status") : "";
+    var iframe = annonce ? annonce.querySelector("iframe") : null;
+
+    if (!pub || !annonce || publiciteAdsenseMasqueeVide) {
+        return;
+    }
+
+    if (statut === "filled" || iframe) {
+        return;
+    }
+
+    if (statut === "unfilled" || (force && annonce.dataset.initialise === "1")) {
+        masquerPubliciteVide();
+    }
+
+}
+
+function programmerVerificationPublicite() {
+
+    window.setTimeout(function() {
+        verifierRemplissagePublicite(false);
+    }, 5000);
+
+    window.setTimeout(function() {
+        verifierRemplissagePublicite(true);
+    }, 12000);
+
+    window.setTimeout(function() {
+        verifierRemplissagePublicite(true);
+    }, 22000);
+
+}
+
 function initialiserDiffuseurPublicite() {
 
-    if (!publiciteAdsenseActive || !window.adsbygoogle) {
+    if (!publiciteAdsenseActive) {
+        return;
+    }
+
+    if (!window.adsbygoogle) {
+        window.setTimeout(function() {
+            if (!window.adsbygoogle) {
+                masquerPubliciteVide();
+            }
+        }, 5000);
         return;
     }
 
@@ -5826,6 +5890,8 @@ function initialiserDiffuseurPublicite() {
             }
         }
     );
+
+    programmerVerificationPublicite();
 
 }
 
@@ -8393,6 +8459,12 @@ function actualiserPlacementPublicite() {
     var dansBloc = navigationActive && destinationNavigation;
 
     if (!pub || !emplacementBloc || !sceneCarte || !carte) {
+        return;
+    }
+
+    if (publiciteAdsenseMasqueeVide) {
+        pub.hidden = true;
+        emplacementBloc.hidden = true;
         return;
     }
 
