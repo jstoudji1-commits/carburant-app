@@ -245,6 +245,10 @@ body{
 }
 
 .vehicle-list-button{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
     width:100%;
     padding:10px 12px;
     border:1px solid #dce4ea;
@@ -259,6 +263,46 @@ body{
 .vehicle-list-button.active{
     border-color:var(--green);
     background:#e8f7ec;
+}
+
+.vehicle-list-main{
+    display:grid;
+    gap:2px;
+    min-width:0;
+}
+
+.vehicle-list-name{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.vehicle-list-meta{
+    color:var(--muted);
+    font-size:12px;
+    font-weight:700;
+}
+
+.vehicle-edit-icon{
+    position:relative;
+    flex:0 0 18px;
+    width:18px;
+    height:18px;
+    border:1px solid #cbd5dd;
+    border-radius:999px;
+    background:#fff;
+}
+
+.vehicle-edit-icon::before{
+    content:"";
+    position:absolute;
+    width:8px;
+    height:3px;
+    top:7px;
+    left:5px;
+    border-radius:2px;
+    background:var(--green-dark);
+    transform:rotate(-38deg);
 }
 
 .premium-menu{
@@ -409,8 +453,19 @@ body{
     cursor:pointer;
 }
 
+.premium-option-button.is-loading{
+    border-color:#5fd676;
+    background:#5fd676;
+    color:white;
+    cursor:wait;
+}
+
 .premium-option-button.danger{
     color:#b42318;
+}
+
+.premium-option-button.danger.is-loading{
+    color:white;
 }
 
 .vehicle-secondary-button{
@@ -430,6 +485,15 @@ body{
     display:none;
 }
 
+.vehicle-editor[hidden]{
+    display:none;
+}
+
+.vehicle-editor{
+    display:grid;
+    gap:10px;
+}
+
 .vehicle-save-button{
     width:100%;
     margin-top:14px;
@@ -442,6 +506,22 @@ body{
     font-weight:bold;
     cursor:pointer;
     box-shadow:0 6px 14px rgba(8,122,44,0.22);
+}
+
+.vehicle-delete-button{
+    width:100%;
+    padding:11px 14px;
+    border:1px solid #f1c6c2;
+    border-radius:8px;
+    background:#fff8f7;
+    color:#b42318;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.vehicle-delete-button[hidden]{
+    display:none;
 }
 
 .app-layout{
@@ -2665,7 +2745,7 @@ body{
                 hidden
             >
                 <p class="vehicle-panel-title">
-                    Configurer mon v&eacute;hicule
+                    Mon compte
                 </p>
 
                 <div class="account-sync">
@@ -2866,47 +2946,63 @@ body{
                         Nouveau v&eacute;hicule
                     </button>
 
-                    <div class="vehicle-fields">
-                        <input
-                            class="vehicle-input"
-                            id="vehicule-nom"
-                            type="text"
-                            autocomplete="off"
-                            maxlength="40"
-                            required
-                            placeholder="Nom du v&eacute;hicule"
-                        >
-
-                        <input
-                            class="vehicle-input"
-                            id="vehicule-reservoir"
-                            type="number"
-                            min="1"
-                            step="1"
-                            inputmode="decimal"
-                            required
-                            placeholder="Taille du r&eacute;servoir (L)"
-                        >
-
-                        <input
-                            class="vehicle-input"
-                            id="vehicule-conso"
-                            type="number"
-                            min="0.1"
-                            step="0.1"
-                            inputmode="decimal"
-                            required
-                            placeholder="Consommation moyenne (L/100 km)"
-                        >
-                    </div>
-
-                    <button
-                        type="button"
-                        class="vehicle-save-button"
-                        onclick="enregistrerVehicule(event)"
+                    <div
+                        class="vehicle-editor"
+                        id="vehicle-editor"
+                        hidden
                     >
-                        Enregistrer
-                    </button>
+                        <div class="vehicle-fields">
+                            <input
+                                class="vehicle-input"
+                                id="vehicule-nom"
+                                type="text"
+                                autocomplete="off"
+                                maxlength="40"
+                                required
+                                placeholder="Nom du v&eacute;hicule"
+                            >
+
+                            <input
+                                class="vehicle-input"
+                                id="vehicule-reservoir"
+                                type="number"
+                                min="1"
+                                step="1"
+                                inputmode="decimal"
+                                required
+                                placeholder="Taille du r&eacute;servoir (L)"
+                            >
+
+                            <input
+                                class="vehicle-input"
+                                id="vehicule-conso"
+                                type="number"
+                                min="0.1"
+                                step="0.1"
+                                inputmode="decimal"
+                                required
+                                placeholder="Consommation moyenne (L/100 km)"
+                            >
+                        </div>
+
+                        <button
+                            type="button"
+                            class="vehicle-save-button"
+                            onclick="enregistrerVehicule(event)"
+                        >
+                            Enregistrer
+                        </button>
+
+                        <button
+                            type="button"
+                            class="vehicle-delete-button"
+                            id="vehicle-delete-button"
+                            onclick="supprimerVehiculeActif(event)"
+                            hidden
+                        >
+                            Supprimer ce v&eacute;hicule
+                        </button>
+                    </div>
                 </div>
 
                 <section
@@ -2922,6 +3018,13 @@ body{
                             class="premium-history-list"
                             id="premium-history-list"
                         ></div>
+                        <button
+                            type="button"
+                            class="premium-option-button danger"
+                            onclick="viderHistoriqueEconomies()"
+                        >
+                            Vider l'historique
+                        </button>
                     </div>
                 </section>
 
@@ -2954,7 +3057,7 @@ body{
                                 max="50"
                                 step="5"
                                 value="25"
-                                oninput="actualiserRayonPremium(true)"
+                                oninput="actualiserRayonPremium(false)"
                             >
                             <p class="premium-radius-help">
                                 Ce rayon sert &agrave; afficher les stations sur la carte
@@ -2964,16 +3067,10 @@ body{
                         <button
                             type="button"
                             class="premium-option-button"
+                            id="premium-recalculate-button"
                             onclick="forcerCalculRentabilitePremium()"
                         >
                             Recalculer maintenant
-                        </button>
-                        <button
-                            type="button"
-                            class="premium-option-button danger"
-                            onclick="viderHistoriqueEconomies()"
-                        >
-                            Vider l'historique
                         </button>
                     </div>
                 </section>
@@ -4001,7 +4098,21 @@ window.basculerPanneauVehicule = function(event) {
     );
 
     if (ouvrir) {
-        document.getElementById("vehicule-nom").focus();
+        actualiserListeVehicules();
+        actualiserEditeurVehicule();
+
+        var editeur = document.getElementById("vehicle-editor");
+        var champNom = document.getElementById("vehicule-nom");
+        var premierVehicule = document.querySelector(".vehicle-list-button");
+        var boutonNouveau = document.getElementById("vehicle-new-button");
+
+        if (editeur && !editeur.hidden && champNom) {
+            champNom.focus();
+        } else if (premierVehicule) {
+            premierVehicule.focus();
+        } else if (boutonNouveau && !boutonNouveau.hidden) {
+            boutonNouveau.focus();
+        }
     }
 
 };
@@ -5779,6 +5890,22 @@ window.actualiserRayonPremium = function(declencherActualisation) {
 
 };
 
+function definirEtatBoutonRecalculPremium(enCours) {
+
+    var bouton = document.getElementById("premium-recalculate-button");
+
+    if (!bouton) {
+        return;
+    }
+
+    bouton.disabled = Boolean(enCours);
+    bouton.classList.toggle("is-loading", Boolean(enCours));
+    bouton.textContent = enCours
+        ? "Recalcul en cours"
+        : "Recalculer maintenant";
+
+}
+
 function nombreMaximumFavorisActuel() {
 
     return comptePremiumActif()
@@ -6404,11 +6531,6 @@ async function sauvegarderCompteMaintenant() {
                 donnees: donneesCompteLocales()
             })
         }
-    );
-
-    definirStatutCompte(
-        "Sauvegard\u00e9 \u00e0 l'instant.",
-        "success"
     );
 
 }
@@ -8126,6 +8248,8 @@ var champsVehicule = [
     "vehicule-reservoir",
     "vehicule-conso"
 ];
+var editeurVehiculeOuvert = false;
+var editionVehiculeExistant = false;
 var economiePrecedentePourSeuil = null;
 var stationRentableAfficheeCle = "";
 var economieRentableAffichee = null;
@@ -8430,11 +8554,21 @@ window.changerPagePremium = function(page) {
 
 };
 
-window.forcerCalculRentabilitePremium = function() {
+window.forcerCalculRentabilitePremium = async function() {
 
-    dernierCalculPeriodiqueRentabilite = 0;
-    calculerMeilleureStation();
-    actualiserHistoriqueEconomiesPremium();
+    definirEtatBoutonRecalculPremium(true);
+
+    try {
+        actualiserRayonPremium(false);
+        programmerSauvegardeCompte();
+        await actualiserStationsSelonPosition(true);
+        dernierCalculPeriodiqueRentabilite = 0;
+        calculerMeilleureStation();
+        actualiserHistoriqueEconomiesPremium();
+        fermerPanneauVehicule();
+    } finally {
+        definirEtatBoutonRecalculPremium(false);
+    }
 
 };
 
@@ -8581,6 +8715,36 @@ window.changerPlanCompte = function(plan) {
 
 };
 
+function actualiserEditeurVehicule() {
+
+    var editeur = document.getElementById("vehicle-editor");
+    var boutonSuppression = document.getElementById("vehicle-delete-button");
+    var vehicules = lireVehicules();
+    var afficher = editeurVehiculeOuvert || vehicules.length === 0;
+
+    if (editeur) {
+        editeur.hidden = !afficher;
+    }
+
+    if (boutonSuppression) {
+        boutonSuppression.hidden = !afficher || !editionVehiculeExistant;
+    }
+
+}
+
+function afficherEditeurVehicule(existant) {
+
+    editeurVehiculeOuvert = true;
+    editionVehiculeExistant = Boolean(existant);
+    actualiserEditeurVehicule();
+
+    var champNom = document.getElementById("vehicule-nom");
+    if (champNom) {
+        champNom.focus();
+    }
+
+}
+
 window.nouveauVehicule = function() {
 
     var vehicules = lireVehicules();
@@ -8605,7 +8769,8 @@ window.nouveauVehicule = function() {
         jauge.value = "50";
     }
     actualiserJaugeReservoir();
-    document.getElementById("vehicule-nom").focus();
+    afficherEditeurVehicule(false);
+    actualiserListeVehicules();
 
 };
 
@@ -8613,36 +8778,59 @@ function actualiserListeVehicules() {
 
     var conteneur = document.getElementById("vehicle-list");
     var vehicules = lireVehicules();
-    var actif = vehiculeActif();
+    var actifId = localStorage.getItem(vehiculeActifCle);
 
     if (!conteneur) {
         return;
     }
 
     conteneur.innerHTML = "";
-    conteneur.hidden = !comptePremiumActif() || vehicules.length <= 1;
+    conteneur.hidden = vehicules.length <= 0;
 
     vehicules.forEach(
         function(vehicule) {
             var bouton = document.createElement("button");
+            var principal = document.createElement("span");
+            var nom = document.createElement("span");
+            var meta = document.createElement("span");
+            var icone = document.createElement("span");
+
             bouton.type = "button";
             bouton.className = "vehicle-list-button";
             bouton.classList.toggle(
                 "active",
-                actif && vehicule.id === actif.id
+                Boolean(actifId) && vehicule.id === actifId
             );
-            bouton.textContent = vehicule.nom || "V\u00e9hicule";
+            principal.className = "vehicle-list-main";
+            nom.className = "vehicle-list-name";
+            nom.textContent = vehicule.nom || "V\u00e9hicule";
+            meta.className = "vehicle-list-meta";
+            meta.textContent = [
+                vehicule.reservoir ? vehicule.reservoir + " L" : "",
+                vehicule.conso ? vehicule.conso + " L/100 km" : ""
+            ].filter(Boolean).join(" · ");
+            icone.className = "vehicle-edit-icon";
+            icone.setAttribute("aria-hidden", "true");
+            principal.appendChild(nom);
+            if (meta.textContent) {
+                principal.appendChild(meta);
+            }
+            bouton.appendChild(principal);
+            bouton.appendChild(icone);
             bouton.addEventListener(
                 "click",
                 function() {
                     localStorage.setItem(vehiculeActifCle, vehicule.id);
                     programmerSauvegardeCompte();
                     chargerVehicule();
+                    afficherEditeurVehicule(true);
                 }
             );
             conteneur.appendChild(bouton);
         }
     );
+
+    actualiserEditeurVehicule();
 
 }
 
@@ -8982,7 +9170,7 @@ function actualiserNomBoutonVehicule() {
     bouton.textContent = nom || "Mon v\u00e9hicule";
     bouton.title = nom
         ? "Modifier " + nom
-        : "Configurer mon v\u00e9hicule";
+        : "Mon compte";
 
 }
 
@@ -9759,8 +9947,68 @@ window.enregistrerVehicule = function(event) {
     actualiserNomBoutonVehicule();
     actualiserListeVehicules();
     calculerMeilleureStation();
+    editeurVehiculeOuvert = false;
+    editionVehiculeExistant = false;
     fermerPanneauVehicule();
     document.getElementById("vehicle-button").focus();
+
+};
+
+window.supprimerVehiculeActif = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var actifId = localStorage.getItem(vehiculeActifCle);
+    var vehicules = lireVehicules();
+    var actif = vehicules.find(
+        function(vehicule) {
+            return vehicule.id === actifId;
+        }
+    );
+
+    if (!actif) {
+        return;
+    }
+
+    if (!confirm("Supprimer ce v\u00e9hicule ?")) {
+        return;
+    }
+
+    vehicules = vehicules.filter(
+        function(vehicule) {
+            return vehicule.id !== actif.id;
+        }
+    );
+
+    enregistrerVehicules(vehicules);
+
+    if (vehicules[0]) {
+        localStorage.setItem(vehiculeActifCle, vehicules[0].id);
+        synchroniserAnciennesClesVehicule(vehicules[0]);
+        editeurVehiculeOuvert = false;
+        editionVehiculeExistant = false;
+    } else {
+        localStorage.removeItem(vehiculeActifCle);
+        localStorage.removeItem("vehicule-jauge");
+        champsVehicule.forEach(
+            function(champId) {
+                localStorage.removeItem(champId);
+                var champ = document.getElementById(champId);
+                if (champ) {
+                    champ.value = "";
+                }
+            }
+        );
+        editeurVehiculeOuvert = true;
+        editionVehiculeExistant = false;
+    }
+
+    programmerSauvegardeCompte();
+    chargerVehicule();
+    calculerMeilleureStation();
 
 };
 
