@@ -1,6 +1,6 @@
 ﻿from fastapi import FastAPI, Request
 from fastapi import HTTPException
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from typing import Literal, Optional
@@ -35,6 +35,16 @@ from update_data import (
     mettre_a_jour_stations,
     signature_adresse,
     texte_derniere_mise_a_jour,
+)
+from optiplein_db import (
+    base_donnees_active,
+    charger_comptes as charger_comptes_postgres,
+    charger_corrections_stations as charger_corrections_stations_postgres,
+    charger_testeurs as charger_testeurs_postgres,
+    enregistrer_comptes as enregistrer_comptes_postgres,
+    enregistrer_correction_station as enregistrer_correction_station_postgres,
+    enregistrer_testeurs as enregistrer_testeurs_postgres,
+    libelle_stockage,
 )
 
 
@@ -141,6 +151,7 @@ SESSIONS_UTILISATEURS = {}
 PBKDF2_ITERATIONS = 260000
 PREMIUM_TEST_ACTIF = True
 DELAI_VALIDATION_EMAIL_SECONDES = 24 * 60 * 60
+DELAI_RECUPERATION_MOT_DE_PASSE_SECONDES = 60 * 60
 DUREE_SESSION_COMPTE_SECONDES = 90 * 24 * 60 * 60
 
 
@@ -174,13 +185,89 @@ class DonneesCompte(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
+    profil: dict = Field(default_factory=dict)
     favoris: list = Field(default_factory=list)
     vehicules: list = Field(default_factory=list)
     vehicule_actif: str = ""
+    vehicule_principal: str = ""
     plan: Literal["free", "premium"] = "free"
+    preferences: dict = Field(default_factory=dict)
     historique_economies: list = Field(default_factory=list)
     lieux_trajet: dict = Field(default_factory=dict)
     rayon_stations: int = 25
+    securite: dict = Field(default_factory=dict)
+
+
+class MiseAJourProfilCompte(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    nom: str = Field(default="", max_length=80)
+    telephone: str = Field(default="", max_length=30)
+    ville: str = Field(default="", max_length=90)
+
+
+class MiseAJourPreferencesCompte(BaseModel):
+
+    model_config = ConfigDict(extra="allow")
+
+    carburant: str = Field(default="gazole", max_length=20)
+    rayon_stations: int = 25
+    theme: Literal["auto", "jour", "nuit"] = "auto"
+    notifications: bool = True
+
+
+class ChoixVehiculePrincipalCompte(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    vehicule_id: str = Field(max_length=80)
+
+
+class ListeFavorisCompte(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    favoris: list = Field(default_factory=list)
+
+
+class ListeVehiculesCompte(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    vehicules: list = Field(default_factory=list)
+    vehicule_actif: str = ""
+    vehicule_principal: str = ""
+
+
+class ChangementMotDePasseCompte(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    ancien_mot_de_passe: str = Field(min_length=8, max_length=120)
+    nouveau_mot_de_passe: str = Field(min_length=8, max_length=120)
+
+
+class DemandeRecuperationMotDePasse(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(min_length=5, max_length=160)
+
+
+class ReinitialisationMotDePasse(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    token: str = Field(min_length=16, max_length=200)
+    nouveau_mot_de_passe: str = Field(min_length=8, max_length=120)
+
+
+class RenvoiValidationEmailCompte(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(min_length=5, max_length=160)
 
 
 class PointItineraire(BaseModel):
@@ -454,6 +541,10 @@ def lire_comptes_utilisateurs_depuis_fichier(fichier):
 
 def charger_comptes_utilisateurs():
 
+    comptes_postgres = charger_comptes_postgres()
+    if comptes_postgres is not None:
+        return comptes_postgres
+
     donnees = lire_comptes_utilisateurs_depuis_fichier(
         COMPTES_UTILISATEURS_FICHIER
     )
@@ -483,6 +574,9 @@ def charger_comptes_utilisateurs():
 
 
 def enregistrer_comptes_utilisateurs(donnees):
+
+    if enregistrer_comptes_postgres(donnees):
+        return
 
     COMPTES_UTILISATEURS_FICHIER.parent.mkdir(
         parents=True,
@@ -515,6 +609,10 @@ def enregistrer_comptes_utilisateurs(donnees):
 
 def charger_testeurs_landing():
 
+    testeurs_postgres = charger_testeurs_postgres()
+    if testeurs_postgres is not None:
+        return testeurs_postgres
+
     if not TESTEURS_FICHIER.exists():
         return {"testeurs": []}
 
@@ -530,6 +628,9 @@ def charger_testeurs_landing():
 
 
 def enregistrer_testeurs_landing(donnees):
+
+    if enregistrer_testeurs_postgres(donnees):
+        return
 
     TESTEURS_FICHIER.parent.mkdir(parents=True, exist_ok=True)
     temporaire = TESTEURS_FICHIER.with_suffix(".tmp")
@@ -711,6 +812,70 @@ def compte_premium_requis(request):
     return email
 
 
+def compte_depuis_email_ou_404(comptes, email):
+
+    utilisateur = comptes.get("users", {}).get(email)
+
+    if not utilisateur:
+        raise HTTPException(
+            status_code=404,
+            detail="Compte introuvable.",
+        )
+
+    return utilisateur
+
+
+def compte_depuis_requete_ou_404(request):
+
+    email = email_depuis_requete(request)
+    comptes = charger_comptes_utilisateurs()
+    utilisateur = compte_depuis_email_ou_404(comptes, email)
+
+    return email, comptes, utilisateur
+
+
+def date_iso_maintenant():
+
+    return datetime.now().astimezone().isoformat()
+
+
+def ids_vehicules(donnees):
+
+    return {
+        str(vehicule.get("id", ""))
+        for vehicule in donnees.get("vehicules", [])
+        if isinstance(vehicule, dict) and vehicule.get("id")
+    }
+
+
+def premier_id_vehicule(donnees):
+
+    for vehicule in donnees.get("vehicules", []):
+        if isinstance(vehicule, dict) and vehicule.get("id"):
+            return str(vehicule.get("id"))
+
+    return ""
+
+
+def synchroniser_meta_securite(utilisateur):
+
+    donnees = utilisateur.setdefault("data", {})
+    donnees["profil"] = profil_compte_nettoye(
+        donnees.get("profil", {}),
+        utilisateur.get("email", ""),
+    )
+    donnees["preferences"] = preferences_compte_nettoye(
+        donnees.get("preferences", {}),
+        donnees.get("rayon_stations", 25),
+    )
+    donnees["rayon_stations"] = donnees["preferences"]["rayon_stations"]
+    donnees["securite"] = securite_compte_nettoyee(
+        donnees.get("securite", {}),
+        utilisateur,
+    )
+    return donnees
+
+
 def verifier_admin(request):
 
     mot_de_passe = request.headers.get("X-Admin-Password", "")
@@ -779,6 +944,8 @@ def construire_resume_admin():
             "testeurs": len(testeurs),
         },
         "stockage": {
+            "type": libelle_stockage(),
+            "postgresql_active": base_donnees_active(),
             "data_dir": str(DOSSIER_DONNEES_UTILISATEURS),
             "accounts_file": str(COMPTES_UTILISATEURS_FICHIER),
             "accounts_file_exists": COMPTES_UTILISATEURS_FICHIER.exists(),
@@ -833,12 +1000,35 @@ def charger_enrichissements_stations():
 
     enrichissements = {}
 
-    for fichier, source_admin in (
-        (ENRICHISSEMENT_STATIONS_REPO_FICHIER, False),
-        (ENRICHISSEMENT_STATIONS_ADMIN_FICHIER, True),
-        (CORRECTIONS_STATIONS_ADMIN_FICHIER, True),
-    ):
-        donnees = lire_fichier_enrichissement_stations(fichier)
+    sources = [
+        (lire_fichier_enrichissement_stations(
+            ENRICHISSEMENT_STATIONS_REPO_FICHIER
+        ), False),
+    ]
+
+    corrections_postgres = charger_corrections_stations_postgres()
+
+    if corrections_postgres is not None:
+        sources.append((corrections_postgres, True))
+    else:
+        sources.extend(
+            [
+                (
+                    lire_fichier_enrichissement_stations(
+                        ENRICHISSEMENT_STATIONS_ADMIN_FICHIER
+                    ),
+                    True,
+                ),
+                (
+                    lire_fichier_enrichissement_stations(
+                        CORRECTIONS_STATIONS_ADMIN_FICHIER
+                    ),
+                    True,
+                ),
+            ]
+        )
+
+    for donnees, source_admin in sources:
         for station_id, correction in donnees.get("stations", {}).items():
             correction = dict(correction or {})
 
@@ -860,23 +1050,15 @@ def charger_enrichissements_stations():
 
 def enregistrer_enrichissement_station(station, correction):
 
-    donnees = lire_fichier_enrichissement_stations(
-        ENRICHISSEMENT_STATIONS_ADMIN_FICHIER
-    )
-    stations = donnees.setdefault("stations", {})
     station_id = str(station.get("id", "") or correction.id)
-
-    entree = stations.setdefault(station_id, {})
-    latitude_corrigee = (
-        correction.latitude
-        if correction.latitude is not None
-        else entree.get("latitude_corrigee")
-    )
-    longitude_corrigee = (
-        correction.longitude
-        if correction.longitude is not None
-        else entree.get("longitude_corrigee")
-    )
+    corrections_existantes = charger_enrichissements_stations()
+    entree = corrections_existantes.get(station_id, {})
+    latitude_corrigee = correction.latitude
+    if latitude_corrigee is None:
+        latitude_corrigee = entree.get("latitude_corrigee")
+    longitude_corrigee = correction.longitude
+    if longitude_corrigee is None:
+        longitude_corrigee = entree.get("longitude_corrigee")
     entree_correction = {
         "signature": signature_adresse(station),
         "enseigne": correction.enseigne.strip(),
@@ -890,6 +1072,18 @@ def enregistrer_enrichissement_station(station, correction):
         "forcer_correction": True,
         "updated_at": datetime.now().astimezone().isoformat(),
     }
+
+    if enregistrer_correction_station_postgres(
+        station_id,
+        entree_correction,
+    ):
+        return
+
+    donnees = lire_fichier_enrichissement_stations(
+        ENRICHISSEMENT_STATIONS_ADMIN_FICHIER
+    )
+    stations = donnees.setdefault("stations", {})
+    entree = stations.setdefault(station_id, {})
     entree.update(entree_correction)
     donnees["generated_at"] = datetime.now().astimezone().isoformat()
     donnees["source"] = "admin"
@@ -968,10 +1162,194 @@ def station_resume_admin(station):
     }
 
 
+def limiter_texte_compte(valeur, longueur):
+
+    return str(valeur or "").strip()[:longueur]
+
+
+def profil_compte_nettoye(profil, email=""):
+
+    profil = dict(profil or {})
+
+    return {
+        "email": normaliser_email(profil.get("email") or email),
+        "nom": limiter_texte_compte(profil.get("nom"), 80),
+        "telephone": limiter_texte_compte(profil.get("telephone"), 30),
+        "ville": limiter_texte_compte(profil.get("ville"), 90),
+    }
+
+
+def preferences_compte_nettoye(preferences, rayon_stations=25):
+
+    preferences = dict(preferences or {})
+    carburant = limiter_texte_compte(
+        preferences.get("carburant", "gazole"),
+        20,
+    ).lower()
+    if carburant not in {"gazole", "sp95", "sp98", "e10", "e85", "gplc"}:
+        carburant = "gazole"
+
+    theme = preferences.get("theme", "auto")
+    if theme not in {"auto", "jour", "nuit"}:
+        theme = "auto"
+
+    try:
+        rayon = int(preferences.get("rayon_stations", rayon_stations) or 25)
+    except (TypeError, ValueError):
+        rayon = 25
+
+    return {
+        "carburant": carburant,
+        "rayon_stations": max(5, min(50, rayon)),
+        "theme": theme,
+        "notifications": bool(preferences.get("notifications", True)),
+    }
+
+
+PROFILS_VEHICULES_AUTORISES = {
+    "essence",
+    "diesel",
+    "e85",
+    "gpl",
+    "hybride",
+    "electrique",
+}
+
+
+PROFILS_VEHICULES = {
+    "essence": {
+        "libelle": "Essence",
+        "capacite_unite": "L",
+        "consommation_unite": "L/100 km",
+    },
+    "diesel": {
+        "libelle": "Diesel",
+        "capacite_unite": "L",
+        "consommation_unite": "L/100 km",
+    },
+    "e85": {
+        "libelle": "E85",
+        "capacite_unite": "L",
+        "consommation_unite": "L/100 km",
+    },
+    "gpl": {
+        "libelle": "GPL",
+        "capacite_unite": "L",
+        "consommation_unite": "L/100 km",
+    },
+    "hybride": {
+        "libelle": "Hybride",
+        "capacite_unite": "L",
+        "consommation_unite": "L/100 km",
+    },
+    "electrique": {
+        "libelle": "Electrique",
+        "capacite_unite": "kWh",
+        "consommation_unite": "kWh/100 km",
+    },
+}
+
+
+def profil_vehicule_valide(profil):
+
+    profil = limiter_texte_compte(profil, 30).lower()
+
+    return profil if profil in PROFILS_VEHICULES_AUTORISES else "essence"
+
+
+def normaliser_nombre_texte(valeur, longueur=20):
+
+    texte = limiter_texte_compte(valeur, longueur).replace(",", ".")
+
+    if not texte:
+        return ""
+
+    try:
+        nombre = float(texte)
+    except ValueError:
+        return ""
+
+    if nombre <= 0:
+        return ""
+
+    if nombre.is_integer():
+        return str(int(nombre))
+
+    return str(round(nombre, 2)).rstrip("0").rstrip(".")
+
+
+def vehicule_compte_nettoye(vehicule):
+
+    vehicule = dict(vehicule or {})
+    profil = profil_vehicule_valide(
+        vehicule.get("profil") or vehicule.get("motorisation")
+    )
+    reservoir = normaliser_nombre_texte(vehicule.get("reservoir"))
+    conso = normaliser_nombre_texte(vehicule.get("conso"))
+    autonomie = normaliser_nombre_texte(vehicule.get("autonomie"))
+
+    if not autonomie and reservoir and conso:
+        try:
+            autonomie = str(round(float(reservoir) / float(conso) * 100))
+        except (TypeError, ValueError, ZeroDivisionError):
+            autonomie = ""
+
+    try:
+        jauge = int(float(vehicule.get("jauge", 50) or 50))
+    except (TypeError, ValueError):
+        jauge = 50
+
+    return {
+        "id": limiter_texte_compte(vehicule.get("id"), 80),
+        "nom": limiter_texte_compte(vehicule.get("nom"), 40) or "Mon vehicule",
+        "profil": profil,
+        "motorisation": profil,
+        "reservoir": reservoir,
+        "conso": conso,
+        "autonomie": autonomie,
+        "parametres": limiter_texte_compte(vehicule.get("parametres"), 160),
+        "jauge": max(0, min(100, jauge)),
+    }
+
+
+def vehicules_compte_nettoyes(vehicules):
+
+    vehicules_nettoyes = []
+    ids = set()
+
+    for vehicule in list(vehicules or [])[:5]:
+        vehicule_nettoye = vehicule_compte_nettoye(vehicule)
+        if not vehicule_nettoye["id"] or vehicule_nettoye["id"] in ids:
+            continue
+
+        ids.add(vehicule_nettoye["id"])
+        vehicules_nettoyes.append(vehicule_nettoye)
+
+    return vehicules_nettoyes
+
+
+def securite_compte_nettoyee(securite, utilisateur=None):
+
+    securite = dict(securite or {})
+    utilisateur = utilisateur or {}
+
+    return {
+        "email_verifie": bool(utilisateur.get("email_verified", True)),
+        "dernier_changement_mot_de_passe": limiter_texte_compte(
+            securite.get("dernier_changement_mot_de_passe"),
+            40,
+        ),
+        "derniere_connexion": limiter_texte_compte(
+            securite.get("derniere_connexion"),
+            40,
+        ),
+    }
+
+
 def limiter_donnees_compte(donnees):
 
     donnees.favoris = donnees.favoris[:500]
-    donnees.vehicules = donnees.vehicules[:5]
+    donnees.vehicules = vehicules_compte_nettoyes(donnees.vehicules)
     donnees.historique_economies = donnees.historique_economies[:300]
     donnees.rayon_stations = max(
         5,
@@ -980,12 +1358,33 @@ def limiter_donnees_compte(donnees):
     if PREMIUM_TEST_ACTIF:
         donnees.plan = "premium"
 
+    donnees.profil = profil_compte_nettoye(donnees.profil)
+    donnees.preferences = preferences_compte_nettoye(
+        donnees.preferences,
+        donnees.rayon_stations,
+    )
+    donnees.rayon_stations = donnees.preferences["rayon_stations"]
+    donnees.vehicule_principal = limiter_texte_compte(
+        donnees.vehicule_principal or donnees.vehicule_actif,
+        80,
+    )
+    ids = ids_vehicules(donnees.model_dump())
+    if donnees.vehicule_actif not in ids:
+        donnees.vehicule_actif = premier_id_vehicule(donnees.model_dump())
+    if donnees.vehicule_principal not in ids:
+        donnees.vehicule_principal = donnees.vehicule_actif
+    donnees.securite = securite_compte_nettoyee(donnees.securite)
+
     return donnees.model_dump()
 
 
 def donnees_compte_premium_test(donnees):
 
     donnees = dict(donnees or {})
+    donnees.setdefault("profil", profil_compte_nettoye({}))
+    donnees.setdefault("preferences", preferences_compte_nettoye({}))
+    donnees.setdefault("vehicule_principal", donnees.get("vehicule_actif", ""))
+    donnees.setdefault("securite", securite_compte_nettoyee({}))
     if PREMIUM_TEST_ACTIF:
         donnees["plan"] = "premium"
     return donnees
@@ -1315,6 +1714,17 @@ def creer_jeton_validation_email():
     return jeton, empreinte, expiration
 
 
+def creer_jeton_recuperation_mot_de_passe():
+
+    jeton = secrets.token_urlsafe(32)
+    empreinte = hashlib.sha256(
+        jeton.encode("utf-8")
+    ).hexdigest()
+    expiration = time.time() + DELAI_RECUPERATION_MOT_DE_PASSE_SECONDES
+
+    return jeton, empreinte, expiration
+
+
 def url_base_application(request):
 
     if APP_BASE_URL:
@@ -1408,6 +1818,43 @@ def envoyer_email_bienvenue_premium(email, base_url):
         'text-decoration:none;font-weight:700;padding:12px 18px;'
         'border-radius:8px;">Ouvrir OptiPlein</a>'
         "</p>"
+        "</div>",
+        subtype="html",
+    )
+
+    envoyer_email(message)
+
+
+def envoyer_email_recuperation_mot_de_passe(email, lien, base_url):
+
+    message = EmailMessage()
+    message["Subject"] = "Reinitialisation de votre mot de passe OptiPlein"
+    message["To"] = email
+    message.set_content(
+        "Vous avez demande la reinitialisation de votre mot de passe "
+        "OptiPlein.\n\n"
+        "Cliquez sur ce lien pour choisir un nouveau mot de passe :\n"
+        f"{lien}\n\n"
+        "Ce lien est valable 1 heure. Si vous n'etes pas a l'origine "
+        "de cette demande, ignorez simplement cet e-mail.\n"
+    )
+    message.add_alternative(
+        '<div style="font-family:Arial,sans-serif;color:#102536;'
+        'line-height:1.55;font-size:16px;">'
+        + html_logo_email(base_url)
+        + "<h1 style=\"font-size:22px;margin:0 0 12px 0;\">"
+        "Reinitialisation de votre mot de passe"
+        "</h1>"
+        "<p>Vous avez demand&eacute; la r&eacute;initialisation de votre mot de "
+        "passe OptiPlein.</p>"
+        '<p style="margin:24px 0;">'
+        f'<a href="{lien}" '
+        'style="display:inline-block;background:#149f38;color:#ffffff;'
+        'text-decoration:none;font-weight:700;padding:12px 18px;'
+        'border-radius:8px;">Choisir un nouveau mot de passe</a>'
+        "</p>"
+        "<p>Ce lien est valable 1 heure. Si vous n'&ecirc;tes pas &agrave; "
+        "l'origine de cette demande, ignorez simplement cet e-mail.</p>"
         "</div>",
         subtype="html",
     )
@@ -1781,10 +2228,670 @@ def preparer_stations_pour_carte(
     return stations_preparees
 
 
-@app.get("/")
-def rediriger_vers_application():
+MENU_PAGES_EDITORIALES = [
+    ("accueil", "Accueil", "/"),
+    ("fonctionnement", "Fonctionnement", "/comment-fonctionne-optiplein"),
+    ("pourquoi", "Pourquoi OptiPlein", "/pourquoi-optiplein"),
+    ("faq", "FAQ", "/faq"),
+    ("contact", "Contact", "/contact"),
+]
 
-    return RedirectResponse(url="/web", status_code=307)
+
+PAGES_EDITORIALES = {
+    "accueil": {
+        "slug": "",
+        "title": "OptiPlein - Le plein malin",
+        "nav_title": "Accueil",
+        "description": (
+            "OptiPlein aide les conducteurs a comparer les prix des "
+            "carburants, reperer les stations proches et choisir le "
+            "ravitaillement le plus rentable."
+        ),
+        "eyebrow": "Comparateur carburant et assistant de trajet",
+        "hero_title": "Le plein malin, avant meme d'arriver a la pompe.",
+        "lead": (
+            "OptiPlein combine prix officiels, position, vehicule et "
+            "itineraire pour aider chaque conducteur a prendre une decision "
+            "simple : ou faire le plein sans perdre son temps ni son argent."
+        ),
+        "cta_label": "Ouvrir l'application",
+        "cta_url": "/web",
+        "secondary_cta_label": "Devenir testeur",
+        "secondary_cta_url": "/landing",
+        "highlights": [
+            {
+                "title": "Prix actualises",
+                "text": "Les donnees carburants sont mises a jour regulierement a partir des sources publiques disponibles.",
+            },
+            {
+                "title": "Calcul utile",
+                "text": "Le prix seul ne suffit pas : OptiPlein tient compte du trajet et de votre vehicule.",
+            },
+            {
+                "title": "Carte lisible",
+                "text": "Les stations et les prix sont affiches directement sur la carte pour comparer rapidement.",
+            },
+        ],
+        "sections": [
+            {
+                "title": "Une application pensee pour les conducteurs",
+                "paragraphs": [
+                    (
+                        "Comparer quelques centimes par litre peut sembler simple, "
+                        "mais le meilleur choix depend aussi de la distance, de la "
+                        "consommation, du niveau du reservoir et de la direction que "
+                        "vous prenez."
+                    ),
+                    (
+                        "OptiPlein regroupe ces informations dans une interface "
+                        "lisible afin de vous aider a choisir une station sans "
+                        "multiplier les recherches."
+                    ),
+                ],
+            },
+            {
+                "title": "Des fonctions gratuites pendant la phase de test",
+                "paragraphs": [
+                    (
+                        "Pendant la decouverte de l'application, la creation de "
+                        "compte permet d'acceder gratuitement aux fonctions avancees "
+                        "prevues pour les testeurs."
+                    )
+                ],
+                "bullets": [
+                    "comparaison des stations proches",
+                    "vehicules sauvegardes",
+                    "favoris",
+                    "historique des economies",
+                    "preparation de trajet avec ravitaillements conseilles",
+                ],
+            },
+        ],
+    },
+    "fonctionnement": {
+        "slug": "comment-fonctionne-optiplein",
+        "title": "Comment fonctionne OptiPlein ?",
+        "nav_title": "Fonctionnement",
+        "description": (
+            "Découvrez comment OptiPlein utilise les prix carburants, la "
+            "geolocalisation et les informations du vehicule pour calculer "
+            "les stations les plus rentables."
+        ),
+        "eyebrow": "Mode d'emploi",
+        "hero_title": "Comment fonctionne OptiPlein",
+        "lead": (
+            "L'application part d'une idee simple : le carburant le moins cher "
+            "n'est pas toujours le plein le plus rentable si le detour coute "
+            "plus cher que l'economie realisee."
+        ),
+        "sections": [
+            {
+                "title": "1. Selection du carburant",
+                "paragraphs": [
+                    (
+                        "L'utilisateur choisit son carburant. Les prix disponibles "
+                        "s'affichent ensuite automatiquement sur la carte autour "
+                        "de sa position ou du trajet prepare."
+                    )
+                ],
+            },
+            {
+                "title": "2. Prise en compte du vehicule",
+                "paragraphs": [
+                    (
+                        "Le nom du vehicule, la taille du reservoir et la "
+                        "consommation moyenne permettent d'affiner les calculs. "
+                        "Ces informations aident a estimer le cout reel d'un "
+                        "detour et l'interet d'un ravitaillement."
+                    )
+                ],
+            },
+            {
+                "title": "3. Comparaison des stations",
+                "paragraphs": [
+                    (
+                        "OptiPlein compare les stations une a une dans le rayon "
+                        "choisi. L'objectif est de faire ressortir la solution la "
+                        "plus logique, pas seulement le prix brut le plus bas."
+                    )
+                ],
+            },
+            {
+                "title": "4. Guidage et recalcul",
+                "paragraphs": [
+                    (
+                        "Lorsque l'utilisateur lance un itineraire, l'application "
+                        "affiche le trajet et peut proposer un recalcul si une "
+                        "station devient plus interessante ou si l'utilisateur "
+                        "s'ecarte du parcours."
+                    )
+                ],
+            },
+        ],
+    },
+    "pourquoi": {
+        "slug": "pourquoi-optiplein",
+        "title": "Pourquoi utiliser OptiPlein ?",
+        "nav_title": "Pourquoi",
+        "description": (
+            "OptiPlein aide a eviter les mauvais choix carburant en comparant "
+            "prix, distance, consommation et trajet reel."
+        ),
+        "eyebrow": "La promesse",
+        "hero_title": "Parce que le meilleur prix n'est pas toujours le meilleur choix.",
+        "lead": (
+            "Une station peut afficher un prix attractif, mais devenir moins "
+            "interessante si elle impose un detour trop long. OptiPlein met "
+            "les chiffres dans le bon ordre."
+        ),
+        "highlights": [
+            {
+                "title": "Moins d'hésitation",
+                "text": "Les prix sont visibles directement sur la carte.",
+            },
+            {
+                "title": "Moins de detours inutiles",
+                "text": "Le calcul tient compte de la distance et du vehicule.",
+            },
+            {
+                "title": "Plus de transparence",
+                "text": "Les donnees utilisees sont expliquees et mises a jour.",
+            },
+        ],
+        "sections": [
+            {
+                "title": "Un outil pour le quotidien",
+                "paragraphs": [
+                    (
+                        "OptiPlein s'adresse aux conducteurs qui veulent garder "
+                        "la main sur leur budget carburant sans passer plusieurs "
+                        "minutes a comparer des applications ou des panneaux de "
+                        "prix."
+                    )
+                ],
+            },
+            {
+                "title": "Une aide, pas une promesse magique",
+                "paragraphs": [
+                    (
+                        "Les resultats dependent des prix disponibles, de la "
+                        "position, du trafic, de la consommation renseignee et du "
+                        "trajet reel. L'application donne une estimation utile "
+                        "pour aider a decider, mais le conducteur reste toujours "
+                        "responsable de sa conduite et de ses choix."
+                    )
+                ],
+            },
+        ],
+    },
+    "a-propos": {
+        "slug": "a-propos",
+        "title": "A propos d'OptiPlein",
+        "nav_title": "A propos",
+        "description": (
+            "OptiPlein est un projet francais qui aide les conducteurs a mieux "
+            "comparer les stations-service et les prix des carburants."
+        ),
+        "eyebrow": "Le projet",
+        "hero_title": "A propos d'OptiPlein",
+        "lead": (
+            "OptiPlein est construit avec une ambition concrete : rendre la "
+            "comparaison carburant plus utile, plus lisible et plus proche de "
+            "la vraie decision du conducteur."
+        ),
+        "sections": [
+            {
+                "title": "Une application en phase de test",
+                "paragraphs": [
+                    (
+                        "L'application evolue avec les retours des premiers "
+                        "utilisateurs. Les tests permettent d'ameliorer la "
+                        "qualite de la carte, les calculs d'economie, le guidage "
+                        "et l'experience mobile."
+                    )
+                ],
+            },
+            {
+                "title": "Une approche progressive",
+                "paragraphs": [
+                    (
+                        "OptiPlein ajoute les fonctionnalites et les donnees etape "
+                        "par etape afin de garder une application claire et fiable. "
+                        "Les informations importantes pour l'utilisateur sont "
+                        "mises en avant avant les options plus avancees."
+                    )
+                ],
+            },
+        ],
+    },
+    "faq": {
+        "slug": "faq",
+        "title": "FAQ OptiPlein",
+        "nav_title": "FAQ",
+        "description": (
+            "Questions frequentes sur OptiPlein, les prix carburants, les "
+            "comptes, la geolocalisation, les favoris et les donnees utilisees."
+        ),
+        "eyebrow": "Questions frequentes",
+        "hero_title": "FAQ OptiPlein",
+        "lead": "Les reponses aux questions les plus utiles avant d'utiliser l'application.",
+        "faq_items": [
+            {
+                "question": "OptiPlein vend-il du carburant ?",
+                "answer": (
+                    "Non. OptiPlein est un service d'aide a la comparaison. "
+                    "L'application ne vend pas de carburant et ne fixe pas les prix."
+                ),
+            },
+            {
+                "question": "D'ou viennent les prix affiches ?",
+                "answer": (
+                    "Les prix proviennent des donnees publiques disponibles et "
+                    "peuvent etre completes par des corrections manuelles lorsque "
+                    "des informations de station doivent etre precisees."
+                ),
+            },
+            {
+                "question": "Pourquoi une station peut-elle etre indiquee comme plus rentable ?",
+                "answer": (
+                    "Le calcul ne regarde pas uniquement le prix au litre. Il "
+                    "prend aussi en compte la distance, la consommation renseignee "
+                    "et le cout du trajet pour eviter les detours qui annulent "
+                    "l'economie."
+                ),
+            },
+            {
+                "question": "La geolocalisation est-elle obligatoire ?",
+                "answer": (
+                    "Elle est necessaire pour afficher votre position, trouver les "
+                    "stations autour de vous et calculer un itineraire. Vous pouvez "
+                    "la refuser dans les reglages de votre appareil."
+                ),
+            },
+            {
+                "question": "Pourquoi creer un compte ?",
+                "answer": (
+                    "Le compte permet de sauvegarder les vehicules, favoris, "
+                    "preferences et historiques afin de les retrouver sur un autre "
+                    "telephone."
+                ),
+            },
+        ],
+    },
+    "contact": {
+        "slug": "contact",
+        "title": "Contact OptiPlein",
+        "nav_title": "Contact",
+        "description": (
+            "Contacter OptiPlein pour une question, un retour testeur, un "
+            "signalement ou une demande liee aux donnees personnelles."
+        ),
+        "eyebrow": "Nous contacter",
+        "hero_title": "Contact",
+        "lead": (
+            "Une question, un retour ou un probleme a signaler ? Le contact "
+            "principal d'OptiPlein est disponible par e-mail."
+        ),
+        "contact": True,
+        "sections": [
+            {
+                "title": "Demandes utiles",
+                "paragraphs": [
+                    (
+                        "Pour accelerer le traitement, indiquez votre appareil, "
+                        "la ville concernee, le carburant selectionne et une "
+                        "description precise du probleme lorsque c'est possible."
+                    )
+                ],
+                "bullets": [
+                    "question sur l'application",
+                    "probleme d'affichage ou de carte",
+                    "station mal renseignee",
+                    "demande relative au compte ou aux donnees personnelles",
+                ],
+            }
+        ],
+    },
+    "mentions": {
+        "slug": "mentions-legales",
+        "title": "Mentions legales OptiPlein",
+        "nav_title": "Mentions legales",
+        "description": (
+            "Mentions legales du site et de l'application OptiPlein : editeur, "
+            "contact, hebergement et responsabilites."
+        ),
+        "eyebrow": "Informations legales",
+        "hero_title": "Mentions legales",
+        "lead": "Les informations d'identification et de contact du service OptiPlein.",
+        "sections": [
+            {
+                "title": "Editeur du service",
+                "paragraphs": [
+                    (
+                        "OptiPlein est un service edite par J. Stoudji. Pour toute "
+                        "question relative au site, a l'application ou aux donnees, "
+                        "vous pouvez ecrire a optiplein5@gmail.com."
+                    )
+                ],
+            },
+            {
+                "title": "Hebergement",
+                "paragraphs": [
+                    (
+                        "Le service web est heberge par Render. Les noms de domaine "
+                        "et services techniques associes peuvent etre fournis par "
+                        "les prestataires configures pour optiplein.fr."
+                    )
+                ],
+            },
+            {
+                "title": "Responsabilite",
+                "paragraphs": [
+                    (
+                        "OptiPlein fournit une aide a la decision a partir des "
+                        "donnees disponibles. Les prix, disponibilites, trajets et "
+                        "conditions de circulation peuvent varier. Le conducteur "
+                        "reste responsable de sa conduite, de ses arrets et du "
+                        "respect du code de la route."
+                    )
+                ],
+            },
+        ],
+    },
+    "confidentialite": {
+        "slug": "confidentialite",
+        "title": "Politique de confidentialite OptiPlein",
+        "nav_title": "Confidentialite",
+        "description": (
+            "Politique de confidentialite OptiPlein : geolocalisation, compte, "
+            "vehicules, favoris, historique et droits des utilisateurs."
+        ),
+        "eyebrow": "Donnees personnelles",
+        "hero_title": "Politique de confidentialite",
+        "lead": (
+            "Cette page explique quelles donnees sont utilisees par OptiPlein "
+            "et pour quelles finalites."
+        ),
+        "updated": "24 juillet 2026",
+        "sections": [
+            {
+                "title": "Geolocalisation",
+                "paragraphs": [
+                    (
+                        "Avec l'autorisation de l'utilisateur, OptiPlein utilise "
+                        "la position precise de l'appareil pour afficher la carte, "
+                        "rechercher les stations proches, estimer les economies et "
+                        "calculer un itineraire."
+                    )
+                ],
+            },
+            {
+                "title": "Compte et vehicules",
+                "paragraphs": [
+                    (
+                        "Lorsqu'un compte est cree, OptiPlein peut conserver "
+                        "l'adresse e-mail, les vehicules enregistres, les favoris, "
+                        "le type de compte, l'historique d'economies et les "
+                        "preferences utiles a l'experience."
+                    )
+                ],
+            },
+            {
+                "title": "Services techniques",
+                "paragraphs": [
+                    (
+                        "La carte, le calcul d'itineraire, l'hebergement et les "
+                        "outils de mesure ou de publicite peuvent recevoir des "
+                        "informations techniques strictement necessaires a leur "
+                        "fonctionnement, comme l'adresse IP ou les donnees utiles "
+                        "a la requete demandee."
+                    )
+                ],
+            },
+            {
+                "title": "Vos droits",
+                "paragraphs": [
+                    (
+                        "Vous pouvez demander l'acces, la rectification ou la "
+                        "suppression de vos informations en ecrivant a "
+                        "optiplein5@gmail.com. Une page dediee a la suppression "
+                        "de compte est egalement disponible."
+                    )
+                ],
+            },
+        ],
+    },
+    "conditions": {
+        "slug": "conditions-utilisation",
+        "title": "Conditions d'utilisation OptiPlein",
+        "nav_title": "Conditions",
+        "description": (
+            "Conditions d'utilisation du site et de l'application OptiPlein : "
+            "service, compte, responsabilites et limites."
+        ),
+        "eyebrow": "Cadre d'utilisation",
+        "hero_title": "Conditions d'utilisation",
+        "lead": (
+            "Ces conditions encadrent l'utilisation du site, de l'application "
+            "et des services OptiPlein."
+        ),
+        "updated": "24 juillet 2026",
+        "sections": [
+            {
+                "title": "Objet du service",
+                "paragraphs": [
+                    (
+                        "OptiPlein aide les utilisateurs a comparer des stations, "
+                        "des prix de carburant et des trajets. Le service est une "
+                        "aide a la decision et ne remplace pas le jugement du "
+                        "conducteur."
+                    )
+                ],
+            },
+            {
+                "title": "Utilisation responsable",
+                "paragraphs": [
+                    (
+                        "L'application ne doit pas etre manipulee de maniere "
+                        "dangereuse pendant la conduite. Toute consultation ou "
+                        "modification doit etre effectuee dans le respect des "
+                        "regles de securite routiere."
+                    )
+                ],
+            },
+            {
+                "title": "Compte utilisateur",
+                "paragraphs": [
+                    (
+                        "L'utilisateur est responsable de l'exactitude des "
+                        "informations renseignees, notamment les caracteristiques "
+                        "du vehicule. Ces informations influencent les calculs "
+                        "d'economie."
+                    )
+                ],
+            },
+            {
+                "title": "Evolution du service",
+                "paragraphs": [
+                    (
+                        "OptiPlein peut evoluer, corriger ou suspendre certaines "
+                        "fonctionnalites afin d'ameliorer la fiabilite, la securite "
+                        "ou l'experience utilisateur."
+                    )
+                ],
+            },
+        ],
+    },
+    "cookies": {
+        "slug": "politique-cookies",
+        "title": "Politique des cookies OptiPlein",
+        "nav_title": "Cookies",
+        "description": (
+            "Politique des cookies OptiPlein : stockage local, compte, "
+            "preferences, publicite et services tiers."
+        ),
+        "eyebrow": "Cookies et stockage local",
+        "hero_title": "Politique des cookies",
+        "lead": (
+            "OptiPlein utilise le stockage local et peut utiliser des cookies "
+            "ou technologies similaires pour faire fonctionner l'application et "
+            "les services associes."
+        ),
+        "updated": "24 juillet 2026",
+        "sections": [
+            {
+                "title": "Stockage necessaire",
+                "paragraphs": [
+                    (
+                        "Certaines informations sont stockees localement pour "
+                        "conserver les preferences, les vehicules, les favoris ou "
+                        "la session du compte. Ce stockage est utile au bon "
+                        "fonctionnement de l'application."
+                    )
+                ],
+            },
+            {
+                "title": "Publicite",
+                "paragraphs": [
+                    (
+                        "Lorsque Google AdSense est active, Google peut utiliser "
+                        "des cookies ou technologies similaires pour mesurer et "
+                        "diffuser les annonces selon ses propres regles."
+                    )
+                ],
+            },
+            {
+                "title": "Gestion",
+                "paragraphs": [
+                    (
+                        "Vous pouvez supprimer les cookies et donnees de site via "
+                        "les reglages de votre navigateur. Sur mobile, certaines "
+                        "autorisations se gerent aussi depuis les reglages du "
+                        "telephone."
+                    )
+                ],
+            },
+        ],
+    },
+}
+
+
+def chemin_page_editoriale(identifiant):
+
+    page = PAGES_EDITORIALES[identifiant]
+    slug = page.get("slug", "")
+
+    return "/" + slug if slug else "/"
+
+
+def contexte_page_editoriale(request, identifiant):
+
+    base_url = url_base_application(request)
+    chemin = chemin_page_editoriale(identifiant)
+    page = dict(PAGES_EDITORIALES[identifiant])
+    page["path"] = chemin
+
+    return {
+        "page": page,
+        "active_page": identifiant,
+        "menu_pages": MENU_PAGES_EDITORIALES,
+        "footer_pages": [
+            ("a-propos", "A propos", "/a-propos"),
+            ("contact", "Contact", "/contact"),
+            ("mentions", "Mentions legales", "/mentions-legales"),
+            ("confidentialite", "Confidentialite", "/confidentialite"),
+            ("conditions", "Conditions d'utilisation", "/conditions-utilisation"),
+            ("cookies", "Cookies", "/politique-cookies"),
+        ],
+        "canonical_url": base_url + chemin,
+        "base_url": base_url,
+        "og_image": base_url + "/static/logo.png",
+        "adsense_client": ADSENSE_CLIENT,
+    }
+
+
+def rendre_page_editoriale(request, identifiant):
+
+    if identifiant not in PAGES_EDITORIALES:
+        raise HTTPException(status_code=404, detail="Page introuvable.")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="editorial.html",
+        context=contexte_page_editoriale(request, identifiant),
+    )
+
+
+@app.get("/")
+def accueil_editorial(request: Request):
+
+    return rendre_page_editoriale(request, "accueil")
+
+
+@app.get("/accueil")
+def accueil_editorial_alias(request: Request):
+
+    return rendre_page_editoriale(request, "accueil")
+
+
+@app.get("/comment-fonctionne-optiplein")
+def page_fonctionnement(request: Request):
+
+    return rendre_page_editoriale(request, "fonctionnement")
+
+
+@app.get("/pourquoi-optiplein")
+def page_pourquoi(request: Request):
+
+    return rendre_page_editoriale(request, "pourquoi")
+
+
+@app.get("/a-propos")
+def page_a_propos(request: Request):
+
+    return rendre_page_editoriale(request, "a-propos")
+
+
+@app.get("/faq")
+def page_faq(request: Request):
+
+    return rendre_page_editoriale(request, "faq")
+
+
+@app.get("/contact")
+def page_contact(request: Request):
+
+    return rendre_page_editoriale(request, "contact")
+
+
+@app.get("/mentions-legales")
+def page_mentions_legales(request: Request):
+
+    return rendre_page_editoriale(request, "mentions")
+
+
+@app.get("/conditions-utilisation")
+def page_conditions_utilisation(request: Request):
+
+    return rendre_page_editoriale(request, "conditions")
+
+
+@app.get("/conditions")
+def page_conditions_alias(request: Request):
+
+    return RedirectResponse(url="/conditions-utilisation", status_code=308)
+
+
+@app.get("/politique-cookies")
+def page_cookies(request: Request):
+
+    return rendre_page_editoriale(request, "cookies")
+
+
+@app.get("/cookies")
+def page_cookies_alias():
+
+    return RedirectResponse(url="/politique-cookies", status_code=308)
 
 
 @app.get("/landing")
@@ -2082,11 +3189,13 @@ def inscrire_testeur(inscription: InscriptionTesteur, request: Request):
 @app.get("/confidentialite")
 def confidentialite(request: Request):
 
-    return templates.TemplateResponse(
-        request=request,
-        name="confidentialite.html",
-        context={}
-    )
+    return rendre_page_editoriale(request, "confidentialite")
+
+
+@app.get("/politique-de-confidentialite")
+def confidentialite_alias():
+
+    return RedirectResponse(url="/confidentialite", status_code=308)
 
 
 @app.get("/suppression-compte")
@@ -2498,6 +3607,18 @@ def creer_compte(
         f"?token={jeton_validation}"
     )
     maintenant = datetime.now().astimezone().isoformat()
+    donnees_initiales = utilisateur_existant.get(
+        "data",
+        limiter_donnees_compte(DonneesCompte()),
+    ) if utilisateur_existant else limiter_donnees_compte(DonneesCompte())
+    donnees_initiales["profil"] = profil_compte_nettoye(
+        donnees_initiales.get("profil", {}),
+        email,
+    )
+    donnees_initiales["securite"] = securite_compte_nettoyee(
+        donnees_initiales.get("securite", {}),
+        {"email_verified": False},
+    )
 
     utilisateurs[email] = {
         "email": email,
@@ -2512,12 +3633,7 @@ def creer_compte(
         "email_verified": False,
         "email_verification_hash": empreinte_validation,
         "email_verification_expires_at": expiration_validation,
-        "data": utilisateur_existant.get(
-            "data",
-            limiter_donnees_compte(DonneesCompte()),
-        ) if utilisateur_existant else limiter_donnees_compte(
-            DonneesCompte()
-        ),
+        "data": donnees_initiales,
     }
 
     try:
@@ -2573,12 +3689,17 @@ def connecter_compte(identifiants: CompteIdentifiants):
             ),
         )
 
+    donnees = synchroniser_meta_securite(utilisateur)
+    donnees["securite"]["derniere_connexion"] = date_iso_maintenant()
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
+
     return {
         "ok": True,
         "email": email,
         "token": creer_session(email),
         "donnees": donnees_compte_premium_test(
-            utilisateur.get("data", {})
+            donnees
         ),
     }
 
@@ -2594,7 +3715,7 @@ def valider_email_compte(token: str, request: Request):
 
     for email, utilisateur in utilisateurs.items():
         if not hmac.compare_digest(
-            utilisateur.get("email_verification_hash", ""),
+            str(utilisateur.get("email_verification_hash") or ""),
             empreinte,
         ):
             continue
@@ -2613,7 +3734,8 @@ def valider_email_compte(token: str, request: Request):
         utilisateur["email_verified"] = True
         utilisateur.pop("email_verification_hash", None)
         utilisateur.pop("email_verification_expires_at", None)
-        utilisateur["updated_at"] = datetime.now().astimezone().isoformat()
+        utilisateur["updated_at"] = date_iso_maintenant()
+        synchroniser_meta_securite(utilisateur)
         enregistrer_comptes_utilisateurs(comptes)
 
         try:
@@ -2640,21 +3762,14 @@ def valider_email_compte(token: str, request: Request):
 @app.get("/api/compte/donnees")
 def lire_donnees_compte(request: Request):
 
-    email = email_depuis_requete(request)
-    comptes = charger_comptes_utilisateurs()
-    utilisateur = comptes.get("users", {}).get(email)
-
-    if not utilisateur:
-        raise HTTPException(
-            status_code=404,
-            detail="Compte introuvable.",
-        )
+    email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
 
     return {
         "ok": True,
         "email": email,
         "donnees": donnees_compte_premium_test(
-            utilisateur.get("data", {})
+            donnees
         ),
     }
 
@@ -2665,20 +3780,20 @@ def sauvegarder_donnees_compte(
     request: Request,
 ):
 
-    email = email_depuis_requete(request)
-    comptes = charger_comptes_utilisateurs()
-    utilisateur = comptes.get("users", {}).get(email)
-
-    if not utilisateur:
-        raise HTTPException(
-            status_code=404,
-            detail="Compte introuvable.",
-        )
+    email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
 
     utilisateur["data"] = limiter_donnees_compte(
         sauvegarde.donnees
     )
-    utilisateur["updated_at"] = datetime.now().astimezone().isoformat()
+    utilisateur["data"]["profil"] = profil_compte_nettoye(
+        utilisateur["data"].get("profil", {}),
+        email,
+    )
+    utilisateur["data"]["securite"] = securite_compte_nettoyee(
+        utilisateur["data"].get("securite", {}),
+        utilisateur,
+    )
+    utilisateur["updated_at"] = date_iso_maintenant()
     enregistrer_comptes_utilisateurs(comptes)
 
     return {
@@ -2687,6 +3802,374 @@ def sauvegarder_donnees_compte(
         "donnees": donnees_compte_premium_test(
             utilisateur.get("data", {})
         ),
+    }
+
+
+@app.get("/api/compte/profil")
+def lire_profil_compte(request: Request):
+
+    email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+
+    return {
+        "ok": True,
+        "email": email,
+        "profil": donnees.get("profil", {}),
+        "securite": donnees.get("securite", {}),
+    }
+
+
+@app.patch("/api/compte/profil")
+def modifier_profil_compte(
+    profil: MiseAJourProfilCompte,
+    request: Request,
+):
+
+    email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+    donnees["profil"] = profil_compte_nettoye(
+        profil.model_dump(),
+        email,
+    )
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "profil": donnees["profil"],
+        "updated_at": utilisateur["updated_at"],
+    }
+
+
+@app.patch("/api/compte/preferences")
+def modifier_preferences_compte(
+    preferences: MiseAJourPreferencesCompte,
+    request: Request,
+):
+
+    _email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+    donnees["preferences"] = preferences_compte_nettoye(
+        preferences.model_dump(),
+        preferences.rayon_stations,
+    )
+    donnees["rayon_stations"] = donnees["preferences"]["rayon_stations"]
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "preferences": donnees["preferences"],
+        "updated_at": utilisateur["updated_at"],
+    }
+
+
+@app.get("/api/compte/vehicules")
+def lire_vehicules_compte(request: Request):
+
+    _email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+
+    return {
+        "ok": True,
+        "vehicules": donnees.get("vehicules", []),
+        "vehicule_actif": donnees.get("vehicule_actif", ""),
+        "vehicule_principal": donnees.get("vehicule_principal", ""),
+    }
+
+
+@app.get("/api/compte/profils-vehicules")
+def lire_profils_vehicules_compte():
+
+    return {
+        "ok": True,
+        "profils": PROFILS_VEHICULES,
+    }
+
+
+@app.put("/api/compte/vehicules")
+def remplacer_vehicules_compte(
+    vehicules: ListeVehiculesCompte,
+    request: Request,
+):
+
+    _email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+    vehicules_limites = vehicules_compte_nettoyes(vehicules.vehicules)
+    donnees["vehicules"] = vehicules_limites
+    ids = ids_vehicules(donnees)
+    donnees["vehicule_actif"] = (
+        vehicules.vehicule_actif
+        if vehicules.vehicule_actif in ids
+        else premier_id_vehicule(donnees)
+    )
+    donnees["vehicule_principal"] = (
+        vehicules.vehicule_principal
+        if vehicules.vehicule_principal in ids
+        else donnees["vehicule_actif"]
+    )
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "vehicules": donnees["vehicules"],
+        "vehicule_actif": donnees["vehicule_actif"],
+        "vehicule_principal": donnees["vehicule_principal"],
+        "updated_at": utilisateur["updated_at"],
+    }
+
+
+@app.put("/api/compte/vehicule-principal")
+def definir_vehicule_principal_compte(
+    choix: ChoixVehiculePrincipalCompte,
+    request: Request,
+):
+
+    _email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+
+    if choix.vehicule_id not in ids_vehicules(donnees):
+        raise HTTPException(
+            status_code=404,
+            detail="Vehicule introuvable.",
+        )
+
+    donnees["vehicule_principal"] = choix.vehicule_id
+    donnees["vehicule_actif"] = choix.vehicule_id
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "vehicule_principal": choix.vehicule_id,
+        "updated_at": utilisateur["updated_at"],
+    }
+
+
+@app.get("/api/compte/favoris")
+def lire_favoris_compte(request: Request):
+
+    _email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+
+    return {
+        "ok": True,
+        "favoris": donnees.get("favoris", []),
+    }
+
+
+@app.put("/api/compte/favoris")
+def remplacer_favoris_compte(
+    favoris: ListeFavorisCompte,
+    request: Request,
+):
+
+    _email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+    donnees["favoris"] = favoris.favoris[:500]
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "favoris": donnees["favoris"],
+        "updated_at": utilisateur["updated_at"],
+    }
+
+
+@app.get("/api/compte/historique")
+def lire_historique_compte(request: Request):
+
+    _email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+
+    return {
+        "ok": True,
+        "historique_economies": donnees.get("historique_economies", []),
+    }
+
+
+@app.delete("/api/compte/historique")
+def vider_historique_compte(request: Request):
+
+    _email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+    donnees["historique_economies"] = []
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "historique_economies": [],
+        "updated_at": utilisateur["updated_at"],
+    }
+
+
+@app.get("/api/compte/securite")
+def lire_securite_compte(request: Request):
+
+    email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+
+    return {
+        "ok": True,
+        "email": email,
+        "email_verified": bool(utilisateur.get("email_verified", True)),
+        "securite": donnees.get("securite", {}),
+    }
+
+
+@app.post("/api/compte/mot-de-passe")
+def changer_mot_de_passe_compte(
+    changement: ChangementMotDePasseCompte,
+    request: Request,
+):
+
+    _email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+
+    if not verifier_mot_de_passe(
+        changement.ancien_mot_de_passe,
+        utilisateur.get("password", {}),
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Mot de passe actuel incorrect.",
+        )
+
+    maintenant = date_iso_maintenant()
+    utilisateur["password"] = hasher_mot_de_passe(
+        changement.nouveau_mot_de_passe
+    )
+    utilisateur["updated_at"] = maintenant
+    donnees = synchroniser_meta_securite(utilisateur)
+    donnees["securite"]["dernier_changement_mot_de_passe"] = maintenant
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "updated_at": maintenant,
+    }
+
+
+@app.post("/api/compte/mot-de-passe/oublie")
+def demander_recuperation_mot_de_passe(
+    demande: DemandeRecuperationMotDePasse,
+    request: Request,
+):
+
+    email = normaliser_email(demande.email)
+    comptes = charger_comptes_utilisateurs()
+    utilisateur = comptes.get("users", {}).get(email)
+
+    if utilisateur and utilisateur.get("email_verified", True):
+        jeton, empreinte, expiration = creer_jeton_recuperation_mot_de_passe()
+        utilisateur["password_reset_hash"] = empreinte
+        utilisateur["password_reset_expires_at"] = expiration
+        utilisateur["updated_at"] = date_iso_maintenant()
+        enregistrer_comptes_utilisateurs(comptes)
+        base_url = url_base_application(request)
+        lien = f"{base_url}/web?reset_token={jeton}"
+
+        try:
+            envoyer_email_recuperation_mot_de_passe(email, lien, base_url)
+        except Exception as erreur:
+            logger.exception(
+                "Impossible d’envoyer l’e-mail de récupération : %s",
+                erreur,
+            )
+            raise HTTPException(
+                status_code=503,
+                detail="L’e-mail de récupération n’a pas pu être envoyé.",
+            ) from erreur
+
+    return {
+        "ok": True,
+        "message": (
+            "Si un compte valide existe avec cette adresse, un lien de "
+            "récupération vient d’être envoyé."
+        ),
+    }
+
+
+@app.post("/api/compte/mot-de-passe/reinitialisation")
+def reinitialiser_mot_de_passe(
+    reinitialisation: ReinitialisationMotDePasse,
+):
+
+    empreinte = hashlib.sha256(
+        reinitialisation.token.encode("utf-8")
+    ).hexdigest()
+    comptes = charger_comptes_utilisateurs()
+
+    for _email, utilisateur in comptes.get("users", {}).items():
+        if not hmac.compare_digest(
+            str(utilisateur.get("password_reset_hash") or ""),
+            empreinte,
+        ):
+            continue
+
+        if time.time() > float(
+            utilisateur.get("password_reset_expires_at", 0)
+        ):
+            raise HTTPException(
+                status_code=410,
+                detail="Le lien de récupération a expiré.",
+            )
+
+        maintenant = date_iso_maintenant()
+        utilisateur["password"] = hasher_mot_de_passe(
+            reinitialisation.nouveau_mot_de_passe
+        )
+        utilisateur.pop("password_reset_hash", None)
+        utilisateur.pop("password_reset_expires_at", None)
+        utilisateur["updated_at"] = maintenant
+        donnees = synchroniser_meta_securite(utilisateur)
+        donnees["securite"]["dernier_changement_mot_de_passe"] = maintenant
+        enregistrer_comptes_utilisateurs(comptes)
+
+        return {"ok": True}
+
+    raise HTTPException(
+        status_code=400,
+        detail="Lien de récupération invalide.",
+    )
+
+
+@app.post("/api/compte/renvoyer-validation-email")
+def renvoyer_validation_email_compte(
+    demande: RenvoiValidationEmailCompte,
+    request: Request,
+):
+
+    email = normaliser_email(demande.email)
+    comptes = charger_comptes_utilisateurs()
+    utilisateur = comptes.get("users", {}).get(email)
+
+    if not utilisateur:
+        return {"ok": True}
+
+    if utilisateur.get("email_verified", True):
+        return {"ok": True, "email_verified": True}
+
+    jeton_validation, empreinte_validation, expiration_validation = (
+        creer_jeton_validation_email()
+    )
+    utilisateur["email_verification_hash"] = empreinte_validation
+    utilisateur["email_verification_expires_at"] = expiration_validation
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    base_url = url_base_application(request)
+    lien_validation = (
+        f"{base_url}/api/compte/validation-email"
+        f"?token={jeton_validation}"
+    )
+    envoyer_email_validation_compte(email, lien_validation, base_url)
+
+    return {
+        "ok": True,
+        "verification_required": True,
     }
 
 
@@ -2875,6 +4358,57 @@ def ads_txt():
         + identifiant_editeur
         + ", DIRECT, f08c47fec0942fa0\n",
         media_type="text/plain",
+    )
+
+
+@app.get("/robots.txt")
+def robots_txt(request: Request):
+
+    base_url = url_base_application(request)
+
+    return PlainTextResponse(
+        "User-agent: *\n"
+        "Allow: /\n"
+        f"Sitemap: {base_url}/sitemap.xml\n",
+        media_type="text/plain",
+    )
+
+
+@app.get("/sitemap.xml")
+def sitemap_xml(request: Request):
+
+    base_url = url_base_application(request)
+    chemins = []
+
+    for identifiant in PAGES_EDITORIALES:
+        chemin = chemin_page_editoriale(identifiant)
+        if chemin not in chemins:
+            chemins.append(chemin)
+
+    chemins.extend(
+        [
+            "/landing",
+            "/web",
+            "/suppression-compte",
+        ]
+    )
+
+    date_jour = datetime.now().date().isoformat()
+    entrees = "\n".join(
+        "    <url>\n"
+        f"        <loc>{base_url}{chemin}</loc>\n"
+        f"        <lastmod>{date_jour}</lastmod>\n"
+        "        <changefreq>weekly</changefreq>\n"
+        "    </url>"
+        for chemin in chemins
+    )
+
+    return Response(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
+        f"{entrees}\n"
+        "</urlset>\n",
+        media_type="application/xml",
     )
 
 
