@@ -1,9 +1,14 @@
+databases:
+  - name: optiplein-postgres
+    databaseName: optiplein
+    user: optiplein
+
 services:
   - type: web
     name: carburant-app
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT
     disk:
       name: optiplein-data
       mountPath: /var/data
@@ -11,6 +16,10 @@ services:
     envVars:
       - key: OPTIPLEIN_DATA_DIR
         value: /var/data
+      - key: DATABASE_URL
+        fromDatabase:
+          name: optiplein-postgres
+          property: connectionString
       - key: OPTIPLEIN_BACKGROUND_UPDATE
         value: "true"
       - key: SMTP_HOST

@@ -1284,6 +1284,13 @@ body{
     box-shadow:0 0 0 3px rgba(20,159,56,0.14);
 }
 
+.vehicle-help{
+    margin:-4px 0 2px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.35;
+}
+
 .reservoir-gauge{
     display:grid;
     gap:8px;
@@ -2964,6 +2971,19 @@ body{
                                 placeholder="Nom du v&eacute;hicule"
                             >
 
+                            <select
+                                class="vehicle-input"
+                                id="vehicule-profil"
+                                onchange="actualiserProfilVehicule()"
+                            >
+                                <option value="essence">Essence</option>
+                                <option value="diesel">Diesel</option>
+                                <option value="e85">E85</option>
+                                <option value="gpl">GPL</option>
+                                <option value="hybride">Hybride</option>
+                                <option value="electrique">&Eacute;lectrique</option>
+                            </select>
+
                             <input
                                 class="vehicle-input"
                                 id="vehicule-reservoir"
@@ -2985,6 +3005,30 @@ body{
                                 required
                                 placeholder="Consommation moyenne (L/100 km)"
                             >
+
+                            <input
+                                class="vehicle-input"
+                                id="vehicule-autonomie"
+                                type="number"
+                                min="1"
+                                step="1"
+                                inputmode="decimal"
+                                placeholder="Autonomie estim&eacute;e (km)"
+                            >
+
+                            <input
+                                class="vehicle-input"
+                                id="vehicule-parametres"
+                                type="text"
+                                maxlength="160"
+                                autocomplete="off"
+                                placeholder="Param&egrave;tres personnalis&eacute;s"
+                            >
+
+                            <p
+                                class="vehicle-help"
+                                id="vehicule-profil-aide"
+                            ></p>
                         </div>
 
                         <button
@@ -8247,9 +8291,56 @@ controlesAutomatiques.forEach(
 
 var champsVehicule = [
     "vehicule-nom",
+    "vehicule-profil",
     "vehicule-reservoir",
-    "vehicule-conso"
+    "vehicule-conso",
+    "vehicule-autonomie",
+    "vehicule-parametres"
 ];
+var profilsVehicule = {
+    essence: {
+        libelle: "Essence",
+        reservoir: "Taille du r\u00e9servoir (L)",
+        conso: "Consommation moyenne (L/100 km)",
+        autonomie: "Autonomie estim\u00e9e (km)",
+        aide: "Profil carburant classique : SP95, SP98 ou E10."
+    },
+    diesel: {
+        libelle: "Diesel",
+        reservoir: "Taille du r\u00e9servoir (L)",
+        conso: "Consommation moyenne (L/100 km)",
+        autonomie: "Autonomie estim\u00e9e (km)",
+        aide: "Profil diesel pour gazole et trajets longue distance."
+    },
+    e85: {
+        libelle: "E85",
+        reservoir: "Taille du r\u00e9servoir (L)",
+        conso: "Consommation moyenne E85 (L/100 km)",
+        autonomie: "Autonomie estim\u00e9e (km)",
+        aide: "Profil bio\u00e9thanol : indiquez votre consommation r\u00e9elle en E85."
+    },
+    gpl: {
+        libelle: "GPL",
+        reservoir: "Capacit\u00e9 utile GPL (L)",
+        conso: "Consommation GPL (L/100 km)",
+        autonomie: "Autonomie GPL estim\u00e9e (km)",
+        aide: "Profil GPL : utilisez la capacit\u00e9 utile du r\u00e9servoir GPL."
+    },
+    hybride: {
+        libelle: "Hybride",
+        reservoir: "Taille du r\u00e9servoir (L)",
+        conso: "Consommation mixte (L/100 km)",
+        autonomie: "Autonomie totale estim\u00e9e (km)",
+        aide: "Profil hybride : renseignez votre consommation moyenne observ\u00e9e."
+    },
+    electrique: {
+        libelle: "\u00c9lectrique",
+        reservoir: "Capacit\u00e9 batterie (kWh)",
+        conso: "Consommation moyenne (kWh/100 km)",
+        autonomie: "Autonomie estim\u00e9e (km)",
+        aide: "Profil \u00e9lectrique sauvegard\u00e9 pour le compte. Les calculs carburant restent bas\u00e9s sur les stations-service."
+    }
+};
 var editeurVehiculeOuvert = false;
 var editionVehiculeExistant = false;
 var economiePrecedentePourSeuil = null;
@@ -8283,6 +8374,120 @@ function creerIdVehicule() {
 
 }
 
+function profilVehiculeValide(profil) {
+
+    return profilsVehicule[profil] ? profil : "essence";
+
+}
+
+function libelleProfilVehicule(profil) {
+
+    return profilsVehicule[profilVehiculeValide(profil)].libelle;
+
+}
+
+function uniteCapaciteVehicule(profil) {
+
+    return profilVehiculeValide(profil) === "electrique" ? " kWh" : " L";
+
+}
+
+function uniteConsommationVehicule(profil) {
+
+    return profilVehiculeValide(profil) === "electrique"
+        ? " kWh/100 km"
+        : " L/100 km";
+
+}
+
+function calculerAutonomieVehicule(capacite, consommation) {
+
+    capacite = Number(String(capacite || "").replace(",", "."));
+    consommation = Number(String(consommation || "").replace(",", "."));
+
+    if (!capacite || !consommation) {
+        return "";
+    }
+
+    return String(Math.round(capacite / consommation * 100));
+
+}
+
+function actualiserProfilVehicule() {
+
+    var champProfil = document.getElementById("vehicule-profil");
+    var champReservoir = document.getElementById("vehicule-reservoir");
+    var champConso = document.getElementById("vehicule-conso");
+    var champAutonomie = document.getElementById("vehicule-autonomie");
+    var aide = document.getElementById("vehicule-profil-aide");
+    var profil = profilVehiculeValide(champProfil ? champProfil.value : "");
+    var configuration = profilsVehicule[profil];
+
+    if (champProfil) {
+        champProfil.value = profil;
+    }
+
+    if (champReservoir) {
+        champReservoir.placeholder = configuration.reservoir;
+    }
+
+    if (champConso) {
+        champConso.placeholder = configuration.conso;
+    }
+
+    if (champAutonomie) {
+        champAutonomie.placeholder = configuration.autonomie;
+        if (!champAutonomie.value && champReservoir && champConso) {
+            champAutonomie.value = calculerAutonomieVehicule(
+                champReservoir.value,
+                champConso.value
+            );
+        }
+    }
+
+    if (aide) {
+        aide.textContent = configuration.aide;
+    }
+
+}
+
+window.actualiserProfilVehicule = actualiserProfilVehicule;
+
+function actualiserAutonomieVehiculeDepuisChamps() {
+
+    var champReservoir = document.getElementById("vehicule-reservoir");
+    var champConso = document.getElementById("vehicule-conso");
+    var champAutonomie = document.getElementById("vehicule-autonomie");
+
+    if (!champReservoir || !champConso || !champAutonomie) {
+        return;
+    }
+
+    champAutonomie.value = calculerAutonomieVehicule(
+        champReservoir.value,
+        champConso.value
+    );
+
+}
+
+window.addEventListener(
+    "load",
+    function() {
+        ["vehicule-reservoir", "vehicule-conso"].forEach(
+            function(champId) {
+                var champ = document.getElementById(champId);
+                if (champ) {
+                    champ.addEventListener(
+                        "input",
+                        actualiserAutonomieVehiculeDepuisChamps
+                    );
+                }
+            }
+        );
+        actualiserProfilVehicule();
+    }
+);
+
 function lireVehicules() {
 
     var vehicules = [];
@@ -8311,8 +8516,14 @@ function lireVehicules() {
                 {
                     id: creerIdVehicule(),
                     nom: ancienNom || "Mon v\u00e9hicule",
+                    profil: "essence",
                     reservoir: ancienReservoir,
                     conso: ancienneConso,
+                    autonomie: calculerAutonomieVehicule(
+                        ancienReservoir,
+                        ancienneConso
+                    ),
+                    parametres: "",
                     jauge: Number(localStorage.getItem("vehicule-jauge")) || 50
                 }
             ];
@@ -8321,6 +8532,18 @@ function lireVehicules() {
             programmerSauvegardeCompte();
         }
     }
+
+    vehicules = vehicules.map(
+        function(vehicule) {
+            vehicule.profil = profilVehiculeValide(
+                vehicule.profil || vehicule.motorisation || "essence"
+            );
+            vehicule.autonomie = vehicule.autonomie
+                || calculerAutonomieVehicule(vehicule.reservoir, vehicule.conso);
+            vehicule.parametres = vehicule.parametres || "";
+            return vehicule;
+        }
+    );
 
     return vehicules;
 
@@ -8356,8 +8579,11 @@ function synchroniserAnciennesClesVehicule(vehicule) {
     }
 
     localStorage.setItem("vehicule-nom", vehicule.nom || "");
+    localStorage.setItem("vehicule-profil", profilVehiculeValide(vehicule.profil));
     localStorage.setItem("vehicule-reservoir", vehicule.reservoir || "");
     localStorage.setItem("vehicule-conso", vehicule.conso || "");
+    localStorage.setItem("vehicule-autonomie", vehicule.autonomie || "");
+    localStorage.setItem("vehicule-parametres", vehicule.parametres || "");
     localStorage.setItem("vehicule-jauge", String(vehicule.jauge || 50));
     programmerSauvegardeCompte();
 
@@ -8761,7 +8987,7 @@ window.nouveauVehicule = function() {
         function(champId) {
             var champ = document.getElementById(champId);
             if (champ) {
-                champ.value = "";
+                champ.value = champId === "vehicule-profil" ? "essence" : "";
             }
         }
     );
@@ -8771,6 +8997,7 @@ window.nouveauVehicule = function() {
         jauge.value = "50";
     }
     actualiserJaugeReservoir();
+    actualiserProfilVehicule();
     afficherEditeurVehicule(false);
     actualiserListeVehicules();
 
@@ -8808,8 +9035,14 @@ function actualiserListeVehicules() {
             nom.textContent = vehicule.nom || "V\u00e9hicule";
             meta.className = "vehicle-list-meta";
             meta.textContent = [
-                vehicule.reservoir ? vehicule.reservoir + " L" : "",
-                vehicule.conso ? vehicule.conso + " L/100 km" : ""
+                libelleProfilVehicule(vehicule.profil),
+                vehicule.reservoir
+                    ? vehicule.reservoir + uniteCapaciteVehicule(vehicule.profil)
+                    : "",
+                vehicule.conso
+                    ? vehicule.conso + uniteConsommationVehicule(vehicule.profil)
+                    : "",
+                vehicule.autonomie ? vehicule.autonomie + " km" : ""
             ].filter(Boolean).join(" · ");
             icone.className = "vehicle-edit-icon";
             icone.setAttribute("aria-hidden", "true");
@@ -9915,11 +10148,24 @@ window.enregistrerVehicule = function(event) {
         }
     );
     var jauge = document.getElementById("vehicule-jauge");
+    var profil = profilVehiculeValide(
+        document.getElementById("vehicule-profil").value
+    );
+    var autonomie = (
+        document.getElementById("vehicule-autonomie").value.trim()
+        || calculerAutonomieVehicule(
+            document.getElementById("vehicule-reservoir").value,
+            document.getElementById("vehicule-conso").value
+        )
+    );
     var vehicule = {
         id: indexActif >= 0 ? vehicules[indexActif].id : creerIdVehicule(),
         nom: document.getElementById("vehicule-nom").value.trim(),
+        profil: profil,
         reservoir: document.getElementById("vehicule-reservoir").value.trim(),
         conso: document.getElementById("vehicule-conso").value.trim(),
+        autonomie: autonomie,
+        parametres: document.getElementById("vehicule-parametres").value.trim(),
         jauge: Number(jauge ? jauge.value : 50) || 50
     };
 
@@ -10000,10 +10246,11 @@ window.supprimerVehiculeActif = function(event) {
                 localStorage.removeItem(champId);
                 var champ = document.getElementById(champId);
                 if (champ) {
-                    champ.value = "";
+                    champ.value = champId === "vehicule-profil" ? "essence" : "";
                 }
             }
         );
+        actualiserProfilVehicule();
         editeurVehiculeOuvert = true;
         editionVehiculeExistant = false;
     }
@@ -10034,9 +10281,14 @@ function chargerVehicule() {
             }
 
             champ.value = localStorage.getItem(champId) || "";
+            if (champId === "vehicule-profil" && !champ.value) {
+                champ.value = "essence";
+            }
 
         }
     );
+
+    actualiserProfilVehicule();
 
     var jauge = document.getElementById("vehicule-jauge");
     if (jauge) {
