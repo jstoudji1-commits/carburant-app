@@ -2418,6 +2418,14 @@ body{
     font-weight:800;
 }
 
+.optimization-explanation{
+    display:block;
+    margin-top:5px;
+    color:#516171;
+    font-size:12px;
+    line-height:1.35;
+}
+
 .better-station-popup{
     position:absolute;
     left:50%;
@@ -9418,6 +9426,149 @@ function nombreVehiculeEnregistre(cle) {
 
 }
 
+var vitesseDetourRentabiliteKmH = 42;
+var coutTempsRentabiliteEuroHeure = 9;
+
+function formaterEurosRentabilite(valeur) {
+
+    return Number(valeur || 0).toLocaleString(
+        "fr-FR",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    ) + " \u20ac";
+
+}
+
+function formaterLitresRentabilite(valeur) {
+
+    return Number(valeur || 0).toLocaleString(
+        "fr-FR",
+        {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+        }
+    ) + " L";
+
+}
+
+function formaterKmRentabilite(valeur) {
+
+    return Number(valeur || 0).toLocaleString(
+        "fr-FR",
+        {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+        }
+    ) + " km";
+
+}
+
+function formaterMinutesRentabilite(valeur) {
+
+    var minutes = Math.max(0, Math.round(Number(valeur || 0)));
+    return minutes < 1 ? "<1 min" : minutes + " min";
+
+}
+
+function libelleStationRentabilite(station) {
+
+    if (!station) {
+        return "la station de r\u00e9f\u00e9rence";
+    }
+
+    return (station.enseigne || "Station-service")
+        + (station.ville ? " \u00e0 " + station.ville : "");
+
+}
+
+function calculerCoutOptimisationStation(options) {
+
+    var station = options.station;
+    var prixReference = Number.isFinite(options.prixReference)
+        ? options.prixReference
+        : station.prix;
+    var reservoir = Math.max(0, Number(options.reservoir || 0));
+    var consommation = Math.max(0, Number(options.consommation || 0));
+    var litresAchetes = Math.max(
+        0,
+        Math.min(reservoir, Number(options.litresACompleter || 0))
+    );
+    var distanceStationKm = Math.max(
+        0,
+        Number(options.distanceStationKm || 0)
+    );
+    var distanceDetourKm = options.destinationCalcul
+        ? Math.max(
+            0,
+            distanceStationKm
+                + Number(options.distanceDestinationApresStation || 0)
+                - Number(options.distanceDirecteDestination || 0)
+        )
+        : distanceStationKm * 2;
+
+    distanceDetourKm += Math.max(0, Number(options.penaliteDemiTourKm || 0));
+
+    var carburantDetourLitres = distanceDetourKm * consommation / 100;
+    var coutCarburantAchete = litresAchetes * station.prix;
+    var coutCarburantDetour = carburantDetourLitres * prixReference;
+    var tempsPerduMinutes =
+        distanceDetourKm / vitesseDetourRentabiliteKmH * 60;
+    var coutTempsPerdu =
+        tempsPerduMinutes / 60 * coutTempsRentabiliteEuroHeure;
+    var coutTotal =
+        coutCarburantAchete + coutCarburantDetour + coutTempsPerdu;
+
+    return {
+        litresAchetes: litresAchetes,
+        distanceDetourKm: distanceDetourKm,
+        carburantDetourLitres: carburantDetourLitres,
+        coutCarburantAchete: coutCarburantAchete,
+        coutCarburantDetour: coutCarburantDetour,
+        tempsPerduMinutes: tempsPerduMinutes,
+        coutTempsPerdu: coutTempsPerdu,
+        coutTotal: coutTotal
+    };
+
+}
+
+function ajouterExplicationRentabilite(
+    conteneur,
+    station,
+    economie,
+    libelleReference
+) {
+
+    var explication = document.createElement("span");
+    var reference = station.stationReferenceRentable
+        ? " vs " + libelleStationRentabilite(station.stationReferenceRentable)
+        : libelleReference;
+
+    explication.className = "optimization-explanation";
+    explication.textContent =
+        "Calcul net : achat "
+        + formaterLitresRentabilite(station.litresAchetes)
+        + " = "
+        + formaterEurosRentabilite(station.coutCarburantAchete)
+        + ", d\u00e9tour "
+        + formaterKmRentabilite(station.distanceDetourKm)
+        + " = "
+        + formaterEurosRentabilite(station.coutCarburantDetour)
+        + ", temps perdu "
+        + formaterMinutesRentabilite(station.tempsPerduMinutes)
+        + " = "
+        + formaterEurosRentabilite(station.coutTempsPerdu)
+        + " (9 \u20ac/h)"
+        + ". Gain net "
+        + formaterEurosRentabilite(economie)
+        + reference
+        + ".";
+
+    conteneur.appendChild(explication);
+
+}
+
 function calculerRentabiliteStations(
     stationsDisponibles,
     latitudeCalcul,
@@ -9449,6 +9600,14 @@ function calculerRentabiliteStations(
             longitude: Number(destinationNavigation.longitude)
         }
         : null;
+    var distanceDirecteDestination = destinationCalcul
+        ? distanceDeplacementKm(
+            latitudeCalcul,
+            longitudeCalcul,
+            destinationCalcul.latitude,
+            destinationCalcul.longitude
+        )
+        : 0;
     var routePourProgression = (
         navigationActive
         && routeNavigation
@@ -9521,6 +9680,19 @@ function calculerRentabiliteStations(
             var coutDemiTour = penaliteDemiTourKm
                 * consommation / 100
                 * prixTrajetReference;
+            var optimisation = calculerCoutOptimisationStation({
+                station: station,
+                prixReference: prixTrajetReference,
+                reservoir: reservoir,
+                consommation: consommation,
+                litresACompleter: litresACompleter,
+                distanceStationKm: distance,
+                destinationCalcul: destinationCalcul,
+                distanceDestinationApresStation:
+                    distanceDestinationApresStation,
+                distanceDirecteDestination: distanceDirecteDestination,
+                penaliteDemiTourKm: penaliteDemiTourKm
+            });
 
             return Object.assign({}, station, {
                 distanceCalculee: distance,
@@ -9531,19 +9703,19 @@ function calculerRentabiliteStations(
                     carburantRestantDestination * prixTrajetReference,
                 stationDepassee: stationDepassee,
                 penaliteDemiTourKm: penaliteDemiTourKm,
-                coutDemiTour: coutDemiTour
+                coutDemiTour: coutDemiTour,
+                litresAchetes: optimisation.litresAchetes,
+                distanceDetourKm: optimisation.distanceDetourKm,
+                carburantDetourLitres:
+                    optimisation.carburantDetourLitres,
+                coutCarburantAchete:
+                    optimisation.coutCarburantAchete,
+                coutCarburantDetour:
+                    optimisation.coutCarburantDetour,
+                tempsPerduMinutes: optimisation.tempsPerduMinutes,
+                coutTempsPerdu: optimisation.coutTempsPerdu,
+                coutTotal: optimisation.coutTotal
             });
-
-        }
-    );
-
-    stationsCalculees.forEach(
-        function(station) {
-
-            station.coutTotal =
-                litresACompleter * station.prix
-                + station.carburantTrajet * prixTrajetReference
-                + station.coutDemiTour;
 
         }
     );
@@ -9552,16 +9724,7 @@ function calculerRentabiliteStations(
         var coutPleinReference = litresACompleter * prixTrajetReference;
 
         return {
-            stationsCalculees: stationsCalculees.map(
-                function(station) {
-                    return Object.assign({}, station, {
-                        coutTotal:
-                            litresACompleter * station.prix
-                            + station.carburantTrajet * prixTrajetReference
-                            + station.coutDemiTour
-                    });
-                }
-            ),
+            stationsCalculees: stationsCalculees,
             coutReference: coutPleinReference,
             libelleReference:
                 " par rapport au prix moyen local"
@@ -9572,11 +9735,7 @@ function calculerRentabiliteStations(
         function(stationReference) {
             return {
                 station: stationReference,
-                cout:
-                    litresACompleter * stationReference.prix
-                    + stationReference.carburantTrajet
-                        * prixTrajetReference
-                    + stationReference.coutDemiTour
+                cout: stationReference.coutTotal
             };
         }
     );
@@ -9958,6 +10117,7 @@ window.calculerMeilleureStation = function() {
         meilleureStation.prix,
         stationReferenceAffichee ? stationReferenceAffichee.id || "" : "",
         stationReferenceAffichee ? stationReferenceAffichee.prix || "" : "",
+        Number(meilleureStation.coutTotal || 0).toFixed(2),
         litresACompleter.toFixed(2)
     ].join("|");
 
@@ -10057,6 +10217,12 @@ window.calculerMeilleureStation = function() {
         document.createTextNode(
             libelleReferenceRentabilite
         )
+    );
+    ajouterExplicationRentabilite(
+        sousTitre,
+        meilleureStation,
+        economie,
+        libelleReferenceRentabilite
     );
 
     var economiePasseSousUnEuro =
@@ -10862,13 +11028,17 @@ function coutDetourStation(position, consommation) {
     var kilometresDetour = position.ecartMetres * 2 / 1000;
     var coutCarburantDetour =
         kilometresDetour * consommation / 100 * position.station.prix;
+    var tempsPerduMinutes =
+        kilometresDetour / vitesseDetourRentabiliteKmH * 60;
+    var coutTempsPerdu =
+        tempsPerduMinutes / 60 * coutTempsRentabiliteEuroHeure;
     var penaliteSortieAutoroute = stationAutoroute || position.ecartMetres <= 800
         ? 0
         : position.ecartMetres <= 1300
             ? 1.50
             : 3.00;
 
-    return coutCarburantDetour + penaliteSortieAutoroute;
+    return coutCarburantDetour + coutTempsPerdu + penaliteSortieAutoroute;
 
 }
 
