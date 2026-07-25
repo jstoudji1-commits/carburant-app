@@ -744,6 +744,15 @@ body{
     background:#102536;
 }
 
+.fuel-dot.electric{
+    background:#149f38;
+}
+
+.fuel-dot.electric::before{
+    content:"\26A1";
+    font-size:19px;
+}
+
 .carburant-boutons input:checked + label{
     border-color:var(--green);
     box-shadow:0 0 0 2px rgba(20,159,56,0.20), 0 8px 18px rgba(16,37,54,0.14);
@@ -2909,6 +2918,21 @@ body{
                         <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
                         <div class="plan-comparison-cell plan-comparison-premium">Oui, avec confiance /5</div>
                     </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Alertes de prix</div>
+                        <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Statistiques</div>
+                        <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
+                    </div>
+                    <div class="plan-comparison-row">
+                        <div class="plan-comparison-cell plan-comparison-feature">Optimisation longs trajets</div>
+                        <div class="plan-comparison-cell plan-comparison-free plan-comparison-muted">Non</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Oui</div>
+                    </div>
                 </div>
 
                 <nav
@@ -2932,6 +2956,22 @@ body{
                         onclick="changerPagePremium('history')"
                     >
                         Historique
+                    </button>
+                    <button
+                        type="button"
+                        class="premium-menu-button"
+                        data-premium-page="alerts"
+                        onclick="changerPagePremium('alerts')"
+                    >
+                        Alertes
+                    </button>
+                    <button
+                        type="button"
+                        class="premium-menu-button"
+                        data-premium-page="stats"
+                        onclick="changerPagePremium('stats')"
+                    >
+                        Stats
                     </button>
                     <button
                         type="button"
@@ -3096,6 +3136,10 @@ body{
                             15 secondes, guidage avanc&eacute; et favoris
                             illimit&eacute;s.
                         </p>
+                        <div
+                            class="premium-history-list"
+                            id="premium-capabilities-list"
+                        ></div>
                         <div class="premium-radius-control">
                             <div class="premium-radius-head">
                                 <span>Rayon des stations</span>
@@ -3129,6 +3173,49 @@ body{
                     </div>
                 </section>
 
+                <section
+                    class="premium-page premium-only"
+                    id="premium-page-alerts"
+                    hidden
+                >
+                    <div class="premium-panel-card">
+                        <p class="premium-panel-title">
+                            Alertes de prix
+                        </p>
+                        <p class="premium-option-copy">
+                            Pr&eacute;parez des alertes par carburant, borne ou zone.
+                            Elles sont sauvegard&eacute;es avec votre compte.
+                        </p>
+                        <div
+                            class="premium-history-list"
+                            id="premium-alerts-list"
+                        ></div>
+                        <button
+                            type="button"
+                            class="premium-option-button"
+                            onclick="ajouterAlertePrixPremium()"
+                        >
+                            Ajouter une alerte
+                        </button>
+                    </div>
+                </section>
+
+                <section
+                    class="premium-page premium-only"
+                    id="premium-page-stats"
+                    hidden
+                >
+                    <div class="premium-panel-card">
+                        <p class="premium-panel-title">
+                            Statistiques
+                        </p>
+                        <div
+                            class="premium-history-list"
+                            id="premium-stats-list"
+                        ></div>
+                    </div>
+                </section>
+
                 <section class="premium-offer" id="premium-note">
                     <p class="premium-offer-title">
                         <span>D&eacute;couverte Premium</span>
@@ -3155,7 +3242,9 @@ body{
             <p class="stat-label">Prix le plus bas autour de vous</p>
             <div class="stat-price-layout">
                 <div class="stat-price-meta">
-                    <div class="stat-icon">{{ carburant|upper }}</div>
+                    <div class="stat-icon">
+                        {% if carburant == "electrique" %}IRVE{% else %}{{ carburant|upper }}{% endif %}
+                    </div>
                 </div>
                 <div class="stat-price-detail">
                     <div class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}">
@@ -3229,6 +3318,18 @@ body{
                 <label for="carburant-gazole">
                     <span class="fuel-dot dark">GO</span>
                     Gazole
+                </label>
+
+                <input
+                    type="radio"
+                    id="carburant-electrique"
+                    name="carburant"
+                    value="electrique"
+                    {% if carburant == "electrique" %}checked{% endif %}
+                >
+                <label for="carburant-electrique">
+                    <span class="fuel-dot electric"></span>
+                    Elec
                 </label>
             </div>
 
@@ -4333,62 +4434,6 @@ window.partagerPrixStation = async function(event, station) {
 
 };
 
-window.ouvrirWaze = function(latitude, longitude) {
-
-    if (!comptePremiumActif()) {
-        alert("Waze est inclus avec OptiPlein Premium.");
-        return;
-    }
-
-    window.open(
-        "https://waze.com/ul?ll="
-            + encodeURIComponent(latitude + "," + longitude)
-            + "&navigate=yes",
-        "_blank"
-    );
-
-};
-
-function ouvrirWazeDestination(point) {
-
-    if (!point) {
-        return;
-    }
-
-    window.open(
-        "https://waze.com/ul?ll="
-            + encodeURIComponent(point.latitude + "," + point.longitude)
-            + "&navigate=yes&utm_source=optiplein",
-        "_blank"
-    );
-
-}
-
-window.ouvrirGoogleMaps = function(latitude, longitude) {
-
-    if (!comptePremiumActif()) {
-        alert("Google Maps est inclus avec OptiPlein Premium.");
-        return;
-    }
-
-    var destination = latitude + "," + longitude;
-    var origine = latitudeUtilisateur !== null
-        && longitudeUtilisateur !== null
-        ? latitudeUtilisateur + "," + longitudeUtilisateur
-        : "My Location";
-    var url =
-        "https://www.google.com/maps/dir/?api=1"
-        + "&origin="
-        + encodeURIComponent(origine)
-        + "&destination="
-        + encodeURIComponent(destination)
-        + "&travelmode=driving"
-        + "&dir_action=navigate";
-
-    window.open(url, "_blank");
-
-};
-
 function normaliserPointNavigationExterne(point) {
 
     if (!point) {
@@ -4409,43 +4454,259 @@ function normaliserPointNavigationExterne(point) {
 
 }
 
-function ouvrirGoogleMapsTrajet(points) {
+function pointsNavigationExterneDestination(latitude, longitude) {
 
-    if (!comptePremiumActif()) {
-        alert("Google Maps est inclus avec OptiPlein Premium.");
-        return;
+    var points = [];
+
+    if (
+        latitudeUtilisateur !== null
+        && longitudeUtilisateur !== null
+    ) {
+        points.push({
+            latitude: latitudeUtilisateur,
+            longitude: longitudeUtilisateur
+        });
     }
 
+    points.push({
+        latitude: latitude,
+        longitude: longitude
+    });
+
+    return points;
+
+}
+
+function pointsCompatiblesFournisseurNavigation(fournisseur, points) {
+
+    if (points.length <= 1) {
+        return points;
+    }
+
+    if (
+        fournisseur.supporteEtapes
+        || points.length <= 2
+    ) {
+        return points;
+    }
+
+    return [
+        points[0],
+        fournisseur.utiliseProchaineEtape
+            ? points[1]
+            : points[points.length - 1]
+    ];
+
+}
+
+function coordonneeNavigationExterne(point) {
+
+    return point.latitude + "," + point.longitude;
+
+}
+
+var fournisseursNavigationExterne = {
+    waze: {
+        libelle: "Waze",
+        premium: true,
+        minimumPoints: 1,
+        supporteEtapes: false,
+        utiliseProchaineEtape: true,
+        creerUrl: function(points) {
+            var destination = points[points.length - 1];
+            return "https://waze.com/ul?ll="
+                + encodeURIComponent(coordonneeNavigationExterne(destination))
+                + "&navigate=yes&utm_source=optiplein";
+        }
+    },
+    google: {
+        libelle: "Google Maps",
+        premium: true,
+        minimumPoints: 1,
+        supporteEtapes: true,
+        creerUrl: function(points) {
+            var origine = points.length > 1 ? points[0] : null;
+            var destination = points[points.length - 1];
+            var arrets = points.length > 1 ? points.slice(1, -1) : [];
+            var url =
+                "https://www.google.com/maps/dir/?api=1"
+                + "&origin="
+                + encodeURIComponent(
+                    origine
+                        ? coordonneeNavigationExterne(origine)
+                        : "My Location"
+                )
+                + "&destination="
+                + encodeURIComponent(coordonneeNavigationExterne(destination))
+                + "&travelmode=driving"
+                + "&dir_action=navigate";
+
+            if (arrets.length) {
+                url += "&waypoints="
+                    + encodeURIComponent(
+                        arrets.map(coordonneeNavigationExterne).join("|")
+                    );
+            }
+
+            return url;
+        }
+    },
+    apple: {
+        libelle: "Apple Plans",
+        premium: true,
+        minimumPoints: 1,
+        supporteEtapes: false,
+        utiliseProchaineEtape: true,
+        creerUrl: function(points) {
+            var origine = points.length > 1 ? points[0] : null;
+            var destination = points[points.length - 1];
+            var url = "https://maps.apple.com/?"
+                + "daddr="
+                + encodeURIComponent(coordonneeNavigationExterne(destination))
+                + "&dirflg=d";
+
+            if (origine) {
+                url += "&saddr="
+                    + encodeURIComponent(
+                        coordonneeNavigationExterne(origine)
+                    );
+            }
+
+            return url;
+        }
+    },
+    openstreetmap: {
+        libelle: "OpenStreetMap",
+        premium: false,
+        minimumPoints: 1,
+        supporteEtapes: false,
+        utiliseProchaineEtape: true,
+        creerUrl: function(points) {
+            var origine = points.length > 1 ? points[0] : null;
+            var destination = points[points.length - 1];
+
+            if (!origine) {
+                return "https://www.openstreetmap.org/?mlat="
+                    + encodeURIComponent(destination.latitude)
+                    + "&mlon="
+                    + encodeURIComponent(destination.longitude)
+                    + "#map=16/"
+                    + encodeURIComponent(destination.latitude)
+                    + "/"
+                    + encodeURIComponent(destination.longitude);
+            }
+
+            return "https://www.openstreetmap.org/directions?"
+                + "engine=fossgis_osrm_car"
+                + "&route="
+                + encodeURIComponent(
+                    coordonneeNavigationExterne(origine)
+                    + ";"
+                    + coordonneeNavigationExterne(destination)
+                );
+        }
+    }
+};
+
+function fournisseurNavigationExterne(cle) {
+
+    return fournisseursNavigationExterne[cle]
+        || fournisseursNavigationExterne.openstreetmap;
+
+}
+
+function ouvrirNavigationExterne(cleFournisseur, points) {
+
+    var fournisseur = fournisseurNavigationExterne(cleFournisseur);
     var pointsValides = (points || [])
         .map(normaliserPointNavigationExterne)
         .filter(Boolean);
+    var minimumPoints = fournisseur.minimumPoints || 2;
 
-    if (pointsValides.length < 2) {
+    if (pointsValides.length < minimumPoints) {
         return;
     }
 
-    var origine = pointsValides[0];
-    var destination = pointsValides[pointsValides.length - 1];
-    var arrets = pointsValides.slice(1, -1);
-    var url =
-        "https://www.google.com/maps/dir/?api=1"
-        + "&origin="
-        + encodeURIComponent(origine.latitude + "," + origine.longitude)
-        + "&destination="
-        + encodeURIComponent(destination.latitude + "," + destination.longitude)
-        + "&travelmode=driving"
-        + "&dir_action=navigate";
-
-    if (arrets.length) {
-        url += "&waypoints="
-            + encodeURIComponent(
-                arrets.map(function(point) {
-                    return point.latitude + "," + point.longitude;
-                }).join("|")
-            );
+    if (fournisseur.premium && !comptePremiumActif()) {
+        alert(fournisseur.libelle + " est inclus avec OptiPlein Premium.");
+        return;
     }
 
-    window.open(url, "_blank");
+    pointsValides = pointsCompatiblesFournisseurNavigation(
+        fournisseur,
+        pointsValides
+    );
+
+    window.open(fournisseur.creerUrl(pointsValides), "_blank");
+
+}
+
+window.ouvrirNavigationExterne = ouvrirNavigationExterne;
+
+window.ouvrirWaze = function(latitude, longitude) {
+
+    ouvrirNavigationExterne(
+        "waze",
+        pointsNavigationExterneDestination(latitude, longitude)
+    );
+
+};
+
+function ouvrirWazeDestination(point) {
+
+    if (!point) {
+        return;
+    }
+
+    ouvrirNavigationExterne(
+        "waze",
+        pointsNavigationExterneDestination(point.latitude, point.longitude)
+    );
+
+}
+
+window.ouvrirGoogleMaps = function(latitude, longitude) {
+
+    ouvrirNavigationExterne(
+        "google",
+        pointsNavigationExterneDestination(latitude, longitude)
+    );
+
+};
+
+window.ouvrirApplePlans = function(latitude, longitude) {
+
+    ouvrirNavigationExterne(
+        "apple",
+        pointsNavigationExterneDestination(latitude, longitude)
+    );
+
+};
+
+window.ouvrirOpenStreetMap = function(latitude, longitude) {
+
+    ouvrirNavigationExterne(
+        "openstreetmap",
+        pointsNavigationExterneDestination(latitude, longitude)
+    );
+
+};
+
+function ouvrirGoogleMapsTrajet(points) {
+
+    ouvrirNavigationExterne("google", points);
+
+}
+
+function ouvrirApplePlansTrajet(points) {
+
+    ouvrirNavigationExterne("apple", points);
+
+}
+
+function ouvrirOpenStreetMapTrajet(points) {
+
+    ouvrirNavigationExterne("openstreetmap", points);
 
 }
 
@@ -5498,6 +5759,77 @@ function formaterPrixStation(prix) {
 
 }
 
+function stationElectrique(station) {
+
+    return station && (
+        station.energie === "electric"
+        || String(station.carburant || "").toLowerCase() === "electrique"
+    );
+
+}
+
+function modeElectriqueActif() {
+
+    return String(carburantSelectionne || "").toLowerCase() === "electrique";
+
+}
+
+function formaterPrixOuPuissanceStation(station) {
+
+    if (stationElectrique(station)) {
+        var puissance = Number(station.puissanceKw);
+        if (Number.isFinite(puissance) && puissance > 0) {
+            return puissance.toLocaleString(
+                "fr-FR",
+                { maximumFractionDigits: 0 }
+            ) + " kW";
+        }
+
+        return "IRVE";
+    }
+
+    return formaterPrixStation(station.prix);
+
+}
+
+function formaterDetailPrixStation(station) {
+
+    if (!stationElectrique(station)) {
+        return formaterPrixStation(station.prix);
+    }
+
+    var prix = formaterPrixStation(station.prix) + "/kWh";
+    return station.prixEstime
+        ? prix + " estim\u00e9"
+        : prix;
+
+}
+
+function htmlDetailsBorneIrve(station) {
+
+    if (!stationElectrique(station)) {
+        return "";
+    }
+
+    var prises = station.prises && station.prises.length
+        ? station.prises.join(", ")
+        : "prises non renseign\u00e9es";
+    var disponibilite = station.disponibilite
+        || "disponibilit\u00e9 inconnue";
+    var points = Number(station.nbrePdc) || 0;
+
+    return ''
+        + '<p class="station-popup-distance">'
+        + echapperHtml(disponibilite)
+        + (points ? ' \u00b7 ' + points + ' point(s)' : '')
+        + '<br>Prises : '
+        + echapperHtml(prises)
+        + '<br>Prix : '
+        + echapperHtml(formaterDetailPrixStation(station))
+        + '</p>';
+
+}
+
 function htmlIndicateurTendance(tendance, prix) {
 
     if (!tendance || !prixStationDisponible(prix)) {
@@ -5537,7 +5869,14 @@ function normaliserStationCarte(station) {
         carburant: (station.carburant || carburantSelectionne).toUpperCase(),
         tendance: station.tendance || "",
         tendanceDemain: station.tendance_demain || "stable",
-        confianceDemain: Number(station.confiance_demain) || 1
+        confianceDemain: Number(station.confiance_demain) || 1,
+        energie: station.energie || "",
+        puissanceKw: Number(station.puissance_kw),
+        prises: Array.isArray(station.prises) ? station.prises : [],
+        disponibilite: station.disponibilite || "",
+        nbrePdc: Number(station.nbre_pdc) || 0,
+        prixEstime: Boolean(station.prix_estime),
+        tarification: station.tarification || ""
     };
 
 }
@@ -5556,7 +5895,7 @@ function creerMarqueurStationDynamique(stationBrute) {
     stationsCarteParId[station.id] = station;
     var logoCarte = creerLogoEnseigne(station.enseigne, "carte");
     var logoPopup = creerLogoEnseigne(station.enseigne, "popup");
-    var prixHtml = formaterPrixStation(station.prix);
+    var prixHtml = formaterPrixOuPuissanceStation(station);
     var tendanceDemain = {
         tendance: station.tendanceDemain,
         confiance: station.confianceDemain
@@ -5592,7 +5931,7 @@ function creerMarqueurStationDynamique(stationBrute) {
         + echapperHtml(station.enseigne || "Station-service")
         + '</div>'
         + '<div class="popup-prix">'
-        + echapperHtml(prixHtml)
+        + echapperHtml(formaterDetailPrixStation(station))
         + '</div>'
         + '</div>'
         + '<div class="station-popup-favori">'
@@ -5602,7 +5941,7 @@ function creerMarqueurStationDynamique(stationBrute) {
         + ' onclick="changerFavori(stationsCarteParId['
         + JSON.stringify(station.id)
         + '])">\u2606</button>'
-        + '<p class="favoris-info">0 / 3 favoris</p>'
+        + '<p class="favoris-info">Favoris</p>'
         + '</div>'
         + '</div>'
         + '<p class="station-popup-adresse">'
@@ -5621,6 +5960,7 @@ function creerMarqueurStationDynamique(stationBrute) {
         + '</span>'
         + '</p>'
         + htmlTendanceDemainPremium(tendanceDemain)
+        + htmlDetailsBorneIrve(station)
         + distanceHtml
         + '<div class="popup-actions">'
         + '<button onclick="tracerItineraire('
@@ -5698,7 +6038,11 @@ function remplacerStationsSurCarte(stations) {
             latitude: station.latitude,
             longitude: station.longitude,
             prix: station.prix,
-            distance: station.distance
+            distance: station.distance,
+            energie: station.energie,
+            puissanceKw: station.puissanceKw,
+            prixEstime: station.prixEstime,
+            disponibilite: station.disponibilite
         });
     });
 
@@ -5836,6 +6180,8 @@ var vehiculesCle = "optiplein-vehicules";
 var vehiculeActifCle = "optiplein-vehicule-actif";
 var historiqueEconomiesCle = "optiplein-historique-economies";
 var lieuxTrajetCle = "optiplein-lieux-trajet";
+var alertesPrixCle = "optiplein-alertes-prix";
+var optimisationPremiumCle = "optiplein-optimisation-premium";
 var compteTokenCle = "optiplein-compte-token";
 var compteEmailCle = "optiplein-compte-email";
 var modeDecouvertePremiumActif = true;
@@ -6104,6 +6450,91 @@ function lireHistoriqueEconomies() {
 
 }
 
+function lireAlertesPrix() {
+
+    try {
+        return JSON.parse(
+            localStorage.getItem(alertesPrixCle)
+        ) || [];
+    } catch (erreur) {
+        return [];
+    }
+
+}
+
+function lireOptimisationPremium() {
+
+    try {
+        return Object.assign(
+            {
+                mode: "rentabilite_reelle",
+                valeur_temps_euro_h: 9,
+                detour_max_km: 8,
+                recalcul_auto: true,
+                longs_trajets: true
+            },
+            JSON.parse(localStorage.getItem(optimisationPremiumCle)) || {}
+        );
+    } catch (erreur) {
+        return {
+            mode: "rentabilite_reelle",
+            valeur_temps_euro_h: 9,
+            detour_max_km: 8,
+            recalcul_auto: true,
+            longs_trajets: true
+        };
+    }
+
+}
+
+function enregistrerOptimisationPremium(configuration) {
+
+    localStorage.setItem(
+        optimisationPremiumCle,
+        JSON.stringify(
+            Object.assign(lireOptimisationPremium(), configuration || {})
+        )
+    );
+    programmerSauvegardeCompte();
+
+}
+
+function statistiquesEconomiesLocales() {
+
+    var historique = lireHistoriqueEconomies();
+    var total = 0;
+    var total2026 = 0;
+    var parVehicule = {};
+    var parEnergie = {};
+
+    historique.forEach(function(ligne) {
+        var economie = Number(ligne.economie) || 0;
+        var date = ligne.date ? new Date(ligne.date) : null;
+        var vehicule = ligne.vehicule || "V\u00e9hicule non renseign\u00e9";
+        var energie = ligne.carburant || ligne.energie || "Carburant";
+
+        total += economie;
+        if (date && date.getFullYear() === 2026) {
+            total2026 += economie;
+        }
+
+        parVehicule[vehicule] = (parVehicule[vehicule] || 0) + economie;
+        parEnergie[energie] = (parEnergie[energie] || 0) + economie;
+    });
+
+    return {
+        economies_total: Number(total.toFixed(2)),
+        economies_2026: Number(total2026.toFixed(2)),
+        trajets: historique.length,
+        economie_moyenne: historique.length
+            ? Number((total / historique.length).toFixed(2))
+            : 0,
+        par_vehicule: parVehicule,
+        par_energie: parEnergie
+    };
+
+}
+
 function lireLieuxTrajet() {
 
     try {
@@ -6303,7 +6734,18 @@ function donneesCompteLocales() {
         plan: compteUtilisateurConnecte() ? "premium" : planCompteActuel(),
         historique_economies: lireHistoriqueEconomies(),
         lieux_trajet: lireLieuxTrajet(),
-        rayon_stations: rayonStationsCompteActuel()
+        rayon_stations: rayonStationsCompteActuel(),
+        alertes_prix: lireAlertesPrix(),
+        statistiques: statistiquesEconomiesLocales(),
+        optimisation: lireOptimisationPremium(),
+        premium: {
+            test_gratuit_ete: modeDecouvertePremiumActif,
+            limites: {
+                favoris_max: comptePremiumActif() ? null : nombreMaximumFavorisGratuit,
+                vehicules_max: nombreMaximumVehiculesActuel(),
+                recalcul_secondes: comptePremiumActif() ? 15 : 180
+            }
+        }
     };
 
 }
@@ -6333,6 +6775,14 @@ function appliquerDonneesCompte(donnees) {
         JSON.stringify(donnees.lieux_trajet || {})
     );
     localStorage.setItem(
+        alertesPrixCle,
+        JSON.stringify(donnees.alertes_prix || [])
+    );
+    localStorage.setItem(
+        optimisationPremiumCle,
+        JSON.stringify(donnees.optimisation || {})
+    );
+    localStorage.setItem(
         rayonStationsPremiumCle,
         String(normaliserRayonStationsKm(donnees.rayon_stations || 25))
     );
@@ -6355,6 +6805,8 @@ function appliquerDonneesCompte(donnees) {
     actualiserLieuxTrajet();
     actualiserRayonPremium(false);
     actualiserPlanCompte();
+    actualiserAlertesPrixPremium();
+    actualiserStatistiquesPremium();
     calculerMeilleureStation();
     applicationDonneesCompteEnCours = false;
 
@@ -7800,11 +8252,14 @@ async function actualiserStationsSelonPosition(force) {
         parametres.set("carburant", carburantSelectionne);
         parametres.set("rayon", String(rayonCalculEconomieKm));
         parametres.set("_", String(Date.now()));
+        var endpointStations = modeElectriqueActif()
+            ? "/api/bornes-irve?"
+            : "/api/stations-proches?";
 
         var reponse = await fetchAvecDelai(
-            "/api/stations-proches?" + parametres.toString(),
+            endpointStations + parametres.toString(),
             { cache: "no-store" },
-            12000
+            modeElectriqueActif() ? 45000 : 12000
         );
 
         if (!reponse.ok) {
@@ -8739,6 +9194,166 @@ function actualiserHistoriqueEconomiesPremium() {
 
 }
 
+var capacitesPremiumArchitecture = {
+    optimisation_avancee: "Optimisation avanc\u00e9e : prix, d\u00e9tour, consommation, temps perdu et volume achet\u00e9.",
+    alertes_prix: "Alertes de prix : seuils par carburant, borne, station ou zone.",
+    favoris_illimites: "Favoris illimit\u00e9s : stations, bornes et lieux utiles.",
+    historique_avance: "Historique avanc\u00e9 : \u00e9conomies d\u00e9taill\u00e9es et sauvegard\u00e9es.",
+    statistiques: "Statistiques : total, moyenne, v\u00e9hicules et carburants.",
+    optimisation_longs_trajets: "Longs trajets : ravitaillements et recharges optimis\u00e9s."
+};
+
+function actualiserCapacitesPremium() {
+
+    var conteneur = document.getElementById("premium-capabilities-list");
+
+    if (!conteneur) {
+        return;
+    }
+
+    conteneur.innerHTML = "";
+
+    Object.keys(capacitesPremiumArchitecture).forEach(function(cle) {
+        var item = document.createElement("article");
+        item.className = "premium-history-item";
+
+        var principal = document.createElement("div");
+        principal.className = "premium-history-main";
+
+        var texte = document.createElement("span");
+        texte.textContent = capacitesPremiumArchitecture[cle];
+
+        var etat = document.createElement("span");
+        etat.className = "premium-history-saving";
+        etat.textContent = comptePremiumActif() ? "Actif" : "Premium";
+
+        principal.appendChild(texte);
+        principal.appendChild(etat);
+        item.appendChild(principal);
+        conteneur.appendChild(item);
+    });
+
+}
+
+function actualiserAlertesPrixPremium() {
+
+    var conteneur = document.getElementById("premium-alerts-list");
+    var alertes = lireAlertesPrix();
+
+    if (!conteneur) {
+        return;
+    }
+
+    conteneur.innerHTML = "";
+
+    if (!alertes.length) {
+        var vide = document.createElement("p");
+        vide.className = "premium-empty";
+        vide.textContent =
+            "Aucune alerte. Ajoutez un seuil pour suivre un prix autour de vous.";
+        conteneur.appendChild(vide);
+        return;
+    }
+
+    alertes.slice(0, 20).forEach(function(alerte) {
+        var item = document.createElement("article");
+        item.className = "premium-history-item";
+
+        var principal = document.createElement("div");
+        principal.className = "premium-history-main";
+        var titre = document.createElement("span");
+        titre.textContent = [
+            String(alerte.carburant || alerte.energie || "carburant").toUpperCase(),
+            alerte.seuil ? "sous " + alerte.seuil + " \u20ac" : "",
+            alerte.zone || ""
+        ].filter(Boolean).join(" · ");
+        var etat = document.createElement("span");
+        etat.className = "premium-history-saving";
+        etat.textContent = alerte.active === false ? "Pause" : "Active";
+
+        principal.appendChild(titre);
+        principal.appendChild(etat);
+        item.appendChild(principal);
+        conteneur.appendChild(item);
+    });
+
+}
+
+function actualiserStatistiquesPremium() {
+
+    var conteneur = document.getElementById("premium-stats-list");
+    var stats = statistiquesEconomiesLocales();
+
+    if (!conteneur) {
+        return;
+    }
+
+    conteneur.innerHTML = "";
+
+    [
+        ["Total", stats.economies_total, "\u20ac"],
+        ["Total en 2026", stats.economies_2026, "\u20ac"],
+        ["Trajets enregistr\u00e9s", stats.trajets, ""],
+        ["\u00c9conomie moyenne", stats.economie_moyenne, "\u20ac"]
+    ].forEach(function(ligne) {
+        var item = document.createElement("article");
+        item.className = "premium-history-item";
+        var principal = document.createElement("div");
+        principal.className = "premium-history-main";
+        var libelle = document.createElement("span");
+        libelle.textContent = ligne[0];
+        var valeur = document.createElement("span");
+        valeur.className = "premium-history-saving";
+        valeur.textContent = Number(ligne[1] || 0).toLocaleString(
+            "fr-FR",
+            {
+                minimumFractionDigits: ligne[2] ? 2 : 0,
+                maximumFractionDigits: ligne[2] ? 2 : 0
+            }
+        ) + (ligne[2] ? " " + ligne[2] : "");
+
+        principal.appendChild(libelle);
+        principal.appendChild(valeur);
+        item.appendChild(principal);
+        conteneur.appendChild(item);
+    });
+
+}
+
+window.ajouterAlertePrixPremium = function() {
+
+    if (!comptePremiumActif()) {
+        alert("Les alertes de prix sont incluses avec OptiPlein Premium.");
+        return;
+    }
+
+    var seuil = window.prompt(
+        "Seuil de prix \u00e0 surveiller",
+        ""
+    );
+
+    if (!seuil || !seuil.trim()) {
+        return;
+    }
+
+    var alertes = lireAlertesPrix();
+    alertes.unshift({
+        id: "alerte-" + Date.now().toString(36),
+        carburant: carburantSelectionne,
+        energie: carburantSelectionne,
+        seuil: seuil.trim().replace(",", "."),
+        condition: "inferieur",
+        zone: "Autour de moi",
+        active: true,
+        created_at: new Date().toISOString()
+    });
+
+    localStorage.setItem(alertesPrixCle, JSON.stringify(alertes.slice(0, 100)));
+    programmerSauvegardeCompte();
+    actualiserAlertesPrixPremium();
+
+};
+
 function actualiserPagesPremium() {
 
     var premium = comptePremiumActif();
@@ -8778,12 +9393,21 @@ function actualiserPagesPremium() {
     }
 
     actualiserHistoriqueEconomiesPremium();
+    actualiserAlertesPrixPremium();
+    actualiserStatistiquesPremium();
+    actualiserCapacitesPremium();
 
 }
 
 window.changerPagePremium = function(page) {
 
-    pagePremiumActive = ["vehicles", "history", "options"].indexOf(page) >= 0
+    pagePremiumActive = [
+        "vehicles",
+        "history",
+        "alerts",
+        "stats",
+        "options"
+    ].indexOf(page) >= 0
         ? page
         : "vehicles";
     actualiserPagesPremium();
@@ -9106,10 +9730,11 @@ function enregistrerEconomiePremium(station, economie) {
 
     localStorage.setItem(
         historiqueEconomiesCle,
-        JSON.stringify(historique.slice(0, 200))
+        JSON.stringify(historique.slice(0, 1000))
     );
     programmerSauvegardeCompte();
     actualiserHistoriqueEconomiesPremium();
+    actualiserStatistiquesPremium();
 
 }
 
@@ -9486,6 +10111,8 @@ function libelleStationRentabilite(station) {
 function calculerCoutOptimisationStation(options) {
 
     var station = options.station;
+    var vehiculeElectrique = stationElectrique(station)
+        || modeElectriqueActif();
     var prixReference = Number.isFinite(options.prixReference)
         ? options.prixReference
         : station.prix;
@@ -9515,8 +10142,16 @@ function calculerCoutOptimisationStation(options) {
     var coutCarburantDetour = carburantDetourLitres * prixReference;
     var tempsPerduMinutes =
         distanceDetourKm / vitesseDetourRentabiliteKmH * 60;
+    var puissanceRechargeKw = vehiculeElectrique
+        ? Math.max(3.7, Number(station.puissanceKw || station.puissance_kw || 0))
+        : 0;
+    var tempsRechargeMinutes = vehiculeElectrique
+        ? litresAchetes / puissanceRechargeKw * 60
+        : 0;
     var coutTempsPerdu =
-        tempsPerduMinutes / 60 * coutTempsRentabiliteEuroHeure;
+        (tempsPerduMinutes + tempsRechargeMinutes)
+        / 60
+        * coutTempsRentabiliteEuroHeure;
     var coutTotal =
         coutCarburantAchete + coutCarburantDetour + coutTempsPerdu;
 
@@ -9527,6 +10162,8 @@ function calculerCoutOptimisationStation(options) {
         coutCarburantAchete: coutCarburantAchete,
         coutCarburantDetour: coutCarburantDetour,
         tempsPerduMinutes: tempsPerduMinutes,
+        tempsRechargeMinutes: tempsRechargeMinutes,
+        puissanceRechargeKw: puissanceRechargeKw,
         coutTempsPerdu: coutTempsPerdu,
         coutTotal: coutTotal
     };
@@ -9557,6 +10194,18 @@ function ajouterExplicationRentabilite(
         + formaterEurosRentabilite(station.coutCarburantDetour)
         + ", temps perdu "
         + formaterMinutesRentabilite(station.tempsPerduMinutes)
+        + (
+            stationElectrique(station)
+                ? " + recharge "
+                    + formaterMinutesRentabilite(station.tempsRechargeMinutes)
+                    + " \u00e0 "
+                    + Number(station.puissanceRechargeKw || 0).toLocaleString(
+                        "fr-FR",
+                        { maximumFractionDigits: 0 }
+                    )
+                    + " kW"
+                : ""
+        )
         + " = "
         + formaterEurosRentabilite(station.coutTempsPerdu)
         + " (9 \u20ac/h)"
@@ -9713,6 +10362,8 @@ function calculerRentabiliteStations(
                 coutCarburantDetour:
                     optimisation.coutCarburantDetour,
                 tempsPerduMinutes: optimisation.tempsPerduMinutes,
+                tempsRechargeMinutes: optimisation.tempsRechargeMinutes,
+                puissanceRechargeKw: optimisation.puissanceRechargeKw,
                 coutTempsPerdu: optimisation.coutTempsPerdu,
                 coutTotal: optimisation.coutTotal
             });
@@ -10028,7 +10679,7 @@ window.calculerMeilleureStation = function() {
         return;
     }
 
-    if (prixTropAnciensPourCalcul()) {
+    if (!modeElectriqueActif() && prixTropAnciensPourCalcul()) {
         afficherCalculRentabiliteEnAttentePrix(
             titre,
             sousTitre,
@@ -11927,7 +12578,11 @@ async function calculerRouteAvecCoordonnees(points) {
     }
 
     if (!route) {
-        donnees = await demanderRouteItineraire(pointsValides, null, "osrm");
+        donnees = await demanderRouteItineraire(
+            pointsValides,
+            null,
+            "openstreetmap"
+        );
         route = normaliserRouteItineraire(donnees);
     }
 
@@ -12758,7 +13413,7 @@ async function tracerItineraire(
             data = await demanderRouteItineraire(
                 pointsItineraire,
                 capDepartItineraire,
-                "osrm"
+                "openstreetmap"
             );
             route = normaliserRouteItineraire(data);
         }

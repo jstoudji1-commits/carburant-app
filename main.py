@@ -115,6 +115,26 @@ TESTEURS_FICHIER = (
 )
 STATIONS_REPO_CSV = Path(__file__).resolve().parent / "stations.csv"
 STATIONS_RUNTIME_CSV = DOSSIER_DONNEES_UTILISATEURS / "stations.csv"
+IRVE_STATIQUE_URL = (
+    "https://proxy.transport.data.gouv.fr/resource/"
+    "consolidation-transport-irve-statique"
+)
+IRVE_DYNAMIQUE_URL = (
+    "https://proxy.transport.data.gouv.fr/resource/"
+    "consolidation-nationale-irve-dynamique"
+)
+IRVE_STATIQUE_RESOURCE_ID = "4ca78c71-4ea4-475d-bd3a-d4aef88f7bf8"
+IRVE_STATIQUE_API_URL = (
+    "https://tabular-api.data.gouv.fr/api/resources/"
+    + IRVE_STATIQUE_RESOURCE_ID
+    + "/data/"
+)
+IRVE_STATIQUE_CACHE = DOSSIER_DONNEES_UTILISATEURS / "irve_statique.csv"
+IRVE_DYNAMIQUE_CACHE = DOSSIER_DONNEES_UTILISATEURS / "irve_dynamique.csv"
+IRVE_STATIQUE_TTL_SECONDES = 24 * 60 * 60
+IRVE_DYNAMIQUE_TTL_SECONDES = 5 * 60
+IRVE_PRIX_KWH_ESTIME = 0.39
+IRVE_CACHE_LOCK = threading.Lock()
 ENRICHISSEMENT_STATIONS_REPO_FICHIER = (
     Path(__file__).resolve().parent
     / "stations_enrichment.json"
@@ -196,6 +216,10 @@ class DonneesCompte(BaseModel):
     lieux_trajet: dict = Field(default_factory=dict)
     rayon_stations: int = 25
     securite: dict = Field(default_factory=dict)
+    premium: dict = Field(default_factory=dict)
+    alertes_prix: list = Field(default_factory=list)
+    statistiques: dict = Field(default_factory=dict)
+    optimisation: dict = Field(default_factory=dict)
 
 
 class MiseAJourProfilCompte(BaseModel):
@@ -238,6 +262,24 @@ class ListeVehiculesCompte(BaseModel):
     vehicules: list = Field(default_factory=list)
     vehicule_actif: str = ""
     vehicule_principal: str = ""
+
+
+class ListeAlertesPrixCompte(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    alertes_prix: list = Field(default_factory=list)
+
+
+class OptimisationCompte(BaseModel):
+
+    model_config = ConfigDict(extra="allow")
+
+    mode: str = Field(default="rentabilite_reelle", max_length=40)
+    valeur_temps_euro_h: float = 9
+    detour_max_km: float = 8
+    recalcul_auto: bool = True
+    longs_trajets: bool = True
 
 
 class ChangementMotDePasseCompte(BaseModel):
@@ -458,7 +500,13 @@ class RequeteItineraire(BaseModel):
 
     points: list[PointItineraire] = Field(min_length=2, max_length=12)
     cap_depart: Optional[float] = None
-    moteur: Literal["auto", "graphhopper", "osrm"] = "auto"
+    moteur: Literal[
+        "auto",
+        "graphhopper",
+        "openstreetmap",
+        "osm",
+        "osrm",
+    ] = "auto"
 
 
 class SauvegardeCompte(BaseModel):
@@ -803,7 +851,7 @@ def compte_premium_requis(request):
     utilisateur = comptes.get("users", {}).get(email, {})
     donnees = utilisateur.get("data", {})
 
-    if donnees.get("plan") != "premium":
+    if not premium_actif_donnees(donnees):
         raise HTTPException(
             status_code=403,
             detail="Acces Premium requis.",
@@ -1186,7 +1234,15 @@ def preferences_compte_nettoye(preferences, rayon_stations=25):
         preferences.get("carburant", "gazole"),
         20,
     ).lower()
-    if carburant not in {"gazole", "sp95", "sp98", "e10", "e85", "gplc"}:
+    if carburant not in {
+        "gazole",
+        "sp95",
+        "sp98",
+        "e10",
+        "e85",
+        "gplc",
+        "electrique",
+    }:
         carburant = "gazole"
 
     theme = preferences.get("theme", "auto")
@@ -1346,11 +1402,216 @@ def securite_compte_nettoyee(securite, utilisateur=None):
     }
 
 
+CAPACITES_PREMIUM = {
+    "optimisation_avancee": {
+        "libelle": "Optimisation avancée",
+        "description": (
+            "Compare les stations une à une avec détour, consommation, "
+            "temps perdu, puissance de charge et trajet réel."
+        ),
+    },
+    "alertes_prix": {
+        "libelle": "Alertes de prix",
+        "description": (
+            "Prépare des seuils d'alerte par carburant, station ou zone."
+        ),
+    },
+    "favoris_illimites": {
+        "libelle": "Favoris illimités",
+        "description": "Retire la limite de 3 favoris de la version gratuite.",
+    },
+    "historique_avance": {
+        "libelle": "Historique avancé",
+        "description": (
+            "Conserve les économies détaillées avec station, véhicule, "
+            "énergie, distance et contexte du trajet."
+        ),
+    },
+    "statistiques": {
+        "libelle": "Statistiques",
+        "description": (
+            "Calcule les économies totales, moyennes et les usages par "
+            "véhicule ou énergie."
+        ),
+    },
+    "optimisation_longs_trajets": {
+        "libelle": "Optimisation des longs trajets",
+        "description": (
+            "Prépare plusieurs ravitaillements ou recharges selon autonomie, "
+            "jauge et rentabilité réelle."
+        ),
+    },
+}
+
+
+def premium_actif_donnees(donnees):
+
+    return PREMIUM_TEST_ACTIF or donnees.get("plan") == "premium"
+
+
+def limites_premium(donnees):
+
+    premium = premium_actif_donnees(donnees)
+
+    return {
+        "premium_actif": premium,
+        "favoris_max": None if premium else 3,
+        "vehicules_max": 5 if premium else 1,
+        "historique_max": 1000 if premium else 30,
+        "recalcul_secondes": 15 if premium else 180,
+        "longs_trajets": premium,
+        "alertes_prix": premium,
+        "statistiques": premium,
+        "prix": "gratuit tout l'été" if PREMIUM_TEST_ACTIF else "3,99 €/an",
+    }
+
+
+def normaliser_alerte_prix(alerte):
+
+    alerte = dict(alerte or {})
+    type_energie = limiter_texte_compte(
+        alerte.get("energie") or alerte.get("carburant") or "gazole",
+        20,
+    ).lower()
+
+    return {
+        "id": limiter_texte_compte(alerte.get("id"), 80),
+        "energie": type_energie,
+        "carburant": type_energie,
+        "seuil": normaliser_nombre_texte(alerte.get("seuil")),
+        "condition": limiter_texte_compte(
+            alerte.get("condition") or "inferieur",
+            30,
+        ),
+        "zone": limiter_texte_compte(alerte.get("zone"), 120),
+        "station_id": limiter_texte_compte(alerte.get("station_id"), 80),
+        "active": bool(alerte.get("active", True)),
+        "created_at": limiter_texte_compte(alerte.get("created_at"), 40),
+    }
+
+
+def alertes_prix_nettoyees(alertes):
+
+    alertes_nettoyees = []
+    ids = set()
+
+    for alerte in list(alertes or [])[:100]:
+        alerte_nettoyee = normaliser_alerte_prix(alerte)
+        if not alerte_nettoyee["id"]:
+            alerte_nettoyee["id"] = secrets.token_urlsafe(8)
+        if alerte_nettoyee["id"] in ids:
+            continue
+        ids.add(alerte_nettoyee["id"])
+        alertes_nettoyees.append(alerte_nettoyee)
+
+    return alertes_nettoyees
+
+
+def optimisation_compte_nettoyee(optimisation):
+
+    optimisation = dict(optimisation or {})
+
+    try:
+        valeur_temps = float(
+            str(optimisation.get("valeur_temps_euro_h", 9))
+            .replace(",", ".")
+        )
+    except (TypeError, ValueError):
+        valeur_temps = 9
+
+    try:
+        marge_detour = float(
+            str(optimisation.get("detour_max_km", 8)).replace(",", ".")
+        )
+    except (TypeError, ValueError):
+        marge_detour = 8
+
+    return {
+        "mode": limiter_texte_compte(
+            optimisation.get("mode") or "rentabilite_reelle",
+            40,
+        ),
+        "valeur_temps_euro_h": max(0, min(60, valeur_temps)),
+        "detour_max_km": max(0, min(80, marge_detour)),
+        "recalcul_auto": bool(optimisation.get("recalcul_auto", True)),
+        "longs_trajets": bool(optimisation.get("longs_trajets", True)),
+    }
+
+
+def statistiques_compte(historique):
+
+    total = 0.0
+    total_2026 = 0.0
+    economies = []
+    par_energie = {}
+    par_vehicule = {}
+
+    for ligne in list(historique or []):
+        try:
+            economie = float(ligne.get("economie", 0) or 0)
+        except (TypeError, ValueError):
+            economie = 0.0
+
+        total += economie
+        economies.append(economie)
+
+        date = None
+        try:
+            date = datetime.fromisoformat(
+                str(ligne.get("date", "")).replace("Z", "+00:00")
+            )
+        except ValueError:
+            date = None
+        if date and date.year == 2026:
+            total_2026 += economie
+
+        energie = ligne.get("carburant") or ligne.get("energie") or "inconnu"
+        vehicule = ligne.get("vehicule") or "Véhicule non renseigné"
+        par_energie[energie] = par_energie.get(energie, 0.0) + economie
+        par_vehicule[vehicule] = par_vehicule.get(vehicule, 0.0) + economie
+
+    return {
+        "economies_total": round(total, 2),
+        "economies_2026": round(total_2026, 2),
+        "trajets": len(economies),
+        "economie_moyenne": round(total / len(economies), 2)
+            if economies else 0,
+        "par_energie": {
+            cle: round(valeur, 2)
+            for cle, valeur in par_energie.items()
+        },
+        "par_vehicule": {
+            cle: round(valeur, 2)
+            for cle, valeur in par_vehicule.items()
+        },
+    }
+
+
+def premium_compte_nettoye(donnees):
+
+    historique = donnees.get("historique_economies", [])
+
+    return {
+        "test_gratuit_ete": PREMIUM_TEST_ACTIF,
+        "capacites": CAPACITES_PREMIUM,
+        "limites": limites_premium(donnees),
+        "alertes_prix": alertes_prix_nettoyees(
+            donnees.get("alertes_prix", [])
+        ),
+        "optimisation": optimisation_compte_nettoyee(
+            donnees.get("optimisation", {})
+        ),
+        "statistiques": statistiques_compte(historique),
+    }
+
+
 def limiter_donnees_compte(donnees):
 
     donnees.favoris = donnees.favoris[:500]
     donnees.vehicules = vehicules_compte_nettoyes(donnees.vehicules)
-    donnees.historique_economies = donnees.historique_economies[:300]
+    donnees.historique_economies = donnees.historique_economies[:1000]
+    donnees.alertes_prix = alertes_prix_nettoyees(donnees.alertes_prix)
+    donnees.optimisation = optimisation_compte_nettoyee(donnees.optimisation)
     donnees.rayon_stations = max(
         5,
         min(50, int(donnees.rayon_stations or 25)),
@@ -1374,6 +1635,8 @@ def limiter_donnees_compte(donnees):
     if donnees.vehicule_principal not in ids:
         donnees.vehicule_principal = donnees.vehicule_actif
     donnees.securite = securite_compte_nettoyee(donnees.securite)
+    donnees.statistiques = statistiques_compte(donnees.historique_economies)
+    donnees.premium = premium_compte_nettoye(donnees.model_dump())
 
     return donnees.model_dump()
 
@@ -1385,8 +1648,15 @@ def donnees_compte_premium_test(donnees):
     donnees.setdefault("preferences", preferences_compte_nettoye({}))
     donnees.setdefault("vehicule_principal", donnees.get("vehicule_actif", ""))
     donnees.setdefault("securite", securite_compte_nettoyee({}))
+    donnees.setdefault("alertes_prix", alertes_prix_nettoyees([]))
+    donnees.setdefault("optimisation", optimisation_compte_nettoyee({}))
+    donnees.setdefault(
+        "statistiques",
+        statistiques_compte(donnees.get("historique_economies", [])),
+    )
     if PREMIUM_TEST_ACTIF:
         donnees["plan"] = "premium"
+    donnees["premium"] = premium_compte_nettoye(donnees)
     return donnees
 
 
@@ -2226,6 +2496,361 @@ def preparer_stations_pour_carte(
         )
 
     return stations_preparees
+
+
+def fichier_cache_recent(chemin, ttl_secondes):
+
+    try:
+        return (
+            chemin.exists()
+            and time.time() - chemin.stat().st_mtime < ttl_secondes
+            and chemin.stat().st_size > 0
+        )
+    except OSError:
+        return False
+
+
+def rafraichir_cache_csv(url, chemin, ttl_secondes):
+
+    if fichier_cache_recent(chemin, ttl_secondes):
+        return chemin
+
+    with IRVE_CACHE_LOCK:
+        if fichier_cache_recent(chemin, ttl_secondes):
+            return chemin
+
+        chemin.parent.mkdir(parents=True, exist_ok=True)
+        temporaire = chemin.with_suffix(chemin.suffix + ".tmp")
+        with http_requests.get(url, stream=True, timeout=45) as reponse:
+            reponse.raise_for_status()
+            with temporaire.open("wb") as fichier:
+                for bloc in reponse.iter_content(1024 * 1024):
+                    if bloc:
+                        fichier.write(bloc)
+        temporaire.replace(chemin)
+
+    return chemin
+
+
+def lignes_csv_cache(chemin):
+
+    with chemin.open(encoding="utf-8-sig", newline="") as fichier:
+        echantillon = fichier.read(4096)
+        fichier.seek(0)
+        try:
+            dialecte = csv.Sniffer().sniff(echantillon, delimiters=",;\t")
+        except csv.Error:
+            dialecte = csv.excel
+
+        yield from csv.DictReader(fichier, dialect=dialecte)
+
+
+def valeur_booleenne_irve(valeur):
+
+    return str(valeur or "").strip().lower() in {"true", "1", "yes", "oui"}
+
+
+def valeur_float_irve(valeur):
+
+    try:
+        return float(str(valeur or "").replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+
+
+def coordonnees_irve(ligne):
+
+    latitude = valeur_float_irve(ligne.get("consolidated_latitude"))
+    longitude = valeur_float_irve(ligne.get("consolidated_longitude"))
+
+    if latitude is not None and longitude is not None:
+        return latitude, longitude
+
+    texte = str(ligne.get("coordonneesXY") or "").strip(" []")
+    morceaux = [morceau.strip() for morceau in texte.split(",")]
+    if len(morceaux) >= 2:
+        longitude = valeur_float_irve(morceaux[0])
+        latitude = valeur_float_irve(morceaux[1])
+        if latitude is not None and longitude is not None:
+            return latitude, longitude
+
+    return None, None
+
+
+def prises_irve(ligne):
+
+    prises = []
+    correspondance = (
+        ("prise_type_combo_ccs", "Combo CCS"),
+        ("prise_type_chademo", "CHAdeMO"),
+        ("prise_type_2", "Type 2"),
+        ("prise_type_ef", "EF"),
+        ("prise_type_autre", "Autre"),
+    )
+
+    for champ, libelle in correspondance:
+        if valeur_booleenne_irve(ligne.get(champ)):
+            prises.append(libelle)
+
+    return prises
+
+
+def prix_kwh_irve(ligne):
+
+    if valeur_booleenne_irve(ligne.get("gratuit")):
+        return 0.0, False
+
+    texte = str(ligne.get("tarification") or "")
+    recherche = re.search(
+        r"(\d+(?:[,.]\d+)?)\s*(?:€|eur|euro)?\s*/?\s*kwh",
+        texte,
+        re.IGNORECASE,
+    )
+
+    if recherche:
+        prix = valeur_float_irve(recherche.group(1))
+        if prix is not None and 0 <= prix <= 3:
+            return prix, False
+
+    return IRVE_PRIX_KWH_ESTIME, True
+
+
+def charger_disponibilites_irve():
+
+    try:
+        chemin = rafraichir_cache_csv(
+            IRVE_DYNAMIQUE_URL,
+            IRVE_DYNAMIQUE_CACHE,
+            IRVE_DYNAMIQUE_TTL_SECONDES,
+        )
+    except Exception:
+        logger.exception("Disponibilite IRVE indisponible.")
+        return {}
+
+    disponibilites = {}
+    for ligne in lignes_csv_cache(chemin):
+        identifiant = str(ligne.get("id_pdc_itinerance") or "").strip()
+        if not identifiant:
+            continue
+
+        disponibilites[identifiant] = {
+            "etat": ligne.get("etat_pdc", "") or "",
+            "occupation": ligne.get("occupation_pdc", "") or "",
+            "horodatage": ligne.get("horodatage", "") or "",
+        }
+
+    return disponibilites
+
+
+def ajouter_disponibilite_irve(station, disponibilite):
+
+    if not disponibilite:
+        station["disponibilite_inconnue"] += 1
+        return
+
+    etat = str(disponibilite.get("etat") or "").lower()
+    occupation = str(disponibilite.get("occupation") or "").lower()
+
+    if etat == "en_service" and occupation == "libre":
+        station["disponibles"] += 1
+    elif etat == "en_service" and occupation in {"occupe", "occupé"}:
+        station["occupes"] += 1
+    elif etat and etat not in {"inconnu", "unknown"}:
+        station["hors_service"] += 1
+    else:
+        station["disponibilite_inconnue"] += 1
+
+    if disponibilite.get("horodatage"):
+        station["disponibilite_horodatage"] = max(
+            station.get("disponibilite_horodatage", ""),
+            disponibilite.get("horodatage", ""),
+        )
+
+
+def libelle_disponibilite_irve(station):
+
+    if station["disponibles"]:
+        return f"{station['disponibles']} disponible(s)"
+
+    if station["occupes"]:
+        return "occupée"
+
+    if station["hors_service"]:
+        return "hors service"
+
+    return "disponibilité inconnue"
+
+
+def limites_recherche_irve(latitude, longitude, rayon):
+
+    latitude = float(latitude)
+    longitude = float(longitude)
+    rayon = max(1, min(100, int(rayon or 25)))
+    marge_latitude = rayon / 111
+    marge_longitude = rayon / (
+        111 * max(0.25, math.cos(math.radians(latitude)))
+    )
+
+    return {
+        "consolidated_latitude__greater": latitude - marge_latitude,
+        "consolidated_latitude__less": latitude + marge_latitude,
+        "consolidated_longitude__greater": longitude - marge_longitude,
+        "consolidated_longitude__less": longitude + marge_longitude,
+    }
+
+
+def lignes_irve_statiques_api(latitude, longitude, rayon, limite):
+
+    parametres = {
+        cle: str(valeur)
+        for cle, valeur in limites_recherche_irve(
+            latitude,
+            longitude,
+            rayon,
+        ).items()
+    }
+    parametres["page_size"] = str(max(50, min(500, int(limite or 250) * 4)))
+
+    url = IRVE_STATIQUE_API_URL
+    lignes = []
+    pages = 0
+    while url and pages < 8 and len(lignes) < max(500, limite * 6):
+        reponse = http_requests.get(
+            url,
+            params=parametres if pages == 0 else None,
+            timeout=15,
+        )
+        reponse.raise_for_status()
+        donnees = reponse.json()
+        lignes.extend(donnees.get("data") or [])
+        url = (donnees.get("links") or {}).get("next")
+        parametres = None
+        pages += 1
+
+    return lignes
+
+
+def preparer_bornes_irve(
+    latitude,
+    longitude,
+    rayon=25,
+    limite=250,
+):
+
+    if latitude is None or longitude is None:
+        return []
+
+    try:
+        lignes_statiques = lignes_irve_statiques_api(
+            latitude,
+            longitude,
+            rayon,
+            limite,
+        )
+    except Exception as erreur:
+        logger.exception("API IRVE statique indisponible.")
+        raise HTTPException(
+            status_code=503,
+            detail="Bornes IRVE indisponibles",
+        ) from erreur
+
+    disponibilites = charger_disponibilites_irve()
+    rayon = max(1, min(100, int(rayon or 25)))
+    stations = {}
+
+    for ligne in lignes_statiques:
+        latitude_borne, longitude_borne = coordonnees_irve(ligne)
+        if latitude_borne is None or longitude_borne is None:
+            continue
+
+        distance = distance_km(
+            latitude,
+            longitude,
+            latitude_borne,
+            longitude_borne,
+        )
+        if distance > rayon:
+            continue
+
+        station_id = (
+            ligne.get("id_station_itinerance")
+            or ligne.get("id_station_local")
+            or ligne.get("id_pdc_itinerance")
+            or ligne.get("id_pdc_local")
+            or ""
+        ).strip()
+        if not station_id:
+            continue
+
+        station = stations.setdefault(
+            station_id,
+            {
+                "id": "irve-" + station_id,
+                "source_id": station_id,
+                "enseigne": (
+                    ligne.get("nom_enseigne")
+                    or ligne.get("nom_station")
+                    or ligne.get("nom_operateur")
+                    or "Borne de recharge"
+                ),
+                "adresse": ligne.get("adresse_station", "") or "",
+                "cp": ligne.get("consolidated_code_postal", "") or "",
+                "ville": ligne.get("consolidated_commune", "") or "",
+                "latitude": latitude_borne,
+                "longitude": longitude_borne,
+                "distance": round(distance, 2),
+                "energie": "electric",
+                "carburant": "electrique",
+                "prises": set(),
+                "puissance_kw": 0.0,
+                "nbre_pdc": 0,
+                "disponibles": 0,
+                "occupes": 0,
+                "hors_service": 0,
+                "disponibilite_inconnue": 0,
+                "disponibilite_horodatage": "",
+                "prix": IRVE_PRIX_KWH_ESTIME,
+                "prix_estime": True,
+                "tarification": "",
+            },
+        )
+
+        station["distance"] = min(station["distance"], round(distance, 2))
+        station["puissance_kw"] = max(
+            station["puissance_kw"],
+            valeur_float_irve(ligne.get("puissance_nominale")) or 0.0,
+        )
+        station["nbre_pdc"] += 1
+        station["prises"].update(prises_irve(ligne))
+        prix, prix_estime = prix_kwh_irve(ligne)
+        if not prix_estime or station["prix_estime"]:
+            station["prix"] = prix
+            station["prix_estime"] = prix_estime
+        if ligne.get("tarification") and not station["tarification"]:
+            station["tarification"] = ligne.get("tarification", "")
+
+        ajouter_disponibilite_irve(
+            station,
+            disponibilites.get(
+                str(ligne.get("id_pdc_itinerance") or "").strip()
+            ),
+        )
+
+    bornes = []
+    for station in stations.values():
+        station["prises"] = sorted(station["prises"])
+        station["disponibilite"] = libelle_disponibilite_irve(station)
+        bornes.append(station)
+
+    bornes.sort(
+        key=lambda station: (
+            0 if station["disponibles"] else 1,
+            station["distance"],
+            -station["puissance_kw"],
+        )
+    )
+
+    return bornes[:max(1, min(500, int(limite or 250)))]
 
 
 MENU_PAGES_EDITORIALES = [
@@ -3389,52 +4014,130 @@ def calculer_itineraire_osrm(points, cap_depart=None):
     return donnees
 
 
+def calculer_itineraire_openstreetmap(points, cap_depart=None):
+
+    donnees = calculer_itineraire_osrm(points, cap_depart)
+    donnees["provider"] = "openstreetmap"
+    return donnees
+
+
+def normaliser_moteur_itineraire(moteur):
+
+    if moteur in {"openstreetmap", "osm", "osrm"}:
+        return "openstreetmap"
+
+    if moteur == "graphhopper":
+        return "graphhopper"
+
+    return "auto"
+
+
+def fournisseurs_itineraire(moteur):
+
+    moteur = normaliser_moteur_itineraire(moteur)
+    fournisseurs = {
+        "graphhopper": {
+            "nom": "graphhopper",
+            "actif": bool(GRAPHHOPPER_API_KEY),
+            "calculer": calculer_itineraire_graphhopper,
+            "utilise_cap_depart": False,
+            "erreur": "GraphHopper indisponible",
+        },
+        "openstreetmap": {
+            "nom": "openstreetmap",
+            "actif": True,
+            "calculer": calculer_itineraire_openstreetmap,
+            "utilise_cap_depart": True,
+            "erreur": "OpenStreetMap indisponible",
+        },
+    }
+
+    if moteur == "auto":
+        return [
+            fournisseur
+            for fournisseur in (
+                fournisseurs["graphhopper"],
+                fournisseurs["openstreetmap"],
+            )
+            if fournisseur["actif"]
+        ]
+
+    return [fournisseurs[moteur]] if fournisseurs[moteur]["actif"] else []
+
+
 @app.post("/api/itineraire")
 async def calculer_itineraire(requete: RequeteItineraire):
 
-    try:
-        if (
-            requete.moteur in {"auto", "graphhopper"}
-            and GRAPHHOPPER_API_KEY
-        ):
-            return await asyncio.to_thread(
-                calculer_itineraire_graphhopper,
-                requete.points,
-            )
-    except Exception:
-        logger.exception(
-            "GraphHopper indisponible, bascule sur OSRM."
-        )
+    moteur = normaliser_moteur_itineraire(requete.moteur)
+    fournisseurs = fournisseurs_itineraire(moteur)
+    derniere_erreur = None
 
-        if requete.moteur == "graphhopper":
-            raise HTTPException(
-                status_code=502,
-                detail="GraphHopper indisponible",
-            )
-
-    try:
-        return await asyncio.to_thread(
-            calculer_itineraire_osrm,
-            requete.points,
-            requete.cap_depart,
-        )
-    except Exception as erreur:
-        logger.exception("Itinéraire indisponible.")
+    if not fournisseurs:
         raise HTTPException(
             status_code=502,
-            detail="itinéraire indisponible",
-        ) from erreur
+            detail=(
+                "GraphHopper indisponible"
+                if moteur == "graphhopper"
+                else "itinéraire indisponible"
+            ),
+        )
+
+    for fournisseur in fournisseurs:
+        try:
+            if fournisseur["utilise_cap_depart"]:
+                return await asyncio.to_thread(
+                    fournisseur["calculer"],
+                    requete.points,
+                    requete.cap_depart,
+                )
+
+            return await asyncio.to_thread(
+                fournisseur["calculer"],
+                requete.points,
+            )
+        except Exception as erreur:
+            derniere_erreur = erreur
+            logger.exception(
+                "%s indisponible.",
+                fournisseur["nom"],
+            )
+
+            if moteur != "auto":
+                raise HTTPException(
+                    status_code=502,
+                    detail=fournisseur["erreur"],
+                ) from erreur
+
+    if derniere_erreur:
+        logger.error(
+            "Itinéraire indisponible avec tous les fournisseurs."
+        )
+
+    raise HTTPException(
+        status_code=502,
+        detail="itinéraire indisponible",
+    )
 
 
 @app.get("/api/itineraire/statut")
 def statut_itineraire():
 
+    fournisseurs = fournisseurs_itineraire("auto")
+
     return {
         "graphhopper_configure": bool(GRAPHHOPPER_API_KEY),
         "moteur_prioritaire": (
-            "graphhopper" if GRAPHHOPPER_API_KEY else "osrm"
+            "graphhopper" if GRAPHHOPPER_API_KEY else "openstreetmap"
         ),
-        "fallback": "osrm",
+        "fournisseurs": [
+            fournisseur["nom"]
+            for fournisseur in fournisseurs
+        ],
+        "fallback": "openstreetmap",
+        "alias": {
+            "osrm": "openstreetmap",
+            "osm": "openstreetmap",
+        },
         "variables_acceptees": [
             "GRAPHHOPPER_API_KEY",
             "GRAPH_HOPPER_API_KEY",
@@ -3501,6 +4204,17 @@ def get_stations_proches(
     rayon: int = 25,
 ):
 
+    carburant = (carburant or "gazole").lower()
+    if carburant == "electrique":
+        bornes = preparer_bornes_irve(latitude, longitude, rayon)
+        return {
+            "stations": bornes,
+            "count": len(bornes),
+            "updated_at": None,
+            "data_version": version_irve(),
+            "source": "irve",
+        }
+
     date_mise_a_jour = date_mise_a_jour_stations()
     stations = preparer_stations_pour_carte(
         charger_stations(),
@@ -3542,6 +4256,48 @@ def get_stations_proches(
             else None
         ),
         "data_version": version_donnees_stations(),
+    }
+
+
+def version_irve():
+
+    try:
+        statique = IRVE_STATIQUE_CACHE.stat()
+        dynamique = IRVE_DYNAMIQUE_CACHE.stat()
+        return "|".join(
+            (
+                str(statique.st_mtime_ns),
+                str(statique.st_size),
+                str(dynamique.st_mtime_ns),
+                str(dynamique.st_size),
+            )
+        )
+    except OSError:
+        return "irve"
+
+
+@app.get("/api/bornes-irve")
+def get_bornes_irve(
+    latitude: float,
+    longitude: float,
+    rayon: int = 25,
+    limite: int = 250,
+):
+
+    bornes = preparer_bornes_irve(
+        latitude,
+        longitude,
+        rayon,
+        limite,
+    )
+
+    return {
+        "bornes": bornes,
+        "stations": bornes,
+        "count": len(bornes),
+        "updated_at": None,
+        "data_version": version_irve(),
+        "source": "irve",
     }
 
 
@@ -3887,6 +4643,30 @@ def lire_profils_vehicules_compte():
     }
 
 
+@app.get("/api/premium/architecture")
+def architecture_premium():
+
+    donnees = {
+        "plan": "premium" if PREMIUM_TEST_ACTIF else "free",
+        "historique_economies": [],
+    }
+
+    return {
+        "test_gratuit_ete": PREMIUM_TEST_ACTIF,
+        "prix": "gratuit tout l'été" if PREMIUM_TEST_ACTIF else "3,99 €/an",
+        "capacites": CAPACITES_PREMIUM,
+        "limites": limites_premium(donnees),
+        "modules": {
+            "optimisation_avancee": "moteur_rentabilite",
+            "alertes_prix": "alertes_prix",
+            "favoris_illimites": "favoris",
+            "historique_avance": "historique_economies",
+            "statistiques": "statistiques",
+            "optimisation_longs_trajets": "trajets_prepares",
+        },
+    }
+
+
 @app.put("/api/compte/vehicules")
 def remplacer_vehicules_compte(
     vehicules: ListeVehiculesCompte,
@@ -4002,6 +4782,89 @@ def vider_historique_compte(request: Request):
     return {
         "ok": True,
         "historique_economies": [],
+        "updated_at": utilisateur["updated_at"],
+    }
+
+
+@app.get("/api/compte/premium")
+def lire_premium_compte(request: Request):
+
+    _email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+    donnees["premium"] = premium_compte_nettoye(donnees)
+
+    return {
+        "ok": True,
+        "premium": donnees["premium"],
+        "plan": donnees.get("plan", "free"),
+    }
+
+
+@app.get("/api/compte/alertes-prix")
+def lire_alertes_prix_compte(request: Request):
+
+    _email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+
+    return {
+        "ok": True,
+        "alertes_prix": alertes_prix_nettoyees(
+            donnees.get("alertes_prix", [])
+        ),
+    }
+
+
+@app.put("/api/compte/alertes-prix")
+def remplacer_alertes_prix_compte(
+    payload: ListeAlertesPrixCompte,
+    request: Request,
+):
+
+    _email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+    donnees["alertes_prix"] = alertes_prix_nettoyees(payload.alertes_prix)
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "alertes_prix": donnees["alertes_prix"],
+        "updated_at": utilisateur["updated_at"],
+    }
+
+
+@app.get("/api/compte/statistiques")
+def lire_statistiques_compte(request: Request):
+
+    _email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+    statistiques = statistiques_compte(
+        donnees.get("historique_economies", [])
+    )
+
+    return {
+        "ok": True,
+        "statistiques": statistiques,
+    }
+
+
+@app.put("/api/compte/optimisation")
+def remplacer_optimisation_compte(
+    optimisation: OptimisationCompte,
+    request: Request,
+):
+
+    _email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees = synchroniser_meta_securite(utilisateur)
+    donnees["optimisation"] = optimisation_compte_nettoyee(
+        optimisation.model_dump()
+    )
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "optimisation": donnees["optimisation"],
         "updated_at": utilisateur["updated_at"],
     }
 
@@ -4247,6 +5110,18 @@ def page_web(
     rayon: int = 25
 ):
 
+    carburant = (carburant or "gazole").lower()
+    if carburant not in {
+        "gazole",
+        "sp95",
+        "sp98",
+        "e10",
+        "e85",
+        "gplc",
+        "electrique",
+    }:
+        carburant = "gazole"
+
     stations = charger_stations()
 
     # Recherche ville ou code postal
@@ -4273,13 +5148,16 @@ def page_web(
 
         ]
 
-    stations = preparer_stations_pour_carte(
-        stations,
-        carburant,
-        latitude,
-        longitude,
-        rayon,
-    )
+    if carburant == "electrique":
+        stations = []
+    else:
+        stations = preparer_stations_pour_carte(
+            stations,
+            carburant,
+            latitude,
+            longitude,
+            rayon,
+        )
 
     nombre_stations = len(stations)
 
