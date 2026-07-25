@@ -28,9 +28,23 @@ def database_url():
     return url
 
 
+def migrations_postgres_disponibles():
+
+    url = database_url()
+    return bool(
+        url.startswith("postgresql+psycopg://")
+        or url.startswith("postgresql://")
+        or url.startswith("postgres://")
+    )
+
+
 def run_migrations_offline():
 
     url = database_url()
+    if not migrations_postgres_disponibles():
+        print("DATABASE_URL non configuree, migration Alembic ignoree.")
+        return
+
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -43,6 +57,10 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
+
+    if not migrations_postgres_disponibles():
+        print("DATABASE_URL non configuree, migration Alembic ignoree.")
+        return
 
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = database_url()
