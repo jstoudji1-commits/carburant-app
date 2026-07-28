@@ -36,3 +36,27 @@ python migrate_storage.py export-json
 ```
 
 Puis redemarrer l'application sans `DATABASE_URL`.
+
+## Mise a jour des bornes de recharge
+
+L'application telecharge automatiquement le fichier statique national IRVE
+tous les jours a 06:00, heure de Paris. Le fichier est conserve dans le dossier
+configure par `OPTIPLEIN_DATA_DIR` (`/var/data` sur Render) afin que la derniere
+copie valide reste disponible apres un redemarrage.
+
+Au premier demarrage, le fichier est aussi telecharge immediatement s'il
+n'existe pas encore. La mise a jour peut etre desactivee avec :
+
+```bash
+OPTIPLEIN_IRVE_DAILY_UPDATE=false
+```
+
+Le fichier dynamique national IRVE, qui contient l'etat et l'occupation des
+points de charge, est telecharge au demarrage puis toutes les 5 minutes. Chaque
+nouvelle copie est controlee avant de remplacer la derniere version valide.
+
+Cette mise a jour peut etre desactivee avec :
+
+```bash
+OPTIPLEIN_IRVE_DYNAMIC_UPDATE=false
+```
