@@ -1659,6 +1659,63 @@ body{
     font-size:13px;
 }
 
+.prix-bulle.statut-borne-disponible{
+    border-color:#16a34a;
+    background:#f0fdf4;
+}
+
+.prix-bulle.statut-borne-occupee{
+    border-color:#e67e22;
+    background:#fff7ed;
+}
+
+.prix-bulle.statut-borne-hors-service{
+    border-color:#dc2626;
+    background:#fef2f2;
+}
+
+.prix-bulle.statut-borne-inconnue{
+    border-color:#6b7280;
+    background:#f3f4f6;
+}
+
+.borne-statut{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    margin-bottom:4px;
+    padding:3px 7px;
+    border-radius:999px;
+    color:white;
+    font-size:11px;
+    font-weight:900;
+}
+
+.borne-statut::before{
+    content:"";
+    width:7px;
+    height:7px;
+    border:2px solid rgba(255,255,255,0.86);
+    border-radius:50%;
+    background:currentColor;
+}
+
+.borne-statut.statut-borne-disponible{
+    background:#16a34a;
+}
+
+.borne-statut.statut-borne-occupee{
+    background:#e67e22;
+}
+
+.borne-statut.statut-borne-hors-service{
+    background:#dc2626;
+}
+
+.borne-statut.statut-borne-inconnue{
+    background:#6b7280;
+}
+
 .ravitaillement-marker{
     display:flex !important;
     align-items:center;
@@ -5805,6 +5862,37 @@ function formaterDetailPrixStation(station) {
 
 }
 
+function statutDisponibiliteIrve(station) {
+
+    if (!stationElectrique(station)) {
+        return "";
+    }
+
+    if (Number(station.disponibles) > 0) {
+        return "disponible";
+    }
+    if (Number(station.occupes) > 0) {
+        return "occupee";
+    }
+    if (Number(station.horsService) > 0) {
+        return "hors-service";
+    }
+
+    var texte = String(station.disponibilite || "").toLowerCase();
+    if (texte.includes("disponible")) {
+        return "disponible";
+    }
+    if (texte.includes("occup")) {
+        return "occupee";
+    }
+    if (texte.includes("hors service")) {
+        return "hors-service";
+    }
+
+    return "inconnue";
+
+}
+
 function htmlDetailsBorneIrve(station) {
 
     if (!stationElectrique(station)) {
@@ -5817,10 +5905,15 @@ function htmlDetailsBorneIrve(station) {
     var disponibilite = station.disponibilite
         || "disponibilit\u00e9 inconnue";
     var points = Number(station.nbrePdc) || 0;
+    var statut = statutDisponibiliteIrve(station);
 
     return ''
         + '<p class="station-popup-distance">'
+        + '<span class="borne-statut statut-borne-'
+        + statut
+        + '">'
         + echapperHtml(disponibilite)
+        + '</span>'
         + (points ? ' \u00b7 ' + points + ' point(s)' : '')
         + '<br>Prises : '
         + echapperHtml(prises)
@@ -5874,6 +5967,11 @@ function normaliserStationCarte(station) {
         puissanceKw: Number(station.puissance_kw),
         prises: Array.isArray(station.prises) ? station.prises : [],
         disponibilite: station.disponibilite || "",
+        disponibles: Number(station.disponibles) || 0,
+        occupes: Number(station.occupes) || 0,
+        horsService: Number(station.hors_service) || 0,
+        disponibiliteInconnue:
+            Number(station.disponibilite_inconnue) || 0,
         nbrePdc: Number(station.nbre_pdc) || 0,
         prixEstime: Boolean(station.prix_estime),
         tarification: station.tarification || ""
@@ -5903,10 +6001,16 @@ function creerMarqueurStationDynamique(stationBrute) {
     var indisponible = prixStationDisponible(station.prix)
         ? ""
         : " indisponible";
+    var classeStatutBorne = stationElectrique(station)
+        ? " statut-borne-" + statutDisponibiliteIrve(station)
+        : "";
     var prixIcon = L.divIcon({
         className: "prix-marker",
         html: ''
-            + '<div class="prix-bulle' + indisponible + '">'
+            + '<div class="prix-bulle'
+            + indisponible
+            + classeStatutBorne
+            + '">'
             + logoCarte
             + '<span>' + echapperHtml(prixHtml) + '</span>'
             + htmlIndicateurTendance(station.tendance, station.prix)
