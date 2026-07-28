@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 import asyncio
 import csv
 from contextlib import asynccontextmanager, suppress
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.message import EmailMessage
 from email.utils import getaddresses
 import base64
@@ -29,6 +29,7 @@ import smtplib
 import ssl
 import threading
 import time
+from zoneinfo import ZoneInfo
 import requests as http_requests
 from update_data import (
     date_derniere_mise_a_jour,
@@ -55,6 +56,16 @@ MISE_A_JOUR_FOND_ACTIVE = os.getenv(
     "OPTIPLEIN_BACKGROUND_UPDATE",
     "false",
 ).strip().lower() in {"1", "true", "yes", "on"}
+MISE_A_JOUR_IRVE_ACTIVE = os.getenv(
+    "OPTIPLEIN_IRVE_DAILY_UPDATE",
+    "true",
+).strip().lower() in {"1", "true", "yes", "on"}
+MISE_A_JOUR_IRVE_DYNAMIQUE_ACTIVE = os.getenv(
+    "OPTIPLEIN_IRVE_DYNAMIC_UPDATE",
+    "true",
+).strip().lower() in {"1", "true", "yes", "on"}
+IRVE_FUSEAU_HORAIRE = ZoneInfo("Europe/Paris")
+IRVE_HEURE_MISE_A_JOUR = 6
 EMAIL_SIGNALEMENT = os.getenv(
     "REPORT_EMAIL",
     "optiplein5@gmail.com"
@@ -2167,6 +2178,67 @@ async def actualiser_prix_periodiquement():
         )
 
 
+def prochaine_mise_a_jour_irve(maintenant=None):
+
+    maintenant = maintenant or datetime.now(IRVE_FUSEAU_HORAIRE)
+    maintenant = maintenant.astimezone(IRVE_FUSEAU_HORAIRE)
+    prochaine = maintenant.replace(
+        hour=IRVE_HEURE_MISE_A_JOUR,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+    if prochaine <= maintenant:
+        prochaine += timedelta(days=1)
+    return prochaine
+
+
+async def actualiser_irve_statique_quotidiennement():
+
+    if not IRVE_STATIQUE_CACHE.exists():
+        try:
+            await asyncio.to_thread(telecharger_irve_statique)
+        except Exception:
+            logger.exception(
+                "Le telechargement initial du fichier IRVE a echoue."
+            )
+
+    while True:
+        maintenant = datetime.now(IRVE_FUSEAU_HORAIRE)
+        prochaine = prochaine_mise_a_jour_irve(maintenant)
+        attente = max(0, (prochaine - maintenant).total_seconds())
+        logger.info(
+            "Prochaine mise a jour IRVE statique programmee pour %s.",
+            prochaine.isoformat(),
+        )
+        await asyncio.sleep(attente)
+
+        try:
+            await asyncio.to_thread(telecharger_irve_statique)
+        except Exception:
+            logger.exception(
+                "La mise a jour quotidienne du fichier IRVE a echoue."
+            )
+
+
+async def actualiser_irve_dynamique_periodiquement():
+
+    while True:
+        debut = asyncio.get_running_loop().time()
+
+        try:
+            await asyncio.to_thread(telecharger_irve_dynamique)
+        except Exception:
+            logger.exception(
+                "La mise a jour du fichier IRVE dynamique a echoue."
+            )
+
+        duree = asyncio.get_running_loop().time() - debut
+        await asyncio.sleep(
+            max(0, IRVE_DYNAMIQUE_TTL_SECONDES - duree)
+        )
+
+
 def mise_a_jour_stations_en_retard():
 
     date_mise_a_jour = date_mise_a_jour_stations()
@@ -2220,21 +2292,38 @@ def lancer_mise_a_jour_stations_si_retard():
 async def duree_de_vie_application(app):
 
     tache_mise_a_jour = None
+    tache_mise_a_jour_irve = None
+    tache_mise_a_jour_irve_dynamique = None
 
     if MISE_A_JOUR_FOND_ACTIVE:
         tache_mise_a_jour = asyncio.create_task(
             actualiser_prix_periodiquement()
         )
+    if MISE_A_JOUR_IRVE_ACTIVE:
+        tache_mise_a_jour_irve = asyncio.create_task(
+            actualiser_irve_statique_quotidiennement()
+        )
+    if MISE_A_JOUR_IRVE_DYNAMIQUE_ACTIVE:
+        tache_mise_a_jour_irve_dynamique = asyncio.create_task(
+            actualiser_irve_dynamique_periodiquement()
+        )
 
     yield
 
-    if not tache_mise_a_jour:
-        return
-
-    tache_mise_a_jour.cancel()
-
-    with suppress(asyncio.CancelledError):
-        await tache_mise_a_jour
+    taches = [
+        tache
+        for tache in (
+            tache_mise_a_jour,
+            tache_mise_a_jour_irve,
+            tache_mise_a_jour_irve_dynamique,
+        )
+        if tache
+    ]
+    for tache in taches:
+        tache.cancel()
+    for tache in taches:
+        with suppress(asyncio.CancelledError):
+            await tache
 
 
 app = FastAPI(
@@ -2529,6 +2618,90 @@ def rafraichir_cache_csv(url, chemin, ttl_secondes):
                         fichier.write(bloc)
         temporaire.replace(chemin)
 
+    return chemin
+
+
+def telecharger_irve_statique():
+
+    chemin = IRVE_STATIQUE_CACHE
+
+    with IRVE_CACHE_LOCK:
+        chemin.parent.mkdir(parents=True, exist_ok=True)
+        temporaire = chemin.with_suffix(chemin.suffix + ".tmp")
+
+        try:
+            with http_requests.get(
+                IRVE_STATIQUE_URL,
+                stream=True,
+                timeout=120,
+            ) as reponse:
+                reponse.raise_for_status()
+                with temporaire.open("wb") as fichier:
+                    for bloc in reponse.iter_content(1024 * 1024):
+                        if bloc:
+                            fichier.write(bloc)
+
+            if not temporaire.exists() or temporaire.stat().st_size == 0:
+                raise ValueError("Le fichier IRVE telecharge est vide.")
+
+            # Verifie que la ressource ressemble bien a un CSV avant de
+            # remplacer la derniere copie exploitable.
+            with temporaire.open("rb") as fichier:
+                entete = fichier.read(4096)
+            if b"id_station" not in entete and b"id_pdc" not in entete:
+                raise ValueError("Le fichier IRVE telecharge est invalide.")
+
+            temporaire.replace(chemin)
+        finally:
+            temporaire.unlink(missing_ok=True)
+
+    logger.info(
+        "Fichier IRVE statique actualise (%s octets).",
+        chemin.stat().st_size,
+    )
+    return chemin
+
+
+def telecharger_irve_dynamique():
+
+    chemin = IRVE_DYNAMIQUE_CACHE
+
+    with IRVE_CACHE_LOCK:
+        chemin.parent.mkdir(parents=True, exist_ok=True)
+        temporaire = chemin.with_suffix(chemin.suffix + ".tmp")
+
+        try:
+            with http_requests.get(
+                IRVE_DYNAMIQUE_URL,
+                stream=True,
+                timeout=60,
+            ) as reponse:
+                reponse.raise_for_status()
+                with temporaire.open("wb") as fichier:
+                    for bloc in reponse.iter_content(1024 * 1024):
+                        if bloc:
+                            fichier.write(bloc)
+
+            if not temporaire.exists() or temporaire.stat().st_size == 0:
+                raise ValueError(
+                    "Le fichier IRVE dynamique telecharge est vide."
+                )
+
+            with temporaire.open("rb") as fichier:
+                entete = fichier.read(4096)
+            if b"id_pdc" not in entete or b"etat_pdc" not in entete:
+                raise ValueError(
+                    "Le fichier IRVE dynamique telecharge est invalide."
+                )
+
+            temporaire.replace(chemin)
+        finally:
+            temporaire.unlink(missing_ok=True)
+
+    logger.info(
+        "Fichier IRVE dynamique actualise (%s octets).",
+        chemin.stat().st_size,
+    )
     return chemin
 
 
@@ -5288,6 +5461,3 @@ def sitemap_xml(request: Request):
         "</urlset>\n",
         media_type="application/xml",
     )
-
-
-
