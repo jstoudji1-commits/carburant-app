@@ -2882,7 +2882,10 @@ def lignes_irve_statiques_api(latitude, longitude, rayon, limite):
             rayon,
         ).items()
     }
-    parametres["page_size"] = str(max(50, min(500, int(limite or 250) * 4)))
+    # L'API tabulaire data.gouv.fr limite actuellement les pages a 200
+    # lignes. Une valeur superieure provoque une erreur 400 et empeche
+    # l'affichage de toutes les bornes.
+    parametres["page_size"] = str(max(50, min(200, int(limite or 250) * 4)))
 
     url = IRVE_STATIQUE_API_URL
     lignes = []
