@@ -1703,6 +1703,22 @@ body{
     background:#f3f4f6;
 }
 
+.prix-bulle.borne-irve{
+    min-width:116px;
+    gap:5px;
+    padding:5px 6px;
+    font-size:13px;
+}
+
+.prix-bulle.borne-irve .enseigne-logo{
+    width:22px;
+    height:22px;
+}
+
+.prix-bulle.borne-irve > span:not(.enseigne-logo){
+    letter-spacing:-0.2px;
+}
+
 .borne-statut{
     display:inline-flex;
     align-items:center;
@@ -1864,6 +1880,18 @@ body{
 .popup-identite-prix .enseigne-logo-reseau{
     font-size:14px;
     letter-spacing:-0.5px;
+}
+
+.enseigne-logo-irve-large{
+    width:38px !important;
+}
+
+.enseigne-logo-irve-large img{
+    padding:1px;
+}
+
+.popup-identite-prix .enseigne-logo-irve-large{
+    width:68px !important;
 }
 
 .popup-identite-prix{
@@ -5539,19 +5567,19 @@ var logosEnseignes = [
     },
     {
         motifs: ["driveco"],
-        monogramme: "D",
-        fond: "#7ac943",
-        couleur: "#102536"
+        fichier: "driveco.png",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
     },
     {
         motifs: ["freshmile"],
-        monogramme: "FM",
-        fond: "#00a79d"
+        fichier: "freshmile.png"
     },
     {
         motifs: ["qovoltis"],
-        monogramme: "Q",
-        fond: "#1246a0"
+        fichier: "qovoltis.webp",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
     },
     {
         motifs: ["waat"],
@@ -5581,9 +5609,325 @@ var logosEnseignes = [
         fond: "#0085ca"
     },
     {
-        motifs: ["powerdot"],
-        monogramme: "P",
-        fond: "#ef4f91"
+        motifs: ["powerdot", "power dot"],
+        fichier: "powerdot.svg",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
+    },
+    {
+        motifs: ["indigo", "indigoneo"],
+        fichier: "indigo.ico"
+    },
+    {
+        motifs: ["engie vianeo", "vianeo"],
+        fichier: "vianeo.svg",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
+    },
+    {
+        motifs: ["eborn"],
+        monogramme: "eB",
+        fond: "#6abf4b",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["citeos", "mobive"],
+        monogramme: "CM",
+        fond: "#f28c00",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["e totem", "etotem"],
+        fichier: "e-totem.png"
+    },
+    {
+        motifs: ["belib"],
+        fichier: "belib.png"
+    },
+    {
+        motifs: ["ouest charge"],
+        monogramme: "OC",
+        fond: "#006fba"
+    },
+    {
+        motifs: ["bump"],
+        monogramme: "B",
+        fond: "#ffca05",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["effia"],
+        monogramme: "EF",
+        fond: "#e00046"
+    },
+    {
+        motifs: ["qpark", "q park"],
+        monogramme: "QP",
+        fond: "#009fe3"
+    },
+    {
+        motifs: ["pass pass"],
+        monogramme: "PP",
+        fond: "#6f2c91"
+    },
+    {
+        motifs: ["electric 55", "yes55"],
+        monogramme: "E55",
+        fond: "#27348b"
+    },
+    {
+        motifs: ["reveo", "reveo 2025"],
+        fichier: "reveo.ico"
+    },
+    {
+        motifs: ["evzen"],
+        monogramme: "EV",
+        fond: "#542785"
+    },
+    {
+        motifs: ["saemes"],
+        monogramme: "S",
+        fond: "#0078a8"
+    },
+    {
+        motifs: ["edf ev100", "edf"],
+        monogramme: "EDF",
+        fond: "#ff7900",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["alize"],
+        monogramme: "A",
+        fond: "#005ca9"
+    },
+    {
+        motifs: ["easy charge"],
+        monogramme: "EC",
+        fond: "#76b82a",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["borne bleue"],
+        monogramme: "BB",
+        fond: "#1677bd"
+    },
+    {
+        motifs: ["stations e", "stations-e"],
+        monogramme: "SE",
+        fond: "#e94e1b"
+    },
+    {
+        motifs: ["sigeif"],
+        monogramme: "SI",
+        fond: "#0064a8"
+    },
+    {
+        motifs: ["plein tarnais"],
+        monogramme: "PT",
+        fond: "#77b82a",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["metropolis"],
+        monogramme: "M",
+        fond: "#64358c"
+    },
+    {
+        motifs: ["sdec energie"],
+        monogramme: "SD",
+        fond: "#007f8b"
+    },
+    {
+        motifs: ["rossinienergy", "rossini energy"],
+        monogramme: "RE",
+        fond: "#ef7d00",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["ze watt", "ze-watt"],
+        monogramme: "ZW",
+        fond: "#00a099"
+    },
+    {
+        motifs: ["enerstock"],
+        monogramme: "EN",
+        fond: "#087a52"
+    },
+    {
+        motifs: ["izivia"],
+        fichier: "izivia.webp",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
+    },
+    {
+        motifs: ["soregies"],
+        monogramme: "SO",
+        fond: "#009fe3"
+    },
+    {
+        motifs: ["zunder"],
+        monogramme: "Z",
+        fond: "#652d90"
+    },
+    {
+        motifs: ["qwello"],
+        monogramme: "QW",
+        fond: "#153e75"
+    },
+    {
+        motifs: ["e vadea", "e-vadea"],
+        monogramme: "EV",
+        fond: "#008cc1"
+    },
+    {
+        motifs: ["plug inn"],
+        monogramme: "PI",
+        fond: "#57227d"
+    },
+    {
+        motifs: ["atlante"],
+        monogramme: "AT",
+        fond: "#00a98f"
+    },
+    {
+        motifs: ["nw iecharge", "iecharge"],
+        monogramme: "NW",
+        fond: "#542683"
+    },
+    {
+        motifs: ["dream energy"],
+        monogramme: "DE",
+        fond: "#006b5b"
+    },
+    {
+        motifs: ["road", "e flux"],
+        monogramme: "R",
+        fond: "#243746"
+    },
+    {
+        motifs: ["fr y55", "y55"],
+        monogramme: "Y55",
+        fond: "#27348b"
+    },
+    {
+        motifs: ["bp pulse"],
+        monogramme: "BP",
+        fond: "#00a650"
+    },
+    {
+        motifs: ["nice rp"],
+        monogramme: "NR",
+        fond: "#005fa8"
+    },
+    {
+        motifs: ["adp groupe"],
+        monogramme: "ADP",
+        fond: "#e63329"
+    },
+    {
+        motifs: ["seolis"],
+        monogramme: "SE",
+        fond: "#0086a8"
+    },
+    {
+        motifs: ["ecocharge77"],
+        monogramme: "E77",
+        fond: "#4a9b35"
+    },
+    {
+        motifs: ["seymaborne"],
+        monogramme: "SB",
+        fond: "#0077a8"
+    },
+    {
+        motifs: ["ilewat"],
+        monogramme: "IW",
+        fond: "#00a096"
+    },
+    {
+        motifs: ["grand lyon"],
+        monogramme: "GL",
+        fond: "#e84e0f"
+    },
+    {
+        motifs: ["e charge50"],
+        monogramme: "E50",
+        fond: "#0066a1"
+    },
+    {
+        motifs: ["yusco"],
+        monogramme: "Y",
+        fond: "#ef7d00",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["r3 spv", "spv com"],
+        monogramme: "R3",
+        fond: "#334c66"
+    },
+    {
+        motifs: ["regard"],
+        monogramme: "RG",
+        fond: "#006e70"
+    },
+    {
+        motifs: ["sydela"],
+        monogramme: "SY",
+        fond: "#0077b5"
+    },
+    {
+        motifs: ["metropole rouen"],
+        monogramme: "MR",
+        fond: "#c72866"
+    },
+    {
+        motifs: ["interparking"],
+        monogramme: "IP",
+        fond: "#0066b3"
+    },
+    {
+        motifs: ["toulibeo"],
+        monogramme: "TO",
+        fond: "#69469b"
+    },
+    {
+        motifs: ["chargezy"],
+        monogramme: "CZ",
+        fond: "#00a67d"
+    },
+    {
+        motifs: ["ozecar"],
+        monogramme: "OZ",
+        fond: "#e94e1b"
+    },
+    {
+        motifs: ["siege27"],
+        monogramme: "S27",
+        fond: "#007e9e"
+    },
+    {
+        motifs: ["sowatt"],
+        monogramme: "SW",
+        fond: "#662d91"
+    },
+    {
+        motifs: ["grenoble alpes"],
+        monogramme: "GA",
+        fond: "#e6512f"
+    },
+    {
+        motifs: ["greentowheel"],
+        monogramme: "GW",
+        fond: "#4c9c2e"
+    },
+    {
+        motifs: ["greenspot"],
+        monogramme: "GS",
+        fond: "#008f6b"
+    },
+    {
+        motifs: ["ikea"],
+        fichier: "ikea.svg"
     },
     {
         motifs: ["tesla", "supercharger"],
@@ -5651,6 +5995,28 @@ function echapperHtml(valeur) {
     });
 }
 
+function couleurMonogrammeEnseigne(nomNormalise) {
+    var palette = [
+        "#425466",
+        "#176b87",
+        "#6b3fa0",
+        "#087a52",
+        "#a43b55",
+        "#9a5b13",
+        "#365a9d",
+        "#566b20"
+    ];
+    var empreinte = 0;
+
+    for (var index = 0; index < nomNormalise.length; index += 1) {
+        empreinte = (
+            empreinte * 31 + nomNormalise.charCodeAt(index)
+        ) >>> 0;
+    }
+
+    return palette[empreinte % palette.length];
+}
+
 function creerLogoEnseigne(nom, contexte) {
     var nomNormalise = normaliserNomEnseigne(nom);
     var logo = logosEnseignes.find(function(definition) {
@@ -5704,7 +6070,9 @@ function creerLogoEnseigne(nom, contexte) {
     }).join("") || "EV";
 
     return '<span class="enseigne-logo enseigne-logo-reseau"'
-        + ' style="--logo-bg:#425466;--logo-color:#ffffff" title="'
+        + ' style="--logo-bg:'
+        + couleurMonogrammeEnseigne(nomNormalise)
+        + ';--logo-color:#ffffff" title="'
         + echapperHtml(libelle)
         + '" aria-label="Logo '
         + echapperHtml(libelle)
@@ -6149,7 +6517,7 @@ function creerMarqueurStationDynamique(stationBrute) {
         ? ""
         : " indisponible";
     var classeStatutBorne = stationElectrique(station)
-        ? " statut-borne-" + statutDisponibiliteIrve(station)
+        ? " borne-irve statut-borne-" + statutDisponibiliteIrve(station)
         : "";
     var prixIcon = L.divIcon({
         className: "prix-marker",
@@ -6162,8 +6530,8 @@ function creerMarqueurStationDynamique(stationBrute) {
             + '<span>' + echapperHtml(prixHtml) + '</span>'
             + htmlIndicateurTendance(station.tendance, station.prix)
             + '</div>',
-        iconSize: [132, 36],
-        iconAnchor: [66, 18]
+        iconSize: stationElectrique(station) ? [146, 38] : [132, 36],
+        iconAnchor: stationElectrique(station) ? [73, 19] : [66, 18]
     });
     var distanceHtml = station.distance !== null
         ? '<p class="station-popup-distance">Distance : '
