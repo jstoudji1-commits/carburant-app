@@ -1828,6 +1828,21 @@ body{
     object-fit:contain;
 }
 
+.enseigne-logo-reseau{
+    border-color:var(--logo-bg, #425466);
+    background:var(--logo-bg, #425466);
+    color:var(--logo-color, #ffffff);
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:-0.3px;
+    line-height:1;
+}
+
+.popup-identite-prix .enseigne-logo-reseau{
+    font-size:14px;
+    letter-spacing:-0.5px;
+}
+
 .popup-identite-prix{
     display:flex;
     align-items:center;
@@ -5473,6 +5488,71 @@ var rayonStationsMaximumKm = 50;
 
 var logosEnseignes = [
     {
+        motifs: ["chargeguru", "charge guru"],
+        monogramme: "CG",
+        fond: "#5b2ca0"
+    },
+    {
+        motifs: ["larecharge", "la recharge"],
+        monogramme: "LR",
+        fond: "#087a52"
+    },
+    {
+        motifs: ["driveco"],
+        monogramme: "D",
+        fond: "#7ac943",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["freshmile"],
+        monogramme: "FM",
+        fond: "#00a79d"
+    },
+    {
+        motifs: ["qovoltis"],
+        monogramme: "Q",
+        fond: "#1246a0"
+    },
+    {
+        motifs: ["waat"],
+        monogramme: "W",
+        fond: "#f28c28",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["ionity"],
+        monogramme: "I",
+        fond: "#243b80"
+    },
+    {
+        motifs: ["electra"],
+        monogramme: "E",
+        fond: "#6d35d4"
+    },
+    {
+        motifs: ["fastned"],
+        monogramme: "F",
+        fond: "#ffcf00",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["allego"],
+        monogramme: "A",
+        fond: "#0085ca"
+    },
+    {
+        motifs: ["powerdot"],
+        monogramme: "P",
+        fond: "#ef4f91"
+    },
+    {
+        motifs: ["tesla", "supercharger"],
+        fichier: "tesla.svg",
+        classeCarte: "enseigne-logo-tesla",
+        classePopup: "enseigne-logo-tesla"
+    },
+    { motifs: ["lidl"], fichier: "lidl.svg" },
+    {
         motifs: ["intermarche", "mousquetaires"],
         fichier: "intermarche-hd.png",
         fichierCarte: "intermarche-marker.png",
@@ -5543,6 +5623,21 @@ function creerLogoEnseigne(nom, contexte) {
     var libelle = nom || "Station-service";
 
     if (logo) {
+        if (logo.monogramme) {
+            return '<span class="enseigne-logo enseigne-logo-reseau"'
+                + ' style="--logo-bg:'
+                + logo.fond
+                + ';--logo-color:'
+                + (logo.couleur || "#ffffff")
+                + '" title="'
+                + echapperHtml(libelle)
+                + '" aria-label="Logo '
+                + echapperHtml(libelle)
+                + '">'
+                + echapperHtml(logo.monogramme)
+                + '</span>';
+        }
+
         var fichier = contexte === "carte" && logo.fichierCarte
             ? logo.fichierCarte
             : logo.fichier;
@@ -5559,9 +5654,23 @@ function creerLogoEnseigne(nom, contexte) {
             + '"></span>';
     }
 
-    return '<span class="enseigne-logo enseigne-logo-optiplein" title="'
+    var motsInitiales = nomNormalise.split(" ").filter(function(mot) {
+        return mot
+            && ["france", "borne", "bornes", "recharge", "reseau"]
+                .indexOf(mot) === -1;
+    });
+    var initiales = motsInitiales.slice(0, 2).map(function(mot) {
+        return mot.charAt(0).toUpperCase();
+    }).join("") || "EV";
+
+    return '<span class="enseigne-logo enseigne-logo-reseau"'
+        + ' style="--logo-bg:#425466;--logo-color:#ffffff" title="'
         + echapperHtml(libelle)
-        + '"><img src="/static/favicon.png" alt="Station sans logo identifi&eacute;"></span>';
+        + '" aria-label="Logo '
+        + echapperHtml(libelle)
+        + '">'
+        + echapperHtml(initiales)
+        + '</span>';
 }
 
 var logoStationPrixMinimum = document.getElementById("stat-station-logo");
