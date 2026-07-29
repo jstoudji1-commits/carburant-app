@@ -760,6 +760,29 @@ body{
     transform:translateY(-1px);
 }
 
+.filtre-bornes-disponibles{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin-top:14px;
+    padding:10px 11px;
+    border:1px solid #b9d9bf;
+    border-radius:8px;
+    background:#f0fdf4;
+    color:#087a2c;
+    font-size:13px;
+    font-weight:900;
+    cursor:pointer;
+}
+
+.filtre-bornes-disponibles input{
+    width:19px;
+    height:19px;
+    margin:0;
+    accent-color:#16a34a;
+    cursor:pointer;
+}
+
 .favoris-liste{
     display:none;
 }
@@ -3406,6 +3429,19 @@ body{
                 </label>
             </div>
 
+            {% if carburant == "electrique" %}
+            <label
+                class="filtre-bornes-disponibles"
+                for="bornes-disponibles-seulement"
+            >
+                <input
+                    type="checkbox"
+                    id="bornes-disponibles-seulement"
+                >
+                Bornes disponibles uniquement
+            </label>
+            {% endif %}
+
             <input
                 type="hidden"
                 id="latitude"
@@ -5473,6 +5509,7 @@ window.setInterval(actualiserModeNuitCarte, 10 * 60 * 1000);
 var markers = [];
 var markersParStation = {};
 var stationsCarteParId = {};
+var stationsIrveNonFiltrees = [];
 var stationsClassiquesMasquees = false;
 var minuteurAnnulationTrajetPrepare = null;
 var secondesAnnulationTrajetPrepare = 20;
@@ -6220,7 +6257,26 @@ function creerMarqueurStationDynamique(stationBrute) {
 
 }
 
-function remplacerStationsSurCarte(stations) {
+function bornesDisponiblesSeulementActives() {
+
+    var filtre = document.getElementById(
+        "bornes-disponibles-seulement"
+    );
+    return modeElectriqueActif() && filtre && filtre.checked;
+
+}
+
+function remplacerStationsSurCarte(stations, mettreAJourSource) {
+
+    if (modeElectriqueActif() && mettreAJourSource !== false) {
+        stationsIrveNonFiltrees = stations.slice();
+    }
+
+    var stationsAffichees = bornesDisponiblesSeulementActives()
+        ? stations.filter(function(station) {
+            return Number(station.disponibles) > 0;
+        })
+        : stations;
 
     markers.forEach(function(markerStation) {
         map.removeLayer(markerStation);
@@ -6231,7 +6287,7 @@ function remplacerStationsSurCarte(stations) {
     stationsCarteParId = {};
     stationsEconomie = [];
 
-    stations.forEach(function(stationBrute) {
+    stationsAffichees.forEach(function(stationBrute) {
         var station = normaliserStationCarte(stationBrute);
         var markerStation = creerMarqueurStationDynamique(station);
 
@@ -6261,6 +6317,24 @@ function remplacerStationsSurCarte(stations) {
     actualiserBoutonsFavoris();
     actualiserNavigationPremium();
 
+}
+
+var filtreBornesDisponibles = document.getElementById(
+    "bornes-disponibles-seulement"
+);
+
+if (filtreBornesDisponibles) {
+    filtreBornesDisponibles.checked =
+        localStorage.getItem("optiplein-bornes-disponibles") === "true";
+
+    filtreBornesDisponibles.addEventListener("change", function() {
+        localStorage.setItem(
+            "optiplein-bornes-disponibles",
+            filtreBornesDisponibles.checked ? "true" : "false"
+        );
+        remplacerStationsSurCarte(stationsIrveNonFiltrees, false);
+        calculerMeilleureStation();
+    });
 }
 
 function masquerStationsClassiquesSurCarte() {
