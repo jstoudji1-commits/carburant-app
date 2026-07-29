@@ -760,6 +760,29 @@ body{
     transform:translateY(-1px);
 }
 
+.filtre-bornes-disponibles{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin-top:14px;
+    padding:10px 11px;
+    border:1px solid #b9d9bf;
+    border-radius:8px;
+    background:#f0fdf4;
+    color:#087a2c;
+    font-size:13px;
+    font-weight:900;
+    cursor:pointer;
+}
+
+.filtre-bornes-disponibles input{
+    width:19px;
+    height:19px;
+    margin:0;
+    accent-color:#16a34a;
+    cursor:pointer;
+}
+
 .favoris-liste{
     display:none;
 }
@@ -1680,6 +1703,22 @@ body{
     background:#f3f4f6;
 }
 
+.prix-bulle.borne-irve{
+    min-width:116px;
+    gap:5px;
+    padding:5px 6px;
+    font-size:13px;
+}
+
+.prix-bulle.borne-irve .enseigne-logo{
+    width:22px;
+    height:22px;
+}
+
+.prix-bulle.borne-irve > span:not(.enseigne-logo){
+    letter-spacing:-0.2px;
+}
+
 .borne-statut{
     display:inline-flex;
     align-items:center;
@@ -1826,6 +1865,33 @@ body{
     max-width:none;
     padding:0;
     object-fit:contain;
+}
+
+.enseigne-logo-reseau{
+    border-color:var(--logo-bg, #425466);
+    background:var(--logo-bg, #425466);
+    color:var(--logo-color, #ffffff);
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:-0.3px;
+    line-height:1;
+}
+
+.popup-identite-prix .enseigne-logo-reseau{
+    font-size:14px;
+    letter-spacing:-0.5px;
+}
+
+.enseigne-logo-irve-large{
+    width:38px !important;
+}
+
+.enseigne-logo-irve-large img{
+    padding:1px;
+}
+
+.popup-identite-prix .enseigne-logo-irve-large{
+    width:68px !important;
 }
 
 .popup-identite-prix{
@@ -3300,12 +3366,15 @@ body{
             <p class="stat-label">Prix le plus bas autour de vous</p>
             <div class="stat-price-layout">
                 <div class="stat-price-meta">
-                    <div class="stat-icon">
+                    <div class="stat-icon" id="stat-carburant">
                         {% if carburant == "electrique" %}IRVE{% else %}{{ carburant|upper }}{% endif %}
                     </div>
                 </div>
                 <div class="stat-price-detail">
-                    <div class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}">
+                    <div
+                        class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}"
+                        id="stat-prix-minimum"
+                    >
                         {% if prix_min is not none %}
                         <span>{{ "%.3f"|format(prix_min)|replace(".", ",") }}</span>
                         <span class="stat-currency">&euro;</span>
@@ -3313,6 +3382,7 @@ body{
                         <span>Indisponible</span>
                         {% endif %}
                     </div>
+                    <div id="stat-station-minimum">
                     {% if station_prix_min %}
                     <button
                         type="button"
@@ -3331,6 +3401,7 @@ body{
                         </span>
                     </button>
                     {% endif %}
+                    </div>
                 </div>
             </div>
         </section>
@@ -3390,6 +3461,19 @@ body{
                     Elec
                 </label>
             </div>
+
+            {% if carburant == "electrique" %}
+            <label
+                class="filtre-bornes-disponibles"
+                for="bornes-disponibles-seulement"
+            >
+                <input
+                    type="checkbox"
+                    id="bornes-disponibles-seulement"
+                >
+                Bornes disponibles uniquement
+            </label>
+            {% endif %}
 
             <input
                 type="hidden"
@@ -3667,7 +3751,6 @@ body{
             </div>
         </div>
 
-        {% if stations and stations[0].latitude and stations[0].longitude %}
         <div id="bottom-card" class="bottom-card">
             <div id="bottom-card-icon" class="bottom-icon">Eco</div>
             <div class="bottom-main">
@@ -3753,7 +3836,6 @@ body{
                 </div>
             </div>
         </div>
-        {% endif %}
     </main>
 </div>
 
@@ -5458,6 +5540,7 @@ window.setInterval(actualiserModeNuitCarte, 10 * 60 * 1000);
 var markers = [];
 var markersParStation = {};
 var stationsCarteParId = {};
+var stationsIrveNonFiltrees = [];
 var stationsClassiquesMasquees = false;
 var minuteurAnnulationTrajetPrepare = null;
 var secondesAnnulationTrajetPrepare = 20;
@@ -5472,6 +5555,388 @@ var rayonStationsMinimumKm = 5;
 var rayonStationsMaximumKm = 50;
 
 var logosEnseignes = [
+    {
+        motifs: ["chargeguru", "charge guru"],
+        monogramme: "CG",
+        fond: "#5b2ca0"
+    },
+    {
+        motifs: ["larecharge", "la recharge"],
+        fichier: "larecharge.jpeg",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
+    },
+    {
+        motifs: ["driveco"],
+        fichier: "driveco.png",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
+    },
+    {
+        motifs: ["freshmile"],
+        fichier: "freshmile.png"
+    },
+    {
+        motifs: ["qovoltis"],
+        fichier: "qovoltis.webp",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
+    },
+    {
+        motifs: ["waat"],
+        monogramme: "W",
+        fond: "#f28c28",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["ionity"],
+        monogramme: "I",
+        fond: "#243b80"
+    },
+    {
+        motifs: ["electra"],
+        monogramme: "E",
+        fond: "#6d35d4"
+    },
+    {
+        motifs: ["fastned"],
+        monogramme: "F",
+        fond: "#ffcf00",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["allego"],
+        monogramme: "A",
+        fond: "#0085ca"
+    },
+    {
+        motifs: ["powerdot", "power dot"],
+        fichier: "powerdot.svg",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
+    },
+    {
+        motifs: ["indigo", "indigoneo"],
+        fichier: "indigo.ico"
+    },
+    {
+        motifs: ["engie vianeo", "vianeo"],
+        fichier: "vianeo.svg",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
+    },
+    {
+        motifs: ["eborn"],
+        monogramme: "eB",
+        fond: "#6abf4b",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["citeos", "mobive"],
+        monogramme: "CM",
+        fond: "#f28c00",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["e totem", "etotem"],
+        fichier: "e-totem.png"
+    },
+    {
+        motifs: ["belib"],
+        fichier: "belib.png"
+    },
+    {
+        motifs: ["ouest charge"],
+        monogramme: "OC",
+        fond: "#006fba"
+    },
+    {
+        motifs: ["bump"],
+        monogramme: "B",
+        fond: "#ffca05",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["effia"],
+        monogramme: "EF",
+        fond: "#e00046"
+    },
+    {
+        motifs: ["qpark", "q park"],
+        monogramme: "QP",
+        fond: "#009fe3"
+    },
+    {
+        motifs: ["pass pass"],
+        monogramme: "PP",
+        fond: "#6f2c91"
+    },
+    {
+        motifs: ["electric 55", "yes55"],
+        monogramme: "E55",
+        fond: "#27348b"
+    },
+    {
+        motifs: ["reveo", "reveo 2025"],
+        fichier: "reveo.ico"
+    },
+    {
+        motifs: ["evzen"],
+        monogramme: "EV",
+        fond: "#542785"
+    },
+    {
+        motifs: ["saemes"],
+        monogramme: "S",
+        fond: "#0078a8"
+    },
+    {
+        motifs: ["edf ev100", "edf"],
+        monogramme: "EDF",
+        fond: "#ff7900",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["alize"],
+        monogramme: "A",
+        fond: "#005ca9"
+    },
+    {
+        motifs: ["easy charge"],
+        monogramme: "EC",
+        fond: "#76b82a",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["borne bleue"],
+        monogramme: "BB",
+        fond: "#1677bd"
+    },
+    {
+        motifs: ["stations e", "stations-e"],
+        monogramme: "SE",
+        fond: "#e94e1b"
+    },
+    {
+        motifs: ["sigeif"],
+        monogramme: "SI",
+        fond: "#0064a8"
+    },
+    {
+        motifs: ["plein tarnais"],
+        monogramme: "PT",
+        fond: "#77b82a",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["metropolis"],
+        monogramme: "M",
+        fond: "#64358c"
+    },
+    {
+        motifs: ["sdec energie"],
+        monogramme: "SD",
+        fond: "#007f8b"
+    },
+    {
+        motifs: ["rossinienergy", "rossini energy"],
+        monogramme: "RE",
+        fond: "#ef7d00",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["ze watt", "ze-watt"],
+        monogramme: "ZW",
+        fond: "#00a099"
+    },
+    {
+        motifs: ["enerstock"],
+        monogramme: "EN",
+        fond: "#087a52"
+    },
+    {
+        motifs: ["izivia"],
+        fichier: "izivia.webp",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
+    },
+    {
+        motifs: ["soregies"],
+        monogramme: "SO",
+        fond: "#009fe3"
+    },
+    {
+        motifs: ["zunder"],
+        monogramme: "Z",
+        fond: "#652d90"
+    },
+    {
+        motifs: ["qwello"],
+        monogramme: "QW",
+        fond: "#153e75"
+    },
+    {
+        motifs: ["e vadea", "e-vadea"],
+        monogramme: "EV",
+        fond: "#008cc1"
+    },
+    {
+        motifs: ["plug inn"],
+        monogramme: "PI",
+        fond: "#57227d"
+    },
+    {
+        motifs: ["atlante"],
+        monogramme: "AT",
+        fond: "#00a98f"
+    },
+    {
+        motifs: ["nw iecharge", "iecharge"],
+        monogramme: "NW",
+        fond: "#542683"
+    },
+    {
+        motifs: ["dream energy"],
+        monogramme: "DE",
+        fond: "#006b5b"
+    },
+    {
+        motifs: ["road", "e flux"],
+        monogramme: "R",
+        fond: "#243746"
+    },
+    {
+        motifs: ["fr y55", "y55"],
+        monogramme: "Y55",
+        fond: "#27348b"
+    },
+    {
+        motifs: ["bp pulse"],
+        monogramme: "BP",
+        fond: "#00a650"
+    },
+    {
+        motifs: ["nice rp"],
+        monogramme: "NR",
+        fond: "#005fa8"
+    },
+    {
+        motifs: ["adp groupe"],
+        monogramme: "ADP",
+        fond: "#e63329"
+    },
+    {
+        motifs: ["seolis"],
+        monogramme: "SE",
+        fond: "#0086a8"
+    },
+    {
+        motifs: ["ecocharge77"],
+        monogramme: "E77",
+        fond: "#4a9b35"
+    },
+    {
+        motifs: ["seymaborne"],
+        monogramme: "SB",
+        fond: "#0077a8"
+    },
+    {
+        motifs: ["ilewat"],
+        monogramme: "IW",
+        fond: "#00a096"
+    },
+    {
+        motifs: ["grand lyon"],
+        monogramme: "GL",
+        fond: "#e84e0f"
+    },
+    {
+        motifs: ["e charge50"],
+        monogramme: "E50",
+        fond: "#0066a1"
+    },
+    {
+        motifs: ["yusco"],
+        monogramme: "Y",
+        fond: "#ef7d00",
+        couleur: "#102536"
+    },
+    {
+        motifs: ["r3 spv", "spv com"],
+        monogramme: "R3",
+        fond: "#334c66"
+    },
+    {
+        motifs: ["regard"],
+        monogramme: "RG",
+        fond: "#006e70"
+    },
+    {
+        motifs: ["sydela"],
+        monogramme: "SY",
+        fond: "#0077b5"
+    },
+    {
+        motifs: ["metropole rouen"],
+        monogramme: "MR",
+        fond: "#c72866"
+    },
+    {
+        motifs: ["interparking"],
+        monogramme: "IP",
+        fond: "#0066b3"
+    },
+    {
+        motifs: ["toulibeo"],
+        monogramme: "TO",
+        fond: "#69469b"
+    },
+    {
+        motifs: ["chargezy"],
+        monogramme: "CZ",
+        fond: "#00a67d"
+    },
+    {
+        motifs: ["ozecar"],
+        monogramme: "OZ",
+        fond: "#e94e1b"
+    },
+    {
+        motifs: ["siege27"],
+        monogramme: "S27",
+        fond: "#007e9e"
+    },
+    {
+        motifs: ["sowatt"],
+        monogramme: "SW",
+        fond: "#662d91"
+    },
+    {
+        motifs: ["grenoble alpes"],
+        monogramme: "GA",
+        fond: "#e6512f"
+    },
+    {
+        motifs: ["greentowheel"],
+        monogramme: "GW",
+        fond: "#4c9c2e"
+    },
+    {
+        motifs: ["greenspot"],
+        monogramme: "GS",
+        fond: "#008f6b"
+    },
+    {
+        motifs: ["ikea"],
+        fichier: "ikea.svg"
+    },
+    {
+        motifs: ["tesla", "supercharger"],
+        fichier: "tesla.svg",
+        classeCarte: "enseigne-logo-tesla",
+        classePopup: "enseigne-logo-tesla"
+    },
+    { motifs: ["lidl"], fichier: "lidl.svg" },
     {
         motifs: ["intermarche", "mousquetaires"],
         fichier: "intermarche-hd.png",
@@ -5531,6 +5996,28 @@ function echapperHtml(valeur) {
     });
 }
 
+function couleurMonogrammeEnseigne(nomNormalise) {
+    var palette = [
+        "#425466",
+        "#176b87",
+        "#6b3fa0",
+        "#087a52",
+        "#a43b55",
+        "#9a5b13",
+        "#365a9d",
+        "#566b20"
+    ];
+    var empreinte = 0;
+
+    for (var index = 0; index < nomNormalise.length; index += 1) {
+        empreinte = (
+            empreinte * 31 + nomNormalise.charCodeAt(index)
+        ) >>> 0;
+    }
+
+    return palette[empreinte % palette.length];
+}
+
 function creerLogoEnseigne(nom, contexte) {
     var nomNormalise = normaliserNomEnseigne(nom);
     var logo = logosEnseignes.find(function(definition) {
@@ -5543,6 +6030,21 @@ function creerLogoEnseigne(nom, contexte) {
     var libelle = nom || "Station-service";
 
     if (logo) {
+        if (logo.monogramme) {
+            return '<span class="enseigne-logo enseigne-logo-reseau"'
+                + ' style="--logo-bg:'
+                + logo.fond
+                + ';--logo-color:'
+                + (logo.couleur || "#ffffff")
+                + '" title="'
+                + echapperHtml(libelle)
+                + '" aria-label="Logo '
+                + echapperHtml(libelle)
+                + '">'
+                + echapperHtml(logo.monogramme)
+                + '</span>';
+        }
+
         var fichier = contexte === "carte" && logo.fichierCarte
             ? logo.fichierCarte
             : logo.fichier;
@@ -5559,9 +6061,25 @@ function creerLogoEnseigne(nom, contexte) {
             + '"></span>';
     }
 
-    return '<span class="enseigne-logo enseigne-logo-optiplein" title="'
+    var motsInitiales = nomNormalise.split(" ").filter(function(mot) {
+        return mot
+            && ["france", "borne", "bornes", "recharge", "reseau"]
+                .indexOf(mot) === -1;
+    });
+    var initiales = motsInitiales.slice(0, 2).map(function(mot) {
+        return mot.charAt(0).toUpperCase();
+    }).join("") || "EV";
+
+    return '<span class="enseigne-logo enseigne-logo-reseau"'
+        + ' style="--logo-bg:'
+        + couleurMonogrammeEnseigne(nomNormalise)
+        + ';--logo-color:#ffffff" title="'
         + echapperHtml(libelle)
-        + '"><img src="/static/favicon.png" alt="Station sans logo identifi&eacute;"></span>';
+        + '" aria-label="Logo '
+        + echapperHtml(libelle)
+        + '">'
+        + echapperHtml(initiales)
+        + '</span>';
 }
 
 var logoStationPrixMinimum = document.getElementById("stat-station-logo");
@@ -5835,15 +6353,12 @@ function modeElectriqueActif() {
 function formaterPrixOuPuissanceStation(station) {
 
     if (stationElectrique(station)) {
-        var puissance = Number(station.puissanceKw);
-        if (Number.isFinite(puissance) && puissance > 0) {
-            return puissance.toLocaleString(
-                "fr-FR",
-                { maximumFractionDigits: 0 }
-            ) + " kW";
+        var prix = formaterPrixStation(station.prix);
+        if (prix === "Indisponible") {
+            return prix;
         }
 
-        return "IRVE";
+        return (station.prixEstime ? "~" : "") + prix + "/kWh";
     }
 
     return formaterPrixStation(station.prix);
@@ -6003,7 +6518,7 @@ function creerMarqueurStationDynamique(stationBrute) {
         ? ""
         : " indisponible";
     var classeStatutBorne = stationElectrique(station)
-        ? " statut-borne-" + statutDisponibiliteIrve(station)
+        ? " borne-irve statut-borne-" + statutDisponibiliteIrve(station)
         : "";
     var prixIcon = L.divIcon({
         className: "prix-marker",
@@ -6016,8 +6531,8 @@ function creerMarqueurStationDynamique(stationBrute) {
             + '<span>' + echapperHtml(prixHtml) + '</span>'
             + htmlIndicateurTendance(station.tendance, station.prix)
             + '</div>',
-        iconSize: [132, 36],
-        iconAnchor: [66, 18]
+        iconSize: stationElectrique(station) ? [146, 38] : [132, 36],
+        iconAnchor: stationElectrique(station) ? [73, 19] : [66, 18]
     });
     var distanceHtml = station.distance !== null
         ? '<p class="station-popup-distance">Distance : '
@@ -6114,7 +6629,88 @@ function creerMarqueurStationDynamique(stationBrute) {
 
 }
 
-function remplacerStationsSurCarte(stations) {
+function bornesDisponiblesSeulementActives() {
+
+    var filtre = document.getElementById(
+        "bornes-disponibles-seulement"
+    );
+    return modeElectriqueActif() && filtre && filtre.checked;
+
+}
+
+function actualiserPrixMinimumAutour(stations) {
+
+    var carburant = document.getElementById("stat-carburant");
+    var prix = document.getElementById("stat-prix-minimum");
+    var conteneur = document.getElementById("stat-station-minimum");
+
+    if (!carburant || !prix || !conteneur) {
+        return;
+    }
+
+    carburant.textContent = modeElectriqueActif()
+        ? "IRVE"
+        : String(carburantSelectionne || "").toUpperCase();
+
+    var stationsAvecPrix = stations.map(normaliserStationCarte)
+        .filter(function(station) {
+            return prixStationDisponible(station.prix);
+        })
+        .sort(function(stationA, stationB) {
+            return stationA.prix - stationB.prix;
+        });
+    var stationMinimum = stationsAvecPrix[0];
+
+    if (!stationMinimum) {
+        prix.classList.add("indisponible");
+        prix.innerHTML = "<span>Indisponible</span>";
+        conteneur.innerHTML = "";
+        return;
+    }
+
+    prix.classList.remove("indisponible");
+    prix.innerHTML = '<span>'
+        + stationMinimum.prix.toLocaleString(
+            "fr-FR",
+            {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            }
+        )
+        + '</span><span class="stat-currency">&euro;'
+        + (modeElectriqueActif() ? "/kWh" : "")
+        + '</span>';
+
+    conteneur.innerHTML = ''
+        + '<button type="button" class="stat-station-min"'
+        + ' data-station-id="'
+        + echapperHtml(stationMinimum.id)
+        + '" onclick="afficherStationPrixMinimum(event)"'
+        + ' aria-label="Afficher '
+        + echapperHtml(stationMinimum.enseigne || "la station")
+        + ' sur la carte">'
+        + creerLogoEnseigne(stationMinimum.enseigne, "popup")
+        + '<span><strong>'
+        + echapperHtml(stationMinimum.enseigne || "Station-service")
+        + '</strong>'
+        + (stationMinimum.ville
+            ? ' &middot; ' + echapperHtml(stationMinimum.ville)
+            : '')
+        + '</span></button>';
+
+}
+
+function remplacerStationsSurCarte(stations, mettreAJourSource) {
+
+    if (modeElectriqueActif() && mettreAJourSource !== false) {
+        stationsIrveNonFiltrees = stations.slice();
+    }
+
+    var stationsAffichees = bornesDisponiblesSeulementActives()
+        ? stations.filter(function(station) {
+            return Number(station.disponibles) > 0;
+        })
+        : stations;
 
     markers.forEach(function(markerStation) {
         map.removeLayer(markerStation);
@@ -6125,7 +6721,7 @@ function remplacerStationsSurCarte(stations) {
     stationsCarteParId = {};
     stationsEconomie = [];
 
-    stations.forEach(function(stationBrute) {
+    stationsAffichees.forEach(function(stationBrute) {
         var station = normaliserStationCarte(stationBrute);
         var markerStation = creerMarqueurStationDynamique(station);
 
@@ -6151,10 +6747,29 @@ function remplacerStationsSurCarte(stations) {
         });
     });
 
+    actualiserPrixMinimumAutour(stationsAffichees);
     stationsClassiquesMasquees = false;
     actualiserBoutonsFavoris();
     actualiserNavigationPremium();
 
+}
+
+var filtreBornesDisponibles = document.getElementById(
+    "bornes-disponibles-seulement"
+);
+
+if (filtreBornesDisponibles) {
+    filtreBornesDisponibles.checked =
+        localStorage.getItem("optiplein-bornes-disponibles") === "true";
+
+    filtreBornesDisponibles.addEventListener("change", function() {
+        localStorage.setItem(
+            "optiplein-bornes-disponibles",
+            filtreBornesDisponibles.checked ? "true" : "false"
+        );
+        remplacerStationsSurCarte(stationsIrveNonFiltrees, false);
+        calculerMeilleureStation();
+    });
 }
 
 function masquerStationsClassiquesSurCarte() {
@@ -8316,14 +8931,18 @@ async function actualiserStationsSelonPosition(force) {
         return false;
     }
 
+    var maintenant = Date.now();
+    var relanceElectriqueNecessaire =
+        modeElectriqueActif()
+        && markers.length === 0
+        && (
+            derniereActualisationStations === 0
+            || maintenant - derniereActualisationStations >= 15000
+        );
     var positionInitialeManquante =
         Number.isNaN(latitudeDerniereRecherche)
         || Number.isNaN(longitudeDerniereRecherche)
-        || (
-            modeElectriqueActif()
-            && markers.length === 0
-            && derniereActualisationStations === 0
-        );
+        || relanceElectriqueNecessaire;
 
     var distanceParcourue = positionInitialeManquante
         ? distanceActualisationKm
@@ -8334,7 +8953,6 @@ async function actualiserStationsSelonPosition(force) {
             longitudeRecherche
         );
 
-    var maintenant = Date.now();
     var delaiRespecte =
         positionInitialeManquante
         || maintenant - derniereActualisationStations
@@ -8853,6 +9471,25 @@ controlesAutomatiques.forEach(
         controleAutomatique.addEventListener(
             "change",
             function() {
+
+                var latitudeAConserver =
+                    Number.isFinite(latitudeUtilisateur)
+                        ? latitudeUtilisateur
+                        : latitudeDerniereRecherche;
+                var longitudeAConserver =
+                    Number.isFinite(longitudeUtilisateur)
+                        ? longitudeUtilisateur
+                        : longitudeDerniereRecherche;
+
+                if (
+                    Number.isFinite(latitudeAConserver)
+                    && Number.isFinite(longitudeAConserver)
+                ) {
+                    document.getElementById("latitude").value =
+                        latitudeAConserver;
+                    document.getElementById("longitude").value =
+                        longitudeAConserver;
+                }
 
                 controleAutomatique.form.submit();
 
