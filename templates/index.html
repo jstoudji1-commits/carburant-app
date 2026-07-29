@@ -3338,12 +3338,15 @@ body{
             <p class="stat-label">Prix le plus bas autour de vous</p>
             <div class="stat-price-layout">
                 <div class="stat-price-meta">
-                    <div class="stat-icon">
+                    <div class="stat-icon" id="stat-carburant">
                         {% if carburant == "electrique" %}IRVE{% else %}{{ carburant|upper }}{% endif %}
                     </div>
                 </div>
                 <div class="stat-price-detail">
-                    <div class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}">
+                    <div
+                        class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}"
+                        id="stat-prix-minimum"
+                    >
                         {% if prix_min is not none %}
                         <span>{{ "%.3f"|format(prix_min)|replace(".", ",") }}</span>
                         <span class="stat-currency">&euro;</span>
@@ -3351,6 +3354,7 @@ body{
                         <span>Indisponible</span>
                         {% endif %}
                     </div>
+                    <div id="stat-station-minimum">
                     {% if station_prix_min %}
                     <button
                         type="button"
@@ -3369,6 +3373,7 @@ body{
                         </span>
                     </button>
                     {% endif %}
+                    </div>
                 </div>
             </div>
         </section>
@@ -6266,6 +6271,68 @@ function bornesDisponiblesSeulementActives() {
 
 }
 
+function actualiserPrixMinimumAutour(stations) {
+
+    var carburant = document.getElementById("stat-carburant");
+    var prix = document.getElementById("stat-prix-minimum");
+    var conteneur = document.getElementById("stat-station-minimum");
+
+    if (!carburant || !prix || !conteneur) {
+        return;
+    }
+
+    carburant.textContent = modeElectriqueActif()
+        ? "IRVE"
+        : String(carburantSelectionne || "").toUpperCase();
+
+    var stationsAvecPrix = stations.map(normaliserStationCarte)
+        .filter(function(station) {
+            return prixStationDisponible(station.prix);
+        })
+        .sort(function(stationA, stationB) {
+            return stationA.prix - stationB.prix;
+        });
+    var stationMinimum = stationsAvecPrix[0];
+
+    if (!stationMinimum) {
+        prix.classList.add("indisponible");
+        prix.innerHTML = "<span>Indisponible</span>";
+        conteneur.innerHTML = "";
+        return;
+    }
+
+    prix.classList.remove("indisponible");
+    prix.innerHTML = '<span>'
+        + stationMinimum.prix.toLocaleString(
+            "fr-FR",
+            {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            }
+        )
+        + '</span><span class="stat-currency">&euro;'
+        + (modeElectriqueActif() ? "/kWh" : "")
+        + '</span>';
+
+    conteneur.innerHTML = ''
+        + '<button type="button" class="stat-station-min"'
+        + ' data-station-id="'
+        + echapperHtml(stationMinimum.id)
+        + '" onclick="afficherStationPrixMinimum(event)"'
+        + ' aria-label="Afficher '
+        + echapperHtml(stationMinimum.enseigne || "la station")
+        + ' sur la carte">'
+        + creerLogoEnseigne(stationMinimum.enseigne, "popup")
+        + '<span><strong>'
+        + echapperHtml(stationMinimum.enseigne || "Station-service")
+        + '</strong>'
+        + (stationMinimum.ville
+            ? ' &middot; ' + echapperHtml(stationMinimum.ville)
+            : '')
+        + '</span></button>';
+
+}
+
 function remplacerStationsSurCarte(stations, mettreAJourSource) {
 
     if (modeElectriqueActif() && mettreAJourSource !== false) {
@@ -6313,6 +6380,7 @@ function remplacerStationsSurCarte(stations, mettreAJourSource) {
         });
     });
 
+    actualiserPrixMinimumAutour(stationsAffichees);
     stationsClassiquesMasquees = false;
     actualiserBoutonsFavoris();
     actualiserNavigationPremium();
