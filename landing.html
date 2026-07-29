@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OptiPlein - Devenir testeur</title>
+    <meta
+        name="description"
+        content="Rejoignez les testeurs OptiPlein, l'application qui aide les conducteurs à choisir la station carburant la plus rentable."
+    >
+    <link rel="icon" href="/static/favicon.png">
+    {% if adsense_client %}
+    <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_client }}"
+        data-overlays="bottom"
+        crossorigin="anonymous"
+    ></script>
+    {% endif %}
+    <style>
+        :root{
+            --ink:#102536;
+            --muted:#546776;
+            --green:#149f38;
+            --green-dark:#087a2c;
+            --blue:#0b5fb8;
+            --line:#dfe8e3;
+            --soft:#f4f8f5;
+            --white:#ffffff;
+            font-family:Arial, Helvetica, sans-serif;
+            color:var(--ink);
+            background:#f6f8f6;
+        }
+
+        *{
+            box-sizing:border-box;
+        }
+
+        body{
+            margin:0;
+            line-height:1.45;
+        }
+
+        a{
+            color:inherit;
+        }
+
+        .topbar{
+            min-height:78px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:18px;
+            padding:13px clamp(18px,5vw,72px);
+            border-bottom:1px solid var(--line);
+            background:rgba(255,255,255,0.97);
+            position:sticky;
+            top:0;
+            z-index:5;
+        }
+
+        .logo{
+            width:214px;
+            max-width:54vw;
+            height:auto;
+        }
+
+        .nav-actions{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            justify-content:flex-end;
+        }
+
+        .nav-link,
+        .nav-button{
+            display:inline-flex;
+            min-height:44px;
+            align-items:center;
+            justify-content:center;
+            padding:0 15px;
+            border-radius:8px;
+            font-size:14px;
+            font-weight:900;
+            text-decoration:none;
+            white-space:nowrap;
+        }
+
+        .nav-link{
+            border:1px solid #b9d9bf;
+            color:var(--green-dark);
+            background:#fff;
+        }
+
+        .nav-button{
+            border:1px solid var(--green);
+            color:#fff;
+            background:linear-gradient(180deg, #27b33e, #087a2c);
+        }
+
+        .hero{
+            display:grid;
+            grid-template-columns:minmax(0, 1.08fr) minmax(300px, .92fr);
+            gap:clamp(28px,5vw,64px);
+            align-items:center;
+            width:min(1160px, calc(100% - 32px));
+            margin:0 auto;
+            padding:clamp(34px,7vw,82px) 0 38px;
+        }
+
+        .eyebrow{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            margin:0 0 14px;
+            color:var(--green-dark);
+            font-size:13px;
+            font-weight:900;
+            text-transform:uppercase;
+        }
+
+        .eyebrow::before{
+            content:"";
+            width:10px;
+            height:10px;
+            border-radius:50%;
+            background:var(--green);
+            box-shadow:0 0 0 6px rgba(20,159,56,.12);
+        }
+
+        h1{
+            margin:0;
+            max-width:680px;
+            font-size:clamp(38px,7vw,70px);
+            line-height:.98;
+            letter-spacing:0;
+        }
+
+        .lead{
+            max-width:640px;
+            margin:20px 0 0;
+            color:var(--muted);
+            font-size:clamp(18px,2.2vw,22px);
+        }
+
+        .hero-offer{
+            display:inline-flex;
+            margin:18px 0 0;
+            padding:11px 14px;
+            border:1px solid #b9d9bf;
+            border-radius:8px;
+            background:#f4fbf5;
+            color:var(--green-dark);
+            font-size:clamp(16px,2vw,19px);
+            font-weight:900;
+        }
+
+        .hero-points{
+            display:grid;
+            grid-template-columns:repeat(4, minmax(0, 1fr));
+            gap:10px;
+            margin:24px 0 0;
+        }
+
+        .hero-point{
+            padding:13px;
+            border:1px solid var(--line);
+            border-radius:8px;
+            background:#fff;
+        }
+
+        .hero-point strong{
+            display:block;
+            margin-bottom:4px;
+            color:var(--green-dark);
+            font-size:15px;
+        }
+
+        .hero-point span{
+            color:var(--muted);
+            font-size:13px;
+        }
+
+        .signup{
+            margin-top:26px;
+            padding:14px;
+            border:1px solid var(--line);
+            border-radius:10px;
+            background:#fff;
+            box-shadow:0 14px 34px rgba(16,37,54,.10);
+        }
+
+        .signup-title{
+            margin:0 0 10px;
+            font-size:18px;
+            font-weight:900;
+        }
+
+        .signup-row{
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            gap:10px;
+        }
+
+        .signup input{
+            width:100%;
+            min-height:50px;
+            padding:0 14px;
+            border:1px solid #c8d5ce;
+            border-radius:8px;
+            color:var(--ink);
+            font-size:16px;
+            outline:none;
+        }
+
+        .signup input:focus{
+            border-color:var(--green);
+            box-shadow:0 0 0 3px rgba(20,159,56,.14);
+        }
+
+        .signup button{
+            min-height:50px;
+            padding:0 18px;
+            border:0;
+            border-radius:8px;
+            background:linear-gradient(180deg, #27b33e, #087a2c);
+            color:#fff;
+            font-size:15px;
+            font-weight:900;
+            cursor:pointer;
+        }
+
+        .signup-status{
+            min-height:20px;
+            margin:10px 0 0;
+            color:var(--green-dark);
+            font-size:13px;
+            font-weight:800;
+        }
+
+        .privacy-note{
+            margin:4px 0 0;
+            color:var(--muted);
+            font-size:12px;
+        }
+
+        .tester-gift{
+            margin:10px 0 0;
+            padding:10px 12px;
+            border:1px solid #b9d9bf;
+            border-radius:8px;
+            background:#f4fbf5;
+            color:var(--green-dark);
+            font-size:14px;
+            font-weight:900;
+        }
+
+        .hero-media{
+            display:flex;
+            justify-content:center;
+        }
+
+        .phone-shot{
+            width:min(370px, 100%);
+            border:8px solid #102536;
+            border-radius:30px;
+            background:#102536;
+            box-shadow:0 24px 44px rgba(16,37,54,.24);
+            overflow:hidden;
+        }
+
+        .phone-shot img{
+            display:block;
+            width:100%;
+            height:auto;
+        }
+
+        .sections{
+            width:min(1160px, calc(100% - 32px));
+            margin:0 auto 56px;
+            display:grid;
+            gap:18px;
+        }
+
+        .section-title{
+            margin:0;
+            font-size:clamp(26px,4vw,38px);
+            line-height:1.08;
+        }
+
+        .section-lead{
+            max-width:780px;
+            margin:8px 0 0;
+            color:var(--muted);
+            font-size:17px;
+        }
+
+        .features,
+        .tester-grid{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:14px;
+        }
+
+        .feature,
+        .tester-card{
+            min-height:150px;
+            padding:20px;
+            border:1px solid var(--line);
+            border-radius:10px;
+            background:#fff;
+        }
+
+        .feature strong,
+        .tester-card strong{
+            display:block;
+            margin-bottom:8px;
+            font-size:18px;
+        }
+
+        .feature p,
+        .tester-card p{
+            margin:0;
+            color:var(--muted);
+            font-size:15px;
+        }
+
+        .comparison{
+            overflow:hidden;
+            border:1px solid var(--line);
+            border-radius:10px;
+            background:#fff;
+        }
+
+        .comparison-row{
+            display:grid;
+            grid-template-columns:minmax(0, 1.4fr) minmax(130px, .8fr) minmax(130px, .8fr);
+            border-top:1px solid var(--line);
+        }
+
+        .comparison-row:first-child{
+            border-top:0;
+            background:#102536;
+            color:#fff;
+            font-weight:900;
+        }
+
+        .comparison-cell{
+            padding:14px 16px;
+            font-size:15px;
+        }
+
+        .comparison-cell:nth-child(2),
+        .comparison-cell:nth-child(3){
+            text-align:center;
+            font-weight:800;
+        }
+
+        .premium-strip{
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            align-items:center;
+            gap:18px;
+            padding:22px;
+            border-radius:10px;
+            background:#102536;
+            color:#fff;
+        }
+
+        .premium-strip h2{
+            margin:0 0 6px;
+            font-size:26px;
+        }
+
+        .premium-strip p{
+            margin:0;
+            color:#d8e6df;
+        }
+
+        .price{
+            color:#3df064;
+            font-size:30px;
+            font-weight:900;
+            white-space:nowrap;
+        }
+
+        footer{
+            padding:24px 18px 36px;
+            color:#60717d;
+            text-align:center;
+            font-size:13px;
+        }
+
+        footer a{
+            color:var(--green-dark);
+            font-weight:800;
+        }
+
+        @media (max-width: 900px){
+            .topbar{
+                position:static;
+                align-items:flex-start;
+                flex-direction:column;
+            }
+
+            .nav-actions{
+                width:100%;
+                display:grid;
+                grid-template-columns:1fr;
+            }
+
+            .hero{
+                grid-template-columns:1fr;
+                padding-top:28px;
+            }
+
+            .hero-points,
+            .signup-row,
+            .features,
+            .tester-grid,
+            .premium-strip,
+            .comparison-row{
+                grid-template-columns:1fr;
+            }
+
+            .comparison-row:first-child{
+                display:none;
+            }
+
+            .comparison-cell:nth-child(2),
+            .comparison-cell:nth-child(3){
+                text-align:left;
+            }
+
+            .price{
+                font-size:25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <img class="logo" src="/static/logo.png" alt="OptiPlein">
+        <nav class="nav-actions" aria-label="Navigation principale">
+            <a class="nav-button" href="#devenir-testeur">Devenir testeur</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div>
+                <p class="eyebrow">Programme testeurs OptiPlein</p>
+                <h1>Essayez le plein malin avant tout le monde.</h1>
+                <p class="hero-offer">
+                    1 an d'abonnement offert pour vous et la personne de votre
+                    choix au lancement de l'application.
+                </p>
+                <p class="lead">
+                    OptiPlein aide les conducteurs à trouver la station la plus
+                    rentable, pas seulement le prix le plus bas. L'application
+                    tient compte du trajet, de la consommation du véhicule et du
+                    carburant disponible.
+                </p>
+
+                <div class="hero-points" aria-label="Points clés">
+                    <div class="hero-point">
+                        <strong>Prix officiels</strong>
+                        <span>Données mises à jour toutes les 10 minutes, 7 jours sur 7, 24 h sur 24.</span>
+                    </div>
+                    <div class="hero-point">
+                        <strong>Mise à jour renforcée</strong>
+                        <span>Prix France officiels contrôlés et mis à jour automatiquement.</span>
+                    </div>
+                    <div class="hero-point">
+                        <strong>Calcul rentable</strong>
+                        <span>Comparaison station par station autour de vous.</span>
+                    </div>
+                    <div class="hero-point">
+                        <strong>GPS intégré</strong>
+                        <span>Itinéraire directement dans l'application.</span>
+                    </div>
+                </div>
+
+                <form class="signup" id="tester-form">
+                    <p class="signup-title" id="devenir-testeur">
+                        Recevoir l'accès testeur
+                    </p>
+                    <div class="signup-row">
+                        <input
+                            id="tester-email"
+                            name="email"
+                            type="email"
+                            autocomplete="email"
+                            placeholder="Votre adresse e-mail"
+                            required
+                        >
+                        <button type="submit">Je veux tester</button>
+                    </div>
+                    <p id="tester-status" class="signup-status"></p>
+                    <p class="tester-gift">
+                        Les premiers testeurs recevront 1 an d'OptiPlein
+                        Premium offert.
+                    </p>
+                    <p class="privacy-note">
+                        Votre e-mail sert uniquement à vous contacter pour le
+                        test d'OptiPlein. Désinscription possible sur simple
+                        demande à optiplein5@gmail.com.
+                    </p>
+                </form>
+            </div>
+
+            <div class="hero-media" aria-hidden="true">
+                <div class="phone-shot">
+                    <img src="/static/landing-app.jpg" alt="">
+                </div>
+            </div>
+        </section>
+
+        <section class="sections">
+            <div>
+                <h2 class="section-title">Ce que vous allez tester</h2>
+                <p class="section-lead">
+                    Les retours des premiers utilisateurs vont servir à valider
+                    l'affichage des prix, la précision des stations, le GPS et
+                    les calculs d'économies en conditions réelles.
+                </p>
+            </div>
+
+            <div class="tester-grid">
+                <article class="tester-card">
+                    <strong>La carte des stations</strong>
+                    <p>
+                        Vérifiez que les stations proches de vous apparaissent
+                        bien, avec le bon carburant, le bon prix et la bonne
+                        enseigne.
+                    </p>
+                </article>
+                <article class="tester-card">
+                    <strong>Le calcul d'économie</strong>
+                    <p>
+                        Configurez votre véhicule pour comparer les stations
+                        selon le coût réel du détour et du carburant.
+                    </p>
+                </article>
+                <article class="tester-card">
+                    <strong>Les trajets</strong>
+                    <p>
+                        Testez la préparation d'un trajet et les propositions
+                        de ravitaillement sur la route.
+                    </p>
+                </article>
+                <article class="tester-card">
+                    <strong>La fiabilité des prix</strong>
+                    <p>
+                        Contrôlez que les prix France se mettent bien à jour
+                        et correspondent aux données officielles disponibles.
+                    </p>
+                </article>
+            </div>
+
+            <div>
+                <h2 class="section-title">Gratuit ou Premium</h2>
+                <p class="section-lead">
+                    La version gratuite garde les fonctions essentielles. Le
+                    Premium est pensé pour les conducteurs qui veulent optimiser
+                    leurs trajets et suivre leurs économies dans le temps.
+                </p>
+            </div>
+
+            <div class="comparison" aria-label="Comparatif des formules">
+                <div class="comparison-row">
+                    <div class="comparison-cell">Fonction</div>
+                    <div class="comparison-cell">Gratuit</div>
+                    <div class="comparison-cell">Premium</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Prix carburants autour de vous</div>
+                    <div class="comparison-cell">Inclus</div>
+                    <div class="comparison-cell">Inclus</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Véhicules enregistrables</div>
+                    <div class="comparison-cell">1</div>
+                    <div class="comparison-cell">5</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Mise à jour automatique des prix France</div>
+                    <div class="comparison-cell">Inclus</div>
+                    <div class="comparison-cell">Inclus</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Favoris</div>
+                    <div class="comparison-cell">3 stations</div>
+                    <div class="comparison-cell">Illimités</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Recalcul de la station la plus rentable</div>
+                    <div class="comparison-cell">Toutes les 3 minutes</div>
+                    <div class="comparison-cell">Toutes les 15 secondes</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Préparation des ravitaillements sur trajet</div>
+                    <div class="comparison-cell">Non</div>
+                    <div class="comparison-cell">Oui</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Publicité</div>
+                    <div class="comparison-cell">Oui</div>
+                    <div class="comparison-cell">Supprimée</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-cell">Historique des économies</div>
+                    <div class="comparison-cell">Non</div>
+                    <div class="comparison-cell">Oui</div>
+                </div>
+            </div>
+
+            <aside class="premium-strip">
+                <div>
+                    <h2>OptiPlein Premium</h2>
+                    <p>
+                        Suppression de la publicit&eacute;, favoris illimit&eacute;s,
+                        plusieurs v&eacute;hicules, historique des &eacute;conomies et
+                        calculs de rentabilit&eacute; plus fr&eacute;quents. Les testeurs
+                        s&eacute;lectionn&eacute;s profiteront d'une ann&eacute;e Premium offerte.
+                    </p>
+                </div>
+                <div class="price">3,99 &euro; / an</div>
+            </aside>
+        </section>
+    </main>
+
+    <footer>
+        OptiPlein - Application en préparation pour Google Play.
+        <a id="privacy-link" href="/confidentialite">Confidentialité</a>
+        &middot;
+        <a id="delete-link" href="/suppression-compte">Suppression de compte</a>
+        &middot;
+        <a href="mailto:optiplein5@gmail.com">Contact</a>
+    </footer>
+
+    <script>
+        var privacyLink = document.getElementById("privacy-link");
+        var deleteLink = document.getElementById("delete-link");
+        var baseUrl = window.location.protocol === "file:"
+            ? "http://127.0.0.1:8765"
+            : "";
+
+        privacyLink.href = baseUrl + "/confidentialite";
+        deleteLink.href = baseUrl + "/suppression-compte";
+
+        var form = document.getElementById("tester-form");
+        var email = document.getElementById("tester-email");
+        var status = document.getElementById("tester-status");
+
+        form.addEventListener("submit", async function(event) {
+            event.preventDefault();
+            status.textContent = "Inscription en cours...";
+
+            try {
+                var response = await fetch(baseUrl + "/api/testeurs", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: email.value,
+                        source: "optiplein.fr"
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("inscription impossible");
+                }
+
+                status.textContent =
+                    "Merci, vous êtes inscrit pour tester OptiPlein.";
+                form.reset();
+            } catch (erreur) {
+                status.textContent =
+                    "Impossible d'enregistrer votre e-mail pour le moment.";
+            }
+        });
+    </script>
+</body>
+</html>
