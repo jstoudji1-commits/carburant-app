@@ -5944,15 +5944,12 @@ function modeElectriqueActif() {
 function formaterPrixOuPuissanceStation(station) {
 
     if (stationElectrique(station)) {
-        var puissance = Number(station.puissanceKw);
-        if (Number.isFinite(puissance) && puissance > 0) {
-            return puissance.toLocaleString(
-                "fr-FR",
-                { maximumFractionDigits: 0 }
-            ) + " kW";
+        var prix = formaterPrixStation(station.prix);
+        if (prix === "Indisponible") {
+            return prix;
         }
 
-        return "IRVE";
+        return (station.prixEstime ? "~" : "") + prix + "/kWh";
     }
 
     return formaterPrixStation(station.prix);
