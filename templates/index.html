@@ -9,6 +9,7 @@
     <script
         async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_client }}"
+        data-overlays="bottom"
         crossorigin="anonymous"
     ></script>
     {% endif %}
@@ -8315,9 +8316,18 @@ async function actualiserStationsSelonPosition(force) {
         return false;
     }
 
+    var maintenant = Date.now();
+    var relanceElectriqueNecessaire =
+        modeElectriqueActif()
+        && markers.length === 0
+        && (
+            derniereActualisationStations === 0
+            || maintenant - derniereActualisationStations >= 15000
+        );
     var positionInitialeManquante =
         Number.isNaN(latitudeDerniereRecherche)
-        || Number.isNaN(longitudeDerniereRecherche);
+        || Number.isNaN(longitudeDerniereRecherche)
+        || relanceElectriqueNecessaire;
 
     var distanceParcourue = positionInitialeManquante
         ? distanceActualisationKm
@@ -8328,7 +8338,6 @@ async function actualiserStationsSelonPosition(force) {
             longitudeRecherche
         );
 
-    var maintenant = Date.now();
     var delaiRespecte =
         positionInitialeManquante
         || maintenant - derniereActualisationStations
@@ -8847,6 +8856,25 @@ controlesAutomatiques.forEach(
         controleAutomatique.addEventListener(
             "change",
             function() {
+
+                var latitudeAConserver =
+                    Number.isFinite(latitudeUtilisateur)
+                        ? latitudeUtilisateur
+                        : latitudeDerniereRecherche;
+                var longitudeAConserver =
+                    Number.isFinite(longitudeUtilisateur)
+                        ? longitudeUtilisateur
+                        : longitudeDerniereRecherche;
+
+                if (
+                    Number.isFinite(latitudeAConserver)
+                    && Number.isFinite(longitudeAConserver)
+                ) {
+                    document.getElementById("latitude").value =
+                        latitudeAConserver;
+                    document.getElementById("longitude").value =
+                        longitudeAConserver;
+                }
 
                 controleAutomatique.form.submit();
 
