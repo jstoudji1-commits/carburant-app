@@ -5326,6 +5326,11 @@ def page_web(
 
     if carburant == "electrique":
         stations = []
+    elif (latitude is None or longitude is None) and not ville:
+        # Sans position, ne pas afficher le minimum national comme s'il
+        # se trouvait autour de l'utilisateur. Le navigateur actualisera
+        # ce resume des que le GPS aura fourni des coordonnees.
+        stations = []
     else:
         stations = preparer_stations_pour_carte(
             stations,
