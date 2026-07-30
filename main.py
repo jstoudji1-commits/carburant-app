@@ -5280,11 +5280,21 @@ async def signaler_probleme(
 def page_web(
     request: Request,
     ville: Optional[str] = None,
-    latitude: Optional[float] = None,
-    longitude: Optional[float] = None,
+    latitude: Optional[str] = None,
+    longitude: Optional[str] = None,
     carburant: str = "gazole",
     rayon: int = 25
 ):
+
+    try:
+        latitude = float(latitude) if str(latitude or "").strip() else None
+    except (TypeError, ValueError):
+        latitude = None
+
+    try:
+        longitude = float(longitude) if str(longitude or "").strip() else None
+    except (TypeError, ValueError):
+        longitude = None
 
     carburant = (carburant or "gazole").lower()
     if carburant not in {
