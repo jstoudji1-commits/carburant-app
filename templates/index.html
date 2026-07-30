@@ -25,7 +25,6 @@
     --line:#dce4ea;
     --panel:#ffffff;
     --shadow:0 12px 30px rgba(16,37,54,0.16);
-    --ad-banner-height:60px;
 }
 
 *{
@@ -528,7 +527,7 @@ body{
 
 .app-layout{
     position:fixed;
-    inset:104px 0 var(--ad-banner-height) 0;
+    inset:104px 0 0 0;
     display:grid;
     grid-template-columns:395px 1fr;
     min-height:0;
@@ -746,16 +745,6 @@ body{
     background:#102536;
 }
 
-.fuel-dot.e85{
-    background:#7c3aed;
-    font-size:14px;
-}
-
-.fuel-dot.gpl{
-    background:#e06b18;
-    font-size:14px;
-}
-
 .fuel-dot.electric{
     background:#149f38;
 }
@@ -769,29 +758,6 @@ body{
     border-color:var(--green);
     box-shadow:0 0 0 2px rgba(20,159,56,0.20), 0 8px 18px rgba(16,37,54,0.14);
     transform:translateY(-1px);
-}
-
-.filtre-bornes-disponibles{
-    display:flex;
-    align-items:center;
-    gap:9px;
-    margin-top:14px;
-    padding:10px 11px;
-    border:1px solid #b9d9bf;
-    border-radius:8px;
-    background:#f0fdf4;
-    color:#087a2c;
-    font-size:13px;
-    font-weight:900;
-    cursor:pointer;
-}
-
-.filtre-bornes-disponibles input{
-    width:19px;
-    height:19px;
-    margin:0;
-    accent-color:#16a34a;
-    cursor:pointer;
 }
 
 .favoris-liste{
@@ -1517,28 +1483,27 @@ body{
 }
 
 .ad-banner{
-    position:fixed;
-    right:0;
-    bottom:0;
-    left:0;
-    z-index:1400;
-    width:100vw;
-    height:var(--ad-banner-height);
+    position:absolute;
+    top:12px;
+    left:50%;
+    z-index:850;
+    transform:translateX(-50%);
+    width:min(468px, calc(100% - 96px));
+    height:60px;
     min-height:0;
-    max-height:var(--ad-banner-height);
+    max-height:60px;
     display:flex;
     align-items:center;
     justify-content:center;
     padding:0;
-    border:0;
-    border-top:1px solid rgba(220,228,234,0.92);
-    border-radius:0;
-    background:rgba(255,255,255,0.98);
+    border:1px solid rgba(220,228,234,0.82);
+    border-radius:8px;
+    background:rgba(255,255,255,0.86);
     color:#425463;
     font-size:12px;
     font-weight:bold;
     text-align:center;
-    box-shadow:0 -6px 16px rgba(16,37,54,0.10);
+    box-shadow:0 6px 16px rgba(16,37,54,0.10);
     backdrop-filter:blur(4px);
     overflow:hidden;
     pointer-events:auto;
@@ -1551,22 +1516,13 @@ body{
 .ad-banner .adsbygoogle{
     display:block;
     width:100%;
-    height:var(--ad-banner-height);
-    max-height:var(--ad-banner-height);
+    height:60px;
+    max-height:60px;
     overflow:hidden;
 }
 
-.ad-banner .adsbygoogle[hidden]{
-    display:none;
-}
-
 .ad-fallback{
-    width:100%;
     padding:6px 10px;
-}
-
-.ad-fallback[hidden]{
-    display:none;
 }
 
 .bottom-ad-slot{
@@ -1724,22 +1680,6 @@ body{
     background:#f3f4f6;
 }
 
-.prix-bulle.borne-irve{
-    min-width:116px;
-    gap:5px;
-    padding:5px 6px;
-    font-size:13px;
-}
-
-.prix-bulle.borne-irve .enseigne-logo{
-    width:22px;
-    height:22px;
-}
-
-.prix-bulle.borne-irve > span:not(.enseigne-logo){
-    letter-spacing:-0.2px;
-}
-
 .borne-statut{
     display:inline-flex;
     align-items:center;
@@ -1886,33 +1826,6 @@ body{
     max-width:none;
     padding:0;
     object-fit:contain;
-}
-
-.enseigne-logo-reseau{
-    border-color:var(--logo-bg, #425466);
-    background:var(--logo-bg, #425466);
-    color:var(--logo-color, #ffffff);
-    font-size:10px;
-    font-weight:900;
-    letter-spacing:-0.3px;
-    line-height:1;
-}
-
-.popup-identite-prix .enseigne-logo-reseau{
-    font-size:14px;
-    letter-spacing:-0.5px;
-}
-
-.enseigne-logo-irve-large{
-    width:38px !important;
-}
-
-.enseigne-logo-irve-large img{
-    padding:1px;
-}
-
-.popup-identite-prix .enseigne-logo-irve-large{
-    width:68px !important;
 }
 
 .popup-identite-prix{
@@ -2709,10 +2622,6 @@ body{
 }
 
 @media (max-width: 900px){
-    :root{
-        --ad-banner-height:50px;
-    }
-
     body{
         overflow:auto;
     }
@@ -2742,7 +2651,7 @@ body{
         position:relative;
         inset:auto;
         grid-template-columns:1fr;
-        padding:82px 0 var(--ad-banner-height);
+        padding-top:82px;
     }
 
     .sidebar{
@@ -2763,15 +2672,16 @@ body{
     }
 
     .ad-banner{
-        width:100vw;
-        height:var(--ad-banner-height);
-        max-height:var(--ad-banner-height);
+        top:8px;
+        width:min(320px, calc(100% - 118px));
+        height:50px;
+        max-height:50px;
         font-size:11px;
     }
 
     .ad-banner .adsbygoogle{
-        height:var(--ad-banner-height);
-        max-height:var(--ad-banner-height);
+        height:50px;
+        max-height:50px;
     }
 
     .trip-planner-open{
@@ -3390,15 +3300,12 @@ body{
             <p class="stat-label">Prix le plus bas autour de vous</p>
             <div class="stat-price-layout">
                 <div class="stat-price-meta">
-                    <div class="stat-icon" id="stat-carburant">
+                    <div class="stat-icon">
                         {% if carburant == "electrique" %}IRVE{% else %}{{ carburant|upper }}{% endif %}
                     </div>
                 </div>
                 <div class="stat-price-detail">
-                    <div
-                        class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}"
-                        id="stat-prix-minimum"
-                    >
+                    <div class="stat-value best-price{% if prix_min is none %} indisponible{% endif %}">
                         {% if prix_min is not none %}
                         <span>{{ "%.3f"|format(prix_min)|replace(".", ",") }}</span>
                         <span class="stat-currency">&euro;</span>
@@ -3406,7 +3313,6 @@ body{
                         <span>Indisponible</span>
                         {% endif %}
                     </div>
-                    <div id="stat-station-minimum">
                     {% if station_prix_min %}
                     <button
                         type="button"
@@ -3425,7 +3331,6 @@ body{
                         </span>
                     </button>
                     {% endif %}
-                    </div>
                 </div>
             </div>
         </section>
@@ -3475,30 +3380,6 @@ body{
 
                 <input
                     type="radio"
-                    id="carburant-e85"
-                    name="carburant"
-                    value="e85"
-                    {% if carburant == "e85" %}checked{% endif %}
-                >
-                <label for="carburant-e85">
-                    <span class="fuel-dot e85">E85</span>
-                    E85
-                </label>
-
-                <input
-                    type="radio"
-                    id="carburant-gpl"
-                    name="carburant"
-                    value="gplc"
-                    {% if carburant == "gplc" %}checked{% endif %}
-                >
-                <label for="carburant-gpl">
-                    <span class="fuel-dot gpl">GPL</span>
-                    GPL
-                </label>
-
-                <input
-                    type="radio"
                     id="carburant-electrique"
                     name="carburant"
                     value="electrique"
@@ -3509,19 +3390,6 @@ body{
                     Elec
                 </label>
             </div>
-
-            {% if carburant == "electrique" %}
-            <label
-                class="filtre-bornes-disponibles"
-                for="bornes-disponibles-seulement"
-            >
-                <input
-                    type="checkbox"
-                    id="bornes-disponibles-seulement"
-                >
-                Bornes disponibles uniquement
-            </label>
-            {% endif %}
 
             <input
                 type="hidden"
@@ -3578,15 +3446,12 @@ body{
                 {% if adsense_client and adsense_slot_map %}
                 <ins
                     class="adsbygoogle"
-                    style="display:block;width:100%;height:100%;"
+                    style="display:block;width:100%;height:60px;"
                     data-ad-client="{{ adsense_client }}"
                     data-ad-slot="{{ adsense_slot_map }}"
                     data-ad-format="horizontal"
-                    data-full-width-responsive="true"
+                    data-full-width-responsive="false"
                 ></ins>
-                <span class="ad-fallback" hidden>
-                    Publicit&eacute; - D&eacute;couverte Premium gratuite avec compte.
-                </span>
                 {% else %}
                 <span class="ad-fallback">
                     Publicit&eacute; discr&egrave;te - D&eacute;couverte Premium gratuite
@@ -3802,6 +3667,7 @@ body{
             </div>
         </div>
 
+        {% if stations and stations[0].latitude and stations[0].longitude %}
         <div id="bottom-card" class="bottom-card">
             <div id="bottom-card-icon" class="bottom-icon">Eco</div>
             <div class="bottom-main">
@@ -3887,6 +3753,7 @@ body{
                 </div>
             </div>
         </div>
+        {% endif %}
     </main>
 </div>
 
@@ -5591,7 +5458,6 @@ window.setInterval(actualiserModeNuitCarte, 10 * 60 * 1000);
 var markers = [];
 var markersParStation = {};
 var stationsCarteParId = {};
-var stationsIrveNonFiltrees = [];
 var stationsClassiquesMasquees = false;
 var minuteurAnnulationTrajetPrepare = null;
 var secondesAnnulationTrajetPrepare = 20;
@@ -5606,388 +5472,6 @@ var rayonStationsMinimumKm = 5;
 var rayonStationsMaximumKm = 50;
 
 var logosEnseignes = [
-    {
-        motifs: ["chargeguru", "charge guru"],
-        monogramme: "CG",
-        fond: "#5b2ca0"
-    },
-    {
-        motifs: ["larecharge", "la recharge"],
-        fichier: "larecharge.jpeg",
-        classeCarte: "enseigne-logo-irve-large",
-        classePopup: "enseigne-logo-irve-large"
-    },
-    {
-        motifs: ["driveco"],
-        fichier: "driveco.png",
-        classeCarte: "enseigne-logo-irve-large",
-        classePopup: "enseigne-logo-irve-large"
-    },
-    {
-        motifs: ["freshmile"],
-        fichier: "freshmile.png"
-    },
-    {
-        motifs: ["qovoltis"],
-        fichier: "qovoltis.webp",
-        classeCarte: "enseigne-logo-irve-large",
-        classePopup: "enseigne-logo-irve-large"
-    },
-    {
-        motifs: ["waat"],
-        monogramme: "W",
-        fond: "#f28c28",
-        couleur: "#102536"
-    },
-    {
-        motifs: ["ionity"],
-        monogramme: "I",
-        fond: "#243b80"
-    },
-    {
-        motifs: ["electra"],
-        monogramme: "E",
-        fond: "#6d35d4"
-    },
-    {
-        motifs: ["fastned"],
-        monogramme: "F",
-        fond: "#ffcf00",
-        couleur: "#102536"
-    },
-    {
-        motifs: ["allego"],
-        monogramme: "A",
-        fond: "#0085ca"
-    },
-    {
-        motifs: ["powerdot", "power dot"],
-        fichier: "powerdot.svg",
-        classeCarte: "enseigne-logo-irve-large",
-        classePopup: "enseigne-logo-irve-large"
-    },
-    {
-        motifs: ["indigo", "indigoneo"],
-        fichier: "indigo.ico"
-    },
-    {
-        motifs: ["engie vianeo", "vianeo"],
-        fichier: "vianeo.svg",
-        classeCarte: "enseigne-logo-irve-large",
-        classePopup: "enseigne-logo-irve-large"
-    },
-    {
-        motifs: ["eborn"],
-        monogramme: "eB",
-        fond: "#6abf4b",
-        couleur: "#102536"
-    },
-    {
-        motifs: ["citeos", "mobive"],
-        monogramme: "CM",
-        fond: "#f28c00",
-        couleur: "#102536"
-    },
-    {
-        motifs: ["e totem", "etotem"],
-        fichier: "e-totem.png"
-    },
-    {
-        motifs: ["belib"],
-        fichier: "belib.png"
-    },
-    {
-        motifs: ["ouest charge"],
-        monogramme: "OC",
-        fond: "#006fba"
-    },
-    {
-        motifs: ["bump"],
-        monogramme: "B",
-        fond: "#ffca05",
-        couleur: "#102536"
-    },
-    {
-        motifs: ["effia"],
-        monogramme: "EF",
-        fond: "#e00046"
-    },
-    {
-        motifs: ["qpark", "q park"],
-        monogramme: "QP",
-        fond: "#009fe3"
-    },
-    {
-        motifs: ["pass pass"],
-        monogramme: "PP",
-        fond: "#6f2c91"
-    },
-    {
-        motifs: ["electric 55", "yes55"],
-        monogramme: "E55",
-        fond: "#27348b"
-    },
-    {
-        motifs: ["reveo", "reveo 2025"],
-        fichier: "reveo.ico"
-    },
-    {
-        motifs: ["evzen"],
-        monogramme: "EV",
-        fond: "#542785"
-    },
-    {
-        motifs: ["saemes"],
-        monogramme: "S",
-        fond: "#0078a8"
-    },
-    {
-        motifs: ["edf ev100", "edf"],
-        monogramme: "EDF",
-        fond: "#ff7900",
-        couleur: "#102536"
-    },
-    {
-        motifs: ["alize"],
-        monogramme: "A",
-        fond: "#005ca9"
-    },
-    {
-        motifs: ["easy charge"],
-        monogramme: "EC",
-        fond: "#76b82a",
-        couleur: "#102536"
-    },
-    {
-        motifs: ["borne bleue"],
-        monogramme: "BB",
-        fond: "#1677bd"
-    },
-    {
-        motifs: ["stations e", "stations-e"],
-        monogramme: "SE",
-        fond: "#e94e1b"
-    },
-    {
-        motifs: ["sigeif"],
-        monogramme: "SI",
-        fond: "#0064a8"
-    },
-    {
-        motifs: ["plein tarnais"],
-        monogramme: "PT",
-        fond: "#77b82a",
-        couleur: "#102536"
-    },
-    {
-        motifs: ["metropolis"],
-        monogramme: "M",
-        fond: "#64358c"
-    },
-    {
-        motifs: ["sdec energie"],
-        monogramme: "SD",
-        fond: "#007f8b"
-    },
-    {
-        motifs: ["rossinienergy", "rossini energy"],
-        monogramme: "RE",
-        fond: "#ef7d00",
-        couleur: "#102536"
-    },
-    {
-        motifs: ["ze watt", "ze-watt"],
-        monogramme: "ZW",
-        fond: "#00a099"
-    },
-    {
-        motifs: ["enerstock"],
-        monogramme: "EN",
-        fond: "#087a52"
-    },
-    {
-        motifs: ["izivia"],
-        fichier: "izivia.webp",
-        classeCarte: "enseigne-logo-irve-large",
-        classePopup: "enseigne-logo-irve-large"
-    },
-    {
-        motifs: ["soregies"],
-        monogramme: "SO",
-        fond: "#009fe3"
-    },
-    {
-        motifs: ["zunder"],
-        monogramme: "Z",
-        fond: "#652d90"
-    },
-    {
-        motifs: ["qwello"],
-        monogramme: "QW",
-        fond: "#153e75"
-    },
-    {
-        motifs: ["e vadea", "e-vadea"],
-        monogramme: "EV",
-        fond: "#008cc1"
-    },
-    {
-        motifs: ["plug inn"],
-        monogramme: "PI",
-        fond: "#57227d"
-    },
-    {
-        motifs: ["atlante"],
-        monogramme: "AT",
-        fond: "#00a98f"
-    },
-    {
-        motifs: ["nw iecharge", "iecharge"],
-        monogramme: "NW",
-        fond: "#542683"
-    },
-    {
-        motifs: ["dream energy"],
-        monogramme: "DE",
-        fond: "#006b5b"
-    },
-    {
-        motifs: ["road", "e flux"],
-        monogramme: "R",
-        fond: "#243746"
-    },
-    {
-        motifs: ["fr y55", "y55"],
-        monogramme: "Y55",
-        fond: "#27348b"
-    },
-    {
-        motifs: ["bp pulse"],
-        monogramme: "BP",
-        fond: "#00a650"
-    },
-    {
-        motifs: ["nice rp"],
-        monogramme: "NR",
-        fond: "#005fa8"
-    },
-    {
-        motifs: ["adp groupe"],
-        monogramme: "ADP",
-        fond: "#e63329"
-    },
-    {
-        motifs: ["seolis"],
-        monogramme: "SE",
-        fond: "#0086a8"
-    },
-    {
-        motifs: ["ecocharge77"],
-        monogramme: "E77",
-        fond: "#4a9b35"
-    },
-    {
-        motifs: ["seymaborne"],
-        monogramme: "SB",
-        fond: "#0077a8"
-    },
-    {
-        motifs: ["ilewat"],
-        monogramme: "IW",
-        fond: "#00a096"
-    },
-    {
-        motifs: ["grand lyon"],
-        monogramme: "GL",
-        fond: "#e84e0f"
-    },
-    {
-        motifs: ["e charge50"],
-        monogramme: "E50",
-        fond: "#0066a1"
-    },
-    {
-        motifs: ["yusco"],
-        monogramme: "Y",
-        fond: "#ef7d00",
-        couleur: "#102536"
-    },
-    {
-        motifs: ["r3 spv", "spv com"],
-        monogramme: "R3",
-        fond: "#334c66"
-    },
-    {
-        motifs: ["regard"],
-        monogramme: "RG",
-        fond: "#006e70"
-    },
-    {
-        motifs: ["sydela"],
-        monogramme: "SY",
-        fond: "#0077b5"
-    },
-    {
-        motifs: ["metropole rouen"],
-        monogramme: "MR",
-        fond: "#c72866"
-    },
-    {
-        motifs: ["interparking"],
-        monogramme: "IP",
-        fond: "#0066b3"
-    },
-    {
-        motifs: ["toulibeo"],
-        monogramme: "TO",
-        fond: "#69469b"
-    },
-    {
-        motifs: ["chargezy"],
-        monogramme: "CZ",
-        fond: "#00a67d"
-    },
-    {
-        motifs: ["ozecar"],
-        monogramme: "OZ",
-        fond: "#e94e1b"
-    },
-    {
-        motifs: ["siege27"],
-        monogramme: "S27",
-        fond: "#007e9e"
-    },
-    {
-        motifs: ["sowatt"],
-        monogramme: "SW",
-        fond: "#662d91"
-    },
-    {
-        motifs: ["grenoble alpes"],
-        monogramme: "GA",
-        fond: "#e6512f"
-    },
-    {
-        motifs: ["greentowheel"],
-        monogramme: "GW",
-        fond: "#4c9c2e"
-    },
-    {
-        motifs: ["greenspot"],
-        monogramme: "GS",
-        fond: "#008f6b"
-    },
-    {
-        motifs: ["ikea"],
-        fichier: "ikea.svg"
-    },
-    {
-        motifs: ["tesla", "supercharger"],
-        fichier: "tesla.svg",
-        classeCarte: "enseigne-logo-tesla",
-        classePopup: "enseigne-logo-tesla"
-    },
-    { motifs: ["lidl"], fichier: "lidl.svg" },
     {
         motifs: ["intermarche", "mousquetaires"],
         fichier: "intermarche-hd.png",
@@ -6047,28 +5531,6 @@ function echapperHtml(valeur) {
     });
 }
 
-function couleurMonogrammeEnseigne(nomNormalise) {
-    var palette = [
-        "#425466",
-        "#176b87",
-        "#6b3fa0",
-        "#087a52",
-        "#a43b55",
-        "#9a5b13",
-        "#365a9d",
-        "#566b20"
-    ];
-    var empreinte = 0;
-
-    for (var index = 0; index < nomNormalise.length; index += 1) {
-        empreinte = (
-            empreinte * 31 + nomNormalise.charCodeAt(index)
-        ) >>> 0;
-    }
-
-    return palette[empreinte % palette.length];
-}
-
 function creerLogoEnseigne(nom, contexte) {
     var nomNormalise = normaliserNomEnseigne(nom);
     var logo = logosEnseignes.find(function(definition) {
@@ -6081,21 +5543,6 @@ function creerLogoEnseigne(nom, contexte) {
     var libelle = nom || "Station-service";
 
     if (logo) {
-        if (logo.monogramme) {
-            return '<span class="enseigne-logo enseigne-logo-reseau"'
-                + ' style="--logo-bg:'
-                + logo.fond
-                + ';--logo-color:'
-                + (logo.couleur || "#ffffff")
-                + '" title="'
-                + echapperHtml(libelle)
-                + '" aria-label="Logo '
-                + echapperHtml(libelle)
-                + '">'
-                + echapperHtml(logo.monogramme)
-                + '</span>';
-        }
-
         var fichier = contexte === "carte" && logo.fichierCarte
             ? logo.fichierCarte
             : logo.fichier;
@@ -6112,25 +5559,9 @@ function creerLogoEnseigne(nom, contexte) {
             + '"></span>';
     }
 
-    var motsInitiales = nomNormalise.split(" ").filter(function(mot) {
-        return mot
-            && ["france", "borne", "bornes", "recharge", "reseau"]
-                .indexOf(mot) === -1;
-    });
-    var initiales = motsInitiales.slice(0, 2).map(function(mot) {
-        return mot.charAt(0).toUpperCase();
-    }).join("") || "EV";
-
-    return '<span class="enseigne-logo enseigne-logo-reseau"'
-        + ' style="--logo-bg:'
-        + couleurMonogrammeEnseigne(nomNormalise)
-        + ';--logo-color:#ffffff" title="'
+    return '<span class="enseigne-logo enseigne-logo-optiplein" title="'
         + echapperHtml(libelle)
-        + '" aria-label="Logo '
-        + echapperHtml(libelle)
-        + '">'
-        + echapperHtml(initiales)
-        + '</span>';
+        + '"><img src="/static/favicon.png" alt="Station sans logo identifi&eacute;"></span>';
 }
 
 var logoStationPrixMinimum = document.getElementById("stat-station-logo");
@@ -6404,12 +5835,15 @@ function modeElectriqueActif() {
 function formaterPrixOuPuissanceStation(station) {
 
     if (stationElectrique(station)) {
-        var prix = formaterPrixStation(station.prix);
-        if (prix === "Indisponible") {
-            return prix;
+        var puissance = Number(station.puissanceKw);
+        if (Number.isFinite(puissance) && puissance > 0) {
+            return puissance.toLocaleString(
+                "fr-FR",
+                { maximumFractionDigits: 0 }
+            ) + " kW";
         }
 
-        return (station.prixEstime ? "~" : "") + prix + "/kWh";
+        return "IRVE";
     }
 
     return formaterPrixStation(station.prix);
@@ -6569,7 +6003,7 @@ function creerMarqueurStationDynamique(stationBrute) {
         ? ""
         : " indisponible";
     var classeStatutBorne = stationElectrique(station)
-        ? " borne-irve statut-borne-" + statutDisponibiliteIrve(station)
+        ? " statut-borne-" + statutDisponibiliteIrve(station)
         : "";
     var prixIcon = L.divIcon({
         className: "prix-marker",
@@ -6582,8 +6016,8 @@ function creerMarqueurStationDynamique(stationBrute) {
             + '<span>' + echapperHtml(prixHtml) + '</span>'
             + htmlIndicateurTendance(station.tendance, station.prix)
             + '</div>',
-        iconSize: stationElectrique(station) ? [146, 38] : [132, 36],
-        iconAnchor: stationElectrique(station) ? [73, 19] : [66, 18]
+        iconSize: [132, 36],
+        iconAnchor: [66, 18]
     });
     var distanceHtml = station.distance !== null
         ? '<p class="station-popup-distance">Distance : '
@@ -6680,88 +6114,7 @@ function creerMarqueurStationDynamique(stationBrute) {
 
 }
 
-function bornesDisponiblesSeulementActives() {
-
-    var filtre = document.getElementById(
-        "bornes-disponibles-seulement"
-    );
-    return modeElectriqueActif() && filtre && filtre.checked;
-
-}
-
-function actualiserPrixMinimumAutour(stations) {
-
-    var carburant = document.getElementById("stat-carburant");
-    var prix = document.getElementById("stat-prix-minimum");
-    var conteneur = document.getElementById("stat-station-minimum");
-
-    if (!carburant || !prix || !conteneur) {
-        return;
-    }
-
-    carburant.textContent = modeElectriqueActif()
-        ? "IRVE"
-        : String(carburantSelectionne || "").toUpperCase();
-
-    var stationsAvecPrix = stations.map(normaliserStationCarte)
-        .filter(function(station) {
-            return prixStationDisponible(station.prix);
-        })
-        .sort(function(stationA, stationB) {
-            return stationA.prix - stationB.prix;
-        });
-    var stationMinimum = stationsAvecPrix[0];
-
-    if (!stationMinimum) {
-        prix.classList.add("indisponible");
-        prix.innerHTML = "<span>Indisponible</span>";
-        conteneur.innerHTML = "";
-        return;
-    }
-
-    prix.classList.remove("indisponible");
-    prix.innerHTML = '<span>'
-        + stationMinimum.prix.toLocaleString(
-            "fr-FR",
-            {
-                minimumFractionDigits: 3,
-                maximumFractionDigits: 3
-            }
-        )
-        + '</span><span class="stat-currency">&euro;'
-        + (modeElectriqueActif() ? "/kWh" : "")
-        + '</span>';
-
-    conteneur.innerHTML = ''
-        + '<button type="button" class="stat-station-min"'
-        + ' data-station-id="'
-        + echapperHtml(stationMinimum.id)
-        + '" onclick="afficherStationPrixMinimum(event)"'
-        + ' aria-label="Afficher '
-        + echapperHtml(stationMinimum.enseigne || "la station")
-        + ' sur la carte">'
-        + creerLogoEnseigne(stationMinimum.enseigne, "popup")
-        + '<span><strong>'
-        + echapperHtml(stationMinimum.enseigne || "Station-service")
-        + '</strong>'
-        + (stationMinimum.ville
-            ? ' &middot; ' + echapperHtml(stationMinimum.ville)
-            : '')
-        + '</span></button>';
-
-}
-
-function remplacerStationsSurCarte(stations, mettreAJourSource) {
-
-    if (modeElectriqueActif() && mettreAJourSource !== false) {
-        stationsIrveNonFiltrees = stations.slice();
-    }
-
-    var stationsAffichees = bornesDisponiblesSeulementActives()
-        ? stations.filter(function(station) {
-            return Number(station.disponibles) > 0;
-        })
-        : stations;
+function remplacerStationsSurCarte(stations) {
 
     markers.forEach(function(markerStation) {
         map.removeLayer(markerStation);
@@ -6772,7 +6125,7 @@ function remplacerStationsSurCarte(stations, mettreAJourSource) {
     stationsCarteParId = {};
     stationsEconomie = [];
 
-    stationsAffichees.forEach(function(stationBrute) {
+    stations.forEach(function(stationBrute) {
         var station = normaliserStationCarte(stationBrute);
         var markerStation = creerMarqueurStationDynamique(station);
 
@@ -6798,29 +6151,10 @@ function remplacerStationsSurCarte(stations, mettreAJourSource) {
         });
     });
 
-    actualiserPrixMinimumAutour(stationsAffichees);
     stationsClassiquesMasquees = false;
     actualiserBoutonsFavoris();
     actualiserNavigationPremium();
 
-}
-
-var filtreBornesDisponibles = document.getElementById(
-    "bornes-disponibles-seulement"
-);
-
-if (filtreBornesDisponibles) {
-    filtreBornesDisponibles.checked =
-        localStorage.getItem("optiplein-bornes-disponibles") === "true";
-
-    filtreBornesDisponibles.addEventListener("change", function() {
-        localStorage.setItem(
-            "optiplein-bornes-disponibles",
-            filtreBornesDisponibles.checked ? "true" : "false"
-        );
-        remplacerStationsSurCarte(stationsIrveNonFiltrees, false);
-        calculerMeilleureStation();
-    });
 }
 
 function masquerStationsClassiquesSurCarte() {
@@ -7109,21 +6443,11 @@ function masquerPubliciteVide() {
 
     var pub = document.getElementById("ad-banner");
     var emplacementBloc = document.getElementById("bottom-ad-slot");
-    var annonce = pub ? pub.querySelector(".adsbygoogle") : null;
-    var repli = pub ? pub.querySelector(".ad-fallback") : null;
 
     publiciteAdsenseMasqueeVide = true;
 
     if (pub) {
-        pub.hidden = false;
-    }
-
-    if (annonce) {
-        annonce.hidden = true;
-    }
-
-    if (repli) {
-        repli.hidden = false;
+        pub.hidden = true;
     }
 
     if (emplacementBloc) {
@@ -8992,18 +8316,14 @@ async function actualiserStationsSelonPosition(force) {
         return false;
     }
 
-    var maintenant = Date.now();
-    var relanceElectriqueNecessaire =
-        modeElectriqueActif()
-        && markers.length === 0
-        && (
-            derniereActualisationStations === 0
-            || maintenant - derniereActualisationStations >= 15000
-        );
     var positionInitialeManquante =
         Number.isNaN(latitudeDerniereRecherche)
         || Number.isNaN(longitudeDerniereRecherche)
-        || relanceElectriqueNecessaire;
+        || (
+            modeElectriqueActif()
+            && markers.length === 0
+            && derniereActualisationStations === 0
+        );
 
     var distanceParcourue = positionInitialeManquante
         ? distanceActualisationKm
@@ -9014,6 +8334,7 @@ async function actualiserStationsSelonPosition(force) {
             longitudeRecherche
         );
 
+    var maintenant = Date.now();
     var delaiRespecte =
         positionInitialeManquante
         || maintenant - derniereActualisationStations
@@ -9526,49 +8847,14 @@ var controlesAutomatiques = document.querySelectorAll(
     'input[name="carburant"]'
 );
 
-function soumettreSelectionCarburant(controleAutomatique) {
-
-    if (!controleAutomatique || !controleAutomatique.form) {
-        return;
-    }
-
-    var champLatitude = document.getElementById("latitude");
-    var champLongitude = document.getElementById("longitude");
-    var latitudeAConserver =
-        Number.isFinite(latitudeUtilisateur)
-            ? latitudeUtilisateur
-            : latitudeDerniereRecherche;
-    var longitudeAConserver =
-        Number.isFinite(longitudeUtilisateur)
-            ? longitudeUtilisateur
-            : longitudeDerniereRecherche;
-
-    if (
-        Number.isFinite(latitudeAConserver)
-        && Number.isFinite(longitudeAConserver)
-    ) {
-        champLatitude.disabled = false;
-        champLongitude.disabled = false;
-        champLatitude.value = latitudeAConserver;
-        champLongitude.value = longitudeAConserver;
-    } else {
-        champLatitude.value = "";
-        champLongitude.value = "";
-        champLatitude.disabled = true;
-        champLongitude.disabled = true;
-    }
-
-    controleAutomatique.form.submit();
-
-}
-
 controlesAutomatiques.forEach(
     function(controleAutomatique) {
 
         controleAutomatique.addEventListener(
             "change",
             function() {
-                soumettreSelectionCarburant(controleAutomatique);
+
+                controleAutomatique.form.submit();
 
             }
         );
@@ -9625,7 +8911,7 @@ var profilsVehicule = {
         reservoir: "Capacit\u00e9 batterie (kWh)",
         conso: "Consommation moyenne (kWh/100 km)",
         autonomie: "Autonomie estim\u00e9e (km)",
-        aide: "Profil \u00e9lectrique : la carte s\u00e9lectionne automatiquement les bornes de recharge."
+        aide: "Profil \u00e9lectrique sauvegard\u00e9 pour le compte. Les calculs carburant restent bas\u00e9s sur les stations-service."
     }
 };
 var editeurVehiculeOuvert = false;
@@ -9856,65 +9142,6 @@ function vehiculeActif() {
             return vehicule.id === actifId;
         }
     ) || vehicules[0] || null;
-
-}
-
-function carburantPourVehicule(vehicule) {
-
-    var profil = vehicule
-        ? profilVehiculeValide(vehicule.profil)
-        : "";
-    var carburantActuel = String(carburantSelectionne || "").toLowerCase();
-
-    if (profil === "electrique") {
-        return "electrique";
-    }
-    if (profil === "diesel") {
-        return "gazole";
-    }
-    if (profil === "e85") {
-        return "e85";
-    }
-    if (profil === "gpl") {
-        return "gplc";
-    }
-    if (
-        (profil === "essence" || profil === "hybride")
-        && ["sp98", "e10"].indexOf(carburantActuel) !== -1
-    ) {
-        return carburantActuel;
-    }
-
-    return "e10";
-
-}
-
-function synchroniserCarburantAvecVehicule(vehicule) {
-
-    if (!vehicule) {
-        return false;
-    }
-
-    var carburantVehicule = carburantPourVehicule(vehicule);
-
-    if (
-        carburantVehicule
-        === String(carburantSelectionne || "").toLowerCase()
-    ) {
-        return false;
-    }
-
-    var controle = document.querySelector(
-        'input[name="carburant"][value="' + carburantVehicule + '"]'
-    );
-
-    if (!controle) {
-        return false;
-    }
-
-    controle.checked = true;
-    soumettreSelectionCarburant(controle);
-    return true;
 
 }
 
@@ -10332,13 +9559,31 @@ function actualiserPlacementPublicite() {
     var pub = document.getElementById("ad-banner");
     var emplacementBloc = document.getElementById("bottom-ad-slot");
     var sceneCarte = document.querySelector(".map-stage");
+    var carte = document.getElementById("map");
+    var dansBloc = navigationActive && destinationNavigation;
 
-    if (!pub || !emplacementBloc || !sceneCarte) {
+    if (!pub || !emplacementBloc || !sceneCarte || !carte) {
+        return;
+    }
+
+    if (publiciteAdsenseMasqueeVide) {
+        pub.hidden = true;
+        emplacementBloc.hidden = true;
+        return;
+    }
+
+    if (dansBloc) {
+        if (pub.parentElement !== emplacementBloc) {
+            emplacementBloc.appendChild(pub);
+        }
+        pub.classList.add("bottom-card-ad");
+        emplacementBloc.hidden = false;
+        pub.hidden = false;
         return;
     }
 
     if (pub.parentElement !== sceneCarte) {
-        sceneCarte.appendChild(pub);
+        sceneCarte.insertBefore(pub, carte);
     }
     pub.classList.remove("bottom-card-ad");
     emplacementBloc.hidden = true;
@@ -10943,22 +10188,6 @@ function formaterLitresRentabilite(valeur) {
 
 }
 
-function formaterQuantiteRentabilite(valeur, station) {
-
-    var unite = stationElectrique(station) || modeElectriqueActif()
-        ? " kWh"
-        : " L";
-
-    return Number(valeur || 0).toLocaleString(
-        "fr-FR",
-        {
-            minimumFractionDigits: 1,
-            maximumFractionDigits: 1
-        }
-    ) + unite;
-
-}
-
 function formaterKmRentabilite(valeur) {
 
     return Number(valeur || 0).toLocaleString(
@@ -10999,16 +10228,9 @@ function calculerCoutOptimisationStation(options) {
         : station.prix;
     var reservoir = Math.max(0, Number(options.reservoir || 0));
     var consommation = Math.max(0, Number(options.consommation || 0));
-    var quantiteAchetee = Math.max(
+    var litresAchetes = Math.max(
         0,
-        Math.min(
-            reservoir,
-            Number(
-                options.quantiteACompleter
-                || options.litresACompleter
-                || 0
-            )
-        )
+        Math.min(reservoir, Number(options.litresACompleter || 0))
     );
     var distanceStationKm = Math.max(
         0,
@@ -11026,7 +10248,7 @@ function calculerCoutOptimisationStation(options) {
     distanceDetourKm += Math.max(0, Number(options.penaliteDemiTourKm || 0));
 
     var carburantDetourLitres = distanceDetourKm * consommation / 100;
-    var coutCarburantAchete = quantiteAchetee * station.prix;
+    var coutCarburantAchete = litresAchetes * station.prix;
     var coutCarburantDetour = carburantDetourLitres * prixReference;
     var tempsPerduMinutes =
         distanceDetourKm / vitesseDetourRentabiliteKmH * 60;
@@ -11034,7 +10256,7 @@ function calculerCoutOptimisationStation(options) {
         ? Math.max(3.7, Number(station.puissanceKw || station.puissance_kw || 0))
         : 0;
     var tempsRechargeMinutes = vehiculeElectrique
-        ? quantiteAchetee / puissanceRechargeKw * 60
+        ? litresAchetes / puissanceRechargeKw * 60
         : 0;
     var coutTempsPerdu =
         (tempsPerduMinutes + tempsRechargeMinutes)
@@ -11044,8 +10266,7 @@ function calculerCoutOptimisationStation(options) {
         coutCarburantAchete + coutCarburantDetour + coutTempsPerdu;
 
     return {
-        quantiteAchetee: quantiteAchetee,
-        litresAchetes: quantiteAchetee,
+        litresAchetes: litresAchetes,
         distanceDetourKm: distanceDetourKm,
         carburantDetourLitres: carburantDetourLitres,
         coutCarburantAchete: coutCarburantAchete,
@@ -11074,10 +10295,7 @@ function ajouterExplicationRentabilite(
     explication.className = "optimization-explanation";
     explication.textContent =
         "Calcul net : achat "
-        + formaterQuantiteRentabilite(
-            station.quantiteAchetee || station.litresAchetes,
-            station
-        )
+        + formaterLitresRentabilite(station.litresAchetes)
         + " = "
         + formaterEurosRentabilite(station.coutCarburantAchete)
         + ", d\u00e9tour "
@@ -11116,7 +10334,7 @@ function calculerRentabiliteStations(
     longitudeCalcul,
     reservoir,
     consommation,
-    quantiteACompleter
+    litresACompleter
 ) {
 
     var prixTrajetReference = stationsDisponibles.reduce(
@@ -11127,7 +10345,7 @@ function calculerRentabiliteStations(
     ) / stationsDisponibles.length;
     var niveauCarburantDepart = Math.max(
         0,
-        Math.min(reservoir, reservoir - quantiteACompleter)
+        Math.min(reservoir, reservoir - litresACompleter)
     );
     var destinationCalcul = (
         comptePremiumActif()
@@ -11193,7 +10411,7 @@ function calculerRentabiliteStations(
             var carburantRestantDestination = Math.max(
                 0,
                 niveauCarburantDepart
-                    + quantiteACompleter
+                    + litresACompleter
                     - carburantTotalDestination
             );
             var positionRouteStation = routePourProgression
@@ -11226,7 +10444,7 @@ function calculerRentabiliteStations(
                 prixReference: prixTrajetReference,
                 reservoir: reservoir,
                 consommation: consommation,
-                quantiteACompleter: quantiteACompleter,
+                litresACompleter: litresACompleter,
                 distanceStationKm: distance,
                 destinationCalcul: destinationCalcul,
                 distanceDestinationApresStation:
@@ -11245,8 +10463,7 @@ function calculerRentabiliteStations(
                 stationDepassee: stationDepassee,
                 penaliteDemiTourKm: penaliteDemiTourKm,
                 coutDemiTour: coutDemiTour,
-                quantiteAchetee: optimisation.quantiteAchetee,
-                litresAchetes: optimisation.quantiteAchetee,
+                litresAchetes: optimisation.litresAchetes,
                 distanceDetourKm: optimisation.distanceDetourKm,
                 carburantDetourLitres:
                     optimisation.carburantDetourLitres,
@@ -11265,7 +10482,7 @@ function calculerRentabiliteStations(
     );
 
     if (!comptePremiumActif()) {
-        var coutPleinReference = quantiteACompleter * prixTrajetReference;
+        var coutPleinReference = litresACompleter * prixTrajetReference;
 
         return {
             stationsCalculees: stationsCalculees,
@@ -11519,35 +10736,6 @@ function afficherCalculRentabiliteEnAttentePrix(titre, sousTitre, boutonItinerai
 
 }
 
-function choisirMeilleureStationRentabilite(stations, electrique) {
-
-    return stations.reduce(
-        function(meilleure, station) {
-            var memePrixElectrique =
-                electrique
-                && Math.abs(station.prix - meilleure.prix) < 0.0005;
-
-            if (memePrixElectrique) {
-                return station.distanceCalculee
-                    < meilleure.distanceCalculee
-                    ? station
-                    : meilleure;
-            }
-
-            if (station.coutTotal !== meilleure.coutTotal) {
-                return station.coutTotal < meilleure.coutTotal
-                    ? station
-                    : meilleure;
-            }
-
-            return station.distanceCalculee < meilleure.distanceCalculee
-                ? station
-                : meilleure;
-        }
-    );
-
-}
-
 window.calculerMeilleureStation = function() {
 
     var reservoir = nombreVehiculeEnregistre(
@@ -11654,14 +10842,14 @@ window.calculerMeilleureStation = function() {
         0,
         Math.min(100, Number.isFinite(niveauReservoir) ? niveauReservoir : 50)
     );
-    var quantiteACompleter = reservoir * (100 - niveauReservoir) / 100;
+    var litresACompleter = reservoir * (100 - niveauReservoir) / 100;
     var resultatRentabilite = calculerRentabiliteStations(
         stationsDisponibles,
         latitudeCalcul,
         longitudeCalcul,
         reservoir,
         consommation,
-        quantiteACompleter
+        litresACompleter
     );
     var stationsCalculees = resultatRentabilite.stationsCalculees;
 
@@ -11669,9 +10857,12 @@ window.calculerMeilleureStation = function() {
         return;
     }
 
-    var meilleureStation = choisirMeilleureStationRentabilite(
-        stationsCalculees,
-        modeElectriqueActif()
+    var meilleureStation = stationsCalculees.reduce(
+        function(meilleure, station) {
+            return station.coutTotal < meilleure.coutTotal
+                ? station
+                : meilleure;
+        }
     );
     var economie = comptePremiumActif()
         ? meilleureStation.economieComparee
@@ -11688,7 +10879,7 @@ window.calculerMeilleureStation = function() {
         stationReferenceAffichee ? stationReferenceAffichee.id || "" : "",
         stationReferenceAffichee ? stationReferenceAffichee.prix || "" : "",
         Number(meilleureStation.coutTotal || 0).toFixed(2),
-        quantiteACompleter.toFixed(2)
+        litresACompleter.toFixed(2)
     ].join("|");
 
     if (!navigationActive) {
@@ -11768,11 +10959,7 @@ window.calculerMeilleureStation = function() {
         meilleureStation.adresse
         + " \u00b7 "
         + prixFormate
-        + (
-            modeElectriqueActif()
-                ? " \u20ac/kWh \u00b7 "
-                : " \u20ac/L \u00b7 "
-        )
+        + " \u20ac/L \u00b7 "
         + distanceFormatee
         + " km \u00b7 ";
     var economieMiseEnAvant = document.createElement("span");
@@ -11932,10 +11119,6 @@ window.enregistrerVehicule = function(event) {
     synchroniserAnciennesClesVehicule(vehicule);
     programmerSauvegardeCompte();
 
-    if (synchroniserCarburantAvecVehicule(vehicule)) {
-        return;
-    }
-
     actualiserNomBoutonVehicule();
     actualiserListeVehicules();
     calculerMeilleureStation();
@@ -12011,9 +11194,6 @@ function chargerVehicule() {
 
     if (vehicule) {
         synchroniserAnciennesClesVehicule(vehicule);
-        if (synchroniserCarburantAvecVehicule(vehicule)) {
-            return;
-        }
     }
 
     champsVehicule.forEach(
