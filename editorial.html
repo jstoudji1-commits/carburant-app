@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }}</title>
+    <meta name="description" content="{{ page.description }}">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="icon" href="/static/favicon.png">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="OptiPlein">
+    <meta property="og:title" content="{{ page.title }}">
+    <meta property="og:description" content="{{ page.description }}">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:image" content="{{ og_image }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ page.title }}">
+    <meta name="twitter:description" content="{{ page.description }}">
+    <meta name="twitter:image" content="{{ og_image }}">
+
+    {% if adsense_client %}
+    <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_client }}"
+        crossorigin="anonymous"
+    ></script>
+    {% endif %}
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "OptiPlein",
+        "url": {{ base_url|tojson }},
+        "description": {{ page.description|tojson }}
+    }
+    </script>
+
+    <style>
+        :root{
+            --ink:#102536;
+            --muted:#546776;
+            --green:#149f38;
+            --green-dark:#087a2c;
+            --blue:#0b5fb8;
+            --line:#dfe8e3;
+            --soft:#f5f9f6;
+            --white:#ffffff;
+            font-family:Arial, Helvetica, sans-serif;
+            color:var(--ink);
+            background:#f7faf8;
+        }
+
+        *{
+            box-sizing:border-box;
+        }
+
+        body{
+            margin:0;
+            line-height:1.55;
+        }
+
+        a{
+            color:inherit;
+        }
+
+        .site-header{
+            position:sticky;
+            top:0;
+            z-index:20;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:18px;
+            min-height:82px;
+            padding:14px clamp(18px,5vw,72px);
+            border-bottom:1px solid var(--line);
+            background:rgba(255,255,255,.97);
+            backdrop-filter:blur(14px);
+        }
+
+        .brand{
+            display:flex;
+            align-items:center;
+            min-width:0;
+        }
+
+        .brand img{
+            width:210px;
+            max-width:50vw;
+            height:auto;
+            display:block;
+        }
+
+        .main-nav{
+            display:flex;
+            align-items:center;
+            justify-content:flex-end;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+
+        .main-nav a{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            min-height:40px;
+            padding:0 12px;
+            border-radius:8px;
+            color:var(--muted);
+            font-size:14px;
+            font-weight:800;
+            text-decoration:none;
+        }
+
+        .main-nav a[aria-current="page"]{
+            color:var(--green-dark);
+            background:#e8f7ec;
+        }
+
+        .app-link{
+            border:1px solid var(--green);
+            color:white !important;
+            background:linear-gradient(180deg, #27b33e, #087a2c);
+            box-shadow:0 8px 18px rgba(8,122,44,.18);
+        }
+
+        .hero{
+            width:min(1160px, calc(100% - 32px));
+            margin:0 auto;
+            padding:clamp(38px,7vw,86px) 0 clamp(28px,5vw,58px);
+            display:grid;
+            grid-template-columns:minmax(0, 1.1fr) minmax(280px, .9fr);
+            gap:clamp(26px,5vw,62px);
+            align-items:center;
+        }
+
+        .hero-copy{
+            min-width:0;
+        }
+
+        .eyebrow{
+            display:inline-flex;
+            align-items:center;
+            gap:9px;
+            margin:0 0 14px;
+            color:var(--green-dark);
+            font-size:13px;
+            font-weight:900;
+            text-transform:uppercase;
+        }
+
+        .eyebrow::before{
+            content:"";
+            width:10px;
+            height:10px;
+            border-radius:50%;
+            background:var(--green);
+            box-shadow:0 0 0 6px rgba(20,159,56,.13);
+        }
+
+        h1{
+            margin:0;
+            font-size:clamp(34px,6vw,64px);
+            line-height:1.02;
+            letter-spacing:0;
+        }
+
+        .lead{
+            max-width:680px;
+            margin:18px 0 0;
+            color:var(--muted);
+            font-size:clamp(17px,2vw,21px);
+        }
+
+        .updated{
+            margin:14px 0 0;
+            color:var(--muted);
+            font-size:14px;
+            font-weight:700;
+        }
+
+        .hero-actions{
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            margin-top:24px;
+        }
+
+        .button{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            min-height:48px;
+            padding:0 17px;
+            border-radius:8px;
+            border:1px solid #b9d9bf;
+            color:var(--green-dark);
+            background:#fff;
+            font-weight:900;
+            text-decoration:none;
+        }
+
+        .button.primary{
+            border-color:var(--green);
+            color:#fff;
+            background:linear-gradient(180deg, #27b33e, #087a2c);
+            box-shadow:0 10px 22px rgba(8,122,44,.20);
+        }
+
+        .hero-visual{
+            min-height:340px;
+            border:1px solid var(--line);
+            border-radius:14px;
+            overflow:hidden;
+            background:#dfece4;
+            box-shadow:0 20px 48px rgba(16,37,54,.13);
+        }
+
+        .hero-visual img{
+            width:100%;
+            height:100%;
+            min-height:340px;
+            object-fit:cover;
+            display:block;
+        }
+
+        .content{
+            width:min(1060px, calc(100% - 32px));
+            margin:0 auto 72px;
+        }
+
+        .highlights{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:14px;
+            margin-bottom:28px;
+        }
+
+        .highlight,
+        .section,
+        .contact-card,
+        .faq-item{
+            border:1px solid var(--line);
+            border-radius:10px;
+            background:#fff;
+            box-shadow:0 10px 24px rgba(16,37,54,.06);
+        }
+
+        .highlight{
+            padding:18px;
+        }
+
+        .highlight h2{
+            margin:0 0 7px;
+            color:var(--green-dark);
+            font-size:18px;
+        }
+
+        .highlight p,
+        .section p,
+        .faq-item p,
+        .contact-card p{
+            margin:0;
+            color:var(--muted);
+            font-size:16px;
+        }
+
+        .sections{
+            display:grid;
+            gap:16px;
+        }
+
+        .section,
+        .faq-item,
+        .contact-card{
+            padding:22px;
+        }
+
+        .section h2,
+        .faq-item h2,
+        .contact-card h2{
+            margin:0 0 10px;
+            color:var(--ink);
+            font-size:clamp(22px,3vw,30px);
+            line-height:1.15;
+        }
+
+        .section p + p{
+            margin-top:11px;
+        }
+
+        .section ul{
+            margin:14px 0 0;
+            padding-left:20px;
+            color:var(--muted);
+        }
+
+        .section li{
+            margin:6px 0;
+        }
+
+        .faq-list{
+            display:grid;
+            gap:14px;
+        }
+
+        .faq-item h2{
+            font-size:21px;
+        }
+
+        .contact-card{
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            gap:18px;
+            align-items:center;
+            margin-bottom:16px;
+        }
+
+        .contact-mail{
+            display:inline-flex;
+            min-height:46px;
+            align-items:center;
+            justify-content:center;
+            padding:0 15px;
+            border-radius:8px;
+            color:#fff;
+            background:var(--green-dark);
+            font-weight:900;
+            text-decoration:none;
+            white-space:nowrap;
+        }
+
+        .site-footer{
+            border-top:1px solid var(--line);
+            background:#fff;
+        }
+
+        .footer-inner{
+            width:min(1160px, calc(100% - 32px));
+            margin:0 auto;
+            padding:26px 0;
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) minmax(220px, auto);
+            gap:18px;
+            align-items:center;
+        }
+
+        .footer-brand{
+            display:grid;
+            gap:6px;
+        }
+
+        .footer-brand strong{
+            color:var(--ink);
+            font-size:17px;
+        }
+
+        .footer-brand span{
+            color:var(--muted);
+            font-size:14px;
+        }
+
+        .footer-links{
+            display:flex;
+            gap:10px 14px;
+            flex-wrap:wrap;
+            justify-content:flex-end;
+        }
+
+        .footer-links a{
+            color:var(--muted);
+            font-size:14px;
+            font-weight:800;
+            text-decoration:none;
+        }
+
+        @media (max-width:860px){
+            .site-header{
+                position:static;
+                align-items:flex-start;
+                flex-direction:column;
+            }
+
+            .main-nav{
+                justify-content:flex-start;
+            }
+
+            .main-nav a{
+                padding:0 10px;
+                font-size:13px;
+            }
+
+            .hero{
+                grid-template-columns:1fr;
+            }
+
+            .hero-visual{
+                min-height:230px;
+            }
+
+            .hero-visual img{
+                min-height:230px;
+            }
+
+            .highlights{
+                grid-template-columns:1fr;
+            }
+
+            .contact-card,
+            .footer-inner{
+                grid-template-columns:1fr;
+            }
+
+            .footer-links{
+                justify-content:flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="/" aria-label="Accueil OptiPlein">
+            <img src="/static/logo.png" alt="OptiPlein">
+        </a>
+
+        <nav class="main-nav" aria-label="Navigation principale">
+            {% for identifiant, libelle, chemin in menu_pages %}
+            <a
+                href="{{ chemin }}"
+                {% if identifiant == active_page %}aria-current="page"{% endif %}
+            >{{ libelle }}</a>
+            {% endfor %}
+            <a class="app-link" href="/web">Application</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">{{ page.eyebrow }}</p>
+                <h1>{{ page.hero_title }}</h1>
+                <p class="lead">{{ page.lead }}</p>
+                {% if page.updated %}
+                <p class="updated">Derniere mise a jour : {{ page.updated }}</p>
+                {% endif %}
+
+                {% if page.cta_label or page.secondary_cta_label %}
+                <div class="hero-actions">
+                    {% if page.cta_label %}
+                    <a class="button primary" href="{{ page.cta_url }}">
+                        {{ page.cta_label }}
+                    </a>
+                    {% endif %}
+                    {% if page.secondary_cta_label %}
+                    <a class="button" href="{{ page.secondary_cta_url }}">
+                        {{ page.secondary_cta_label }}
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="hero-visual" aria-hidden="true">
+                <img src="/static/landing-app.jpg" alt="">
+            </div>
+        </section>
+
+        <div class="content">
+            {% if page.contact %}
+            <section class="contact-card">
+                <div>
+                    <h2>Ecrire a OptiPlein</h2>
+                    <p>Pour toute demande, utilisez l'adresse officielle du projet.</p>
+                </div>
+                <a class="contact-mail" href="mailto:optiplein5@gmail.com">
+                    optiplein5@gmail.com
+                </a>
+            </section>
+            {% endif %}
+
+            {% if page.highlights %}
+            <section class="highlights" aria-label="Points cles">
+                {% for highlight in page.highlights %}
+                <article class="highlight">
+                    <h2>{{ highlight.title }}</h2>
+                    <p>{{ highlight.text }}</p>
+                </article>
+                {% endfor %}
+            </section>
+            {% endif %}
+
+            {% if page.faq_items %}
+            <section class="faq-list" aria-label="Questions frequentes">
+                {% for item in page.faq_items %}
+                <article class="faq-item">
+                    <h2>{{ item.question }}</h2>
+                    <p>{{ item.answer }}</p>
+                </article>
+                {% endfor %}
+            </section>
+            {% endif %}
+
+            {% if page.sections %}
+            <section class="sections" aria-label="Contenu">
+                {% for section in page.sections %}
+                <article class="section">
+                    <h2>{{ section.title }}</h2>
+                    {% for paragraphe in section.paragraphs %}
+                    <p>{{ paragraphe }}</p>
+                    {% endfor %}
+                    {% if section.bullets %}
+                    <ul>
+                        {% for item in section.bullets %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </section>
+            {% endif %}
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <strong>OptiPlein</strong>
+                <span>Le plein malin. Donnees carburants mises a jour regulierement.</span>
+            </div>
+            <nav class="footer-links" aria-label="Liens de pied de page">
+                {% for identifiant, libelle, chemin in footer_pages %}
+                <a href="{{ chemin }}">{{ libelle }}</a>
+                {% endfor %}
+            </nav>
+        </div>
+    </footer>
+</body>
+</html>
