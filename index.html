@@ -10943,6 +10943,22 @@ function formaterLitresRentabilite(valeur) {
 
 }
 
+function formaterQuantiteRentabilite(valeur, station) {
+
+    var unite = stationElectrique(station) || modeElectriqueActif()
+        ? " kWh"
+        : " L";
+
+    return Number(valeur || 0).toLocaleString(
+        "fr-FR",
+        {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+        }
+    ) + unite;
+
+}
+
 function formaterKmRentabilite(valeur) {
 
     return Number(valeur || 0).toLocaleString(
@@ -10983,9 +10999,16 @@ function calculerCoutOptimisationStation(options) {
         : station.prix;
     var reservoir = Math.max(0, Number(options.reservoir || 0));
     var consommation = Math.max(0, Number(options.consommation || 0));
-    var litresAchetes = Math.max(
+    var quantiteAchetee = Math.max(
         0,
-        Math.min(reservoir, Number(options.litresACompleter || 0))
+        Math.min(
+            reservoir,
+            Number(
+                options.quantiteACompleter
+                || options.litresACompleter
+                || 0
+            )
+        )
     );
     var distanceStationKm = Math.max(
         0,
@@ -11003,7 +11026,7 @@ function calculerCoutOptimisationStation(options) {
     distanceDetourKm += Math.max(0, Number(options.penaliteDemiTourKm || 0));
 
     var carburantDetourLitres = distanceDetourKm * consommation / 100;
-    var coutCarburantAchete = litresAchetes * station.prix;
+    var coutCarburantAchete = quantiteAchetee * station.prix;
     var coutCarburantDetour = carburantDetourLitres * prixReference;
     var tempsPerduMinutes =
         distanceDetourKm / vitesseDetourRentabiliteKmH * 60;
@@ -11011,7 +11034,7 @@ function calculerCoutOptimisationStation(options) {
         ? Math.max(3.7, Number(station.puissanceKw || station.puissance_kw || 0))
         : 0;
     var tempsRechargeMinutes = vehiculeElectrique
-        ? litresAchetes / puissanceRechargeKw * 60
+        ? quantiteAchetee / puissanceRechargeKw * 60
         : 0;
     var coutTempsPerdu =
         (tempsPerduMinutes + tempsRechargeMinutes)
@@ -11021,7 +11044,8 @@ function calculerCoutOptimisationStation(options) {
         coutCarburantAchete + coutCarburantDetour + coutTempsPerdu;
 
     return {
-        litresAchetes: litresAchetes,
+        quantiteAchetee: quantiteAchetee,
+        litresAchetes: quantiteAchetee,
         distanceDetourKm: distanceDetourKm,
         carburantDetourLitres: carburantDetourLitres,
         coutCarburantAchete: coutCarburantAchete,
@@ -11050,7 +11074,10 @@ function ajouterExplicationRentabilite(
     explication.className = "optimization-explanation";
     explication.textContent =
         "Calcul net : achat "
-        + formaterLitresRentabilite(station.litresAchetes)
+        + formaterQuantiteRentabilite(
+            station.quantiteAchetee || station.litresAchetes,
+            station
+        )
         + " = "
         + formaterEurosRentabilite(station.coutCarburantAchete)
         + ", d\u00e9tour "
@@ -11089,7 +11116,7 @@ function calculerRentabiliteStations(
     longitudeCalcul,
     reservoir,
     consommation,
-    litresACompleter
+    quantiteACompleter
 ) {
 
     var prixTrajetReference = stationsDisponibles.reduce(
@@ -11100,7 +11127,7 @@ function calculerRentabiliteStations(
     ) / stationsDisponibles.length;
     var niveauCarburantDepart = Math.max(
         0,
-        Math.min(reservoir, reservoir - litresACompleter)
+        Math.min(reservoir, reservoir - quantiteACompleter)
     );
     var destinationCalcul = (
         comptePremiumActif()
@@ -11166,7 +11193,7 @@ function calculerRentabiliteStations(
             var carburantRestantDestination = Math.max(
                 0,
                 niveauCarburantDepart
-                    + litresACompleter
+                    + quantiteACompleter
                     - carburantTotalDestination
             );
             var positionRouteStation = routePourProgression
@@ -11199,7 +11226,7 @@ function calculerRentabiliteStations(
                 prixReference: prixTrajetReference,
                 reservoir: reservoir,
                 consommation: consommation,
-                litresACompleter: litresACompleter,
+                quantiteACompleter: quantiteACompleter,
                 distanceStationKm: distance,
                 destinationCalcul: destinationCalcul,
                 distanceDestinationApresStation:
@@ -11218,7 +11245,8 @@ function calculerRentabiliteStations(
                 stationDepassee: stationDepassee,
                 penaliteDemiTourKm: penaliteDemiTourKm,
                 coutDemiTour: coutDemiTour,
-                litresAchetes: optimisation.litresAchetes,
+                quantiteAchetee: optimisation.quantiteAchetee,
+                litresAchetes: optimisation.quantiteAchetee,
                 distanceDetourKm: optimisation.distanceDetourKm,
                 carburantDetourLitres:
                     optimisation.carburantDetourLitres,
@@ -11237,7 +11265,7 @@ function calculerRentabiliteStations(
     );
 
     if (!comptePremiumActif()) {
-        var coutPleinReference = litresACompleter * prixTrajetReference;
+        var coutPleinReference = quantiteACompleter * prixTrajetReference;
 
         return {
             stationsCalculees: stationsCalculees,
@@ -11491,6 +11519,35 @@ function afficherCalculRentabiliteEnAttentePrix(titre, sousTitre, boutonItinerai
 
 }
 
+function choisirMeilleureStationRentabilite(stations, electrique) {
+
+    return stations.reduce(
+        function(meilleure, station) {
+            var memePrixElectrique =
+                electrique
+                && Math.abs(station.prix - meilleure.prix) < 0.0005;
+
+            if (memePrixElectrique) {
+                return station.distanceCalculee
+                    < meilleure.distanceCalculee
+                    ? station
+                    : meilleure;
+            }
+
+            if (station.coutTotal !== meilleure.coutTotal) {
+                return station.coutTotal < meilleure.coutTotal
+                    ? station
+                    : meilleure;
+            }
+
+            return station.distanceCalculee < meilleure.distanceCalculee
+                ? station
+                : meilleure;
+        }
+    );
+
+}
+
 window.calculerMeilleureStation = function() {
 
     var reservoir = nombreVehiculeEnregistre(
@@ -11597,14 +11654,14 @@ window.calculerMeilleureStation = function() {
         0,
         Math.min(100, Number.isFinite(niveauReservoir) ? niveauReservoir : 50)
     );
-    var litresACompleter = reservoir * (100 - niveauReservoir) / 100;
+    var quantiteACompleter = reservoir * (100 - niveauReservoir) / 100;
     var resultatRentabilite = calculerRentabiliteStations(
         stationsDisponibles,
         latitudeCalcul,
         longitudeCalcul,
         reservoir,
         consommation,
-        litresACompleter
+        quantiteACompleter
     );
     var stationsCalculees = resultatRentabilite.stationsCalculees;
 
@@ -11612,12 +11669,9 @@ window.calculerMeilleureStation = function() {
         return;
     }
 
-    var meilleureStation = stationsCalculees.reduce(
-        function(meilleure, station) {
-            return station.coutTotal < meilleure.coutTotal
-                ? station
-                : meilleure;
-        }
+    var meilleureStation = choisirMeilleureStationRentabilite(
+        stationsCalculees,
+        modeElectriqueActif()
     );
     var economie = comptePremiumActif()
         ? meilleureStation.economieComparee
@@ -11634,7 +11688,7 @@ window.calculerMeilleureStation = function() {
         stationReferenceAffichee ? stationReferenceAffichee.id || "" : "",
         stationReferenceAffichee ? stationReferenceAffichee.prix || "" : "",
         Number(meilleureStation.coutTotal || 0).toFixed(2),
-        litresACompleter.toFixed(2)
+        quantiteACompleter.toFixed(2)
     ].join("|");
 
     if (!navigationActive) {
@@ -11714,7 +11768,11 @@ window.calculerMeilleureStation = function() {
         meilleureStation.adresse
         + " \u00b7 "
         + prixFormate
-        + " \u20ac/L \u00b7 "
+        + (
+            modeElectriqueActif()
+                ? " \u20ac/kWh \u00b7 "
+                : " \u20ac/L \u00b7 "
+        )
         + distanceFormatee
         + " km \u00b7 ";
     var economieMiseEnAvant = document.createElement("span");
