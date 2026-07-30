@@ -25,6 +25,7 @@
     --line:#dce4ea;
     --panel:#ffffff;
     --shadow:0 12px 30px rgba(16,37,54,0.16);
+    --ad-banner-height:60px;
 }
 
 *{
@@ -527,7 +528,7 @@ body{
 
 .app-layout{
     position:fixed;
-    inset:104px 0 0 0;
+    inset:104px 0 var(--ad-banner-height) 0;
     display:grid;
     grid-template-columns:395px 1fr;
     min-height:0;
@@ -743,6 +744,16 @@ body{
 
 .fuel-dot.dark{
     background:#102536;
+}
+
+.fuel-dot.e85{
+    background:#7c3aed;
+    font-size:14px;
+}
+
+.fuel-dot.gpl{
+    background:#e06b18;
+    font-size:14px;
 }
 
 .fuel-dot.electric{
@@ -1506,27 +1517,28 @@ body{
 }
 
 .ad-banner{
-    position:absolute;
-    top:12px;
-    left:50%;
-    z-index:850;
-    transform:translateX(-50%);
-    width:min(468px, calc(100% - 96px));
-    height:60px;
+    position:fixed;
+    right:0;
+    bottom:0;
+    left:0;
+    z-index:1400;
+    width:100vw;
+    height:var(--ad-banner-height);
     min-height:0;
-    max-height:60px;
+    max-height:var(--ad-banner-height);
     display:flex;
     align-items:center;
     justify-content:center;
     padding:0;
-    border:1px solid rgba(220,228,234,0.82);
-    border-radius:8px;
-    background:rgba(255,255,255,0.86);
+    border:0;
+    border-top:1px solid rgba(220,228,234,0.92);
+    border-radius:0;
+    background:rgba(255,255,255,0.98);
     color:#425463;
     font-size:12px;
     font-weight:bold;
     text-align:center;
-    box-shadow:0 6px 16px rgba(16,37,54,0.10);
+    box-shadow:0 -6px 16px rgba(16,37,54,0.10);
     backdrop-filter:blur(4px);
     overflow:hidden;
     pointer-events:auto;
@@ -1539,13 +1551,22 @@ body{
 .ad-banner .adsbygoogle{
     display:block;
     width:100%;
-    height:60px;
-    max-height:60px;
+    height:var(--ad-banner-height);
+    max-height:var(--ad-banner-height);
     overflow:hidden;
 }
 
+.ad-banner .adsbygoogle[hidden]{
+    display:none;
+}
+
 .ad-fallback{
+    width:100%;
     padding:6px 10px;
+}
+
+.ad-fallback[hidden]{
+    display:none;
 }
 
 .bottom-ad-slot{
@@ -2688,6 +2709,10 @@ body{
 }
 
 @media (max-width: 900px){
+    :root{
+        --ad-banner-height:50px;
+    }
+
     body{
         overflow:auto;
     }
@@ -2717,7 +2742,7 @@ body{
         position:relative;
         inset:auto;
         grid-template-columns:1fr;
-        padding-top:82px;
+        padding:82px 0 var(--ad-banner-height);
     }
 
     .sidebar{
@@ -2738,16 +2763,15 @@ body{
     }
 
     .ad-banner{
-        top:8px;
-        width:min(320px, calc(100% - 118px));
-        height:50px;
-        max-height:50px;
+        width:100vw;
+        height:var(--ad-banner-height);
+        max-height:var(--ad-banner-height);
         font-size:11px;
     }
 
     .ad-banner .adsbygoogle{
-        height:50px;
-        max-height:50px;
+        height:var(--ad-banner-height);
+        max-height:var(--ad-banner-height);
     }
 
     .trip-planner-open{
@@ -3451,6 +3475,30 @@ body{
 
                 <input
                     type="radio"
+                    id="carburant-e85"
+                    name="carburant"
+                    value="e85"
+                    {% if carburant == "e85" %}checked{% endif %}
+                >
+                <label for="carburant-e85">
+                    <span class="fuel-dot e85">E85</span>
+                    E85
+                </label>
+
+                <input
+                    type="radio"
+                    id="carburant-gpl"
+                    name="carburant"
+                    value="gplc"
+                    {% if carburant == "gplc" %}checked{% endif %}
+                >
+                <label for="carburant-gpl">
+                    <span class="fuel-dot gpl">GPL</span>
+                    GPL
+                </label>
+
+                <input
+                    type="radio"
                     id="carburant-electrique"
                     name="carburant"
                     value="electrique"
@@ -3530,12 +3578,15 @@ body{
                 {% if adsense_client and adsense_slot_map %}
                 <ins
                     class="adsbygoogle"
-                    style="display:block;width:100%;height:60px;"
+                    style="display:block;width:100%;height:100%;"
                     data-ad-client="{{ adsense_client }}"
                     data-ad-slot="{{ adsense_slot_map }}"
                     data-ad-format="horizontal"
-                    data-full-width-responsive="false"
+                    data-full-width-responsive="true"
                 ></ins>
+                <span class="ad-fallback" hidden>
+                    Publicit&eacute; - D&eacute;couverte Premium gratuite avec compte.
+                </span>
                 {% else %}
                 <span class="ad-fallback">
                     Publicit&eacute; discr&egrave;te - D&eacute;couverte Premium gratuite
@@ -5562,8 +5613,9 @@ var logosEnseignes = [
     },
     {
         motifs: ["larecharge", "la recharge"],
-        monogramme: "LR",
-        fond: "#087a52"
+        fichier: "larecharge.jpeg",
+        classeCarte: "enseigne-logo-irve-large",
+        classePopup: "enseigne-logo-irve-large"
     },
     {
         motifs: ["driveco"],
@@ -7057,11 +7109,21 @@ function masquerPubliciteVide() {
 
     var pub = document.getElementById("ad-banner");
     var emplacementBloc = document.getElementById("bottom-ad-slot");
+    var annonce = pub ? pub.querySelector(".adsbygoogle") : null;
+    var repli = pub ? pub.querySelector(".ad-fallback") : null;
 
     publiciteAdsenseMasqueeVide = true;
 
     if (pub) {
-        pub.hidden = true;
+        pub.hidden = false;
+    }
+
+    if (annonce) {
+        annonce.hidden = true;
+    }
+
+    if (repli) {
+        repli.hidden = false;
     }
 
     if (emplacementBloc) {
@@ -9464,33 +9526,40 @@ var controlesAutomatiques = document.querySelectorAll(
     'input[name="carburant"]'
 );
 
+function soumettreSelectionCarburant(controleAutomatique) {
+
+    if (!controleAutomatique || !controleAutomatique.form) {
+        return;
+    }
+
+    var latitudeAConserver =
+        Number.isFinite(latitudeUtilisateur)
+            ? latitudeUtilisateur
+            : latitudeDerniereRecherche;
+    var longitudeAConserver =
+        Number.isFinite(longitudeUtilisateur)
+            ? longitudeUtilisateur
+            : longitudeDerniereRecherche;
+
+    if (
+        Number.isFinite(latitudeAConserver)
+        && Number.isFinite(longitudeAConserver)
+    ) {
+        document.getElementById("latitude").value = latitudeAConserver;
+        document.getElementById("longitude").value = longitudeAConserver;
+    }
+
+    controleAutomatique.form.submit();
+
+}
+
 controlesAutomatiques.forEach(
     function(controleAutomatique) {
 
         controleAutomatique.addEventListener(
             "change",
             function() {
-
-                var latitudeAConserver =
-                    Number.isFinite(latitudeUtilisateur)
-                        ? latitudeUtilisateur
-                        : latitudeDerniereRecherche;
-                var longitudeAConserver =
-                    Number.isFinite(longitudeUtilisateur)
-                        ? longitudeUtilisateur
-                        : longitudeDerniereRecherche;
-
-                if (
-                    Number.isFinite(latitudeAConserver)
-                    && Number.isFinite(longitudeAConserver)
-                ) {
-                    document.getElementById("latitude").value =
-                        latitudeAConserver;
-                    document.getElementById("longitude").value =
-                        longitudeAConserver;
-                }
-
-                controleAutomatique.form.submit();
+                soumettreSelectionCarburant(controleAutomatique);
 
             }
         );
@@ -9547,7 +9616,7 @@ var profilsVehicule = {
         reservoir: "Capacit\u00e9 batterie (kWh)",
         conso: "Consommation moyenne (kWh/100 km)",
         autonomie: "Autonomie estim\u00e9e (km)",
-        aide: "Profil \u00e9lectrique sauvegard\u00e9 pour le compte. Les calculs carburant restent bas\u00e9s sur les stations-service."
+        aide: "Profil \u00e9lectrique : la carte s\u00e9lectionne automatiquement les bornes de recharge."
     }
 };
 var editeurVehiculeOuvert = false;
@@ -9778,6 +9847,65 @@ function vehiculeActif() {
             return vehicule.id === actifId;
         }
     ) || vehicules[0] || null;
+
+}
+
+function carburantPourVehicule(vehicule) {
+
+    var profil = vehicule
+        ? profilVehiculeValide(vehicule.profil)
+        : "";
+    var carburantActuel = String(carburantSelectionne || "").toLowerCase();
+
+    if (profil === "electrique") {
+        return "electrique";
+    }
+    if (profil === "diesel") {
+        return "gazole";
+    }
+    if (profil === "e85") {
+        return "e85";
+    }
+    if (profil === "gpl") {
+        return "gplc";
+    }
+    if (
+        (profil === "essence" || profil === "hybride")
+        && ["sp98", "e10"].indexOf(carburantActuel) !== -1
+    ) {
+        return carburantActuel;
+    }
+
+    return "e10";
+
+}
+
+function synchroniserCarburantAvecVehicule(vehicule) {
+
+    if (!vehicule) {
+        return false;
+    }
+
+    var carburantVehicule = carburantPourVehicule(vehicule);
+
+    if (
+        carburantVehicule
+        === String(carburantSelectionne || "").toLowerCase()
+    ) {
+        return false;
+    }
+
+    var controle = document.querySelector(
+        'input[name="carburant"][value="' + carburantVehicule + '"]'
+    );
+
+    if (!controle) {
+        return false;
+    }
+
+    controle.checked = true;
+    soumettreSelectionCarburant(controle);
+    return true;
 
 }
 
@@ -10195,31 +10323,13 @@ function actualiserPlacementPublicite() {
     var pub = document.getElementById("ad-banner");
     var emplacementBloc = document.getElementById("bottom-ad-slot");
     var sceneCarte = document.querySelector(".map-stage");
-    var carte = document.getElementById("map");
-    var dansBloc = navigationActive && destinationNavigation;
 
-    if (!pub || !emplacementBloc || !sceneCarte || !carte) {
-        return;
-    }
-
-    if (publiciteAdsenseMasqueeVide) {
-        pub.hidden = true;
-        emplacementBloc.hidden = true;
-        return;
-    }
-
-    if (dansBloc) {
-        if (pub.parentElement !== emplacementBloc) {
-            emplacementBloc.appendChild(pub);
-        }
-        pub.classList.add("bottom-card-ad");
-        emplacementBloc.hidden = false;
-        pub.hidden = false;
+    if (!pub || !emplacementBloc || !sceneCarte) {
         return;
     }
 
     if (pub.parentElement !== sceneCarte) {
-        sceneCarte.insertBefore(pub, carte);
+        sceneCarte.appendChild(pub);
     }
     pub.classList.remove("bottom-card-ad");
     emplacementBloc.hidden = true;
@@ -11755,6 +11865,10 @@ window.enregistrerVehicule = function(event) {
     synchroniserAnciennesClesVehicule(vehicule);
     programmerSauvegardeCompte();
 
+    if (synchroniserCarburantAvecVehicule(vehicule)) {
+        return;
+    }
+
     actualiserNomBoutonVehicule();
     actualiserListeVehicules();
     calculerMeilleureStation();
@@ -11830,6 +11944,9 @@ function chargerVehicule() {
 
     if (vehicule) {
         synchroniserAnciennesClesVehicule(vehicule);
+        if (synchroniserCarburantAvecVehicule(vehicule)) {
+            return;
+        }
     }
 
     champsVehicule.forEach(
