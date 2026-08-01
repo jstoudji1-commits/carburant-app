@@ -1310,7 +1310,7 @@ PROFILS_VEHICULES = {
         "consommation_unite": "L/100 km",
     },
     "electrique": {
-        "libelle": "Electrique",
+        "libelle": "\u00c9lectrique",
         "capacite_unite": "kWh",
         "consommation_unite": "kWh/100 km",
     },
@@ -1368,7 +1368,7 @@ def vehicule_compte_nettoye(vehicule):
 
     return {
         "id": limiter_texte_compte(vehicule.get("id"), 80),
-        "nom": limiter_texte_compte(vehicule.get("nom"), 40) or "Mon vehicule",
+        "nom": limiter_texte_compte(vehicule.get("nom"), 40) or "Mon v\u00e9hicule",
         "profil": profil,
         "motorisation": profil,
         "reservoir": reservoir,
@@ -2109,14 +2109,14 @@ def envoyer_email_bienvenue_premium(email, base_url):
 def envoyer_email_recuperation_mot_de_passe(email, lien, base_url):
 
     message = EmailMessage()
-    message["Subject"] = "Reinitialisation de votre mot de passe OptiPlein"
+    message["Subject"] = "R\u00e9initialisation de votre mot de passe OptiPlein"
     message["To"] = email
     message.set_content(
-        "Vous avez demande la reinitialisation de votre mot de passe "
+        "Vous avez demand\u00e9 la r\u00e9initialisation de votre mot de passe "
         "OptiPlein.\n\n"
         "Cliquez sur ce lien pour choisir un nouveau mot de passe :\n"
         f"{lien}\n\n"
-        "Ce lien est valable 1 heure. Si vous n'etes pas a l'origine "
+        "Ce lien est valable 1 heure. Si vous n'\u00eates pas \u00e0 l'origine "
         "de cette demande, ignorez simplement cet e-mail.\n"
     )
     message.add_alternative(
@@ -2124,7 +2124,7 @@ def envoyer_email_recuperation_mot_de_passe(email, lien, base_url):
         'line-height:1.55;font-size:16px;">'
         + html_logo_email(base_url)
         + "<h1 style=\"font-size:22px;margin:0 0 12px 0;\">"
-        "Reinitialisation de votre mot de passe"
+        "R\u00e9initialisation de votre mot de passe"
         "</h1>"
         "<p>Vous avez demand&eacute; la r&eacute;initialisation de votre mot de "
         "passe OptiPlein.</p>"
@@ -2153,8 +2153,8 @@ async def actualiser_prix_periodiquement():
 
         if not mise_a_jour_admin_lock.acquire(blocking=False):
             logger.info(
-                "Mise a jour automatique ignoree : "
-                "une mise a jour est deja en cours."
+                "Mise \u00e0 jour automatique ignor\u00e9e : "
+                "une mise \u00e0 jour est d\u00e9j\u00e0 en cours."
             )
         else:
             try:
@@ -2163,7 +2163,7 @@ async def actualiser_prix_periodiquement():
                 )
             except Exception:
                 logger.exception(
-                    "La mise a jour automatique des prix a echoue."
+                    "La mise \u00e0 jour automatique des prix a \u00e9chou\u00e9."
                 )
             finally:
                 mise_a_jour_admin_lock.release()
@@ -2200,7 +2200,7 @@ async def actualiser_irve_statique_quotidiennement():
             await asyncio.to_thread(telecharger_irve_statique)
         except Exception:
             logger.exception(
-                "Le telechargement initial du fichier IRVE a echoue."
+                "Le t\u00e9l\u00e9chargement initial du fichier IRVE a \u00e9chou\u00e9."
             )
 
     while True:
@@ -2208,7 +2208,7 @@ async def actualiser_irve_statique_quotidiennement():
         prochaine = prochaine_mise_a_jour_irve(maintenant)
         attente = max(0, (prochaine - maintenant).total_seconds())
         logger.info(
-            "Prochaine mise a jour IRVE statique programmee pour %s.",
+            "Prochaine mise \u00e0 jour IRVE statique programm\u00e9e pour %s.",
             prochaine.isoformat(),
         )
         await asyncio.sleep(attente)
@@ -2217,7 +2217,7 @@ async def actualiser_irve_statique_quotidiennement():
             await asyncio.to_thread(telecharger_irve_statique)
         except Exception:
             logger.exception(
-                "La mise a jour quotidienne du fichier IRVE a echoue."
+                "La mise \u00e0 jour quotidienne du fichier IRVE a \u00e9chou\u00e9."
             )
 
 
@@ -2230,7 +2230,7 @@ async def actualiser_irve_dynamique_periodiquement():
             await asyncio.to_thread(telecharger_irve_dynamique)
         except Exception:
             logger.exception(
-                "La mise a jour du fichier IRVE dynamique a echoue."
+                "La mise \u00e0 jour du fichier IRVE dynamique a \u00e9chou\u00e9."
             )
 
         duree = asyncio.get_running_loop().time() - debut
@@ -2274,7 +2274,7 @@ def lancer_mise_a_jour_stations_si_retard():
             mettre_a_jour_stations()
         except Exception:
             logger.exception(
-                "La mise a jour automatique de rattrapage a echoue."
+                "La mise \u00e0 jour automatique de rattrapage a \u00e9chou\u00e9."
             )
         finally:
             mise_a_jour_admin_lock.release()
@@ -3044,16 +3044,16 @@ PAGES_EDITORIALES = {
         "title": "OptiPlein - Le plein malin",
         "nav_title": "Accueil",
         "description": (
-            "OptiPlein aide les conducteurs a comparer les prix des "
-            "carburants, reperer les stations proches et choisir le "
+            "OptiPlein aide les conducteurs \u00e0 comparer les prix des "
+            "carburants, rep\u00e9rer les stations proches et choisir le "
             "ravitaillement le plus rentable."
         ),
         "eyebrow": "Comparateur carburant et assistant de trajet",
-        "hero_title": "Le plein malin, avant meme d'arriver a la pompe.",
+        "hero_title": "Le plein malin, avant m\u00eame d'arriver \u00e0 la pompe.",
         "lead": (
-            "OptiPlein combine prix officiels, position, vehicule et "
-            "itineraire pour aider chaque conducteur a prendre une decision "
-            "simple : ou faire le plein sans perdre son temps ni son argent."
+            "OptiPlein combine prix officiels, position, v\u00e9hicule et "
+            "itin\u00e9raire pour aider chaque conducteur \u00e0 prendre une d\u00e9cision "
+            "simple : o\u00f9 faire le plein sans perdre son temps ni son argent."
         ),
         "cta_label": "Ouvrir l'application",
         "cta_url": "/web",
@@ -3061,31 +3061,31 @@ PAGES_EDITORIALES = {
         "secondary_cta_url": "/landing",
         "highlights": [
             {
-                "title": "Prix actualises",
-                "text": "Les donnees carburants sont mises a jour regulierement a partir des sources publiques disponibles.",
+                "title": "Prix actualis\u00e9s",
+                "text": "Les donn\u00e9es carburants sont mises \u00e0 jour r\u00e9guli\u00e8rement \u00e0 partir des sources publiques disponibles.",
             },
             {
                 "title": "Calcul utile",
-                "text": "Le prix seul ne suffit pas : OptiPlein tient compte du trajet et de votre vehicule.",
+                "text": "Le prix seul ne suffit pas : OptiPlein tient compte du trajet et de votre v\u00e9hicule.",
             },
             {
                 "title": "Carte lisible",
-                "text": "Les stations et les prix sont affiches directement sur la carte pour comparer rapidement.",
+                "text": "Les stations et les prix sont affich\u00e9s directement sur la carte pour comparer rapidement.",
             },
         ],
         "sections": [
             {
-                "title": "Une application pensee pour les conducteurs",
+                "title": "Une application pens\u00e9e pour les conducteurs",
                 "paragraphs": [
                     (
                         "Comparer quelques centimes par litre peut sembler simple, "
-                        "mais le meilleur choix depend aussi de la distance, de la "
-                        "consommation, du niveau du reservoir et de la direction que "
+                        "mais le meilleur choix d\u00e9pend aussi de la distance, de la "
+                        "consommation, du niveau du r\u00e9servoir et de la direction que "
                         "vous prenez."
                     ),
                     (
                         "OptiPlein regroupe ces informations dans une interface "
-                        "lisible afin de vous aider a choisir une station sans "
+                        "lisible afin de vous aider \u00e0 choisir une station sans "
                         "multiplier les recherches."
                     ),
                 ],
@@ -3094,17 +3094,17 @@ PAGES_EDITORIALES = {
                 "title": "Des fonctions gratuites pendant la phase de test",
                 "paragraphs": [
                     (
-                        "Pendant la decouverte de l'application, la creation de "
-                        "compte permet d'acceder gratuitement aux fonctions avancees "
-                        "prevues pour les testeurs."
+                        "Pendant la d\u00e9couverte de l'application, la cr\u00e9ation de "
+                        "compte permet d'acc\u00e9der gratuitement aux fonctions avanc\u00e9es "
+                        "pr\u00e9vues pour les testeurs."
                     )
                 ],
                 "bullets": [
                     "comparaison des stations proches",
-                    "vehicules sauvegardes",
+                    "v\u00e9hicules sauvegard\u00e9s",
                     "favoris",
-                    "historique des economies",
-                    "preparation de trajet avec ravitaillements conseilles",
+                    "historique des \u00e9conomies",
+                    "pr\u00e9paration de trajet avec ravitaillements conseill\u00e9s",
                 ],
             },
         ],
@@ -3115,35 +3115,35 @@ PAGES_EDITORIALES = {
         "nav_title": "Fonctionnement",
         "description": (
             "Découvrez comment OptiPlein utilise les prix carburants, la "
-            "geolocalisation et les informations du vehicule pour calculer "
+            "g\u00e9olocalisation et les informations du v\u00e9hicule pour calculer "
             "les stations les plus rentables."
         ),
         "eyebrow": "Mode d'emploi",
         "hero_title": "Comment fonctionne OptiPlein",
         "lead": (
-            "L'application part d'une idee simple : le carburant le moins cher "
-            "n'est pas toujours le plein le plus rentable si le detour coute "
-            "plus cher que l'economie realisee."
+            "L'application part d'une id\u00e9e simple : le carburant le moins cher "
+            "n'est pas toujours le plein le plus rentable si le d\u00e9tour co\u00fbte "
+            "plus cher que l'\u00e9conomie r\u00e9alis\u00e9e."
         ),
         "sections": [
             {
-                "title": "1. Selection du carburant",
+                "title": "1. S\u00e9lection du carburant",
                 "paragraphs": [
                     (
                         "L'utilisateur choisit son carburant. Les prix disponibles "
                         "s'affichent ensuite automatiquement sur la carte autour "
-                        "de sa position ou du trajet prepare."
+                        "de sa position ou du trajet pr\u00e9par\u00e9."
                     )
                 ],
             },
             {
-                "title": "2. Prise en compte du vehicule",
+                "title": "2. Prise en compte du v\u00e9hicule",
                 "paragraphs": [
                     (
-                        "Le nom du vehicule, la taille du reservoir et la "
+                        "Le nom du v\u00e9hicule, la taille du r\u00e9servoir et la "
                         "consommation moyenne permettent d'affiner les calculs. "
-                        "Ces informations aident a estimer le cout reel d'un "
-                        "detour et l'interet d'un ravitaillement."
+                        "Ces informations aident \u00e0 estimer le co\u00fbt r\u00e9el d'un "
+                        "d\u00e9tour et l'int\u00e9r\u00eat d'un ravitaillement."
                     )
                 ],
             },
@@ -3151,7 +3151,7 @@ PAGES_EDITORIALES = {
                 "title": "3. Comparaison des stations",
                 "paragraphs": [
                     (
-                        "OptiPlein compare les stations une a une dans le rayon "
+                        "OptiPlein compare les stations une \u00e0 une dans le rayon "
                         "choisi. L'objectif est de faire ressortir la solution la "
                         "plus logique, pas seulement le prix brut le plus bas."
                     )
@@ -3161,10 +3161,10 @@ PAGES_EDITORIALES = {
                 "title": "4. Guidage et recalcul",
                 "paragraphs": [
                     (
-                        "Lorsque l'utilisateur lance un itineraire, l'application "
+                        "Lorsque l'utilisateur lance un itin\u00e9raire, l'application "
                         "affiche le trajet et peut proposer un recalcul si une "
-                        "station devient plus interessante ou si l'utilisateur "
-                        "s'ecarte du parcours."
+                        "station devient plus int\u00e9ressante ou si l'utilisateur "
+                        "s'\u00e9carte du parcours."
                     )
                 ],
             },
@@ -3175,14 +3175,14 @@ PAGES_EDITORIALES = {
         "title": "Pourquoi utiliser OptiPlein ?",
         "nav_title": "Pourquoi",
         "description": (
-            "OptiPlein aide a eviter les mauvais choix carburant en comparant "
-            "prix, distance, consommation et trajet reel."
+            "OptiPlein aide \u00e0 \u00e9viter les mauvais choix carburant en comparant "
+            "prix, distance, consommation et trajet r\u00e9el."
         ),
         "eyebrow": "La promesse",
         "hero_title": "Parce que le meilleur prix n'est pas toujours le meilleur choix.",
         "lead": (
             "Une station peut afficher un prix attractif, mais devenir moins "
-            "interessante si elle impose un detour trop long. OptiPlein met "
+            "int\u00e9ressante si elle impose un d\u00e9tour trop long. OptiPlein met "
             "les chiffres dans le bon ordre."
         ),
         "highlights": [
@@ -3191,12 +3191,12 @@ PAGES_EDITORIALES = {
                 "text": "Les prix sont visibles directement sur la carte.",
             },
             {
-                "title": "Moins de detours inutiles",
-                "text": "Le calcul tient compte de la distance et du vehicule.",
+                "title": "Moins de d\u00e9tours inutiles",
+                "text": "Le calcul tient compte de la distance et du v\u00e9hicule.",
             },
             {
                 "title": "Plus de transparence",
-                "text": "Les donnees utilisees sont expliquees et mises a jour.",
+                "text": "Les donn\u00e9es utilis\u00e9es sont expliqu\u00e9es et mises \u00e0 jour.",
             },
         ],
         "sections": [
@@ -3206,7 +3206,7 @@ PAGES_EDITORIALES = {
                     (
                         "OptiPlein s'adresse aux conducteurs qui veulent garder "
                         "la main sur leur budget carburant sans passer plusieurs "
-                        "minutes a comparer des applications ou des panneaux de "
+                        "minutes \u00e0 comparer des applications ou des panneaux de "
                         "prix."
                     )
                 ],
@@ -3215,10 +3215,10 @@ PAGES_EDITORIALES = {
                 "title": "Une aide, pas une promesse magique",
                 "paragraphs": [
                     (
-                        "Les resultats dependent des prix disponibles, de la "
-                        "position, du trafic, de la consommation renseignee et du "
-                        "trajet reel. L'application donne une estimation utile "
-                        "pour aider a decider, mais le conducteur reste toujours "
+                        "Les r\u00e9sultats d\u00e9pendent des prix disponibles, de la "
+                        "position, du trafic, de la consommation renseign\u00e9e et du "
+                        "trajet r\u00e9el. L'application donne une estimation utile "
+                        "pour aider \u00e0 d\u00e9cider, mais le conducteur reste toujours "
                         "responsable de sa conduite et de ses choix."
                     )
                 ],
@@ -3227,28 +3227,28 @@ PAGES_EDITORIALES = {
     },
     "a-propos": {
         "slug": "a-propos",
-        "title": "A propos d'OptiPlein",
-        "nav_title": "A propos",
+        "title": "\u00c0 propos d'OptiPlein",
+        "nav_title": "\u00c0 propos",
         "description": (
-            "OptiPlein est un projet francais qui aide les conducteurs a mieux "
+            "OptiPlein est un projet fran\u00e7ais qui aide les conducteurs \u00e0 mieux "
             "comparer les stations-service et les prix des carburants."
         ),
         "eyebrow": "Le projet",
-        "hero_title": "A propos d'OptiPlein",
+        "hero_title": "\u00c0 propos d'OptiPlein",
         "lead": (
-            "OptiPlein est construit avec une ambition concrete : rendre la "
+            "OptiPlein est construit avec une ambition concr\u00e8te : rendre la "
             "comparaison carburant plus utile, plus lisible et plus proche de "
-            "la vraie decision du conducteur."
+            "la vraie d\u00e9cision du conducteur."
         ),
         "sections": [
             {
                 "title": "Une application en phase de test",
                 "paragraphs": [
                     (
-                        "L'application evolue avec les retours des premiers "
-                        "utilisateurs. Les tests permettent d'ameliorer la "
-                        "qualite de la carte, les calculs d'economie, le guidage "
-                        "et l'experience mobile."
+                        "L'application \u00e9volue avec les retours des premiers "
+                        "utilisateurs. Les tests permettent d'am\u00e9liorer la "
+                        "qualit\u00e9 de la carte, les calculs d'\u00e9conomie, le guidage "
+                        "et l'exp\u00e9rience mobile."
                     )
                 ],
             },
@@ -3256,10 +3256,10 @@ PAGES_EDITORIALES = {
                 "title": "Une approche progressive",
                 "paragraphs": [
                     (
-                        "OptiPlein ajoute les fonctionnalites et les donnees etape "
-                        "par etape afin de garder une application claire et fiable. "
+                        "OptiPlein ajoute les fonctionnalit\u00e9s et les donn\u00e9es \u00e9tape "
+                        "par \u00e9tape afin de garder une application claire et fiable. "
                         "Les informations importantes pour l'utilisateur sont "
-                        "mises en avant avant les options plus avancees."
+                        "mises en avant avant les options plus avanc\u00e9es."
                     )
                 ],
             },
@@ -3270,51 +3270,51 @@ PAGES_EDITORIALES = {
         "title": "FAQ OptiPlein",
         "nav_title": "FAQ",
         "description": (
-            "Questions frequentes sur OptiPlein, les prix carburants, les "
-            "comptes, la geolocalisation, les favoris et les donnees utilisees."
+            "Questions fr\u00e9quentes sur OptiPlein, les prix carburants, les "
+            "comptes, la g\u00e9olocalisation, les favoris et les donn\u00e9es utilis\u00e9es."
         ),
-        "eyebrow": "Questions frequentes",
+        "eyebrow": "Questions fr\u00e9quentes",
         "hero_title": "FAQ OptiPlein",
-        "lead": "Les reponses aux questions les plus utiles avant d'utiliser l'application.",
+        "lead": "Les r\u00e9ponses aux questions les plus utiles avant d'utiliser l'application.",
         "faq_items": [
             {
                 "question": "OptiPlein vend-il du carburant ?",
                 "answer": (
-                    "Non. OptiPlein est un service d'aide a la comparaison. "
+                    "Non. OptiPlein est un service d'aide \u00e0 la comparaison. "
                     "L'application ne vend pas de carburant et ne fixe pas les prix."
                 ),
             },
             {
-                "question": "D'ou viennent les prix affiches ?",
+                "question": "D'o\u00f9 viennent les prix affich\u00e9s ?",
                 "answer": (
-                    "Les prix proviennent des donnees publiques disponibles et "
-                    "peuvent etre completes par des corrections manuelles lorsque "
-                    "des informations de station doivent etre precisees."
+                    "Les prix proviennent des donn\u00e9es publiques disponibles et "
+                    "peuvent \u00eatre compl\u00e9t\u00e9s par des corrections manuelles lorsque "
+                    "des informations de station doivent \u00eatre pr\u00e9cis\u00e9es."
                 ),
             },
             {
-                "question": "Pourquoi une station peut-elle etre indiquee comme plus rentable ?",
+                "question": "Pourquoi une station peut-elle \u00eatre indiqu\u00e9e comme plus rentable ?",
                 "answer": (
                     "Le calcul ne regarde pas uniquement le prix au litre. Il "
-                    "prend aussi en compte la distance, la consommation renseignee "
-                    "et le cout du trajet pour eviter les detours qui annulent "
-                    "l'economie."
+                    "prend aussi en compte la distance, la consommation renseign\u00e9e "
+                    "et le co\u00fbt du trajet pour \u00e9viter les d\u00e9tours qui annulent "
+                    "l'\u00e9conomie."
                 ),
             },
             {
-                "question": "La geolocalisation est-elle obligatoire ?",
+                "question": "La g\u00e9olocalisation est-elle obligatoire ?",
                 "answer": (
-                    "Elle est necessaire pour afficher votre position, trouver les "
-                    "stations autour de vous et calculer un itineraire. Vous pouvez "
-                    "la refuser dans les reglages de votre appareil."
+                    "Elle est n\u00e9cessaire pour afficher votre position, trouver les "
+                    "stations autour de vous et calculer un itin\u00e9raire. Vous pouvez "
+                    "la refuser dans les r\u00e9glages de votre appareil."
                 ),
             },
             {
-                "question": "Pourquoi creer un compte ?",
+                "question": "Pourquoi cr\u00e9er un compte ?",
                 "answer": (
-                    "Le compte permet de sauvegarder les vehicules, favoris, "
-                    "preferences et historiques afin de les retrouver sur un autre "
-                    "telephone."
+                    "Le compte permet de sauvegarder les v\u00e9hicules, favoris, "
+                    "pr\u00e9f\u00e9rences et historiques afin de les retrouver sur un autre "
+                    "t\u00e9l\u00e9phone."
                 ),
             },
         ],
@@ -3325,12 +3325,12 @@ PAGES_EDITORIALES = {
         "nav_title": "Contact",
         "description": (
             "Contacter OptiPlein pour une question, un retour testeur, un "
-            "signalement ou une demande liee aux donnees personnelles."
+            "signalement ou une demande li\u00e9e aux donn\u00e9es personnelles."
         ),
         "eyebrow": "Nous contacter",
         "hero_title": "Contact",
         "lead": (
-            "Une question, un retour ou un probleme a signaler ? Le contact "
+            "Une question, un retour ou un probl\u00e8me \u00e0 signaler ? Le contact "
             "principal d'OptiPlein est disponible par e-mail."
         ),
         "contact": True,
@@ -3339,60 +3339,60 @@ PAGES_EDITORIALES = {
                 "title": "Demandes utiles",
                 "paragraphs": [
                     (
-                        "Pour accelerer le traitement, indiquez votre appareil, "
-                        "la ville concernee, le carburant selectionne et une "
-                        "description precise du probleme lorsque c'est possible."
+                        "Pour acc\u00e9l\u00e9rer le traitement, indiquez votre appareil, "
+                        "la ville concern\u00e9e, le carburant s\u00e9lectionn\u00e9 et une "
+                        "description pr\u00e9cise du probl\u00e8me lorsque c'est possible."
                     )
                 ],
                 "bullets": [
                     "question sur l'application",
-                    "probleme d'affichage ou de carte",
-                    "station mal renseignee",
-                    "demande relative au compte ou aux donnees personnelles",
+                    "probl\u00e8me d'affichage ou de carte",
+                    "station mal renseign\u00e9e",
+                    "demande relative au compte ou aux donn\u00e9es personnelles",
                 ],
             }
         ],
     },
     "mentions": {
         "slug": "mentions-legales",
-        "title": "Mentions legales OptiPlein",
-        "nav_title": "Mentions legales",
+        "title": "Mentions l\u00e9gales OptiPlein",
+        "nav_title": "Mentions l\u00e9gales",
         "description": (
-            "Mentions legales du site et de l'application OptiPlein : editeur, "
-            "contact, hebergement et responsabilites."
+            "Mentions l\u00e9gales du site et de l'application OptiPlein : \u00e9diteur, "
+            "contact, h\u00e9bergement et responsabilit\u00e9s."
         ),
-        "eyebrow": "Informations legales",
-        "hero_title": "Mentions legales",
+        "eyebrow": "Informations l\u00e9gales",
+        "hero_title": "Mentions l\u00e9gales",
         "lead": "Les informations d'identification et de contact du service OptiPlein.",
         "sections": [
             {
-                "title": "Editeur du service",
+                "title": "\u00c9diteur du service",
                 "paragraphs": [
                     (
-                        "OptiPlein est un service edite par J. Stoudji. Pour toute "
-                        "question relative au site, a l'application ou aux donnees, "
-                        "vous pouvez ecrire a optiplein5@gmail.com."
+                        "OptiPlein est un service \u00e9dit\u00e9 par J. Stoudji. Pour toute "
+                        "question relative au site, \u00e0 l'application ou aux donn\u00e9es, "
+                        "vous pouvez \u00e9crire \u00e0 optiplein5@gmail.com."
                     )
                 ],
             },
             {
-                "title": "Hebergement",
+                "title": "H\u00e9bergement",
                 "paragraphs": [
                     (
-                        "Le service web est heberge par Render. Les noms de domaine "
-                        "et services techniques associes peuvent etre fournis par "
-                        "les prestataires configures pour optiplein.fr."
+                        "Le service web est h\u00e9berg\u00e9 par Render. Les noms de domaine "
+                        "et services techniques associ\u00e9s peuvent \u00eatre fournis par "
+                        "les prestataires configur\u00e9s pour optiplein.fr."
                     )
                 ],
             },
             {
-                "title": "Responsabilite",
+                "title": "Responsabilit\u00e9",
                 "paragraphs": [
                     (
-                        "OptiPlein fournit une aide a la decision a partir des "
-                        "donnees disponibles. Les prix, disponibilites, trajets et "
+                        "OptiPlein fournit une aide \u00e0 la d\u00e9cision \u00e0 partir des "
+                        "donn\u00e9es disponibles. Les prix, disponibilit\u00e9s, trajets et "
                         "conditions de circulation peuvent varier. Le conducteur "
-                        "reste responsable de sa conduite, de ses arrets et du "
+                        "reste responsable de sa conduite, de ses arr\u00eats et du "
                         "respect du code de la route."
                     )
                 ],
@@ -3401,39 +3401,39 @@ PAGES_EDITORIALES = {
     },
     "confidentialite": {
         "slug": "confidentialite",
-        "title": "Politique de confidentialite OptiPlein",
-        "nav_title": "Confidentialite",
+        "title": "Politique de confidentialit\u00e9 OptiPlein",
+        "nav_title": "Confidentialit\u00e9",
         "description": (
-            "Politique de confidentialite OptiPlein : geolocalisation, compte, "
-            "vehicules, favoris, historique et droits des utilisateurs."
+            "Politique de confidentialit\u00e9 OptiPlein : g\u00e9olocalisation, compte, "
+            "v\u00e9hicules, favoris, historique et droits des utilisateurs."
         ),
-        "eyebrow": "Donnees personnelles",
-        "hero_title": "Politique de confidentialite",
+        "eyebrow": "Donn\u00e9es personnelles",
+        "hero_title": "Politique de confidentialit\u00e9",
         "lead": (
-            "Cette page explique quelles donnees sont utilisees par OptiPlein "
-            "et pour quelles finalites."
+            "Cette page explique quelles donn\u00e9es sont utilis\u00e9es par OptiPlein "
+            "et pour quelles finalit\u00e9s."
         ),
         "updated": "24 juillet 2026",
         "sections": [
             {
-                "title": "Geolocalisation",
+                "title": "G\u00e9olocalisation",
                 "paragraphs": [
                     (
                         "Avec l'autorisation de l'utilisateur, OptiPlein utilise "
-                        "la position precise de l'appareil pour afficher la carte, "
-                        "rechercher les stations proches, estimer les economies et "
-                        "calculer un itineraire."
+                        "la position pr\u00e9cise de l'appareil pour afficher la carte, "
+                        "rechercher les stations proches, estimer les \u00e9conomies et "
+                        "calculer un itin\u00e9raire."
                     )
                 ],
             },
             {
-                "title": "Compte et vehicules",
+                "title": "Compte et v\u00e9hicules",
                 "paragraphs": [
                     (
-                        "Lorsqu'un compte est cree, OptiPlein peut conserver "
-                        "l'adresse e-mail, les vehicules enregistres, les favoris, "
-                        "le type de compte, l'historique d'economies et les "
-                        "preferences utiles a l'experience."
+                        "Lorsqu'un compte est cr\u00e9\u00e9, OptiPlein peut conserver "
+                        "l'adresse e-mail, les v\u00e9hicules enregistr\u00e9s, les favoris, "
+                        "le type de compte, l'historique d'\u00e9conomies et les "
+                        "pr\u00e9f\u00e9rences utiles \u00e0 l'exp\u00e9rience."
                     )
                 ],
             },
@@ -3441,11 +3441,11 @@ PAGES_EDITORIALES = {
                 "title": "Services techniques",
                 "paragraphs": [
                     (
-                        "La carte, le calcul d'itineraire, l'hebergement et les "
-                        "outils de mesure ou de publicite peuvent recevoir des "
-                        "informations techniques strictement necessaires a leur "
-                        "fonctionnement, comme l'adresse IP ou les donnees utiles "
-                        "a la requete demandee."
+                        "La carte, le calcul d'itin\u00e9raire, l'h\u00e9bergement et les "
+                        "outils de mesure ou de publicit\u00e9 peuvent recevoir des "
+                        "informations techniques strictement n\u00e9cessaires \u00e0 leur "
+                        "fonctionnement, comme l'adresse IP ou les donn\u00e9es utiles "
+                        "\u00e0 la requ\u00eate demand\u00e9e."
                     )
                 ],
             },
@@ -3453,10 +3453,10 @@ PAGES_EDITORIALES = {
                 "title": "Vos droits",
                 "paragraphs": [
                     (
-                        "Vous pouvez demander l'acces, la rectification ou la "
-                        "suppression de vos informations en ecrivant a "
-                        "optiplein5@gmail.com. Une page dediee a la suppression "
-                        "de compte est egalement disponible."
+                        "Vous pouvez demander l'acc\u00e8s, la rectification ou la "
+                        "suppression de vos informations en \u00e9crivant \u00e0 "
+                        "optiplein5@gmail.com. Une page d\u00e9di\u00e9e \u00e0 la suppression "
+                        "de compte est \u00e9galement disponible."
                     )
                 ],
             },
@@ -3468,7 +3468,7 @@ PAGES_EDITORIALES = {
         "nav_title": "Conditions",
         "description": (
             "Conditions d'utilisation du site et de l'application OptiPlein : "
-            "service, compte, responsabilites et limites."
+            "service, compte, responsabilit\u00e9s et limites."
         ),
         "eyebrow": "Cadre d'utilisation",
         "hero_title": "Conditions d'utilisation",
@@ -3482,9 +3482,9 @@ PAGES_EDITORIALES = {
                 "title": "Objet du service",
                 "paragraphs": [
                     (
-                        "OptiPlein aide les utilisateurs a comparer des stations, "
+                        "OptiPlein aide les utilisateurs \u00e0 comparer des stations, "
                         "des prix de carburant et des trajets. Le service est une "
-                        "aide a la decision et ne remplace pas le jugement du "
+                        "aide \u00e0 la d\u00e9cision et ne remplace pas le jugement du "
                         "conducteur."
                     )
                 ],
@@ -3493,10 +3493,10 @@ PAGES_EDITORIALES = {
                 "title": "Utilisation responsable",
                 "paragraphs": [
                     (
-                        "L'application ne doit pas etre manipulee de maniere "
+                        "L'application ne doit pas \u00eatre manipul\u00e9e de mani\u00e8re "
                         "dangereuse pendant la conduite. Toute consultation ou "
-                        "modification doit etre effectuee dans le respect des "
-                        "regles de securite routiere."
+                        "modification doit \u00eatre effectu\u00e9e dans le respect des "
+                        "r\u00e8gles de s\u00e9curit\u00e9 routi\u00e8re."
                     )
                 ],
             },
@@ -3505,19 +3505,19 @@ PAGES_EDITORIALES = {
                 "paragraphs": [
                     (
                         "L'utilisateur est responsable de l'exactitude des "
-                        "informations renseignees, notamment les caracteristiques "
-                        "du vehicule. Ces informations influencent les calculs "
-                        "d'economie."
+                        "informations renseign\u00e9es, notamment les caract\u00e9ristiques "
+                        "du v\u00e9hicule. Ces informations influencent les calculs "
+                        "d'\u00e9conomie."
                     )
                 ],
             },
             {
-                "title": "Evolution du service",
+                "title": "\u00c9volution du service",
                 "paragraphs": [
                     (
-                        "OptiPlein peut evoluer, corriger ou suspendre certaines "
-                        "fonctionnalites afin d'ameliorer la fiabilite, la securite "
-                        "ou l'experience utilisateur."
+                        "OptiPlein peut \u00e9voluer, corriger ou suspendre certaines "
+                        "fonctionnalit\u00e9s afin d'am\u00e9liorer la fiabilit\u00e9, la s\u00e9curit\u00e9 "
+                        "ou l'exp\u00e9rience utilisateur."
                     )
                 ],
             },
@@ -3529,35 +3529,35 @@ PAGES_EDITORIALES = {
         "nav_title": "Cookies",
         "description": (
             "Politique des cookies OptiPlein : stockage local, compte, "
-            "preferences, publicite et services tiers."
+            "pr\u00e9f\u00e9rences, publicit\u00e9 et services tiers."
         ),
         "eyebrow": "Cookies et stockage local",
         "hero_title": "Politique des cookies",
         "lead": (
             "OptiPlein utilise le stockage local et peut utiliser des cookies "
             "ou technologies similaires pour faire fonctionner l'application et "
-            "les services associes."
+            "les services associ\u00e9s."
         ),
         "updated": "24 juillet 2026",
         "sections": [
             {
-                "title": "Stockage necessaire",
+                "title": "Stockage n\u00e9cessaire",
                 "paragraphs": [
                     (
-                        "Certaines informations sont stockees localement pour "
-                        "conserver les preferences, les vehicules, les favoris ou "
+                        "Certaines informations sont stock\u00e9es localement pour "
+                        "conserver les pr\u00e9f\u00e9rences, les v\u00e9hicules, les favoris ou "
                         "la session du compte. Ce stockage est utile au bon "
                         "fonctionnement de l'application."
                     )
                 ],
             },
             {
-                "title": "Publicite",
+                "title": "Publicit\u00e9",
                 "paragraphs": [
                     (
-                        "Lorsque Google AdSense est active, Google peut utiliser "
+                        "Lorsque Google AdSense est activ\u00e9, Google peut utiliser "
                         "des cookies ou technologies similaires pour mesurer et "
-                        "diffuser les annonces selon ses propres regles."
+                        "diffuser les annonces selon ses propres r\u00e8gles."
                     )
                 ],
             },
@@ -3565,10 +3565,10 @@ PAGES_EDITORIALES = {
                 "title": "Gestion",
                 "paragraphs": [
                     (
-                        "Vous pouvez supprimer les cookies et donnees de site via "
-                        "les reglages de votre navigateur. Sur mobile, certaines "
-                        "autorisations se gerent aussi depuis les reglages du "
-                        "telephone."
+                        "Vous pouvez supprimer les cookies et donn\u00e9es de site via "
+                        "les r\u00e9glages de votre navigateur. Sur mobile, certaines "
+                        "autorisations se g\u00e8rent aussi depuis les r\u00e9glages du "
+                        "t\u00e9l\u00e9phone."
                     )
                 ],
             },
@@ -3597,10 +3597,10 @@ def contexte_page_editoriale(request, identifiant):
         "active_page": identifiant,
         "menu_pages": MENU_PAGES_EDITORIALES,
         "footer_pages": [
-            ("a-propos", "A propos", "/a-propos"),
+            ("a-propos", "\u00c0 propos", "/a-propos"),
             ("contact", "Contact", "/contact"),
-            ("mentions", "Mentions legales", "/mentions-legales"),
-            ("confidentialite", "Confidentialite", "/confidentialite"),
+            ("mentions", "Mentions l\u00e9gales", "/mentions-legales"),
+            ("confidentialite", "Confidentialit\u00e9", "/confidentialite"),
             ("conditions", "Conditions d'utilisation", "/conditions-utilisation"),
             ("cookies", "Cookies", "/politique-cookies"),
         ],
@@ -3872,7 +3872,7 @@ async def forcer_mise_a_jour_admin(request: Request):
     if not mise_a_jour_admin_lock.acquire(blocking=False):
         raise HTTPException(
             status_code=409,
-            detail="Une mise a jour est deja en cours.",
+            detail="Une mise \u00e0 jour est d\u00e9j\u00e0 en cours.",
         )
 
     try:
@@ -3891,12 +3891,12 @@ async def forcer_mise_a_jour_admin(request: Request):
         }
     except Exception as erreur:
         logger.exception(
-            "La mise a jour forcee depuis l'admin a echoue."
+            "La mise \u00e0 jour forc\u00e9e depuis l'administration a \u00e9chou\u00e9."
         )
         raise HTTPException(
             status_code=500,
             detail=(
-                "Mise a jour impossible pour le moment : "
+                "Mise \u00e0 jour impossible pour le moment : "
                 + str(erreur)
             ),
         ) from erreur
@@ -4527,7 +4527,7 @@ def creer_compte(
     ):
         raise HTTPException(
             status_code=409,
-            detail="Un compte existe deja avec cette adresse.",
+            detail="Un compte existe d\u00e9j\u00e0 avec cette adresse.",
         )
 
     jeton_validation, empreinte_validation, expiration_validation = (
@@ -4888,7 +4888,7 @@ def definir_vehicule_principal_compte(
     if choix.vehicule_id not in ids_vehicules(donnees):
         raise HTTPException(
             status_code=404,
-            detail="Vehicule introuvable.",
+            detail="V\u00e9hicule introuvable.",
         )
 
     donnees["vehicule_principal"] = choix.vehicule_id
