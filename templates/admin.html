@@ -760,7 +760,7 @@
             var statut = document.getElementById("station-status");
 
             statut.textContent =
-                "Enregistrement... si une mise a jour est en cours, "
+                "Enregistrement... si une mise \u00e0 jour est en cours, "
                 + "la correction attendra sa fin.";
 
             await requeteAdmin(
@@ -808,7 +808,7 @@
 
             bouton.disabled = true;
             statut.textContent =
-                "Mise a jour en cours... cela peut prendre quelques secondes.";
+                "Mise \u00e0 jour en cours... cela peut prendre quelques secondes.";
 
             try {
                 var donnees = await requeteAdmin(
@@ -818,7 +818,7 @@
                     }
                 );
                 statut.textContent =
-                    "Mise a jour terminee : "
+                    "Mise \u00e0 jour termin\u00e9e : "
                     + Number(donnees.stations || 0)
                     + " stations, "
                     + texteDate(donnees.updated_at)
@@ -826,7 +826,7 @@
                 await rechercherStationsAdmin();
             } catch (erreur) {
                 statut.textContent = erreur.message
-                    || "Mise a jour impossible.";
+                    || "Mise \u00e0 jour impossible.";
             } finally {
                 bouton.disabled = false;
             }
@@ -896,7 +896,7 @@
             } catch (erreur) {
                 if (statut) {
                     statut.textContent = erreur.message
-                        || "Configuration SMTP impossible a verifier.";
+                || "Configuration SMTP impossible \u00e0 v\u00e9rifier.";
                 }
             }
         }
