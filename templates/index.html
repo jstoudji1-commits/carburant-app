@@ -3919,7 +3919,7 @@ body{
                 <select id="problem-category" name="categorie" required>
                     <option value="Prix ou station">Prix ou station</option>
                     <option value="Carte ou GPS">Carte ou GPS</option>
-                    <option value="Itineraire">Itin&eacute;raire</option>
+                    <option value="Itinéraire">Itin&eacute;raire</option>
                     <option value="Affichage">Affichage</option>
                     <option value="Autre">Autre</option>
                 </select>
@@ -5596,6 +5596,7 @@ var stationsClassiquesMasquees = false;
 var minuteurAnnulationTrajetPrepare = null;
 var secondesAnnulationTrajetPrepare = 20;
 var stationsEconomie = [];
+var actualisationStationsEconomieEnCours = null;
 var stationsTrajetFrance = null;
 var chargementStationsTrajetFrance = null;
 var carburantSelectionne = {{ carburant|tojson }};
@@ -6401,6 +6402,21 @@ function modeElectriqueActif() {
 
 }
 
+function carburantRentabiliteActuel() {
+
+    var vehicule = vehiculeActif();
+    return vehicule
+        ? carburantPourVehicule(vehicule)
+        : String(carburantSelectionne || "").toLowerCase();
+
+}
+
+function modeElectriqueRentabiliteActif() {
+
+    return carburantRentabiliteActuel() === "electrique";
+
+}
+
 function formaterPrixOuPuissanceStation(station) {
 
     if (stationElectrique(station)) {
@@ -6770,7 +6786,6 @@ function remplacerStationsSurCarte(stations, mettreAJourSource) {
     markers = [];
     markersParStation = {};
     stationsCarteParId = {};
-    stationsEconomie = [];
 
     stationsAffichees.forEach(function(stationBrute) {
         var station = normaliserStationCarte(stationBrute);
@@ -6782,20 +6797,6 @@ function remplacerStationsSurCarte(stations, mettreAJourSource) {
 
         markers.push(markerStation);
         markersParStation[station.id] = markerStation;
-        stationsEconomie.push({
-            id: station.id,
-            enseigne: station.enseigne,
-            adresse: station.adresse,
-            ville: station.ville,
-            latitude: station.latitude,
-            longitude: station.longitude,
-            prix: station.prix,
-            distance: station.distance,
-            energie: station.energie,
-            puissanceKw: station.puissanceKw,
-            prixEstime: station.prixEstime,
-            disponibilite: station.disponibilite
-        });
     });
 
     actualiserPrixMinimumAutour(stationsAffichees);
@@ -8962,6 +8963,75 @@ function distanceDeplacementKm(
 
 }
 
+function definirStationsEconomie(stations) {
+
+    stationsEconomie = stations.map(normaliserStationCarte)
+        .filter(function(station) {
+            return Number.isFinite(station.latitude)
+                && Number.isFinite(station.longitude);
+        });
+
+}
+
+async function actualiserStationsEconomieVehicule(
+    latitudeRecherche,
+    longitudeRecherche,
+    stationsCarte
+) {
+
+    var carburantRentabilite = carburantRentabiliteActuel();
+
+    if (
+        carburantRentabilite
+        === String(carburantSelectionne || "").toLowerCase()
+        && Array.isArray(stationsCarte)
+    ) {
+        definirStationsEconomie(stationsCarte);
+        return true;
+    }
+
+    if (actualisationStationsEconomieEnCours) {
+        return actualisationStationsEconomieEnCours;
+    }
+
+    actualisationStationsEconomieEnCours = (async function() {
+        var parametres = new URLSearchParams();
+        parametres.set("latitude", String(latitudeRecherche));
+        parametres.set("longitude", String(longitudeRecherche));
+        parametres.set("carburant", carburantRentabilite);
+        parametres.set("rayon", String(rayonCalculEconomieKm));
+        parametres.set("_", String(Date.now()));
+        var electrique = carburantRentabilite === "electrique";
+        var endpoint = electrique
+            ? "/api/bornes-irve?"
+            : "/api/stations-proches?";
+        var reponse = await fetchAvecDelai(
+            endpoint + parametres.toString(),
+            { cache: "no-store" },
+            electrique ? 45000 : 12000
+        );
+
+        if (!reponse.ok) {
+            return false;
+        }
+
+        var donnees = await reponse.json();
+        if (!Array.isArray(donnees.stations)) {
+            return false;
+        }
+
+        definirStationsEconomie(donnees.stations);
+        return true;
+    })().catch(function() {
+        return false;
+    }).finally(function() {
+        actualisationStationsEconomieEnCours = null;
+    });
+
+    return actualisationStationsEconomieEnCours;
+
+}
+
 async function actualiserStationsSelonPosition(force) {
 
     if (actualisationStationsEnCours) {
@@ -9074,6 +9144,11 @@ async function actualiserStationsSelonPosition(force) {
             versionDonneesChargees = donnees.data_version;
         }
         remplacerStationsSurCarte(donnees.stations);
+        await actualiserStationsEconomieVehicule(
+            latitudeRecherche,
+            longitudeRecherche,
+            donnees.stations
+        );
         calculerMeilleureStation();
         return true;
     } catch (erreur) {
@@ -9525,6 +9600,42 @@ window.addEventListener(
 var controlesAutomatiques = document.querySelectorAll(
     'input[name="carburant"]'
 );
+var carburantCarteManuelCle = "optiplein-carburant-carte-manuel";
+
+function lireCarburantCarteManuel() {
+
+    try {
+        return JSON.parse(
+            localStorage.getItem(carburantCarteManuelCle) || "null"
+        );
+    } catch (erreur) {
+        return null;
+    }
+
+}
+
+function oublierCarburantCarteManuel() {
+
+    localStorage.removeItem(carburantCarteManuelCle);
+
+}
+
+function memoriserCarburantCarteManuel(carburant) {
+
+    var vehicule = vehiculeActif();
+    if (!vehicule) {
+        return;
+    }
+
+    localStorage.setItem(
+        carburantCarteManuelCle,
+        JSON.stringify({
+            vehiculeId: vehicule.id,
+            carburant: String(carburant || "").toLowerCase()
+        })
+    );
+
+}
 
 function soumettreSelectionCarburant(controleAutomatique) {
 
@@ -9568,6 +9679,7 @@ controlesAutomatiques.forEach(
         controleAutomatique.addEventListener(
             "change",
             function() {
+                memoriserCarburantCarteManuel(controleAutomatique.value);
                 soumettreSelectionCarburant(controleAutomatique);
 
             }
@@ -9864,8 +9976,6 @@ function carburantPourVehicule(vehicule) {
     var profil = vehicule
         ? profilVehiculeValide(vehicule.profil)
         : "";
-    var carburantActuel = String(carburantSelectionne || "").toLowerCase();
-
     if (profil === "electrique") {
         return "electrique";
     }
@@ -9878,13 +9988,6 @@ function carburantPourVehicule(vehicule) {
     if (profil === "gpl") {
         return "gplc";
     }
-    if (
-        (profil === "essence" || profil === "hybride")
-        && ["sp98", "e10"].indexOf(carburantActuel) !== -1
-    ) {
-        return carburantActuel;
-    }
-
     return "e10";
 
 }
@@ -9896,10 +9999,24 @@ function synchroniserCarburantAvecVehicule(vehicule) {
     }
 
     var carburantVehicule = carburantPourVehicule(vehicule);
+    var choixManuel = lireCarburantCarteManuel();
+    var carburantCarte = String(carburantSelectionne || "").toLowerCase();
+
+    if (
+        choixManuel
+        && choixManuel.vehiculeId === vehicule.id
+        && choixManuel.carburant === carburantCarte
+    ) {
+        return false;
+    }
+
+    if (choixManuel && choixManuel.vehiculeId !== vehicule.id) {
+        oublierCarburantCarteManuel();
+    }
 
     if (
         carburantVehicule
-        === String(carburantSelectionne || "").toLowerCase()
+        === carburantCarte
     ) {
         return false;
     }
@@ -10552,6 +10669,7 @@ function actualiserListeVehicules() {
             bouton.addEventListener(
                 "click",
                 function() {
+                    oublierCarburantCarteManuel();
                     localStorage.setItem(vehiculeActifCle, vehicule.id);
                     programmerSauvegardeCompte();
                     chargerVehicule();
@@ -10588,7 +10706,7 @@ function enregistrerEconomiePremium(station, economie) {
             economie: Math.max(0, economie),
             station: station.enseigne || "Station-service",
             ville: station.ville || "",
-            carburant: {{ carburant|upper|tojson }},
+            carburant: carburantRentabiliteActuel().toUpperCase(),
             vehicule: (vehiculeActif() || {}).nom || ""
         }
     );
@@ -10631,7 +10749,7 @@ function trouverStationParCoordonnees(latitude, longitude) {
 
 function convertirStationTrajetFrance(station) {
 
-    var prix = Number(station[carburantSelectionne]);
+    var prix = Number(station[carburantRentabiliteActuel()]);
 
     return {
         id: station.id,
@@ -10945,7 +11063,7 @@ function formaterLitresRentabilite(valeur) {
 
 function formaterQuantiteRentabilite(valeur, station) {
 
-    var unite = stationElectrique(station) || modeElectriqueActif()
+    var unite = stationElectrique(station) || modeElectriqueRentabiliteActif()
         ? " kWh"
         : " L";
 
@@ -10993,7 +11111,7 @@ function calculerCoutOptimisationStation(options) {
 
     var station = options.station;
     var vehiculeElectrique = stationElectrique(station)
-        || modeElectriqueActif();
+        || modeElectriqueRentabiliteActif();
     var prixReference = Number.isFinite(options.prixReference)
         ? options.prixReference
         : station.prix;
@@ -11601,7 +11719,9 @@ window.calculerMeilleureStation = function() {
         return;
     }
 
-    if (!modeElectriqueActif() && prixTropAnciensPourCalcul()) {
+    var rentabiliteElectrique = modeElectriqueRentabiliteActif();
+
+    if (!rentabiliteElectrique && prixTropAnciensPourCalcul()) {
         afficherCalculRentabiliteEnAttentePrix(
             titre,
             sousTitre,
@@ -11671,7 +11791,7 @@ window.calculerMeilleureStation = function() {
 
     var meilleureStation = choisirMeilleureStationRentabilite(
         stationsCalculees,
-        modeElectriqueActif()
+        rentabiliteElectrique
     );
     var economie = comptePremiumActif()
         ? meilleureStation.economieComparee
@@ -11769,7 +11889,7 @@ window.calculerMeilleureStation = function() {
         + " \u00b7 "
         + prixFormate
         + (
-            modeElectriqueActif()
+            rentabiliteElectrique
                 ? " \u20ac/kWh \u00b7 "
                 : " \u20ac/L \u00b7 "
         )
@@ -11931,6 +12051,7 @@ window.enregistrerVehicule = function(event) {
     localStorage.setItem(vehiculeActifCle, vehicule.id);
     synchroniserAnciennesClesVehicule(vehicule);
     programmerSauvegardeCompte();
+    oublierCarburantCarteManuel();
 
     if (synchroniserCarburantAvecVehicule(vehicule)) {
         return;
@@ -13494,7 +13615,7 @@ async function calculerRouteAvecCoordonnees(points) {
     }
 
     if (pointsValides.length > 12) {
-        throw new Error("trop d'etapes pour calculer ce trajet");
+        throw new Error("Trop d'étapes pour calculer ce trajet");
     }
 
     var donnees = null;
