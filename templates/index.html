@@ -6422,10 +6422,10 @@ function formaterPrixOuPuissanceStation(station) {
     if (stationElectrique(station)) {
         var prix = formaterPrixStation(station.prix);
         if (prix === "Indisponible") {
-            return prix;
+            return "Tarif N/C";
         }
 
-        return (station.prixEstime ? "~" : "") + prix + "/kWh";
+        return prix + "/kWh";
     }
 
     return formaterPrixStation(station.prix);
@@ -6438,10 +6438,14 @@ function formaterDetailPrixStation(station) {
         return formaterPrixStation(station.prix);
     }
 
-    var prix = formaterPrixStation(station.prix) + "/kWh";
-    return station.prixEstime
-        ? prix + " estim\u00e9"
-        : prix;
+    var prix = formaterPrixStation(station.prix);
+    if (prix === "Indisponible") {
+        return station.tarification
+            ? "Tarif variable ou non exploitable"
+            : "Tarif non communiqu\u00e9";
+    }
+
+    return prix + "/kWh";
 
 }
 
@@ -6490,6 +6494,11 @@ function htmlDetailsBorneIrve(station) {
     var points = Number(station.nbrePdc) || 0;
     var statut = statutDisponibiliteIrve(station);
 
+    var detailTarification = String(station.tarification || "").trim();
+    if (detailTarification.length > 240) {
+        detailTarification = detailTarification.slice(0, 237) + "...";
+    }
+
     return ''
         + '<p class="station-popup-distance">'
         + '<span class="borne-statut statut-borne-'
@@ -6502,6 +6511,10 @@ function htmlDetailsBorneIrve(station) {
         + echapperHtml(prises)
         + '<br>Prix : '
         + echapperHtml(formaterDetailPrixStation(station))
+        + (detailTarification
+            ? '<br>Conditions tarifaires : '
+                + echapperHtml(detailTarification)
+            : '')
         + '</p>';
 
 }
