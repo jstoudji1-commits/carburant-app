@@ -144,7 +144,10 @@ IRVE_STATIQUE_CACHE = DOSSIER_DONNEES_UTILISATEURS / "irve_statique.csv"
 IRVE_DYNAMIQUE_CACHE = DOSSIER_DONNEES_UTILISATEURS / "irve_dynamique.csv"
 IRVE_STATIQUE_TTL_SECONDES = 24 * 60 * 60
 IRVE_DYNAMIQUE_TTL_SECONDES = 5 * 60
-IRVE_PRIX_KWH_ESTIME = 0.39
+# Aucun tarif national par defaut n'existe pour la recharge publique. Une
+# valeur artificielle rendrait les comparaisons et le calcul de rentabilite
+# trompeurs : l'absence de tarif reste donc explicitement inconnue.
+IRVE_PRIX_KWH_ESTIME = None
 IRVE_CACHE_LOCK = threading.Lock()
 ENRICHISSEMENT_STATIONS_REPO_FICHIER = (
     Path(__file__).resolve().parent
@@ -194,6 +197,7 @@ class SignalementProbleme(BaseModel):
         "Prix ou station",
         "Carte ou GPS",
         "Itineraire",
+        "Itinéraire",
         "Affichage",
         "Autre",
     ]
@@ -865,7 +869,7 @@ def compte_premium_requis(request):
     if not premium_actif_donnees(donnees):
         raise HTTPException(
             status_code=403,
-            detail="Acces Premium requis.",
+            detail="Accès Premium requis.",
         )
 
     return email
@@ -1960,10 +1964,15 @@ def envoyer_email(message):
 
 def envoyer_signalement_email(signalement):
 
+    categorie_affichee = (
+        "Itinéraire"
+        if signalement.categorie == "Itineraire"
+        else signalement.categorie
+    )
     message = EmailMessage()
     message["Subject"] = (
         "[OptiPlein] Signalement - "
-        + signalement.categorie
+        + categorie_affichee
     )
     message["To"] = EMAIL_SIGNALEMENT
 
@@ -1972,9 +1981,9 @@ def envoyer_signalement_email(signalement):
 
     message.set_content(
         "Nouveau signalement OptiPlein\n\n"
-        f"Categorie : {signalement.categorie}\n"
-        f"Station : {signalement.station or 'Non precisee'}\n"
-        f"Contact : {signalement.email or 'Non renseigne'}\n"
+        f"Catégorie : {categorie_affichee}\n"
+        f"Station : {signalement.station or 'Non précisée'}\n"
+        f"Contact : {signalement.email or 'Non renseigné'}\n"
         f"Page : {signalement.page or '/web'}\n"
         f"Date : {datetime.now().astimezone():%d/%m/%Y %H:%M:%S %Z}\n\n"
         "Description :\n"
@@ -2642,21 +2651,21 @@ def telecharger_irve_statique():
                             fichier.write(bloc)
 
             if not temporaire.exists() or temporaire.stat().st_size == 0:
-                raise ValueError("Le fichier IRVE telecharge est vide.")
+                raise ValueError("Le fichier IRVE téléchargé est vide.")
 
             # Verifie que la ressource ressemble bien a un CSV avant de
             # remplacer la derniere copie exploitable.
             with temporaire.open("rb") as fichier:
                 entete = fichier.read(4096)
             if b"id_station" not in entete and b"id_pdc" not in entete:
-                raise ValueError("Le fichier IRVE telecharge est invalide.")
+                raise ValueError("Le fichier IRVE téléchargé est invalide.")
 
             temporaire.replace(chemin)
         finally:
             temporaire.unlink(missing_ok=True)
 
     logger.info(
-        "Fichier IRVE statique actualise (%s octets).",
+        "Fichier IRVE statique actualisé (%s octets).",
         chemin.stat().st_size,
     )
     return chemin
@@ -2684,14 +2693,14 @@ def telecharger_irve_dynamique():
 
             if not temporaire.exists() or temporaire.stat().st_size == 0:
                 raise ValueError(
-                    "Le fichier IRVE dynamique telecharge est vide."
+                    "Le fichier IRVE dynamique téléchargé est vide."
                 )
 
             with temporaire.open("rb") as fichier:
                 entete = fichier.read(4096)
             if b"id_pdc" not in entete or b"etat_pdc" not in entete:
                 raise ValueError(
-                    "Le fichier IRVE dynamique telecharge est invalide."
+                    "Le fichier IRVE dynamique téléchargé est invalide."
                 )
 
             temporaire.replace(chemin)
@@ -2699,7 +2708,7 @@ def telecharger_irve_dynamique():
             temporaire.unlink(missing_ok=True)
 
     logger.info(
-        "Fichier IRVE dynamique actualise (%s octets).",
+        "Fichier IRVE dynamique actualisé (%s octets).",
         chemin.stat().st_size,
     )
     return chemin
@@ -2774,16 +2783,24 @@ def prix_kwh_irve(ligne):
         return 0.0, False
 
     texte = str(ligne.get("tarification") or "")
-    recherche = re.search(
-        r"(\d+(?:[,.]\d+)?)\s*(?:€|eur|euro)?\s*/?\s*kwh",
-        texte,
-        re.IGNORECASE,
+    motifs = (
+        r"(\d+(?:[,.]\d+)?)\s*"
+        r"(?:€|eur(?:os?)?|e|â‚¬|\x80)?\s*"
+        r"(?:ttc|ht)?\s*(?:/|par)\s*kwh",
+        r"kwh\s*(?::|=|à)\s*(\d+(?:[,.]\d+)?)",
     )
+    prix_trouves = set()
+    for motif in motifs:
+        for valeur in re.findall(motif, texte, re.IGNORECASE):
+            prix = valeur_float_irve(valeur)
+            if prix is not None and 0 <= prix <= 3:
+                prix_trouves.add(round(prix, 8))
 
-    if recherche:
-        prix = valeur_float_irve(recherche.group(1))
-        if prix is not None and 0 <= prix <= 3:
-            return prix, False
+    # Un seul prix au kWh clairement identifiable peut etre compare. Quand
+    # plusieurs tarifs existent (heures, puissance, abonnement), conserver le
+    # texte complet mais ne pas inventer une valeur unique.
+    if len(prix_trouves) == 1:
+        return prix_trouves.pop(), False
 
     return IRVE_PRIX_KWH_ESTIME, True
 
@@ -2797,7 +2814,7 @@ def charger_disponibilites_irve():
             IRVE_DYNAMIQUE_TTL_SECONDES,
         )
     except Exception:
-        logger.exception("Disponibilite IRVE indisponible.")
+        logger.exception("Disponibilité IRVE indisponible.")
         return {}
 
     disponibilites = {}
@@ -2988,6 +3005,7 @@ def preparer_bornes_irve(
                 "prix": IRVE_PRIX_KWH_ESTIME,
                 "prix_estime": True,
                 "tarification": "",
+                "_prix_kwh_trouves": set(),
             },
         )
 
@@ -2999,9 +3017,8 @@ def preparer_bornes_irve(
         station["nbre_pdc"] += 1
         station["prises"].update(prises_irve(ligne))
         prix, prix_estime = prix_kwh_irve(ligne)
-        if not prix_estime or station["prix_estime"]:
-            station["prix"] = prix
-            station["prix_estime"] = prix_estime
+        if not prix_estime:
+            station["_prix_kwh_trouves"].add(prix)
         if ligne.get("tarification") and not station["tarification"]:
             station["tarification"] = ligne.get("tarification", "")
 
@@ -3014,6 +3031,15 @@ def preparer_bornes_irve(
 
     bornes = []
     for station in stations.values():
+        prix_trouves = station.pop("_prix_kwh_trouves", set())
+        if len(prix_trouves) == 1:
+            station["prix"] = prix_trouves.pop()
+            station["prix_estime"] = False
+        else:
+            # Aucun tarif ou plusieurs tarifs distincts sur une meme station :
+            # le prix unique serait trompeur pour la comparaison.
+            station["prix"] = None
+            station["prix_estime"] = True
         station["prises"] = sorted(station["prises"])
         station["disponibilite"] = libelle_disponibilite_irve(station)
         bornes.append(station)
@@ -4347,7 +4373,7 @@ async def rechercher_adresses(q: str, limit: int = 5):
             )
         )
     except Exception:
-        logger.exception("Recherche d'adresse francaise indisponible.")
+        logger.exception("Recherche d'adresse française indisponible.")
 
     if not est_adresse or len(suggestions_francaises) < limite:
         try:
@@ -5228,7 +5254,7 @@ async def signaler_probleme(
     if len(signalement.description) < 10:
         raise HTTPException(
             status_code=422,
-            detail="La description doit contenir au moins 10 caracteres.",
+            detail="La description doit contenir au moins 10 caractères.",
         )
 
     if signalement.email and not re.fullmatch(
