@@ -14,7 +14,7 @@ RAPPORT_CSV = BASE_DIR / "stations_prix_carburants_gouv_ecarts.csv"
 SOURCE_PRIX_CARBURANTS_GOUV = (
     "https://donnees.roulez-eco.fr/opendata/instantane"
 )
-CARBURANTS = ("gazole", "e10", "sp98")
+CARBURANTS = ("gazole", "e10", "sp98", "sp95", "e85", "gplc")
 
 
 def normaliser_texte(valeur):
