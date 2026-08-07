@@ -742,6 +742,10 @@ body{
     background:#1167e8;
 }
 
+.fuel-dot.sp95{
+    background:#168349;
+}
+
 .fuel-dot.dark{
     background:#102536;
 }
@@ -3465,6 +3469,18 @@ body{
                 <label for="carburant-sp98">
                     <span class="fuel-dot">98</span>
                     SP98
+                </label>
+
+                <input
+                    type="radio"
+                    id="carburant-sp95"
+                    name="carburant"
+                    value="sp95"
+                    {% if carburant == "sp95" %}checked{% endif %}
+                >
+                <label for="carburant-sp95">
+                    <span class="fuel-dot sp95">95</span>
+                    SP95
                 </label>
 
                 <input
