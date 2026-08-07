@@ -1222,6 +1222,9 @@ def station_resume_admin(station):
         "gazole": station.get("gazole", ""),
         "e10": station.get("e10", ""),
         "sp98": station.get("sp98", ""),
+        "sp95": station.get("sp95", ""),
+        "e85": station.get("e85", ""),
+        "gplc": station.get("gplc", ""),
     }
 
 

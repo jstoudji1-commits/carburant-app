@@ -30,7 +30,9 @@ MARCHE_CARBURANT_JSON = DATA_DIR / "carburant_market_signals.json"
 ENRICHISSEMENT_STATIONS_JSON = BASE_DIR / "stations_enrichment.json"
 ENRICHISSEMENT_STATIONS_ADMIN_JSON = DATA_DIR / "stations_enrichment.json"
 FUSEAU_PARIS = ZoneInfo("Europe/Paris")
-CARBURANTS = ["gazole", "e10", "sp98"]
+# Conserver les trois premiers indices pour rester compatible avec les
+# instantanes historiques deja enregistres.
+CARBURANTS = ["gazole", "e10", "sp98", "sp95", "e85", "gplc"]
 STATIONS_EXCLUES = {
     # Prix poids lourds : ne pas afficher comme station grand public.
     "13016007",
@@ -51,7 +53,7 @@ SOURCE_OFFICIELLE_URL = (
 NOMBRE_MINIMUM_STATIONS = 8000
 NOMBRE_MINIMUM_STATIONS_AVEC_PRIX = 6000
 
-ENTETES = [
+ENTETES_STATION = [
     "id",
     "cp",
     "ville",
@@ -59,19 +61,20 @@ ENTETES = [
     "latitude",
     "longitude",
     "enseigne",
-    "gazole",
-    "e10",
-    "sp98",
-    "tendance_gazole",
-    "tendance_e10",
-    "tendance_sp98",
-    "tendance_demain_gazole",
-    "confiance_demain_gazole",
-    "tendance_demain_e10",
-    "confiance_demain_e10",
-    "tendance_demain_sp98",
-    "confiance_demain_sp98",
 ]
+ENTETES = (
+    ENTETES_STATION
+    + CARBURANTS
+    + [f"tendance_{carburant}" for carburant in CARBURANTS]
+    + [
+        champ
+        for carburant in CARBURANTS
+        for champ in (
+            f"tendance_demain_{carburant}",
+            f"confiance_demain_{carburant}",
+        )
+    ]
+)
 
 
 def signature_adresse(station):
@@ -195,9 +198,7 @@ def _lignes_depuis_xml(contenu):
             "longitude": _coordonnees(
                 station.attrib.get("longitude")
             ),
-            "gazole": "",
-            "e10": "",
-            "sp98": "",
+            **{carburant: "" for carburant in CARBURANTS},
         }
 
         for enfant in station:
@@ -217,17 +218,17 @@ def _lignes_depuis_xml(contenu):
                     enfant.attrib.get("valeur", "")
                 )
 
-                if nom == "Gazole":
+                cle_carburant = {
+                    "Gazole": "gazole",
+                    "SP95": "sp95",
+                    "SP98": "sp98",
+                    "E10": "e10",
+                    "E85": "e85",
+                    "GPLc": "gplc",
+                }.get(nom)
 
-                    donnees["gazole"] = valeur
-
-                elif nom == "E10":
-
-                    donnees["e10"] = valeur
-
-                elif nom == "SP98":
-
-                    donnees["sp98"] = valeur
+                if cle_carburant:
+                    donnees[cle_carburant] = valeur
 
         yield donnees
 
@@ -289,6 +290,22 @@ def _lignes_depuis_csv(contenu):
             "sp98": _prix(
                 station.get("Prix SP98")
                 or station.get("sp98")
+                or ""
+            ),
+            "sp95": _prix(
+                station.get("Prix SP95")
+                or station.get("sp95")
+                or ""
+            ),
+            "e85": _prix(
+                station.get("Prix E85")
+                or station.get("e85")
+                or ""
+            ),
+            "gplc": _prix(
+                station.get("Prix GPLc")
+                or station.get("Prix GPL")
+                or station.get("gplc")
                 or ""
             ),
         }
@@ -1198,5 +1215,4 @@ def mettre_a_jour_si_necessaire(max_age_minutes=10):
 
 if __name__ == "__main__":
     mettre_a_jour_stations()
-
 
