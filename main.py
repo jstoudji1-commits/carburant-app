@@ -5596,6 +5596,15 @@ def robots_txt(request: Request):
     )
 
 
+@app.get("/googlef0990c8c7ae0d469.html", include_in_schema=False)
+def verification_google_search_console():
+
+    return Response(
+        content="google-site-verification: googlef0990c8c7ae0d469.html",
+        media_type="text/html",
+    )
+
+
 @app.get("/sitemap.xml")
 def sitemap_xml(request: Request):
 
