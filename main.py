@@ -149,6 +149,15 @@ IRVE_DYNAMIQUE_TTL_SECONDES = 5 * 60
 # valeur artificielle rendrait les comparaisons et le calcul de rentabilite
 # trompeurs : l'absence de tarif reste donc explicitement inconnue.
 IRVE_PRIX_KWH_ESTIME = None
+IRVE_TARIFS_RESEAUX_FICHIER = (
+    Path(__file__).resolve().parent / "irve_network_tariffs.json"
+)
+try:
+    IRVE_TARIFS_RESEAUX = json.loads(
+        IRVE_TARIFS_RESEAUX_FICHIER.read_text(encoding="utf-8")
+    )
+except (OSError, ValueError):
+    IRVE_TARIFS_RESEAUX = {}
 IRVE_CACHE_LOCK = threading.Lock()
 ENRICHISSEMENT_STATIONS_REPO_FICHIER = (
     Path(__file__).resolve().parent
@@ -2809,6 +2818,45 @@ def prix_kwh_irve(ligne):
     return IRVE_PRIX_KWH_ESTIME, True
 
 
+def tarification_reseau_irve(station):
+
+    noms_reseau = station.get("_reseau_noms") or []
+    texte_station = " ".join(
+        [
+            str(station.get("enseigne") or ""),
+            str(station.get("source_id") or ""),
+        ]
+        + [str(nom or "") for nom in noms_reseau]
+    ).casefold()
+
+    for tarif in IRVE_TARIFS_RESEAUX.values():
+        aliases = [str(alias or "").casefold() for alias in tarif.get("aliases", [])]
+        if any(alias and alias in texte_station for alias in aliases):
+            return tarif
+
+    return None
+
+
+def appliquer_tarification_reseau_irve(station):
+
+    tarif = tarification_reseau_irve(station)
+    if not tarif:
+        return
+
+    prix_reference = valeur_float_irve(
+        tarif.get("comparison_price_eur_kwh")
+    )
+    if prix_reference is not None:
+        station["prix"] = prix_reference
+        station["prix_estime"] = False
+
+    station["tarification"] = str(tarif.get("display_text") or "")
+    station["tarifs_options"] = tarif.get("offers", [])
+    station["tarif_source_url"] = str(tarif.get("source_url") or "")
+    station["tarif_source_label"] = str(tarif.get("source_label") or "")
+    station["tarif_verifie_le"] = str(tarif.get("verified_at") or "")
+
+
 def charger_disponibilites_irve():
 
     try:
@@ -3010,6 +3058,7 @@ def preparer_bornes_irve(
                 "prix_estime": True,
                 "tarification": "",
                 "_prix_kwh_trouves": set(),
+                "_reseau_noms": set(),
             },
         )
 
@@ -3020,6 +3069,11 @@ def preparer_bornes_irve(
         )
         station["nbre_pdc"] += 1
         station["prises"].update(prises_irve(ligne))
+        station["_reseau_noms"].update(
+            str(ligne.get(champ) or "").strip()
+            for champ in ("nom_enseigne", "nom_station", "nom_operateur")
+            if str(ligne.get(champ) or "").strip()
+        )
         prix, prix_estime = prix_kwh_irve(ligne)
         if not prix_estime:
             station["_prix_kwh_trouves"].add(prix)
@@ -3044,6 +3098,8 @@ def preparer_bornes_irve(
             # le prix unique serait trompeur pour la comparaison.
             station["prix"] = None
             station["prix_estime"] = True
+        appliquer_tarification_reseau_irve(station)
+        station.pop("_reseau_noms", None)
         station["prises"] = sorted(station["prises"])
         station["disponibilite"] = libelle_disponibilite_irve(station)
         bornes.append(station)

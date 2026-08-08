@@ -1,0 +1,78 @@
+{
+  "indigo": {
+    "network_name": "INDIGO Recharge",
+    "aliases": [
+      "indigo",
+      "réseau de recharge du groupe indigo",
+      "reseau de recharge du groupe indigo",
+      "indigo recharge"
+    ],
+    "comparison_price_eur_kwh": 0.55,
+    "comparison_label": "Tarif public sans carte INDIGO Recharge",
+    "offers": [
+      {
+        "label": "Carte bancaire / tarif public",
+        "price_eur_kwh": 0.55,
+        "session_fee_eur": 0.99,
+        "details": "+0,10 €/min au-delà de 10 h"
+      },
+      {
+        "label": "Carte INDIGO Recharge à la carte",
+        "price_eur_kwh": 0.45,
+        "session_fee_eur": 0.49,
+        "details": "+0,05 €/min au-delà de 10 h"
+      },
+      {
+        "label": "Forfait INDIGO Recharge",
+        "price_eur_kwh": 0.29,
+        "session_fee_eur": 0.0,
+        "details": "100, 200 ou 300 kWh inclus par mois ; 0,55 €/kWh au-delà du quota ; +0,05 €/min au-delà de 16 h"
+      }
+    ],
+    "display_text": "Tarif public sans carte : 0,55 €/kWh + 0,99 € par session (+0,10 €/min après 10 h). Carte INDIGO Recharge à la carte : 0,45 €/kWh + 0,49 € par session (+0,05 €/min après 10 h). Forfaits 100, 200 ou 300 kWh : 0,29 €/kWh, sans frais de session ; dépassement à 0,55 €/kWh (+0,05 €/min après 16 h). Certains parkings de Biarritz, Nevers, Saint-Germain-en-Laye et Tours peuvent encore appliquer 0,30 €/kWh + 0,03 €/min. Le tarif affiché au démarrage de la recharge prévaut.",
+    "source_url": "https://www.indigoneo.fr/fr/recharge-electrique",
+    "source_label": "Tarifs officiels INDIGO Recharge",
+    "verified_at": "2026-08-08"
+  },
+  "lidl": {
+    "network_name": "Lidl E-Mobilité",
+    "aliases": [
+      "lidl",
+      "lidl e-mobilité",
+      "lidl e-mobilite",
+      "lidl france"
+    ],
+    "comparison_price_eur_kwh": 0.39,
+    "comparison_label": "Tarif public sans Lidl Plus",
+    "offers": [
+      {
+        "label": "Paiement sans Lidl Plus",
+        "price_eur_kwh": 0.39,
+        "session_fee_eur": 0.0,
+        "details": "Tarif public affiché par Lidl ; paiement par carte bancaire disponible uniquement sur les bornes DC équipées"
+      },
+      {
+        "label": "Lidl Plus – recharge AC",
+        "price_eur_kwh": 0.29,
+        "session_fee_eur": 0.0,
+        "details": "Tarif TTC via la rubrique E-Mobilité de Lidl Plus"
+      },
+      {
+        "label": "Lidl Plus – recharge DC",
+        "price_eur_kwh": 0.29,
+        "session_fee_eur": 0.0,
+        "details": "Offre promotionnelle à durée limitée, au lieu de 0,39 €/kWh"
+      },
+      {
+        "label": "Badge de mobilité tiers",
+        "price_eur_kwh": null,
+        "session_fee_eur": null,
+        "details": "Tarif et commission définis par le fournisseur du badge"
+      }
+    ],
+    "display_text": "Sans Lidl Plus : 0,39 €/kWh. Avec Lidl Plus : 0,29 €/kWh en AC ; 0,29 €/kWh en DC dans le cadre d’une offre à durée limitée, au lieu de 0,39 €/kWh. Le paiement direct par carte bancaire est réservé aux bornes DC équipées. Avec un badge de mobilité tiers, le prix et une éventuelle commission dépendent de l’opérateur. Une préautorisation bancaire peut être effectuée. Le tarif présenté avant le démarrage de la session prévaut.",
+    "source_url": "https://www.lidl.fr/c/e-mobilite/s10037236",
+    "source_label": "Tarifs officiels Lidl E-Mobilité",
+    "verified_at": "2026-08-08"
+  }
+}
