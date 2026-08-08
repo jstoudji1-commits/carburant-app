@@ -2852,6 +2852,9 @@ def appliquer_tarification_reseau_irve(station):
 
     station["tarification"] = str(tarif.get("display_text") or "")
     station["tarifs_options"] = tarif.get("offers", [])
+    station["tarif_remise_courte"] = str(
+        tarif.get("marker_discount_text") or ""
+    )
     station["tarif_source_url"] = str(tarif.get("source_url") or "")
     station["tarif_source_label"] = str(tarif.get("source_label") or "")
     station["tarif_verifie_le"] = str(tarif.get("verified_at") or "")
