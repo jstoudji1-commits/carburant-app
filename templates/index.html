@@ -1757,13 +1757,43 @@ body{
     font-size:13px;
 }
 
+.prix-bulle.borne-irve.avec-remise{
+    min-width:174px;
+    align-items:stretch;
+    flex-direction:column;
+    gap:1px;
+    padding:4px 6px 3px;
+}
+
+.prix-bulle-ligne-prix{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    min-width:0;
+}
+
 .prix-bulle.borne-irve .enseigne-logo{
     width:22px;
     height:22px;
 }
 
-.prix-bulle.borne-irve > span:not(.enseigne-logo){
+.prix-bulle.borne-irve > span:not(.enseigne-logo),
+.prix-bulle.borne-irve .prix-bulle-ligne-prix > span:not(.enseigne-logo){
     letter-spacing:-0.2px;
+}
+
+.prix-bulle-remise{
+    display:block;
+    width:100%;
+    overflow:hidden;
+    color:#40576a;
+    font-size:9px;
+    font-weight:800;
+    line-height:1.15;
+    text-align:left;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
 .borne-statut{
@@ -6527,6 +6557,19 @@ function formaterDetailPrixStation(station) {
 
 }
 
+function htmlTarifPreferentielMarqueur(station) {
+
+    if (!stationElectrique(station)) {
+        return "";
+    }
+
+    var texte = String(station.tarifRemiseCourte || "").trim();
+    return texte
+        ? '<div class="prix-bulle-remise">' + echapperHtml(texte) + '</div>'
+        : "";
+
+}
+
 function statutDisponibiliteIrve(station) {
 
     if (!stationElectrique(station)) {
@@ -6666,7 +6709,8 @@ function normaliserStationCarte(station) {
             : [],
         tarifSourceUrl: station.tarif_source_url || "",
         tarifSourceLabel: station.tarif_source_label || "",
-        tarifVerifieLe: station.tarif_verifie_le || ""
+        tarifVerifieLe: station.tarif_verifie_le || "",
+        tarifRemiseCourte: station.tarif_remise_courte || ""
     };
 
 }
@@ -6696,19 +6740,31 @@ function creerMarqueurStationDynamique(stationBrute) {
     var classeStatutBorne = stationElectrique(station)
         ? " borne-irve statut-borne-" + statutDisponibiliteIrve(station)
         : "";
+    var tarifPreferentielHtml = htmlTarifPreferentielMarqueur(station);
+    var classeTarifPreferentiel = tarifPreferentielHtml
+        ? " avec-remise"
+        : "";
     var prixIcon = L.divIcon({
         className: "prix-marker",
         html: ''
             + '<div class="prix-bulle'
             + indisponible
             + classeStatutBorne
+            + classeTarifPreferentiel
             + '">'
+            + (tarifPreferentielHtml ? '<div class="prix-bulle-ligne-prix">' : '')
             + logoCarte
             + '<span>' + echapperHtml(prixHtml) + '</span>'
             + htmlIndicateurTendance(station.tendance, station.prix)
+            + (tarifPreferentielHtml ? '</div>' : '')
+            + tarifPreferentielHtml
             + '</div>',
-        iconSize: stationElectrique(station) ? [146, 38] : [132, 36],
-        iconAnchor: stationElectrique(station) ? [73, 19] : [66, 18]
+        iconSize: stationElectrique(station)
+            ? (tarifPreferentielHtml ? [184, 49] : [146, 38])
+            : [132, 36],
+        iconAnchor: stationElectrique(station)
+            ? (tarifPreferentielHtml ? [92, 25] : [73, 19])
+            : [66, 18]
     });
     var distanceHtml = station.distance !== null
         ? '<p class="station-popup-distance">Distance : '
