@@ -31,6 +31,7 @@ import threading
 import time
 from zoneinfo import ZoneInfo
 import requests as http_requests
+from editorial_guides import GUIDES_EDITORIAUX
 from update_data import (
     date_derniere_mise_a_jour,
     mettre_a_jour_stations,
@@ -3060,6 +3061,7 @@ def preparer_bornes_irve(
 
 MENU_PAGES_EDITORIALES = [
     ("accueil", "Accueil", "/"),
+    ("guides", "Guides", "/guides"),
     ("fonctionnement", "Fonctionnement", "/comment-fonctionne-optiplein"),
     ("pourquoi", "Pourquoi OptiPlein", "/pourquoi-optiplein"),
     ("faq", "FAQ", "/faq"),
@@ -3086,8 +3088,8 @@ PAGES_EDITORIALES = {
         ),
         "cta_label": "Ouvrir l'application",
         "cta_url": "/web",
-        "secondary_cta_label": "Devenir testeur",
-        "secondary_cta_url": "/landing",
+        "secondary_cta_label": "Consulter les guides",
+        "secondary_cta_url": "/guides",
         "highlights": [
             {
                 "title": "Prix actualis\u00e9s",
@@ -3134,6 +3136,22 @@ PAGES_EDITORIALES = {
                     "favoris",
                     "historique des \u00e9conomies",
                     "pr\u00e9paration de trajet avec ravitaillements conseill\u00e9s",
+                ],
+            },
+            {
+                "title": "Comprendre les donn\u00e9es avant de comparer",
+                "paragraphs": [
+                    (
+                        "Les guides OptiPlein expliquent la provenance des prix, "
+                        "les limites des donn\u00e9es publiques, le calcul d'une station "
+                        "rentable et la diff\u00e9rence entre un tarif de recharge d\u00e9clar\u00e9 "
+                        "et une estimation. Ils indiquent aussi comment signaler une "
+                        "station mal plac\u00e9e, un prix incoh\u00e9rent ou une borne indisponible."
+                    )
+                ],
+                "links": [
+                    {"label": "D\u00e9couvrir tous les guides", "url": "/guides"},
+                    {"label": "Comprendre les sources", "url": "/guides/sources-prix-carburants"},
                 ],
             },
         ],
@@ -3344,6 +3362,86 @@ PAGES_EDITORIALES = {
                     "Le compte permet de sauvegarder les v\u00e9hicules, favoris, "
                     "pr\u00e9f\u00e9rences et historiques afin de les retrouver sur un autre "
                     "t\u00e9l\u00e9phone."
+                ),
+            },
+            {
+                "question": "Quels carburants sont compar\u00e9s ?",
+                "answer": (
+                    "OptiPlein peut afficher le Gazole, le SP95, le SP98, le SP95-E10, "
+                    "le GPLc et l'E85 lorsque ces prix sont d\u00e9clar\u00e9s par les stations. "
+                    "Le mode \u00e9lectrique utilise des donn\u00e9es distinctes sur les bornes."
+                ),
+            },
+            {
+                "question": "Les prix sont-ils garantis au moment de mon arriv\u00e9e ?",
+                "answer": (
+                    "Non. Un prix peut \u00e9voluer entre sa d\u00e9claration et votre arriv\u00e9e, "
+                    "ou comporter une erreur de saisie. V\u00e9rifiez toujours le prix affich\u00e9 "
+                    "sur place avant de commencer le plein ou la recharge."
+                ),
+            },
+            {
+                "question": "Que signifie un tarif \u00e9lectrique estim\u00e9 ?",
+                "answer": (
+                    "Cela signifie qu'aucun tarif exploitable n'a \u00e9t\u00e9 fourni par la source "
+                    "de la borne. Une estimation ne doit jamais \u00eatre pr\u00e9sent\u00e9e comme le "
+                    "prix contractuel de l'op\u00e9rateur et peut diff\u00e9rer du montant factur\u00e9."
+                ),
+            },
+            {
+                "question": "Comment sont calcul\u00e9s les co\u00fbts en mode \u00e9lectrique ?",
+                "answer": (
+                    "La recharge se calcule en kilowattheures, et non en litres. Le co\u00fbt "
+                    "estim\u00e9 d\u00e9pend donc de l'\u00e9nergie \u00e0 acheter en kWh, du tarif au kWh "
+                    "disponible et de la consommation \u00e9lectrique du v\u00e9hicule."
+                ),
+            },
+            {
+                "question": "Que signifient les couleurs des bornes ?",
+                "answer": (
+                    "Le vert indique qu'au moins un point de charge est disponible, "
+                    "l'orange qu'il est occup\u00e9, le rouge qu'il est hors service et le gris "
+                    "que l'information dynamique n'est pas disponible."
+                ),
+            },
+            {
+                "question": "Puis-je consulter une autre \u00e9nergie que celle de mon v\u00e9hicule ?",
+                "answer": (
+                    "Oui. Le v\u00e9hicule s\u00e9lectionn\u00e9 sert de r\u00e9f\u00e9rence au calcul de rentabilit\u00e9, "
+                    "mais vous pouvez parcourir librement les autres carburants et les bornes "
+                    "\u00e9lectriques sur la carte."
+                ),
+            },
+            {
+                "question": "Pourquoi une station peut-elle \u00eatre mal plac\u00e9e ?",
+                "answer": (
+                    "Les coordonn\u00e9es sont fournies par les jeux de donn\u00e9es sources et peuvent "
+                    "parfois d\u00e9signer une entr\u00e9e, une parcelle ou un point voisin. OptiPlein "
+                    "ne doit pas inventer un nouvel emplacement sans \u00e9l\u00e9ment v\u00e9rifiable."
+                ),
+            },
+            {
+                "question": "Comment signaler une erreur ?",
+                "answer": (
+                    "Indiquez la station ou la borne, son adresse, le probl\u00e8me constat\u00e9, la "
+                    "date et, si possible, une photo sans donn\u00e9e personnelle. Ces \u00e9l\u00e9ments "
+                    "permettent de distinguer une erreur locale d'un probl\u00e8me dans la source."
+                ),
+            },
+            {
+                "question": "OptiPlein garantit-il une \u00e9conomie ?",
+                "answer": (
+                    "Non. Le r\u00e9sultat est une aide \u00e0 la d\u00e9cision fond\u00e9e sur les informations "
+                    "disponibles et les param\u00e8tres du v\u00e9hicule. Le trafic, la consommation "
+                    "r\u00e9elle, un prix modifi\u00e9 ou un d\u00e9tour impr\u00e9vu peuvent changer le r\u00e9sultat."
+                ),
+            },
+            {
+                "question": "Mes donn\u00e9es de position sont-elles publiques ?",
+                "answer": (
+                    "Non. La position sert au fonctionnement de la carte et des calculs. "
+                    "Consultez la politique de confidentialit\u00e9 pour conna\u00eetre pr\u00e9cis\u00e9ment "
+                    "les traitements, dur\u00e9es de conservation et moyens d'exercer vos droits."
                 ),
             },
         ],
@@ -3605,6 +3703,8 @@ PAGES_EDITORIALES = {
     },
 }
 
+PAGES_EDITORIALES.update(GUIDES_EDITORIAUX)
+
 
 def chemin_page_editoriale(identifiant):
 
@@ -3626,6 +3726,7 @@ def contexte_page_editoriale(request, identifiant):
         "active_page": identifiant,
         "menu_pages": MENU_PAGES_EDITORIALES,
         "footer_pages": [
+            ("guides", "Guides", "/guides"),
             ("a-propos", "\u00c0 propos", "/a-propos"),
             ("contact", "Contact", "/contact"),
             ("mentions", "Mentions l\u00e9gales", "/mentions-legales"),
@@ -3674,6 +3775,29 @@ def page_fonctionnement(request: Request):
 def page_pourquoi(request: Request):
 
     return rendre_page_editoriale(request, "pourquoi")
+
+
+@app.get("/guides")
+def page_guides(request: Request):
+
+    return rendre_page_editoriale(request, "guides")
+
+
+@app.get("/guides/{article_slug}")
+def page_guide(request: Request, article_slug: str):
+
+    identifiant = next(
+        (
+            identifiant_page
+            for identifiant_page, page in GUIDES_EDITORIAUX.items()
+            if page.get("slug") == "guides/" + article_slug
+        ),
+        None,
+    )
+    if not identifiant:
+        raise HTTPException(status_code=404, detail="Guide introuvable.")
+
+    return rendre_page_editoriale(request, identifiant)
 
 
 @app.get("/a-propos")
