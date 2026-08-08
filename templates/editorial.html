@@ -29,6 +29,26 @@
     {% endif %}
 
     <script type="application/ld+json">
+    {% if page.article %}
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": {{ page.hero_title|tojson }},
+        "description": {{ page.description|tojson }},
+        "datePublished": {{ page.published_iso|tojson }},
+        "dateModified": {{ page.updated_iso|tojson }},
+        "author": {
+            "@type": "Person",
+            "name": {{ page.author|tojson }}
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "OptiPlein",
+            "url": {{ base_url|tojson }}
+        },
+        "mainEntityOfPage": {{ canonical_url|tojson }}
+    }
+    {% else %}
     {
         "@context": "https://schema.org",
         "@type": "WebSite",
@@ -36,6 +56,7 @@
         "url": {{ base_url|tojson }},
         "description": {{ page.description|tojson }}
     }
+    {% endif %}
     </script>
 
     <style>
@@ -182,6 +203,16 @@
             font-weight:700;
         }
 
+        .article-meta{
+            display:flex;
+            flex-wrap:wrap;
+            gap:7px 16px;
+            margin:14px 0 0;
+            color:var(--muted);
+            font-size:14px;
+            font-weight:700;
+        }
+
         .hero-actions{
             display:flex;
             flex-wrap:wrap;
@@ -302,6 +333,50 @@
             margin:6px 0;
         }
 
+        .resource-links{
+            display:flex;
+            flex-wrap:wrap;
+            gap:9px;
+            margin-top:16px;
+        }
+
+        .resource-links a{
+            display:inline-flex;
+            align-items:center;
+            min-height:40px;
+            padding:8px 12px;
+            border:1px solid #b9d9bf;
+            border-radius:8px;
+            color:var(--green-dark);
+            background:#f5fff7;
+            font-weight:800;
+            text-decoration:none;
+        }
+
+        .references{
+            display:grid;
+            gap:16px;
+            margin-top:16px;
+        }
+
+        .references .section h2{
+            font-size:23px;
+        }
+
+        .references-list{
+            margin:0;
+            padding-left:20px;
+        }
+
+        .references-list li{
+            margin:8px 0;
+        }
+
+        .references-list a{
+            color:var(--blue);
+            font-weight:800;
+        }
+
         .faq-list{
             display:grid;
             gap:14px;
@@ -379,18 +454,36 @@
 
         @media (max-width:860px){
             .site-header{
-                position:static;
-                align-items:flex-start;
-                flex-direction:column;
+                position:sticky;
+                align-items:center;
+                flex-direction:row;
+                min-height:auto;
+                padding:10px 14px 8px;
+                overflow:hidden;
             }
 
             .main-nav{
+                flex:1;
                 justify-content:flex-start;
+                flex-wrap:nowrap;
+                overflow-x:auto;
+                overscroll-behavior-inline:contain;
+                scrollbar-width:none;
+            }
+
+            .main-nav::-webkit-scrollbar{
+                display:none;
             }
 
             .main-nav a{
+                flex:0 0 auto;
                 padding:0 10px;
                 font-size:13px;
+            }
+
+            .brand img{
+                width:112px;
+                max-width:none;
             }
 
             .hero{
@@ -443,8 +536,12 @@
                 <p class="eyebrow">{{ page.eyebrow }}</p>
                 <h1>{{ page.hero_title }}</h1>
                 <p class="lead">{{ page.lead }}</p>
-                {% if page.updated %}
-            <p class="updated">Derni&egrave;re mise &agrave; jour : {{ page.updated }}</p>
+                {% if page.author or page.published or page.updated %}
+                <div class="article-meta">
+                    {% if page.author %}<span>Par {{ page.author }}</span>{% endif %}
+                    {% if page.published %}<span>Publi&eacute; le {{ page.published }}</span>{% endif %}
+                    {% if page.updated %}<span>Mis &agrave; jour le {{ page.updated }}</span>{% endif %}
+                </div>
                 {% endif %}
 
                 {% if page.cta_label or page.secondary_cta_label %}
@@ -482,7 +579,7 @@
             {% endif %}
 
             {% if page.highlights %}
-            <section class="highlights" aria-label="Points cles">
+            <section class="highlights" aria-label="Points clés">
                 {% for highlight in page.highlights %}
                 <article class="highlight">
                     <h2>{{ highlight.title }}</h2>
@@ -493,7 +590,7 @@
             {% endif %}
 
             {% if page.faq_items %}
-            <section class="faq-list" aria-label="Questions frequentes">
+            <section class="faq-list" aria-label="Questions fréquentes">
                 {% for item in page.faq_items %}
                 <article class="faq-item">
                     <h2>{{ item.question }}</h2>
@@ -518,8 +615,44 @@
                         {% endfor %}
                     </ul>
                     {% endif %}
+                    {% if section.links %}
+                    <div class="resource-links">
+                        {% for lien in section.links %}
+                        <a href="{{ lien.url }}">{{ lien.label }}</a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </article>
                 {% endfor %}
+            </section>
+            {% endif %}
+
+            {% if page.sources or page.related %}
+            <section class="references" aria-label="Sources et ressources associées">
+                {% if page.sources %}
+                <article class="section">
+                    <h2>Sources consult&eacute;es</h2>
+                    <ul class="references-list">
+                        {% for source in page.sources %}
+                        <li>
+                            <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">
+                                {{ source.label }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </article>
+                {% endif %}
+                {% if page.related %}
+                <article class="section">
+                    <h2>Pour aller plus loin</h2>
+                    <div class="resource-links">
+                        {% for lien in page.related %}
+                        <a href="{{ lien.url }}">{{ lien.label }}</a>
+                        {% endfor %}
+                    </div>
+                </article>
+                {% endif %}
             </section>
             {% endif %}
         </div>
