@@ -6573,9 +6573,20 @@ function htmlDetailsBorneIrve(station) {
     var statut = statutDisponibiliteIrve(station);
 
     var detailTarification = String(station.tarification || "").trim();
-    if (detailTarification.length > 240) {
-        detailTarification = detailTarification.slice(0, 237) + "...";
+    if (detailTarification.length > 900) {
+        detailTarification = detailTarification.slice(0, 897) + "...";
     }
+    var sourceTarif = String(station.tarifSourceUrl || "").trim();
+    var tarifVerifieLe = String(station.tarifVerifieLe || "").trim();
+    var sourceTarifHtml = sourceTarif.startsWith("https://")
+        ? '<br><a href="' + echapperHtml(sourceTarif)
+            + '" target="_blank" rel="noopener noreferrer">'
+            + echapperHtml(station.tarifSourceLabel || "Source du tarif")
+            + '</a>'
+            + (tarifVerifieLe
+                ? ' · vérifié le ' + echapperHtml(tarifVerifieLe)
+                : '')
+        : '';
 
     return ''
         + '<p class="station-popup-distance">'
@@ -6593,6 +6604,7 @@ function htmlDetailsBorneIrve(station) {
             ? '<br>Conditions tarifaires : '
                 + echapperHtml(detailTarification)
             : '')
+        + sourceTarifHtml
         + '</p>';
 
 }
@@ -6648,7 +6660,13 @@ function normaliserStationCarte(station) {
             Number(station.disponibilite_inconnue) || 0,
         nbrePdc: Number(station.nbre_pdc) || 0,
         prixEstime: Boolean(station.prix_estime),
-        tarification: station.tarification || ""
+        tarification: station.tarification || "",
+        tarifsOptions: Array.isArray(station.tarifs_options)
+            ? station.tarifs_options
+            : [],
+        tarifSourceUrl: station.tarif_source_url || "",
+        tarifSourceLabel: station.tarif_source_label || "",
+        tarifVerifieLe: station.tarif_verifie_le || ""
     };
 
 }
