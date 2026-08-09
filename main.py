@@ -152,6 +152,10 @@ IRVE_PRIX_KWH_ESTIME = None
 IRVE_TARIFS_RESEAUX_FICHIER = (
     Path(__file__).resolve().parent / "irve_network_tariffs.json"
 )
+IRVE_TARIFS_ADMIN_FICHIER = (
+    DOSSIER_DONNEES_UTILISATEURS / "irve_admin_tariffs.json"
+)
+IRVE_TARIF_ADMIN_PREFIXE = "__irve_tarif_admin__:"
 try:
     IRVE_TARIFS_RESEAUX = json.loads(
         IRVE_TARIFS_RESEAUX_FICHIER.read_text(encoding="utf-8")
@@ -560,6 +564,34 @@ class AdminCorrectionStation(BaseModel):
     ville: str = Field(default="", max_length=90)
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+
+
+class AdminOffreTarifIrve(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    label: str = Field(min_length=1, max_length=100)
+    price_eur_kwh: Optional[float] = Field(default=None, ge=0, le=5)
+    session_fee_eur: Optional[float] = Field(default=None, ge=0, le=100)
+    details: str = Field(default="", max_length=300)
+
+
+class AdminTarifIrve(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(default="", max_length=40)
+    scope: Literal["network", "station"] = "network"
+    match_value: str = Field(min_length=1, max_length=160)
+    network_name: str = Field(min_length=1, max_length=120)
+    comparison_price_eur_kwh: float = Field(ge=0, le=5)
+    comparison_label: str = Field(default="Tarif public", max_length=120)
+    marker_discount_text: str = Field(default="", max_length=70)
+    offers: list[AdminOffreTarifIrve] = Field(default_factory=list, max_length=10)
+    display_text: str = Field(default="", max_length=1500)
+    source_url: str = Field(default="", max_length=500)
+    source_label: str = Field(default="Source du tarif", max_length=120)
+    verified_at: str = Field(default="", max_length=20)
 
 
 class AdminTestEmail(BaseModel):
@@ -2860,6 +2892,159 @@ def appliquer_tarification_reseau_irve(station):
     station["tarif_verifie_le"] = str(tarif.get("verified_at") or "")
 
 
+def charger_tarifs_irve_admin():
+
+    corrections_postgres = charger_corrections_stations_postgres()
+    if corrections_postgres is not None:
+        tarifs = {}
+        for cle, payload in corrections_postgres.get("stations", {}).items():
+            if not str(cle).startswith(IRVE_TARIF_ADMIN_PREFIXE):
+                continue
+            tarif_id = str(cle)[len(IRVE_TARIF_ADMIN_PREFIXE):]
+            payload = dict(payload or {})
+            if payload.get("deleted"):
+                continue
+            payload["id"] = tarif_id
+            tarifs[tarif_id] = payload
+        return tarifs
+
+    if not IRVE_TARIFS_ADMIN_FICHIER.exists():
+        return {}
+
+    try:
+        donnees = json.loads(
+            IRVE_TARIFS_ADMIN_FICHIER.read_text(encoding="utf-8")
+        )
+        return dict(donnees.get("tariffs", {}))
+    except (OSError, ValueError, TypeError):
+        logger.exception("Impossible de lire les tarifs IRVE administrateur.")
+        return {}
+
+
+def enregistrer_tarif_irve_admin(tarif):
+
+    tarif_id = tarif.id.strip() or secrets.token_hex(8)
+    payload = tarif.model_dump()
+    if not str(payload.get("display_text") or "").strip():
+        descriptions = []
+        for offre in payload.get("offers", []):
+            morceaux = [str(offre.get("label") or "Tarif")]
+            prix = offre.get("price_eur_kwh")
+            frais = offre.get("session_fee_eur")
+            if prix is not None:
+                morceaux.append(
+                    f"{float(prix):.3f} €/kWh".replace(".", ",")
+                )
+            if frais is not None:
+                morceaux.append(
+                    f"{float(frais):.2f} € par session".replace(".", ",")
+                )
+            if offre.get("details"):
+                morceaux.append(str(offre["details"]))
+            descriptions.append(" : ".join(morceaux[:2]) + (
+                " — " + " — ".join(morceaux[2:])
+                if len(morceaux) > 2
+                else ""
+            ))
+        payload["display_text"] = ". ".join(descriptions)
+    payload["id"] = tarif_id
+    payload["type"] = "irve_tariff"
+    payload["updated_at"] = datetime.now().astimezone().isoformat()
+
+    if enregistrer_correction_station_postgres(
+        IRVE_TARIF_ADMIN_PREFIXE + tarif_id,
+        payload,
+    ):
+        return payload
+
+    donnees = {"tariffs": charger_tarifs_irve_admin()}
+    donnees["tariffs"][tarif_id] = payload
+    donnees["updated_at"] = payload["updated_at"]
+    ecrire_fichier_enrichissement_stations(
+        IRVE_TARIFS_ADMIN_FICHIER,
+        donnees,
+    )
+    return payload
+
+
+def supprimer_tarif_irve_admin(tarif_id):
+
+    tarifs = charger_tarifs_irve_admin()
+    if tarif_id not in tarifs:
+        raise HTTPException(status_code=404, detail="Tarif IRVE introuvable.")
+
+    tombe = {
+        "type": "irve_tariff",
+        "deleted": True,
+        "updated_at": datetime.now().astimezone().isoformat(),
+    }
+    if enregistrer_correction_station_postgres(
+        IRVE_TARIF_ADMIN_PREFIXE + tarif_id,
+        tombe,
+    ):
+        return
+
+    tarifs.pop(tarif_id, None)
+    ecrire_fichier_enrichissement_stations(
+        IRVE_TARIFS_ADMIN_FICHIER,
+        {
+            "tariffs": tarifs,
+            "updated_at": tombe["updated_at"],
+        },
+    )
+
+
+def appliquer_tarification_admin_irve(station, tarifs_admin):
+
+    noms_reseau = station.get("_reseau_noms") or []
+    texte_reseau = " ".join(
+        [str(station.get("enseigne") or "")]
+        + [str(nom or "") for nom in noms_reseau]
+    ).casefold()
+    identifiants = {
+        str(station.get("id") or "").casefold(),
+        str(station.get("source_id") or "").casefold(),
+    }
+    correspondances = []
+
+    for tarif in tarifs_admin.values():
+        valeur = str(tarif.get("match_value") or "").strip().casefold()
+        if not valeur:
+            continue
+        scope = tarif.get("scope", "network")
+        correspond = (
+            valeur in identifiants
+            if scope == "station"
+            else valeur in texte_reseau
+        )
+        if correspond:
+            correspondances.append((scope == "station", tarif))
+
+    if not correspondances:
+        return
+
+    tarif = sorted(
+        correspondances,
+        key=lambda entree: (
+            entree[0],
+            str(entree[1].get("updated_at") or ""),
+        ),
+    )[-1][1]
+    prix = valeur_float_irve(tarif.get("comparison_price_eur_kwh"))
+    if prix is not None:
+        station["prix"] = prix
+        station["prix_estime"] = False
+    station["tarification"] = str(tarif.get("display_text") or "")
+    station["tarifs_options"] = tarif.get("offers", [])
+    station["tarif_remise_courte"] = str(
+        tarif.get("marker_discount_text") or ""
+    )
+    station["tarif_source_url"] = str(tarif.get("source_url") or "")
+    station["tarif_source_label"] = str(tarif.get("source_label") or "")
+    station["tarif_verifie_le"] = str(tarif.get("verified_at") or "")
+    station["tarif_admin"] = True
+
+
 def charger_disponibilites_irve():
 
     try:
@@ -3003,6 +3188,7 @@ def preparer_bornes_irve(
         ) from erreur
 
     disponibilites = charger_disponibilites_irve()
+    tarifs_irve_admin = charger_tarifs_irve_admin()
     rayon = max(1, min(100, int(rayon or 25)))
     stations = {}
 
@@ -3102,6 +3288,7 @@ def preparer_bornes_irve(
             station["prix"] = None
             station["prix_estime"] = True
         appliquer_tarification_reseau_irve(station)
+        appliquer_tarification_admin_irve(station, tarifs_irve_admin)
         station.pop("_reseau_noms", None)
         station["prises"] = sorted(station["prises"])
         station["disponibilite"] = libelle_disponibilite_irve(station)
@@ -4074,6 +4261,55 @@ def corriger_station_admin(
         }
     finally:
         mise_a_jour_admin_lock.release()
+
+
+@app.get("/api/admin/tarifs-irve")
+def lister_tarifs_irve_admin(request: Request):
+
+    verifier_admin(request)
+    tarifs = charger_tarifs_irve_admin()
+    return {
+        "tarifs": sorted(
+            tarifs.values(),
+            key=lambda tarif: (
+                str(tarif.get("network_name") or "").casefold(),
+                str(tarif.get("match_value") or "").casefold(),
+            ),
+        )
+    }
+
+
+@app.post("/api/admin/tarifs-irve")
+def sauvegarder_tarif_irve_admin(
+    tarif: AdminTarifIrve,
+    request: Request,
+):
+
+    verifier_admin(request)
+    if tarif.id and not re.fullmatch(r"[a-zA-Z0-9_-]{1,40}", tarif.id):
+        raise HTTPException(status_code=400, detail="Identifiant invalide.")
+    if not tarif.match_value.strip() or not tarif.network_name.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Le réseau et la valeur à reconnaître sont obligatoires.",
+        )
+    if tarif.source_url and not tarif.source_url.startswith("https://"):
+        raise HTTPException(
+            status_code=400,
+            detail="L’URL de la source doit commencer par https://.",
+        )
+    payload = enregistrer_tarif_irve_admin(tarif)
+    return {"ok": True, "tarif": payload}
+
+
+@app.delete("/api/admin/tarifs-irve/{tarif_id}")
+def effacer_tarif_irve_admin(tarif_id: str, request: Request):
+
+    verifier_admin(request)
+    if not re.fullmatch(r"[a-zA-Z0-9_-]{1,40}", tarif_id):
+        raise HTTPException(status_code=400, detail="Identifiant invalide.")
+    supprimer_tarif_irve_admin(tarif_id)
+    return {"ok": True}
 
 
 @app.post("/api/admin/forcer-mise-a-jour")
