@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-08-02T06:17:17.580007+00:00",
+  "generated_at": "2026-08-09T04:44:28.792634+00:00",
   "summary": {
     "stations_total": 9803,
-    "adresses_ban_trouvees": 9717,
-    "enseignes_trouvees": 9782,
-    "enseignes_openstreetmap": 9345,
+    "adresses_ban_trouvees": 9716,
+    "enseignes_trouvees": 9781,
+    "enseignes_openstreetmap": 9344,
     "enseignes_deduites": 376,
     "enseignes_conservees": 61,
     "coordonnees_corrigees": 3023,
-    "coordonnees_corrigees_openstreetmap": 243,
+    "coordonnees_corrigees_openstreetmap": 246,
     "coordonnees_corrigees_ban": 0,
-    "a_verifier_manuellement": 2578
+    "a_verifier_manuellement": 2579
   },
   "review_required": [
     {
@@ -187,24 +187,6 @@
       "osm_id": "way/88859456"
     },
     {
-      "id": "26600013",
-      "adresse": "AUTOROUTE A7 - AIRE DU PONT DE L'ISÈRE",
-      "cp": "26600",
-      "ville": "Pont-de-l'Isère",
-      "enseigne": "Avia",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "correspondance OpenStreetMap ambigue"
-      ],
-      "ecart_ban_metres": 542550,
-      "distance_osm_metres": 93,
-      "score_ban": 0.4153504619970193,
-      "resultat_ban": "Aire de Sce de l’Autoroute a 26 02690 Urvillers",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/480038441"
-    },
-    {
       "id": "69970001",
       "adresse": "85, Avenue de Chaponnay - Parc d'activité de la vallée de l'Ozon",
       "cp": "69970",
@@ -307,23 +289,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/7238825912"
-    },
-    {
-      "id": "29000016",
-      "adresse": "2 AVENUE DE TY BOS - ZAC DE TY DOUAR",
-      "cp": "29000",
-      "ville": "Quimper",
-      "enseigne": "Casino",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 445569,
-      "distance_osm_metres": 5,
-      "score_ban": 0.31454967914438503,
-      "resultat_ban": "Avenue ZAC 2000 33380 Mios",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/2042210705"
     },
     {
       "id": "49320003",
@@ -838,23 +803,6 @@
       "osm_id": "node/1417334836"
     },
     {
-      "id": "69360011",
-      "adresse": "AUTOROUTE A7 - AIRE DE SOLAIZE",
-      "cp": "69360",
-      "ville": "Saint-Symphorien-d'Ozon",
-      "enseigne": "Total",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 130958,
-      "distance_osm_metres": 33,
-      "score_ban": 0.44835981320049806,
-      "resultat_ban": "Route de Saint Symphorien 48600 Bel-Air-Val-d'Ance",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/25214548"
-    },
-    {
       "id": "51400010",
       "adresse": "A4 - PARIS STRASBOURG",
       "cp": "51400",
@@ -1051,7 +999,7 @@
         "adresse BAN eloignee des coordonnees"
       ],
       "ecart_ban_metres": 54398,
-      "distance_osm_metres": 7,
+      "distance_osm_metres": 1,
       "score_ban": 0.5118826262626263,
       "resultat_ban": "Rue Commandant Helie Denoix de Saint-Marc 84500 Bollène",
       "corrigee": false,
@@ -1855,24 +1803,6 @@
       "osm_id": null
     },
     {
-      "id": "21490003",
-      "adresse": "AUTOROUTE A31 - AIRE DE DIJON BROGNON",
-      "cp": "21490",
-      "ville": "BROGNON",
-      "enseigne": "Total",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "correspondance OpenStreetMap ambigue"
-      ],
-      "ecart_ban_metres": 7445,
-      "distance_osm_metres": 22,
-      "score_ban": 0.4005330303030302,
-      "resultat_ban": "Route de Dijon 21490 Norges-la-Ville",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "relation/10902818"
-    },
-    {
       "id": "76370006",
       "adresse": "Avenue de Breauté",
       "cp": "76370",
@@ -1949,9 +1879,9 @@
       "motifs": [
         "adresse BAN eloignee des coordonnees"
       ],
-      "ecart_ban_metres": 7210,
+      "ecart_ban_metres": 7214,
       "distance_osm_metres": 49,
-      "score_ban": 0.7592406993006994,
+      "score_ban": 0.7592852447552447,
       "resultat_ban": "Avenue de la Plage 40600 Biscarrosse",
       "corrigee": false,
       "source_correction": "",
@@ -2301,6 +2231,23 @@
       "osm_id": "node/8124323357"
     },
     {
+      "id": "83590001",
+      "adresse": "Le Murier, RD 97",
+      "cp": "83590",
+      "ville": "Gonfaron",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 6275,
+      "distance_osm_metres": 48,
+      "score_ban": 0.32730090909090903,
+      "resultat_ban": "Route Départementale 33 83590 Gonfaron",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/6362379255"
+    },
+    {
       "id": "79800008",
       "adresse": "A10 AIRE DE ROUILLE PAMPROUX SUD",
       "cp": "79800",
@@ -2544,11 +2491,28 @@
       "osm_id": null
     },
     {
+      "id": "62110004",
+      "adresse": "389 RUE DES HAUTS DE FRANCE/PLAT",
+      "cp": "62110",
+      "ville": "Hénin-Beaumont",
+      "enseigne": "Total Access",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 5799,
+      "distance_osm_metres": 4,
+      "score_ban": 0.5360425358851674,
+      "resultat_ban": "Rue de l'Escaut 62110 Hénin-Beaumont",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/4665385241"
+    },
+    {
       "id": "83440002",
       "adresse": "QUARTIER DE LA GARE RD.19",
       "cp": "83440",
       "ville": "Fayence",
-      "enseigne": "Total",
+      "enseigne": "TotalEnergies",
       "motifs": [
         "adresse BAN eloignee des coordonnees"
       ],
@@ -3236,6 +3200,23 @@
       "osm_id": "node/25179317"
     },
     {
+      "id": "20090015",
+      "adresse": "Avenue du Président Kennedy - HLM Bat P",
+      "cp": "20090",
+      "ville": "Ajaccio",
+      "enseigne": "Esso",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 4627,
+      "distance_osm_metres": 22,
+      "score_ban": 0.43781355371900826,
+      "resultat_ban": "Residence Hlm du Vazzio Erilia 20090 Ajaccio",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/520703230"
+    },
+    {
       "id": "34190002",
       "adresse": "ROUTE DE MONTPELLIER",
       "cp": "34190",
@@ -3861,23 +3842,6 @@
       "osm_id": "way/94987017"
     },
     {
-      "id": "85200001",
-      "adresse": "ROUTE DE LA ROCHELLE",
-      "cp": "85200",
-      "ville": "FONTENAY-LE-COMTE",
-      "enseigne": "Système U",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 4071,
-      "distance_osm_metres": 39,
-      "score_ban": 0.691176575052854,
-      "resultat_ban": "Route de fontenay le comte 85200 Auchay-sur-Vendée",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/107599764"
-    },
-    {
       "id": "62860006",
       "adresse": "AUTOROUTE A26 - Aire de Rumaucourt",
       "cp": "62860",
@@ -3964,23 +3928,6 @@
       "osm_id": "node/1270461073"
     },
     {
-      "id": "62110004",
-      "adresse": "389 RUE DES HAUTS DE FRANCE/PLAT",
-      "cp": "62110",
-      "ville": "Hénin-Beaumont",
-      "enseigne": "Total Access",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 3978,
-      "distance_osm_metres": 4,
-      "score_ban": 0.5244486435786435,
-      "resultat_ban": "389 Avenue des Déportés 62110 Hénin-Beaumont",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/4665385241"
-    },
-    {
       "id": "72600002",
       "adresse": "Route de la Ferté Bernard",
       "cp": "72600",
@@ -4065,24 +4012,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/25209411"
-    },
-    {
-      "id": "26700002",
-      "adresse": "21 route de St Paul",
-      "cp": "26700",
-      "ville": "PIERRELATTE",
-      "enseigne": "INDEPENDANT",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "aucune station OpenStreetMap proche"
-      ],
-      "ecart_ban_metres": 3909,
-      "distance_osm_metres": null,
-      "score_ban": 0.7823627272727273,
-      "resultat_ban": "Route de Saint Paul 26700 Pierrelatte",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": null
     },
     {
       "id": "29140008",
@@ -4496,6 +4425,23 @@
       "osm_id": "node/25214749"
     },
     {
+      "id": "69360011",
+      "adresse": "AUTOROUTE A7 - AIRE DE SOLAIZE",
+      "cp": "69360",
+      "ville": "Saint-Symphorien-d'Ozon",
+      "enseigne": "Total",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 3722,
+      "distance_osm_metres": 33,
+      "score_ban": 0.6017905483405483,
+      "resultat_ban": "Route de Corbas 69360 Saint-Symphorien-d'Ozon",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/25214548"
+    },
+    {
       "id": "4100002",
       "adresse": "Quartier des Quintrands - Route de Sisteron",
       "cp": "04100",
@@ -4719,23 +4665,6 @@
       "osm_id": "node/1524173341"
     },
     {
-      "id": "62860007",
-      "adresse": "AIRE DE BARALLE AUTOROUTE A 26",
-      "cp": "62860",
-      "ville": "MARQUION",
-      "enseigne": "BP",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 3624,
-      "distance_osm_metres": 64,
-      "score_ban": 0.608255123966942,
-      "resultat_ban": "Autoroute à 26 62860 Marquion",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/1390978298"
-    },
-    {
       "id": "86700004",
       "adresse": "TOTAL 1 centre routier des Minières Payré",
       "cp": "86700",
@@ -4837,6 +4766,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/503717118"
+    },
+    {
+      "id": "39500007",
+      "adresse": "ROUTE NATIONALE 73",
+      "cp": "39500",
+      "ville": "DAMPARIS",
+      "enseigne": "Shell",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 3548,
+      "distance_osm_metres": 24,
+      "score_ban": 0.46060677685950413,
+      "resultat_ban": "Route de Champvans 39500 Damparis",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/3255554772"
     },
     {
       "id": "20113002",
@@ -5129,6 +5075,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/25211765"
+    },
+    {
+      "id": "62860007",
+      "adresse": "AIRE DE BARALLE AUTOROUTE A 26",
+      "cp": "62860",
+      "ville": "MARQUION",
+      "enseigne": "BP",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 3407,
+      "distance_osm_metres": 64,
+      "score_ban": 0.4768582644628099,
+      "resultat_ban": "Rue de Baralle 62860 Sains-lès-Marquion",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/1390978298"
     },
     {
       "id": "64370001",
@@ -5974,6 +5937,23 @@
       "osm_id": "node/1780522387"
     },
     {
+      "id": "43170001",
+      "adresse": "route du Puy",
+      "cp": "43170",
+      "ville": "Saugues",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 3083,
+      "distance_osm_metres": 12,
+      "score_ban": 0.9477736363636363,
+      "resultat_ban": "Route du Puy 43170 Saugues",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/3759588602"
+    },
+    {
       "id": "83250011",
       "adresse": "ROUTE NATIONALE 98",
       "cp": "83250",
@@ -6512,23 +6492,6 @@
       "osm_id": "way/154358741"
     },
     {
-      "id": "28310010",
-      "adresse": "A10 AIRE DES PLAINES DE BEAUCE",
-      "cp": "28310",
-      "ville": "Fresnay-l'Évêque",
-      "enseigne": "Shell",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 2845,
-      "distance_osm_metres": 40,
-      "score_ban": 0.5337187719298245,
-      "resultat_ban": "Rue de Bel-air 28310 Fresnay-l'Évêque",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/25210660"
-    },
-    {
       "id": "69780002",
       "adresse": "ROUTE D HEYRIEUX",
       "cp": "69780",
@@ -7045,6 +7008,23 @@
       "osm_id": null
     },
     {
+      "id": "13730001",
+      "adresse": "ZAC DE LA LAUVE",
+      "cp": "13730",
+      "ville": "SAINT-VICTORET",
+      "enseigne": "Carrefour Market",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 2645,
+      "distance_osm_metres": 31,
+      "score_ban": 0.5956745454545453,
+      "resultat_ban": "Allée de la Barre 13730 Saint-Victoret",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/179227571"
+    },
+    {
       "id": "13127009",
       "adresse": "Quartier des Cadesteaux",
       "cp": "13127",
@@ -7547,23 +7527,6 @@
       "osm_id": "way/136644906"
     },
     {
-      "id": "18200011",
-      "adresse": "Autoroute A71 - La GazonnièreSens Bourges – Clermond-Ferrand",
-      "cp": "18200",
-      "ville": "FARGE ALLICHAMPS",
-      "enseigne": "Esso",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 2486,
-      "distance_osm_metres": 36,
-      "score_ban": 0.38329689839572184,
-      "resultat_ban": "Route de Bourges 18200 Bruère-Allichamps",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/774861327"
-    },
-    {
       "id": "24550001",
       "adresse": "LIEU DIT LA FOUGERE, ROUTE DE CAHORS",
       "cp": "24550",
@@ -7648,24 +7611,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/13544477135"
-    },
-    {
-      "id": "8300001",
-      "adresse": "ZONE DE L'ETOILE",
-      "cp": "08300",
-      "ville": "Rethel",
-      "enseigne": "Carrefour",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "aucune station OpenStreetMap proche"
-      ],
-      "ecart_ban_metres": 2461,
-      "distance_osm_metres": null,
-      "score_ban": 0.5603477855477855,
-      "resultat_ban": "Impasse de l’Epinette 08300 Rethel",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": null
     },
     {
       "id": "57150006",
@@ -8046,6 +7991,23 @@
       "osm_id": "way/320031593"
     },
     {
+      "id": "85200001",
+      "adresse": "ROUTE DE LA ROCHELLE",
+      "cp": "85200",
+      "ville": "FONTENAY-LE-COMTE",
+      "enseigne": "Système U",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 2352,
+      "distance_osm_metres": 39,
+      "score_ban": 0.7018215584415585,
+      "resultat_ban": "Rue de haute roche 85200 Fontenay-le-Comte",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/107599764"
+    },
+    {
       "id": "17430001",
       "adresse": "ZAC DE LA VARENNE   N 137",
       "cp": "17430",
@@ -8080,6 +8042,24 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/225427833"
+    },
+    {
+      "id": "38380001",
+      "adresse": "Route de St Laurent du Pont",
+      "cp": "38380",
+      "ville": "Entre-deux-Guiers",
+      "enseigne": "Netto",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "aucune station OpenStreetMap proche"
+      ],
+      "ecart_ban_metres": 2349,
+      "distance_osm_metres": null,
+      "score_ban": 0.6117432996632997,
+      "resultat_ban": "Route du Grépon 38380 Entre-deux-Guiers",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": null
     },
     {
       "id": "92120004",
@@ -8132,6 +8112,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/3709888065"
+    },
+    {
+      "id": "77130003",
+      "adresse": "5088 ROUTE DE PARIS",
+      "cp": "77130",
+      "ville": "Forges",
+      "enseigne": "Total",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 2341,
+      "distance_osm_metres": 17,
+      "score_ban": 0.4804309090909091,
+      "resultat_ban": "Autoroute A5 Paris Langres 77130 Forges",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/260151582"
     },
     {
       "id": "65130001",
@@ -8495,23 +8492,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/320031593"
-    },
-    {
-      "id": "77130003",
-      "adresse": "5088 ROUTE DE PARIS",
-      "cp": "77130",
-      "ville": "Forges",
-      "enseigne": "Total",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 2275,
-      "distance_osm_metres": 62,
-      "score_ban": 0.4804309090909091,
-      "resultat_ban": "Autoroute A5 Paris Langres 77130 Forges",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/260151582"
     },
     {
       "id": "75016026",
@@ -8996,24 +8976,6 @@
       "osm_id": "node/1109326044"
     },
     {
-      "id": "38380001",
-      "adresse": "Route de St Laurent du Pont",
-      "cp": "38380",
-      "ville": "Entre-deux-Guiers",
-      "enseigne": "Netto",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "aucune station OpenStreetMap proche"
-      ],
-      "ecart_ban_metres": 2195,
-      "distance_osm_metres": null,
-      "score_ban": 0.6117432996632997,
-      "resultat_ban": "Route du Grenat 38380 Entre-deux-Guiers",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": null
-    },
-    {
       "id": "76400009",
       "adresse": "2010 ROUTE DU HAVRE",
       "cp": "76400",
@@ -9048,6 +9010,24 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/233638194"
+    },
+    {
+      "id": "21490003",
+      "adresse": "AUTOROUTE A31 - AIRE DE DIJON BROGNON",
+      "cp": "21490",
+      "ville": "BROGNON",
+      "enseigne": "Total",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "correspondance OpenStreetMap ambigue"
+      ],
+      "ecart_ban_metres": 2182,
+      "distance_osm_metres": 22,
+      "score_ban": 0.3637261251862891,
+      "resultat_ban": "Rue de Beire le Châtel 21490 Brognon",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "relation/10902818"
     },
     {
       "id": "9000003",
@@ -9497,23 +9477,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/5592636857"
-    },
-    {
-      "id": "39500007",
-      "adresse": "ROUTE NATIONALE 73",
-      "cp": "39500",
-      "ville": "DAMPARIS",
-      "enseigne": "Shell",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 2093,
-      "distance_osm_metres": 24,
-      "score_ban": 0.4814993048128342,
-      "resultat_ban": "Rue Nationale 39500 Tavaux",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/3255554772"
     },
     {
       "id": "85600003",
@@ -10622,23 +10585,6 @@
       "osm_id": "node/3002636017"
     },
     {
-      "id": "50304001",
-      "adresse": "Saint Martin des Champs Route d'Isigny le Buat",
-      "cp": "50300",
-      "ville": "AVRANCHES",
-      "enseigne": "E.Leclerc",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 1895,
-      "distance_osm_metres": 47,
-      "score_ban": 0.5256936363636363,
-      "resultat_ban": "Route de la Buissonniere 50300 Avranches",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/135533221"
-    },
-    {
       "id": "38240006",
       "adresse": "RN 87",
       "cp": "38240",
@@ -10986,6 +10932,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": null
+    },
+    {
+      "id": "77164002",
+      "adresse": "ZAC DES HAUTS DE FERRIERES - PARC DES MERLETTES",
+      "cp": "77164",
+      "ville": "FERRIERES EN BRIE",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 1845,
+      "distance_osm_metres": 27,
+      "score_ban": 0.5705420855614973,
+      "resultat_ban": "Parc de Ferrieres 77164 Ferrières-en-Brie",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/116082536"
     },
     {
       "id": "45210006",
@@ -11569,24 +11532,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/2514428612"
-    },
-    {
-      "id": "64121004",
-      "adresse": "Rue de Fabrèges ZAC du pont long",
-      "cp": "64121",
-      "ville": "Serres-Castet",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "aucune station OpenStreetMap proche"
-      ],
-      "ecart_ban_metres": 1777,
-      "distance_osm_metres": null,
-      "score_ban": 0.6423724242424241,
-      "resultat_ban": "Rue de Fabrèges 64121 Serres-Castet",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": null
     },
     {
       "id": "33660004",
@@ -12623,6 +12568,23 @@
       "osm_id": "node/8327930824"
     },
     {
+      "id": "22500004",
+      "adresse": "Route de Lézardrieux",
+      "cp": "22500",
+      "ville": "Paimpol",
+      "enseigne": "E.Leclerc",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 1627,
+      "distance_osm_metres": 79,
+      "score_ban": 0.5431912416851441,
+      "resultat_ban": "Route de Kergrist 22500 Paimpol",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/119454114"
+    },
+    {
       "id": "50500001",
       "adresse": "Route de Saint-Côme",
       "cp": "50500",
@@ -12727,23 +12689,6 @@
       "osm_id": null
     },
     {
-      "id": "34690010",
-      "adresse": "A9 Sens Espagne Paris",
-      "cp": "34690",
-      "ville": "Fabrègues",
-      "enseigne": "Avia",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 1616,
-      "distance_osm_metres": 33,
-      "score_ban": 0.47265424242424237,
-      "resultat_ban": "Rue des Troènes 34690 Fabrègues",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/1098016167"
-    },
-    {
       "id": "27400011",
       "adresse": "A13 Aire De Vironvay Nord",
       "cp": "27400",
@@ -12776,23 +12721,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/5573128671"
-    },
-    {
-      "id": "22500004",
-      "adresse": "Route de Lézardrieux",
-      "cp": "22500",
-      "ville": "Paimpol",
-      "enseigne": "E.Leclerc",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 1613,
-      "distance_osm_metres": 79,
-      "score_ban": 0.5431339689578714,
-      "resultat_ban": "Route de Kergrist 22500 Paimpol",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/119454114"
     },
     {
       "id": "45520004",
@@ -13036,6 +12964,23 @@
       "osm_id": "node/777368014"
     },
     {
+      "id": "76520002",
+      "adresse": "Départemental RD 6014",
+      "cp": "76520",
+      "ville": "Boos",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 1595,
+      "distance_osm_metres": 32,
+      "score_ban": 0.39363307359307353,
+      "resultat_ban": "Impasse du Renard 76520 Boos",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/181637845"
+    },
+    {
       "id": "13100021",
       "adresse": "1 bld Maréchal Juin",
       "cp": "13100",
@@ -13257,23 +13202,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/11161370600"
-    },
-    {
-      "id": "76520002",
-      "adresse": "Départemental RD 6014",
-      "cp": "76520",
-      "ville": "Boos",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 1565,
-      "distance_osm_metres": 5,
-      "score_ban": 0.39363307359307353,
-      "resultat_ban": "Impasse du Renard 76520 Boos",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/181637845"
     },
     {
       "id": "40320002",
@@ -13534,6 +13462,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/63006581"
+    },
+    {
+      "id": "34690010",
+      "adresse": "A9 Sens Espagne Paris",
+      "cp": "34690",
+      "ville": "Fabrègues",
+      "enseigne": "Avia",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 1530,
+      "distance_osm_metres": 33,
+      "score_ban": 0.5106493617021276,
+      "resultat_ban": "Impasse des Létagnes 34690 Fabrègues",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/1098016167"
     },
     {
       "id": "49330001",
@@ -13984,23 +13929,6 @@
       "osm_id": "node/25210698"
     },
     {
-      "id": "44370009",
-      "adresse": "A11 - AIRE DE VARADES PAYS DE LOIRE",
-      "cp": "44370",
-      "ville": "VARADES",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 1472,
-      "distance_osm_metres": 16,
-      "score_ban": 0.47583202797202795,
-      "resultat_ban": "La Radoire (Varades) 44370 Loireauxence",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/25210826"
-    },
-    {
       "id": "50204001",
       "adresse": "Route de Carentan",
       "cp": "50200",
@@ -14069,6 +13997,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/25210640"
+    },
+    {
+      "id": "18200011",
+      "adresse": "Autoroute A71 - La GazonnièreSens Bourges – Clermond-Ferrand",
+      "cp": "18200",
+      "ville": "FARGE ALLICHAMPS",
+      "enseigne": "Esso",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 1459,
+      "distance_osm_metres": 36,
+      "score_ban": 0.4293790361445783,
+      "resultat_ban": "Route de Lignieres 18200 Farges-Allichamps",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/774861327"
     },
     {
       "id": "34600002",
@@ -14866,6 +14811,24 @@
       "osm_id": "node/5554206809"
     },
     {
+      "id": "8300001",
+      "adresse": "ZONE DE L'ETOILE",
+      "cp": "08300",
+      "ville": "Rethel",
+      "enseigne": "Carrefour",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "aucune station OpenStreetMap proche"
+      ],
+      "ecart_ban_metres": 1388,
+      "distance_osm_metres": null,
+      "score_ban": 0.5398104914004914,
+      "resultat_ban": "Rue de l'Alouette 08300 Rethel",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": null
+    },
+    {
       "id": "40630004",
       "adresse": "210 route de Mont de Marsan",
       "cp": "40630",
@@ -15384,23 +15347,6 @@
       "osm_id": "node/25212822"
     },
     {
-      "id": "33160003",
-      "adresse": "Route de Lacanau",
-      "cp": "33160",
-      "ville": "SAINT-MéDARD-EN-JALLES",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 1327,
-      "distance_osm_metres": 53,
-      "score_ban": 0.8146680419580419,
-      "resultat_ban": "Route de Lacanau -  RD 1215 33160 Saint-Médard-en-Jalles",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/109929212"
-    },
-    {
       "id": "78140008",
       "adresse": "AUTOROUTE A86 - AIRE DE VELIZY OUEST",
       "cp": "78140",
@@ -15916,23 +15862,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": null
-    },
-    {
-      "id": "83590001",
-      "adresse": "Le Murier, RD 97",
-      "cp": "83590",
-      "ville": "Gonfaron",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 1264,
-      "distance_osm_metres": 48,
-      "score_ban": 0.6264698395721925,
-      "resultat_ban": "Rue du Mûrier 83590 Gonfaron",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/6362379255"
     },
     {
       "id": "62630004",
@@ -16761,23 +16690,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/1122253164"
-    },
-    {
-      "id": "84000020",
-      "adresse": "COURTINE OUEST-ROCADE CH. DE GAU",
-      "cp": "84000",
-      "ville": "AVIGNON",
-      "enseigne": "Total Access",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 1184,
-      "distance_osm_metres": 11,
-      "score_ban": 0.5589548251748252,
-      "resultat_ban": "Rocade Charles de Gaulle 84000 Avignon",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/25214056"
     },
     {
       "id": "66210005",
@@ -17713,6 +17625,23 @@
       "osm_id": null
     },
     {
+      "id": "84000020",
+      "adresse": "COURTINE OUEST-ROCADE CH. DE GAU",
+      "cp": "84000",
+      "ville": "AVIGNON",
+      "enseigne": "Total Access",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 1109,
+      "distance_osm_metres": 11,
+      "score_ban": 0.5416520408163265,
+      "resultat_ban": "Chemin de Courtine 84000 Avignon",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/25214056"
+    },
+    {
       "id": "67500001",
       "adresse": "Route du rhin",
       "cp": "67500",
@@ -18484,6 +18413,23 @@
       "osm_id": "node/1933467724"
     },
     {
+      "id": "7200006",
+      "adresse": "Quartier Les ChampsSaint Etienne Fontbellon",
+      "cp": "07200",
+      "ville": "SAINT-ÉTIENNE-DE-FONTBELLON",
+      "enseigne": "E.Leclerc",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 1046,
+      "distance_osm_metres": 23,
+      "score_ban": 0.5297224505928854,
+      "resultat_ban": "Chemin de la Chapelle Saint Anne 07200 Saint-Étienne-de-Fontbellon",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/148119923"
+    },
+    {
       "id": "51430002",
       "adresse": "RN 31",
       "cp": "51430",
@@ -18691,23 +18637,6 @@
       "osm_id": "way/218794661"
     },
     {
-      "id": "29630002",
-      "adresse": "POULBRAOU ROUTE DE MORLAIX",
-      "cp": "29630",
-      "ville": "Plougasnou",
-      "enseigne": "Casino",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 1029,
-      "distance_osm_metres": 25,
-      "score_ban": 0.7293197835497834,
-      "resultat_ban": "Route de Morlaix 29630 Plougasnou",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/3391922741"
-    },
-    {
       "id": "59153001",
       "adresse": "Le cochon noir",
       "cp": "59153",
@@ -18757,6 +18686,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/2120929524"
+    },
+    {
+      "id": "29630002",
+      "adresse": "POULBRAOU ROUTE DE MORLAIX",
+      "cp": "29630",
+      "ville": "Plougasnou",
+      "enseigne": "Casino",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 1024,
+      "distance_osm_metres": 25,
+      "score_ban": 0.7293197835497834,
+      "resultat_ban": "Route de Morlaix 29630 Plougasnou",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/3391922741"
     },
     {
       "id": "33410003",
@@ -20697,6 +20643,23 @@
       "osm_id": "way/256056336"
     },
     {
+      "id": "20600007",
+      "adresse": "AVENUE SAPIERO CORSU",
+      "cp": "20600",
+      "ville": "BASTIA",
+      "enseigne": "Esso",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 887,
+      "distance_osm_metres": 73,
+      "score_ban": 0.7918259595959596,
+      "resultat_ban": "Avenue Sampiero Corso 20600 Bastia",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/122466136"
+    },
+    {
       "id": "13140005",
       "adresse": "Avenue du 8 Mai 1945",
       "cp": "13140",
@@ -21226,23 +21189,6 @@
       "osm_id": "node/4473580203"
     },
     {
-      "id": "33240013",
-      "adresse": "Zac DE LA GAROSSE AVENUE DE L'EUROPE",
-      "cp": "33240",
-      "ville": "ST ANDRE DE CUBZAC",
-      "enseigne": "Auchan",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 843,
-      "distance_osm_metres": 26,
-      "score_ban": 0.5642504812834225,
-      "resultat_ban": "Allée de la Garosse 33240 Saint-André-de-Cubzac",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/162479771"
-    },
-    {
       "id": "44350001",
       "adresse": "ROUTE DE LA BAULE",
       "cp": "44350",
@@ -21553,6 +21499,24 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/25210477"
+    },
+    {
+      "id": "38260003",
+      "adresse": "RN 85",
+      "cp": "38260",
+      "ville": "La Frette",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "correspondance OpenStreetMap ambigue"
+      ],
+      "ecart_ban_metres": 816,
+      "distance_osm_metres": 56,
+      "score_ban": 0.6631436363636363,
+      "resultat_ban": "La Frette",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/54964559"
     },
     {
       "id": "42100022",
@@ -21882,6 +21846,23 @@
       "osm_id": "way/234204543"
     },
     {
+      "id": "44370009",
+      "adresse": "A11 - AIRE DE VARADES PAYS DE LOIRE",
+      "cp": "44370",
+      "ville": "VARADES",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 801,
+      "distance_osm_metres": 16,
+      "score_ban": 0.47583202797202795,
+      "resultat_ban": "La Bédoire (Varades) 44370 Loireauxence",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/25210826"
+    },
+    {
       "id": "59250001",
       "adresse": "av Abbé Lemire",
       "cp": "59250",
@@ -21948,6 +21929,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/311929994"
+    },
+    {
+      "id": "93606001",
+      "adresse": "ZONE DE PARINOR SECTEUR N°2",
+      "cp": "93600",
+      "ville": "Aulnay-sous-Bois",
+      "enseigne": "Carrefour",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 797,
+      "distance_osm_metres": 46,
+      "score_ban": 0.5328409090909091,
+      "resultat_ban": "Zone Industrielle Garonor 93600 Aulnay-sous-Bois",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/7358542469"
     },
     {
       "id": "20137004",
@@ -22312,7 +22310,7 @@
       "adresse": "AVENUE DE LA GARE",
       "cp": "38530",
       "ville": "PONTCHARRA",
-      "enseigne": "Super U",
+      "enseigne": "Système U",
       "motifs": [
         "adresse BAN eloignee des coordonnees"
       ],
@@ -22462,23 +22460,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/2948525534"
-    },
-    {
-      "id": "20600007",
-      "adresse": "AVENUE SAPIERO CORSU",
-      "cp": "20600",
-      "ville": "BASTIA",
-      "enseigne": "Esso",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 771,
-      "distance_osm_metres": 73,
-      "score_ban": 0.7911977777777778,
-      "resultat_ban": "Avenue Sampiero Corso 20600 Bastia",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/122466136"
     },
     {
       "id": "20167010",
@@ -24678,23 +24659,6 @@
       "osm_id": "node/1360765146"
     },
     {
-      "id": "13730001",
-      "adresse": "ZAC DE LA LAUVE",
-      "cp": "13730",
-      "ville": "SAINT-VICTORET",
-      "enseigne": "Carrefour Market",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 677,
-      "distance_osm_metres": 31,
-      "score_ban": 0.607661160541586,
-      "resultat_ban": "Place de la Residence 13730 Saint-Victoret",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/179227571"
-    },
-    {
       "id": "81800006",
       "adresse": "ZONE DES MASSIES",
       "cp": "81800",
@@ -25068,23 +25032,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/25213259"
-    },
-    {
-      "id": "76430006",
-      "adresse": "RD 910",
-      "cp": "76430",
-      "ville": "TANCARVILLE",
-      "enseigne": "Total",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 658,
-      "distance_osm_metres": 12,
-      "score_ban": 0.47462008456659616,
-      "resultat_ban": "Chemin Departemental 910 76430 Tancarville",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/12214769450"
     },
     {
       "id": "44570006",
@@ -25530,23 +25477,6 @@
       "osm_id": "node/630747172"
     },
     {
-      "id": "27150003",
-      "adresse": "RUELLE SAINT MARTIN",
-      "cp": "27150",
-      "ville": "ETREPAGNY",
-      "enseigne": "Super U",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 629,
-      "distance_osm_metres": 46,
-      "score_ban": 0.8798815508021389,
-      "resultat_ban": "Rue Saint Martin 27150 Étrépagny",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/3063725375"
-    },
-    {
       "id": "17350001",
       "adresse": "A10 AIRE DE FENIOUX EST",
       "cp": "17350",
@@ -25754,23 +25684,6 @@
       "osm_id": "node/5647374789"
     },
     {
-      "id": "68230002",
-      "adresse": "2 rue Jean-Marie Balduf",
-      "cp": "68230",
-      "ville": "Turckheim",
-      "enseigne": "U",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 622,
-      "distance_osm_metres": 12,
-      "score_ban": 0.5373909090909091,
-      "resultat_ban": "2 Rue du Curé Jean Reyer 68230 Turckheim",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/14038871265"
-    },
-    {
       "id": "51390001",
       "adresse": "AUT A4 AIRE DE VRIGNY",
       "cp": "51390",
@@ -25907,6 +25820,24 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/147421959"
+    },
+    {
+      "id": "81800003",
+      "adresse": "Route d'Albi",
+      "cp": "81800",
+      "ville": "Rabastens",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "correspondance OpenStreetMap ambigue"
+      ],
+      "ecart_ban_metres": 606,
+      "distance_osm_metres": 214,
+      "score_ban": 0.9612309090909089,
+      "resultat_ban": "Route d'Albi 81800 Rabastens",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/4063676299"
     },
     {
       "id": "86130002",
@@ -26183,6 +26114,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/66307109"
+    },
+    {
+      "id": "50304001",
+      "adresse": "Saint Martin des Champs Route d'Isigny le Buat",
+      "cp": "50300",
+      "ville": "AVRANCHES",
+      "enseigne": "E.Leclerc",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 586,
+      "distance_osm_metres": 47,
+      "score_ban": 0.5301188888888888,
+      "resultat_ban": "Résidence le Château 50300 Avranches",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/135533221"
     },
     {
       "id": "67116003",
@@ -26614,23 +26562,6 @@
       "osm_id": "node/1870398692"
     },
     {
-      "id": "41350001",
-      "adresse": "ZI Les Gâts de Coeur",
-      "cp": "41350",
-      "ville": "VINEUIL",
-      "enseigne": "Auchan",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 560,
-      "distance_osm_metres": 35,
-      "score_ban": 0.7448217224880382,
-      "resultat_ban": "Rue des Gâts de Cœur 41350 Vineuil",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/181535177"
-    },
-    {
       "id": "65120002",
       "adresse": "quartier larise",
       "cp": "65120",
@@ -27017,7 +26948,7 @@
       "adresse": "ROUTE NATIONALE 184",
       "cp": "78700",
       "ville": "Conflans-Sainte-Honorine",
-      "enseigne": "BP",
+      "enseigne": "Esso",
       "motifs": [
         "adresse BAN eloignee des coordonnees",
         "correspondance OpenStreetMap ambigue"
@@ -27114,6 +27045,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/1270437962"
+    },
+    {
+      "id": "41350001",
+      "adresse": "ZI Les Gâts de Coeur",
+      "cp": "41350",
+      "ville": "VINEUIL",
+      "enseigne": "Auchan",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 533,
+      "distance_osm_metres": 2,
+      "score_ban": 0.7448217224880382,
+      "resultat_ban": "Rue des Gâts de Cœur 41350 Vineuil",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/181535177"
     },
     {
       "id": "13120001",
@@ -27720,23 +27668,6 @@
       "osm_id": "way/193378732"
     },
     {
-      "id": "35235001",
-      "adresse": "ZA DU PORTAIL RN 12",
-      "cp": "35235",
-      "ville": "Thorigné-Fouillard",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 512,
-      "distance_osm_metres": 29,
-      "score_ban": 0.4485476623376623,
-      "resultat_ban": "Rue Nationale 35235 Thorigné-Fouillard",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/55488789"
-    },
-    {
       "id": "63670002",
       "adresse": "LIEUDIT CHATEAUGAY",
       "cp": "63670",
@@ -27788,6 +27719,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": null
+    },
+    {
+      "id": "44390003",
+      "adresse": "rue de l'Océan - ZI DE LA SANGLE",
+      "cp": "44390",
+      "ville": "Nort-sur-Erdre",
+      "enseigne": "Système U",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 507,
+      "distance_osm_metres": 59,
+      "score_ban": 0.56894,
+      "resultat_ban": "La Sangle 44390 Nort-sur-Erdre",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/370205368"
     },
     {
       "id": "63000015",
@@ -28167,23 +28115,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/7504065141"
-    },
-    {
-      "id": "7200006",
-      "adresse": "Quartier Les ChampsSaint Etienne Fontbellon",
-      "cp": "07200",
-      "ville": "SAINT-ÉTIENNE-DE-FONTBELLON",
-      "enseigne": "E.Leclerc",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 495,
-      "distance_osm_metres": 23,
-      "score_ban": 0.5302995867768594,
-      "resultat_ban": "Les Champs 07200 Saint-Étienne-de-Fontbellon",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/148119923"
     },
     {
       "id": "83470001",
@@ -29441,7 +29372,7 @@
       "id": "13545001",
       "adresse": "1175 Rue Guillaume du Vair",
       "cp": "13546",
-      "ville": "AIX-EN-PROVENCE",
+      "ville": "Aix-en-Provence",
       "enseigne": "Carrefour",
       "motifs": [
         "adresse BAN eloignee des coordonnees"
@@ -31938,6 +31869,23 @@
       "osm_id": "node/2228707253"
     },
     {
+      "id": "33240013",
+      "adresse": "Zac DE LA GAROSSE AVENUE DE L'EUROPE",
+      "cp": "33240",
+      "ville": "ST ANDRE DE CUBZAC",
+      "enseigne": "Auchan",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 393,
+      "distance_osm_metres": 26,
+      "score_ban": 0.6349499999999999,
+      "resultat_ban": "Avenue de l’Europe 33240 Saint-André-de-Cubzac",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/162479771"
+    },
+    {
       "id": "12240002",
       "adresse": "Route de Rodez",
       "cp": "12240",
@@ -32261,6 +32209,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/534087797"
+    },
+    {
+      "id": "17480003",
+      "adresse": "Lieu dit la Beaucousière",
+      "cp": "17480",
+      "ville": "Le Château-d'Oléron",
+      "enseigne": "E.Leclerc",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 388,
+      "distance_osm_metres": 26,
+      "score_ban": 0.716738961038961,
+      "resultat_ban": "Rue de la Beaucoursière 17480 Le Château-d'Oléron",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/2753029783"
     },
     {
       "id": "76210005",
@@ -33480,23 +33445,6 @@
       "osm_id": "node/25209936"
     },
     {
-      "id": "33130002",
-      "adresse": "RUE DES FRERES LUMIERES",
-      "cp": "33130",
-      "ville": "BEGLES",
-      "enseigne": "Carrefour",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 356,
-      "distance_osm_metres": 11,
-      "score_ban": 0.880461515151515,
-      "resultat_ban": "Rue des Frères Lumière 33130 Bègles",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/7069919810"
-    },
-    {
       "id": "59780003",
       "adresse": "RD 93 GRANDE RUE",
       "cp": "59780",
@@ -33616,6 +33564,24 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/99402246"
+    },
+    {
+      "id": "64121004",
+      "adresse": "Rue de Fabrèges ZAC du pont long",
+      "cp": "64121",
+      "ville": "Serres-Castet",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "aucune station OpenStreetMap proche"
+      ],
+      "ecart_ban_metres": 353,
+      "distance_osm_metres": null,
+      "score_ban": 0.6764231907308378,
+      "resultat_ban": "Rue du Pont Long 64121 Serres-Castet",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": null
     },
     {
       "id": "31810002",
@@ -33962,6 +33928,23 @@
       "osm_id": "node/25214064"
     },
     {
+      "id": "50240001",
+      "adresse": "ZONE DE BEAUFOUR",
+      "cp": "50240",
+      "ville": "Saint-James",
+      "enseigne": "Système U",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 347,
+      "distance_osm_metres": 38,
+      "score_ban": 0.743961616161616,
+      "resultat_ban": "ZA de Beaufour (Saint-James) 50240 Saint-James",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/3060630799"
+    },
+    {
       "id": "76131001",
       "adresse": "Rue de la Vatine",
       "cp": "76130",
@@ -33994,6 +33977,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/202386584"
+    },
+    {
+      "id": "5500001",
+      "adresse": "10 route de Gap",
+      "cp": "05500",
+      "ville": "LA FARE-EN-CHAMPSAUR",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 346,
+      "distance_osm_metres": 23,
+      "score_ban": 0.8814411529933481,
+      "resultat_ban": "Route de Gap 05500 La Fare-en-Champsaur",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/601578745"
     },
     {
       "id": "44800008",
@@ -34216,23 +34216,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/74508537"
-    },
-    {
-      "id": "38100013",
-      "adresse": "23-27 BRD JOSEPH VALLIER",
-      "cp": "38100",
-      "ville": "GRENOBLE",
-      "enseigne": "Esso",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 341,
-      "distance_osm_metres": 29,
-      "score_ban": 0.5236536363636364,
-      "resultat_ban": "Rue Joseph Bouchayer 38100 Grenoble",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/324216756"
     },
     {
       "id": "56400007",
@@ -35369,7 +35352,7 @@
       "adresse": "184 RN HAUTES COUTURES",
       "cp": "78700",
       "ville": "Conflans-Sainte-Honorine",
-      "enseigne": "BP",
+      "enseigne": "Esso",
       "motifs": [
         "adresse BAN eloignee des coordonnees",
         "correspondance OpenStreetMap ambigue"
@@ -36146,8 +36129,7 @@
       "ville": "AUTUN",
       "enseigne": "Total Access",
       "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "correspondance OpenStreetMap ambigue"
+        "adresse BAN eloignee des coordonnees"
       ],
       "ecart_ban_metres": 309,
       "distance_osm_metres": 68,
@@ -37197,6 +37179,23 @@
       "osm_id": "way/87863515"
     },
     {
+      "id": "35235001",
+      "adresse": "ZA DU PORTAIL RN 12",
+      "cp": "35235",
+      "ville": "Thorigné-Fouillard",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 295,
+      "distance_osm_metres": 29,
+      "score_ban": 0.6908319191919191,
+      "resultat_ban": "le Portail 35235 Thorigné-Fouillard",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/55488789"
+    },
+    {
       "id": "19140001",
       "adresse": "Route de Limoges",
       "cp": "19140",
@@ -37418,23 +37417,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/8097717563"
-    },
-    {
-      "id": "20090015",
-      "adresse": "Avenue du Président Kennedy - HLM Bat P",
-      "cp": "20090",
-      "ville": "Ajaccio",
-      "enseigne": "Esso",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 293,
-      "distance_osm_metres": 22,
-      "score_ban": 0.7328872727272727,
-      "resultat_ban": "Avenue Président KENNEDY 20090 Ajaccio",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/520703230"
     },
     {
       "id": "7500002",
@@ -39744,7 +39726,7 @@
       ],
       "ecart_ban_metres": 263,
       "distance_osm_metres": 66,
-      "score_ban": 0.9649654545454543,
+      "score_ban": 0.965010909090909,
       "resultat_ban": "800 Route de Toulouse 31620 Fronton",
       "corrigee": false,
       "source_correction": "",
@@ -40264,23 +40246,6 @@
       "osm_id": "node/25213251"
     },
     {
-      "id": "77164002",
-      "adresse": "ZAC DES HAUTS DE FERRIERES - PARC DES MERLETTES",
-      "cp": "77164",
-      "ville": "FERRIERES EN BRIE",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees"
-      ],
-      "ecart_ban_metres": 257,
-      "distance_osm_metres": 27,
-      "score_ban": 0.5351425224071703,
-      "resultat_ban": "Place des Merlettes 77164 Ferrières-en-Brie",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/116082536"
-    },
-    {
       "id": "86400003",
       "adresse": "Route de Niort",
       "cp": "86400",
@@ -40674,6 +40639,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/5599813778"
+    },
+    {
+      "id": "33380001",
+      "adresse": "Rue des Fonderies",
+      "cp": "33380",
+      "ville": "BIGANOS",
+      "enseigne": "Auchan",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees"
+      ],
+      "ecart_ban_metres": 251,
+      "distance_osm_metres": 31,
+      "score_ban": 0.9633390909090909,
+      "resultat_ban": "Rue des Fonderies 33380 Biganos",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/25210423"
     },
     {
       "id": "15190003",
@@ -41256,6 +41238,23 @@
       "osm_id": "node/1011201570"
     },
     {
+      "id": "43170002",
+      "adresse": "ZI du Gray",
+      "cp": "43170",
+      "ville": "Saugues",
+      "enseigne": "Lonjon",
+      "motifs": [
+        "correspondance OpenStreetMap ambigue"
+      ],
+      "ecart_ban_metres": 174,
+      "distance_osm_metres": 366,
+      "score_ban": 0.7752702797202796,
+      "resultat_ban": "Rue du Gray 43170 Saugues",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/5555942124"
+    },
+    {
       "id": "84350002",
       "adresse": "ROUTE DE CHATEAUNEUF DU PAPE",
       "cp": "84350",
@@ -41562,23 +41561,6 @@
       "osm_id": null
     },
     {
-      "id": "43170002",
-      "adresse": "ZI du Gray",
-      "cp": "43170",
-      "ville": "Saugues",
-      "enseigne": "Lonjon",
-      "motifs": [
-        "correspondance OpenStreetMap ambigue"
-      ],
-      "ecart_ban_metres": 146,
-      "distance_osm_metres": 366,
-      "score_ban": 0.7752702797202796,
-      "resultat_ban": "Rue du Gray 43170 Saugues",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/5555942124"
-    },
-    {
       "id": "21120003",
       "adresse": "18 rue François Mitterrand",
       "cp": "21120",
@@ -41713,6 +41695,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/4867624034"
+    },
+    {
+      "id": "78230005",
+      "adresse": "Angle rue de Paris, Quai Maurice Berteaux",
+      "cp": "78230",
+      "ville": "Le Pecq",
+      "enseigne": "Monoprix",
+      "motifs": [
+        "aucune station OpenStreetMap proche"
+      ],
+      "ecart_ban_metres": 140,
+      "distance_osm_metres": null,
+      "score_ban": 0.6310613036020583,
+      "resultat_ban": "Quai Maurice Berteaux 78230 Le Pecq",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": null
     },
     {
       "id": "18170001",
@@ -42650,23 +42649,6 @@
       "osm_id": "node/937778023"
     },
     {
-      "id": "15000019",
-      "adresse": "87 AVENUE CHARLES DE GAULLE",
-      "cp": "15000",
-      "ville": "AURILLAC",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "correspondance OpenStreetMap ambigue"
-      ],
-      "ecart_ban_metres": 73,
-      "distance_osm_metres": 291,
-      "score_ban": 0.9702045454545455,
-      "resultat_ban": "87 Avenue Charles de Gaulle 15000 Aurillac",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/65730520"
-    },
-    {
       "id": "92000021",
       "adresse": "182 RUE P.VAILLANT COUTURIER",
       "cp": "92000",
@@ -42784,6 +42766,23 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/8243337365"
+    },
+    {
+      "id": "69350003",
+      "adresse": "66 RUE STEPHANE DECHANT",
+      "cp": "69350",
+      "ville": "LA MULATIERE",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "correspondance OpenStreetMap ambigue"
+      ],
+      "ecart_ban_metres": 66,
+      "distance_osm_metres": 77,
+      "score_ban": 0.9629345454545454,
+      "resultat_ban": "66 Rue Stéphane Déchant 69350 La Mulatière",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/917259723"
     },
     {
       "id": "84510001",
@@ -43056,23 +43055,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "way/297635733"
-    },
-    {
-      "id": "47550009",
-      "adresse": "1500 Avenue du Docteur Jean Noguès",
-      "cp": "47550",
-      "ville": "BOE",
-      "enseigne": "Avia",
-      "motifs": [
-        "correspondance OpenStreetMap ambigue"
-      ],
-      "ecart_ban_metres": 54,
-      "distance_osm_metres": 48,
-      "score_ban": 0.6380740404040404,
-      "resultat_ban": "1500 Av Dr Jean Nogues 47550 Boé",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "node/25210063"
     },
     {
       "id": "82160002",
@@ -43925,6 +43907,23 @@
       "osm_id": "node/6003231164"
     },
     {
+      "id": "54200012",
+      "adresse": "RUE PAUL KELLER",
+      "cp": "54200",
+      "ville": "TOUL",
+      "enseigne": "Avia",
+      "motifs": [
+        "correspondance OpenStreetMap ambigue"
+      ],
+      "ecart_ban_metres": 21,
+      "distance_osm_metres": 164,
+      "score_ban": 0.9626645454545454,
+      "resultat_ban": "Rue Paul Keller 54200 Toul",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/25210566"
+    },
+    {
       "id": "17300003",
       "adresse": "Impasse du 11 Novembre 1918",
       "cp": "17300",
@@ -44061,6 +44060,24 @@
       "osm_id": null
     },
     {
+      "id": "59440004",
+      "adresse": "88 avenue du pont rouge",
+      "cp": "59440",
+      "ville": "Avesnes sur Helpe",
+      "enseigne": "",
+      "motifs": [
+        "enseigne inconnue",
+        "correspondance OpenStreetMap ambigue"
+      ],
+      "ecart_ban_metres": 0,
+      "distance_osm_metres": 640,
+      "score_ban": 0.9633427272727272,
+      "resultat_ban": "88 Avenue du Pont Rouge 59440 Avesnes-sur-Helpe",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/2340132256"
+    },
+    {
       "id": "70180003",
       "adresse": "2 RUE ALFRED DORNIER",
       "cp": "70180",
@@ -44149,6 +44166,40 @@
       "osm_id": "node/691280978"
     },
     {
+      "id": "26600013",
+      "adresse": "AUTOROUTE A7 - AIRE DU PONT DE L'ISÈRE",
+      "cp": "26600",
+      "ville": "Pont-de-l'Isère",
+      "enseigne": "Avia",
+      "motifs": [
+        "correspondance OpenStreetMap ambigue"
+      ],
+      "ecart_ban_metres": null,
+      "distance_osm_metres": 93,
+      "score_ban": 0,
+      "resultat_ban": "",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "way/480038441"
+    },
+    {
+      "id": "68630003",
+      "adresse": "1 route du vin",
+      "cp": "68630",
+      "ville": "Mittelwihr",
+      "enseigne": "Carrefour",
+      "motifs": [
+        "correspondance OpenStreetMap ambigue"
+      ],
+      "ecart_ban_metres": 0,
+      "distance_osm_metres": 75,
+      "score_ban": 0.9515572727272726,
+      "resultat_ban": "1 Route du Vin 68630 Mittelwihr",
+      "corrigee": false,
+      "source_correction": "",
+      "osm_id": "node/10742981927"
+    },
+    {
       "id": "16430004",
       "adresse": "ZA Les Montagnes Les Plantes Neuves",
       "cp": "16430",
@@ -44164,23 +44215,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/12271706989"
-    },
-    {
-      "id": "38260003",
-      "adresse": "RN 85",
-      "cp": "38260",
-      "ville": "La Frette",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "correspondance OpenStreetMap ambigue"
-      ],
-      "ecart_ban_metres": null,
-      "distance_osm_metres": 56,
-      "score_ban": 0,
-      "resultat_ban": "",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/54964559"
     },
     {
       "id": "13600013",
@@ -44215,23 +44249,6 @@
       "corrigee": false,
       "source_correction": "",
       "osm_id": "node/8241099418"
-    },
-    {
-      "id": "50240003",
-      "adresse": "AUTOROUTE A84 - AIRE DU MONT SAINT MICHEL",
-      "cp": "50240",
-      "ville": "Saint-Aubin-de-Terregatte",
-      "enseigne": "Total",
-      "motifs": [
-        "correspondance OpenStreetMap ambigue"
-      ],
-      "ecart_ban_metres": null,
-      "distance_osm_metres": 12,
-      "score_ban": 0,
-      "resultat_ban": "",
-      "corrigee": false,
-      "source_correction": "",
-      "osm_id": "way/162869475"
     },
     {
       "id": "77760003",
@@ -44799,10 +44816,10 @@
         "adresse BAN eloignee des coordonnees",
         "coordonnees corrigees"
       ],
-      "ecart_ban_metres": 18175,
+      "ecart_ban_metres": 17625,
       "distance_osm_metres": 0,
       "score_ban": 0.3947523583662714,
-      "resultat_ban": "Stritta di Murtetu Supranu 20137 Porto-Vecchio",
+      "resultat_ban": "Striita di Murtetu Suttanu 20137 Porto-Vecchio",
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/60351226"
@@ -44860,24 +44877,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/13909979303"
-    },
-    {
-      "id": "67640004",
-      "adresse": "RTE DE STRASBOURG RN 83",
-      "cp": "67640",
-      "ville": "FEGERSHEIM",
-      "enseigne": "Total",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 10883,
-      "distance_osm_metres": 0,
-      "score_ban": 0.6096863636363636,
-      "resultat_ban": "Rue de Fegersheim 67100 Strasbourg",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/25212721"
     },
     {
       "id": "46090002",
@@ -45184,6 +45183,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/25211819"
+    },
+    {
+      "id": "64490001",
+      "adresse": "LE BOURG",
+      "cp": "64490",
+      "ville": "Accous",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 5825,
+      "distance_osm_metres": 0,
+      "score_ban": 0.6079809090909091,
+      "resultat_ban": "Le Bergon 64490 Accous",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/989059747"
     },
     {
       "id": "42440010",
@@ -45736,9 +45753,9 @@
         "adresse BAN eloignee des coordonnees",
         "coordonnees corrigees"
       ],
-      "ecart_ban_metres": 3792,
+      "ecart_ban_metres": 3788,
       "distance_osm_metres": 0,
-      "score_ban": 0.5161600000000001,
+      "score_ban": 0.5163972727272726,
       "resultat_ban": "Route de la Descente 05000 Gap",
       "corrigee": true,
       "source_correction": "OpenStreetMap",
@@ -46195,24 +46212,6 @@
       "osm_id": "node/842351371"
     },
     {
-      "id": "84140007",
-      "adresse": "4316 RTE DE MARSEILLE",
-      "cp": "84140",
-      "ville": "MONTFAVET",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 3271,
-      "distance_osm_metres": 0,
-      "score_ban": 0.3859219936204146,
-      "resultat_ban": "Cours Cardinal Bertrand De Montfavet 84140 Avignon",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/83763808"
-    },
-    {
       "id": "24100008",
       "adresse": "Route de Sainte Alvère",
       "cp": "24100",
@@ -46517,24 +46516,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/434752457"
-    },
-    {
-      "id": "64490001",
-      "adresse": "LE BOURG",
-      "cp": "64490",
-      "ville": "Accous",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 2922,
-      "distance_osm_metres": 0,
-      "score_ban": 0.6322233333333332,
-      "resultat_ban": "Ure 64490 Accous",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/989059747"
     },
     {
       "id": "60500011",
@@ -47381,6 +47362,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/181535177"
+    },
+    {
+      "id": "83380002",
+      "adresse": "SAN PEIRE",
+      "cp": "83380",
+      "ville": "LES ISSAMBRES",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 2148,
+      "distance_osm_metres": 0,
+      "score_ban": 0.46784311004784684,
+      "resultat_ban": "corniche des issambres 83380 Roquebrune-sur-Argens",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/786999853"
     },
     {
       "id": "20137006",
@@ -48931,6 +48930,24 @@
       "osm_id": "node/5068315237"
     },
     {
+      "id": "40420003",
+      "adresse": "RN134 - Route de Sabres",
+      "cp": "40420",
+      "ville": "Garein",
+      "enseigne": "Total",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 1408,
+      "distance_osm_metres": 0,
+      "score_ban": 0.7820925619834711,
+      "resultat_ban": "Route de Sabres 40420 Garein",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/12251053261"
+    },
+    {
       "id": "77340009",
       "adresse": "Zac Les 4 Chênes, 35 Rte de Paris",
       "cp": "77340",
@@ -49003,6 +49020,24 @@
       "osm_id": "node/4980167822"
     },
     {
+      "id": "26700002",
+      "adresse": "21 route de St Paul",
+      "cp": "26700",
+      "ville": "PIERRELATTE",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 1392,
+      "distance_osm_metres": 92,
+      "score_ban": 0.7823627272727273,
+      "resultat_ban": "Route de Saint Paul 26700 Pierrelatte",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/13729366529"
+    },
+    {
       "id": "34400016",
       "adresse": "A9, AIRE AMBRUSSUM NORD (direction Nimes Montpellier)",
       "cp": "34400",
@@ -49055,24 +49090,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/5554207529"
-    },
-    {
-      "id": "40420003",
-      "adresse": "RN134 - Route de Sabres",
-      "cp": "40420",
-      "ville": "Garein",
-      "enseigne": "Total",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 1368,
-      "distance_osm_metres": 0,
-      "score_ban": 0.7816443801652893,
-      "resultat_ban": "Route de Sabres 40420 Garein",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/12251053261"
     },
     {
       "id": "27350003",
@@ -49741,6 +49758,24 @@
       "osm_id": "node/2440453306"
     },
     {
+      "id": "4200011",
+      "adresse": "A51 - AIRE AUBIGNOSC EST",
+      "cp": "04200",
+      "ville": "AUBIGNOSC",
+      "enseigne": "Avia",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 1162,
+      "distance_osm_metres": 0,
+      "score_ban": 0.4819209090909091,
+      "resultat_ban": "Aire de péage Est 04200 Aubignosc",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/25212784"
+    },
+    {
       "id": "6450003",
       "adresse": "LIEU DIT LE TOURON RM2565 ROUTE DE NICE",
       "cp": "06450",
@@ -49793,24 +49828,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/62566803"
-    },
-    {
-      "id": "60650004",
-      "adresse": "RD 931 Lieu dit \"Bois du Renard\"",
-      "cp": "60650",
-      "ville": "Saint-Paul",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 1141,
-      "distance_osm_metres": 0,
-      "score_ban": 0.37534215007215005,
-      "resultat_ban": "Route Départementale 931 60650 Saint-Paul",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/3510697118"
     },
     {
       "id": "71480001",
@@ -49883,6 +49900,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/103052552"
+    },
+    {
+      "id": "67640004",
+      "adresse": "RTE DE STRASBOURG RN 83",
+      "cp": "67640",
+      "ville": "FEGERSHEIM",
+      "enseigne": "Total",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 1129,
+      "distance_osm_metres": 0,
+      "score_ban": 0.5254820661157024,
+      "resultat_ban": "Rue du Bourg 67640 Fegersheim",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/25212721"
     },
     {
       "id": "81380001",
@@ -51541,24 +51576,6 @@
       "osm_id": "way/65460735"
     },
     {
-      "id": "20140001",
-      "adresse": "RTE N 196",
-      "cp": "20140",
-      "ville": "Petreto-Bicchisano",
-      "enseigne": "Vito",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 799,
-      "distance_osm_metres": 0,
-      "score_ban": 0.6583540404040403,
-      "resultat_ban": "Foce 20140 Petreto-Bicchisano",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/5649737446"
-    },
-    {
       "id": "59174002",
       "adresse": "AUTOROUTE A2 - AIRE DE LA SENTINELLE OUEST",
       "cp": "59174",
@@ -52819,6 +52836,24 @@
       "osm_id": "way/233683355"
     },
     {
+      "id": "40350001",
+      "adresse": "160, route d'Estibeaux",
+      "cp": "40350",
+      "ville": "Pouillon",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 646,
+      "distance_osm_metres": 646,
+      "score_ban": 0.9585645454545454,
+      "resultat_ban": "160 Route d'Estibeaux 40350 Pouillon",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/7062689101"
+    },
+    {
       "id": "67470001",
       "adresse": " Route de Hatten",
       "cp": "67470",
@@ -52871,6 +52906,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/1263894278"
+    },
+    {
+      "id": "62100012",
+      "adresse": "361 Avenue Antoine de Saint-Exupéry",
+      "cp": "62100",
+      "ville": "Calais",
+      "enseigne": "Esso",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 644,
+      "distance_osm_metres": 644,
+      "score_ban": 0.9803718181818181,
+      "resultat_ban": "361 Avenue Antoine de Saint Exupéry 62100 Calais",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/4655902018"
     },
     {
       "id": "21000001",
@@ -53017,6 +53070,42 @@
       "osm_id": "node/4983346693"
     },
     {
+      "id": "3300002",
+      "adresse": "24 Rue de la République",
+      "cp": "03300",
+      "ville": "CUSSET",
+      "enseigne": "Carrefour Market",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 631,
+      "distance_osm_metres": 631,
+      "score_ban": 0.9592609090909091,
+      "resultat_ban": "24 Rue de la République 03300 Cusset",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/133446934"
+    },
+    {
+      "id": "13230002",
+      "adresse": "107, avenue du Port",
+      "cp": "13230",
+      "ville": "PORT-SAINT-LOUIS-DU-RHôNE",
+      "enseigne": "Netto",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 630,
+      "distance_osm_metres": 630,
+      "score_ban": 0.9674590909090909,
+      "resultat_ban": "107 Avenue du Port 13230 Port-Saint-Louis-du-Rhône",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/5582972162"
+    },
+    {
       "id": "33210010",
       "adresse": " Rue Jules Ferry",
       "cp": "33210",
@@ -53035,6 +53124,24 @@
       "osm_id": "way/470026521"
     },
     {
+      "id": "27150003",
+      "adresse": "RUELLE SAINT MARTIN",
+      "cp": "27150",
+      "ville": "ETREPAGNY",
+      "enseigne": "Super U",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 629,
+      "distance_osm_metres": 589,
+      "score_ban": 0.8798815508021389,
+      "resultat_ban": "Rue Saint Martin 27150 Étrépagny",
+      "corrigee": true,
+      "source_correction": "BAN + OpenStreetMap",
+      "osm_id": "node/3063725375"
+    },
+    {
       "id": "12560001",
       "adresse": "LE BOURG",
       "cp": "12560",
@@ -53051,6 +53158,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/1785270601"
+    },
+    {
+      "id": "59246005",
+      "adresse": "1 RUE SAINT JEAN",
+      "cp": "59246",
+      "ville": "MONS EN PEVELE",
+      "enseigne": "Carrefour",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 627,
+      "distance_osm_metres": 627,
+      "score_ban": 0.9599754545454545,
+      "resultat_ban": "1 Rue Saint Jean 59246 Mons-en-Pévèle",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/7331495376"
     },
     {
       "id": "33290009",
@@ -53123,6 +53248,24 @@
       "corrigee": true,
       "source_correction": "BAN + OpenStreetMap",
       "osm_id": "way/435613657"
+    },
+    {
+      "id": "20140001",
+      "adresse": "RTE N 196",
+      "cp": "20140",
+      "ville": "Petreto-Bicchisano",
+      "enseigne": "Vito",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 624,
+      "distance_osm_metres": 0,
+      "score_ban": 0.6574988154269973,
+      "resultat_ban": "Petreto-Bicchisano",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/5649737446"
     },
     {
       "id": "21110001",
@@ -53557,24 +53700,6 @@
       "osm_id": "node/5562610303"
     },
     {
-      "id": "4200011",
-      "adresse": "A51 - AIRE AUBIGNOSC EST",
-      "cp": "04200",
-      "ville": "AUBIGNOSC",
-      "enseigne": "Avia",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 597,
-      "distance_osm_metres": 566,
-      "score_ban": 0.4819209090909091,
-      "resultat_ban": "Aire de péage Est 04200 Aubignosc",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/25212784"
-    },
-    {
       "id": "57450003",
       "adresse": "63 avenue Saint Jean",
       "cp": "57450",
@@ -53663,6 +53788,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/4464857411"
+    },
+    {
+      "id": "44406001",
+      "adresse": "1 Impasse Ordronneau",
+      "cp": "44400",
+      "ville": "REZé",
+      "enseigne": "E.Leclerc",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 592,
+      "distance_osm_metres": 592,
+      "score_ban": 0.9589527272727272,
+      "resultat_ban": "1 Impasse Ordronneau 44400 Rezé",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/297543553"
     },
     {
       "id": "83150002",
@@ -53971,6 +54114,24 @@
       "osm_id": "way/561799428"
     },
     {
+      "id": "27000004",
+      "adresse": "1 Rue de Fauville",
+      "cp": "27000",
+      "ville": "ÉVREUX",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 583,
+      "distance_osm_metres": 583,
+      "score_ban": 0.9697545454545453,
+      "resultat_ban": "1 Rue de Fauville 27000 Évreux",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/359519625"
+    },
+    {
       "id": "35130001",
       "adresse": "30 route de NANTES",
       "cp": "35130",
@@ -54151,6 +54312,24 @@
       "osm_id": "node/603727961"
     },
     {
+      "id": "92230010",
+      "adresse": "113 AV LAURENT CELY",
+      "cp": "92230",
+      "ville": "GENNEVILLIERS",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 573,
+      "distance_osm_metres": 573,
+      "score_ban": 0.8413264693446088,
+      "resultat_ban": "113 Avenue Laurent Cély 92230 Gennevilliers",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/31964247"
+    },
+    {
       "id": "21130008",
       "adresse": "AVENUE GENERAL DE GAULLE",
       "cp": "21130",
@@ -54203,6 +54382,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/1683885815"
+    },
+    {
+      "id": "24210004",
+      "adresse": "837 Avenue de la Libération",
+      "cp": "24210",
+      "ville": "Thenon",
+      "enseigne": "Carrefour",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 570,
+      "distance_osm_metres": 570,
+      "score_ban": 0.95561,
+      "resultat_ban": "837 Avenue de la Libération 24210 Thenon",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/454963231"
     },
     {
       "id": "70300012",
@@ -54529,6 +54726,24 @@
       "osm_id": "way/155519836"
     },
     {
+      "id": "67210001",
+      "adresse": "14 Rue du Général Leclerc",
+      "cp": "67210",
+      "ville": "Obernai",
+      "enseigne": "E.Leclerc",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 555,
+      "distance_osm_metres": 555,
+      "score_ban": 0.9670945454545453,
+      "resultat_ban": "14 Rue du Général Leclerc 67210 Obernai",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/170003356"
+    },
+    {
       "id": "95310011",
       "adresse": "RN 184 - ZI VERT GALANT",
       "cp": "95310",
@@ -54851,6 +55066,24 @@
       "corrigee": true,
       "source_correction": "BAN + OpenStreetMap",
       "osm_id": "node/2374358667"
+    },
+    {
+      "id": "76100005",
+      "adresse": "23 BOULEVARD DE L' EUROPE",
+      "cp": "76100",
+      "ville": "ROUEN",
+      "enseigne": "Total",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 540,
+      "distance_osm_metres": 540,
+      "score_ban": 0.9767318181818182,
+      "resultat_ban": "23 Boulevard de l'Europe 76100 Rouen",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/65037402"
     },
     {
       "id": "41130003",
@@ -55357,6 +55590,24 @@
       "osm_id": "node/10704538434"
     },
     {
+      "id": "91470008",
+      "adresse": "RN 152, Route d'Arpajon",
+      "cp": "91470",
+      "ville": "LIMOURS",
+      "enseigne": "Carrefour Market",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 524,
+      "distance_osm_metres": 524,
+      "score_ban": 0.8815561038961037,
+      "resultat_ban": "152 Route d’Arpajon 91470 Limours",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/12964148683"
+    },
+    {
       "id": "6220003",
       "adresse": "117 Vieille Route de Cannes",
       "cp": "06220",
@@ -55409,24 +55660,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/3221260947"
-    },
-    {
-      "id": "42360001",
-      "adresse": "Route de Tarare",
-      "cp": "42360",
-      "ville": "Panissières",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 520,
-      "distance_osm_metres": 520,
-      "score_ban": 0.9608618181818182,
-      "resultat_ban": "Route de Tarare 42360 Panissières",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap",
-      "osm_id": "way/236644603"
     },
     {
       "id": "7470001",
@@ -55681,6 +55914,42 @@
       "osm_id": "way/52032547"
     },
     {
+      "id": "95500011",
+      "adresse": "RD 370 RUE NUNGESSER ET COLI",
+      "cp": "95500",
+      "ville": "GONESSE",
+      "enseigne": "Total Access",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 515,
+      "distance_osm_metres": 515,
+      "score_ban": 0.8913920620842573,
+      "resultat_ban": "370 Rue Nungesser et Coli 95500 Gonesse",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/105029706"
+    },
+    {
+      "id": "42360001",
+      "adresse": "Route de Tarare",
+      "cp": "42360",
+      "ville": "Panissières",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 514,
+      "distance_osm_metres": 514,
+      "score_ban": 0.960910909090909,
+      "resultat_ban": "Route de Tarare 42360 Panissières",
+      "corrigee": true,
+      "source_correction": "BAN + OpenStreetMap",
+      "osm_id": "way/236644603"
+    },
+    {
       "id": "34410002",
       "adresse": "Route de Valras",
       "cp": "34410",
@@ -55697,6 +55966,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/25213468"
+    },
+    {
+      "id": "71260004",
+      "adresse": "143 rue du four a chaux",
+      "cp": "71260",
+      "ville": "LUGNY",
+      "enseigne": "Total",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 513,
+      "distance_osm_metres": 513,
+      "score_ban": 0.9420627272727273,
+      "resultat_ban": "143 Rue du Four à Chaux 71260 Lugny",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/3135242220"
     },
     {
       "id": "59223001",
@@ -55951,6 +56238,24 @@
       "osm_id": "way/240840387"
     },
     {
+      "id": "9100003",
+      "adresse": "6 Avenue de Foix",
+      "cp": "09100",
+      "ville": "PAMIERS",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 502,
+      "distance_osm_metres": 502,
+      "score_ban": 0.965,
+      "resultat_ban": "6 Avenue de Foix 09100 Pamiers",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/4927819176"
+    },
+    {
       "id": "54230002",
       "adresse": "Rue Pasteur",
       "cp": "54230",
@@ -55967,6 +56272,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/137349185"
+    },
+    {
+      "id": "31700005",
+      "adresse": "2 Allée Émile Zola",
+      "cp": "31700",
+      "ville": "Blagnac",
+      "enseigne": "E.Leclerc",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 500,
+      "distance_osm_metres": 500,
+      "score_ban": 0.9625736363636364,
+      "resultat_ban": "2 Allée Émile Zola 31700 Blagnac",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/1444464636"
     },
     {
       "id": "83600020",
@@ -56039,6 +56362,24 @@
       "corrigee": true,
       "source_correction": "BAN + OpenStreetMap",
       "osm_id": "node/25211044"
+    },
+    {
+      "id": "45000007",
+      "adresse": "44 QUAI BARENTIN",
+      "cp": "45000",
+      "ville": "ORLEANS",
+      "enseigne": "Total Access",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 496,
+      "distance_osm_metres": 496,
+      "score_ban": 0.9709563636363635,
+      "resultat_ban": "44 Quai Barentin 45000 Orléans",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/12432984725"
     },
     {
       "id": "62170002",
@@ -56129,6 +56470,42 @@
       "corrigee": true,
       "source_correction": "BAN + OpenStreetMap",
       "osm_id": "node/12402792719"
+    },
+    {
+      "id": "80210001",
+      "adresse": "43 RUE VICTOR HUGO",
+      "cp": "80210",
+      "ville": "FEUQUIèRES-EN-VIMEU",
+      "enseigne": "Carrefour",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 495,
+      "distance_osm_metres": 495,
+      "score_ban": 0.9578854545454545,
+      "resultat_ban": "43 Rue Victor Hugo 80210 Feuquières-en-Vimeu",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/2440193382"
+    },
+    {
+      "id": "59450002",
+      "adresse": "121 AVENUE ROGER SALENGRO",
+      "cp": "59450",
+      "ville": "Sin-le-Noble",
+      "enseigne": "Esso Express",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 493,
+      "distance_osm_metres": 493,
+      "score_ban": 0.9707109090909091,
+      "resultat_ban": "121 Avenue Roger Salengro 59450 Sin-le-Noble",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/4685653739"
     },
     {
       "id": "83630002",
@@ -56329,6 +56706,24 @@
       "osm_id": "node/263203959"
     },
     {
+      "id": "87700001",
+      "adresse": "3 Avenue Pasteur",
+      "cp": "87700",
+      "ville": "Aixe-sur-Vienne",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 484,
+      "distance_osm_metres": 484,
+      "score_ban": 0.9620927272727272,
+      "resultat_ban": "3 Avenue Pasteur 87700 Aixe-sur-Vienne",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/5386740917"
+    },
+    {
       "id": "1980001",
       "adresse": "63 Rue du Bugey",
       "cp": "01360",
@@ -56345,6 +56740,42 @@
       "corrigee": true,
       "source_correction": "BAN + OpenStreetMap",
       "osm_id": "node/4387467547"
+    },
+    {
+      "id": "18103001",
+      "adresse": "1 Rue du Mouton",
+      "cp": "18100",
+      "ville": "Vierzon",
+      "enseigne": "E.Leclerc",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 483,
+      "distance_osm_metres": 483,
+      "score_ban": 0.967921818181818,
+      "resultat_ban": "1 Rue du Mouton 18100 Vierzon",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/13721078200"
+    },
+    {
+      "id": "12160003",
+      "adresse": "600 Avenue de Rodez",
+      "cp": "12160",
+      "ville": "Baraqueville",
+      "enseigne": "Carrefour Market",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 482,
+      "distance_osm_metres": 482,
+      "score_ban": 0.9603127272727271,
+      "resultat_ban": "600 Avenue de Rodez 12160 Baraqueville",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/871994310"
     },
     {
       "id": "56301001",
@@ -56417,24 +56848,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/112895792"
-    },
-    {
-      "id": "82600003",
-      "adresse": "Lieu-dit Escoula",
-      "cp": "82600",
-      "ville": "Verdun-sur-Garonne",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 479,
-      "distance_osm_metres": 0,
-      "score_ban": 0.5811733951762522,
-      "resultat_ban": "Chemin Escudie 82600 Verdun-sur-Garonne",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/1943232339"
     },
     {
       "id": "87220001",
@@ -56669,6 +57082,24 @@
       "corrigee": true,
       "source_correction": "BAN + OpenStreetMap",
       "osm_id": "way/146146445"
+    },
+    {
+      "id": "19316001",
+      "adresse": "14,rue louis taurisson",
+      "cp": "19100",
+      "ville": "BRIVE-LA-GAILLARDE",
+      "enseigne": "Carrefour",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 472,
+      "distance_osm_metres": 472,
+      "score_ban": 0.9658845454545454,
+      "resultat_ban": "14 Rue Louis Taurisson 19100 Brive-la-Gaillarde",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/124580078"
     },
     {
       "id": "67810001",
@@ -57049,6 +57480,24 @@
       "osm_id": "way/164745627"
     },
     {
+      "id": "70300011",
+      "adresse": "37 Rue Edouard Herriot,",
+      "cp": "70300",
+      "ville": "Saint-Sauveur",
+      "enseigne": "Eni",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 461,
+      "distance_osm_metres": 461,
+      "score_ban": 0.957300909090909,
+      "resultat_ban": "37 Rue Edouard Herriot 70300 Saint-Sauveur",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/4886528696"
+    },
+    {
       "id": "90400001",
       "adresse": "Route de montbéliard",
       "cp": "90400",
@@ -57155,6 +57604,24 @@
       "corrigee": true,
       "source_correction": "BAN + OpenStreetMap",
       "osm_id": "node/4665110189"
+    },
+    {
+      "id": "87220003",
+      "adresse": "47, Avenue Winston Churchill",
+      "cp": "87220",
+      "ville": "FEYTIAT",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 456,
+      "distance_osm_metres": 456,
+      "score_ban": 0.9610772727272727,
+      "resultat_ban": "47 Avenue Winston Churchill 87220 Feytiat",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/7501723537"
     },
     {
       "id": "51130001",
@@ -57281,6 +57748,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/875110709"
+    },
+    {
+      "id": "40006001",
+      "adresse": "1234 Avenue du Vignau",
+      "cp": "40000",
+      "ville": "Mont-de-Marsan",
+      "enseigne": "E.Leclerc",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 451,
+      "distance_osm_metres": 451,
+      "score_ban": 0.9721245454545454,
+      "resultat_ban": "1234 Avenue du Vignau 40000 Mont-de-Marsan",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/44696387"
     },
     {
       "id": "89700002",
@@ -58163,24 +58648,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/293645445"
-    },
-    {
-      "id": "63600001",
-      "adresse": "Route du PUY",
-      "cp": "63600",
-      "ville": "AMBERT",
-      "enseigne": "Carrefour Market",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 418,
-      "distance_osm_metres": 0,
-      "score_ban": 0.9589990909090909,
-      "resultat_ban": "Route du Puy 63600 Ambert",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/1075563135"
     },
     {
       "id": "69410006",
@@ -59263,6 +59730,24 @@
       "osm_id": "node/966241147"
     },
     {
+      "id": "20100005",
+      "adresse": "Ld bellagamba",
+      "cp": "20100",
+      "ville": "SARTENE",
+      "enseigne": "Vito",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 388,
+      "distance_osm_metres": 0,
+      "score_ban": 0.5542372727272727,
+      "resultat_ban": "Giargalella 20100 Sartène",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/70681559"
+    },
+    {
       "id": "56000009",
       "adresse": "BOULEVARD DE LA PAIX",
       "cp": "56000",
@@ -59333,6 +59818,24 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/25212748"
+    },
+    {
+      "id": "77150005",
+      "adresse": "Avenue des Hyverneaux",
+      "cp": "77150",
+      "ville": "Lésigny",
+      "enseigne": "Carrefour",
+      "motifs": [
+        "adresse BAN eloignee des coordonnees",
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 383,
+      "distance_osm_metres": 0,
+      "score_ban": 0.9492863636363634,
+      "resultat_ban": "Avenue des Hyverneaux 77150 Lésigny",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/113447833"
     },
     {
       "id": "40400004",
@@ -62719,24 +63222,6 @@
       "osm_id": "node/1628924155"
     },
     {
-      "id": "83380002",
-      "adresse": "SAN PEIRE",
-      "cp": "83380",
-      "ville": "LES ISSAMBRES",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 298,
-      "distance_osm_metres": 0,
-      "score_ban": 0.4284851871657753,
-      "resultat_ban": "place san peire 83380 Roquebrune-sur-Argens",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/786999853"
-    },
-    {
       "id": "38500007",
       "adresse": "5 AVENUE DOCTEUR VALOIS",
       "cp": "38500",
@@ -63419,24 +63904,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/61912271"
-    },
-    {
-      "id": "62152001",
-      "adresse": "ROUTE DE BOULOGNE",
-      "cp": "62152",
-      "ville": "NESLES",
-      "enseigne": "Carrefour",
-      "motifs": [
-        "adresse BAN eloignee des coordonnees",
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 282,
-      "distance_osm_metres": 112,
-      "score_ban": 0.778265102639296,
-      "resultat_ban": "Rue de Boulogne 62152 Nesles",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/1064649810"
     },
     {
       "id": "6000028",
@@ -65686,6 +66153,23 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/116195923"
+    },
+    {
+      "id": "20230003",
+      "adresse": "STATION LUISI",
+      "cp": "20230",
+      "ville": "Poggio-Mezzana",
+      "enseigne": "Vito",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 248,
+      "distance_osm_metres": 87,
+      "score_ban": 0.5492814325068871,
+      "resultat_ban": "Poggio-Mezzana",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/587622540"
     },
     {
       "id": "55200004",
@@ -68323,23 +68807,6 @@
       "osm_id": "node/2425875289"
     },
     {
-      "id": "21200011",
-      "adresse": "28 Rue du Faubourg Madeleine",
-      "cp": "21200",
-      "ville": "BEAUNE",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 205,
-      "distance_osm_metres": 0,
-      "score_ban": 0.9696463636363636,
-      "resultat_ban": "28 Rue du Faubourg Madeleine 21200 Beaune",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/12705716714"
-    },
-    {
       "id": "63160002",
       "adresse": "Avenue de la République",
       "cp": "63160",
@@ -68355,6 +68822,23 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/290899083"
+    },
+    {
+      "id": "21200011",
+      "adresse": "28 Rue du Faubourg Madeleine",
+      "cp": "21200",
+      "ville": "BEAUNE",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 205,
+      "distance_osm_metres": 0,
+      "score_ban": 0.9696463636363636,
+      "resultat_ban": "28 Rue du Faubourg Madeleine 21200 Beaune",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/12705716714"
     },
     {
       "id": "71150002",
@@ -68593,6 +69077,23 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/25210013"
+    },
+    {
+      "id": "46130001",
+      "adresse": "AVENUE DE LA REPUBLIQUE",
+      "cp": "46130",
+      "ville": "Biars-sur-Cère",
+      "enseigne": "E.Leclerc",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 201,
+      "distance_osm_metres": 0,
+      "score_ban": 0.960391818181818,
+      "resultat_ban": "Avenue de la République 46130 Biars-sur-Cère",
+      "corrigee": true,
+      "source_correction": "BAN + OpenStreetMap",
+      "osm_id": "way/233731268"
     },
     {
       "id": "66130002",
@@ -69052,6 +69553,23 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/1808602580"
+    },
+    {
+      "id": "73800005",
+      "adresse": "Chemin de la Caronnière",
+      "cp": "73800",
+      "ville": "Montmélian",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 194,
+      "distance_osm_metres": 0,
+      "score_ban": 0.7113993939393938,
+      "resultat_ban": "Avenue de la Caronnière 73800 Montmélian",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/2164357021"
     },
     {
       "id": "49000016",
@@ -69902,6 +70420,23 @@
       "corrigee": true,
       "source_correction": "BAN + OpenStreetMap",
       "osm_id": "node/4401100562"
+    },
+    {
+      "id": "62152001",
+      "adresse": "ROUTE DE BOULOGNE",
+      "cp": "62152",
+      "ville": "NESLES",
+      "enseigne": "Carrefour",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 179,
+      "distance_osm_metres": 0,
+      "score_ban": 0.778265102639296,
+      "resultat_ban": "Rue de Boulogne 62152 Nesles",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/1064649810"
     },
     {
       "id": "34300006",
@@ -70992,6 +71527,23 @@
       "osm_id": "way/95680085"
     },
     {
+      "id": "73300005",
+      "adresse": "Station Le Corbier - 2938 montée du Corbier",
+      "cp": "73300",
+      "ville": "LE CORBIER - VILLAREMBERT",
+      "enseigne": "Total",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 165,
+      "distance_osm_metres": 174,
+      "score_ban": 0.5485368831168831,
+      "resultat_ban": "2938 Montée du Corbier 73300 Villarembert",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/472729362"
+    },
+    {
       "id": "63700004",
       "adresse": "Rue Jean Moulin",
       "cp": "63700",
@@ -72080,23 +72632,6 @@
       "osm_id": "node/1392142260"
     },
     {
-      "id": "46130001",
-      "adresse": "AVENUE DE LA REPUBLIQUE",
-      "cp": "46130",
-      "ville": "Biars-sur-Cère",
-      "enseigne": "E.Leclerc",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 152,
-      "distance_osm_metres": 0,
-      "score_ban": 0.9603163636363636,
-      "resultat_ban": "Avenue de la République 46130 Biars-sur-Cère",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap",
-      "osm_id": "way/233731268"
-    },
-    {
       "id": "51100002",
       "adresse": "47 Rue Gosset",
       "cp": "51100",
@@ -72982,7 +73517,7 @@
     },
     {
       "id": "71850001",
-      "adresse": " Rue de la Chapelle",
+      "adresse": "Rue de la Chapelle",
       "cp": "71850",
       "ville": "CHARNAY-LèS-MâCON",
       "enseigne": "Carrefour Market",
@@ -74596,23 +75131,6 @@
       "osm_id": "node/9532859982"
     },
     {
-      "id": "73800005",
-      "adresse": "Chemin de la Caronnière",
-      "cp": "73800",
-      "ville": "Montmélian",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 129,
-      "distance_osm_metres": 0,
-      "score_ban": 0.9449790909090908,
-      "resultat_ban": "Chemin de la caronnière 73800 Montmélian",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/2164357021"
-    },
-    {
       "id": "42190003",
       "adresse": "538 rue magellan",
       "cp": "42190",
@@ -75276,6 +75794,23 @@
       "osm_id": "node/11288769226"
     },
     {
+      "id": "33000021",
+      "adresse": "1 QUAI DE PALUDATE",
+      "cp": "33800",
+      "ville": "BORDEAUX",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 123,
+      "distance_osm_metres": 106,
+      "score_ban": 0.980770909090909,
+      "resultat_ban": "1 Quai de Paludate 33800 Bordeaux",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/187403218"
+    },
+    {
       "id": "51210004",
       "adresse": "10 Rue du Faubourg de Condé",
       "cp": "51210",
@@ -75308,23 +75843,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/473132869"
-    },
-    {
-      "id": "33000021",
-      "adresse": "1 QUAI DE PALUDATE",
-      "cp": "33800",
-      "ville": "BORDEAUX",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 123,
-      "distance_osm_metres": 0,
-      "score_ban": 0.980770909090909,
-      "resultat_ban": "1 Quai de Paludate 33800 Bordeaux",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/187403218"
     },
     {
       "id": "8150001",
@@ -75563,23 +76081,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/79147677"
-    },
-    {
-      "id": "6000029",
-      "adresse": "57, av. J.RAYBAUD",
-      "cp": "06000",
-      "ville": "NICE",
-      "enseigne": "Total",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 120,
-      "distance_osm_metres": 126,
-      "score_ban": 0.6498326262626262,
-      "resultat_ban": "57 Avenue Joseph Raybaud 06000 Nice",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/139906051"
     },
     {
       "id": "59253001",
@@ -76515,6 +77016,23 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/156478611"
+    },
+    {
+      "id": "62250011",
+      "adresse": "AUTOROUTE A16 - AIRE DES DEUX CAPS",
+      "cp": "62250",
+      "ville": "LEUBRINGHEN",
+      "enseigne": "Total",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 113,
+      "distance_osm_metres": 0,
+      "score_ban": 0.5587811764705882,
+      "resultat_ban": "Aire des 2 Caps 62250 Leubringhen",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/785145495"
     },
     {
       "id": "36400004",
@@ -80693,7 +81211,7 @@
       ],
       "ecart_ban_metres": 80,
       "distance_osm_metres": 0,
-      "score_ban": 0.704603366093366,
+      "score_ban": 0.7046224570024571,
       "resultat_ban": "388 Avenue du Médoc 33320 Eysines",
       "corrigee": true,
       "source_correction": "OpenStreetMap",
@@ -81565,6 +82083,23 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/3140256005"
+    },
+    {
+      "id": "15000019",
+      "adresse": "87 AVENUE CHARLES DE GAULLE",
+      "cp": "15000",
+      "ville": "AURILLAC",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 73,
+      "distance_osm_metres": 291,
+      "score_ban": 0.9702045454545455,
+      "resultat_ban": "87 Avenue Charles de Gaulle 15000 Aurillac",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/65730520"
     },
     {
       "id": "50600002",
@@ -83148,23 +83683,6 @@
       "osm_id": "node/2380355777"
     },
     {
-      "id": "20166006",
-      "adresse": "Les Marines de Porticcio - Commune de Grosseto-Prugna",
-      "cp": "20166",
-      "ville": "PORTICCIO",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 61,
-      "distance_osm_metres": 0,
-      "score_ban": 0.5972427807486631,
-      "resultat_ban": "Les Marines 1, Porticcio 20166 Grosseto-Prugna",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/6147774392"
-    },
-    {
       "id": "53200006",
       "adresse": "30 Avenue des Sablonnières",
       "cp": "53200",
@@ -83265,6 +83783,23 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/659880230"
+    },
+    {
+      "id": "20166006",
+      "adresse": "Les Marines de Porticcio - Commune de Grosseto-Prugna",
+      "cp": "20166",
+      "ville": "PORTICCIO",
+      "enseigne": "TotalEnergies",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 60,
+      "distance_osm_metres": 0,
+      "score_ban": 0.5972427807486631,
+      "resultat_ban": "Les Marines 3, Porticcio 20166 Grosseto-Prugna",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/6147774392"
     },
     {
       "id": "45110001",
@@ -83607,23 +84142,6 @@
       "osm_id": "node/987397229"
     },
     {
-      "id": "67170006",
-      "adresse": "186 Avenue de Strasbourg",
-      "cp": "67170",
-      "ville": "BRUMATH",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 59,
-      "distance_osm_metres": 0,
-      "score_ban": 0.9712463636363635,
-      "resultat_ban": "186 Avenue de Strasbourg 67170 Brumath",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/288960764"
-    },
-    {
       "id": "17139001",
       "adresse": "RUE DE L'ADJUDANT GALLAND",
       "cp": "17139",
@@ -83639,6 +84157,23 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/117213237"
+    },
+    {
+      "id": "67170006",
+      "adresse": "186 Avenue de Strasbourg",
+      "cp": "67170",
+      "ville": "BRUMATH",
+      "enseigne": "Intermarché",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 59,
+      "distance_osm_metres": 0,
+      "score_ban": 0.9712463636363635,
+      "resultat_ban": "186 Avenue de Strasbourg 67170 Brumath",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/288960764"
     },
     {
       "id": "6340001",
@@ -85936,23 +86471,6 @@
       "osm_id": "node/1027755880"
     },
     {
-      "id": "13090021",
-      "adresse": "Lieudit Chamsaur, 210 Avenue de Bredasque",
-      "cp": "13090",
-      "ville": "Aix en Provence",
-      "enseigne": "Auchan",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 46,
-      "distance_osm_metres": 0,
-      "score_ban": 0.7177877049180327,
-      "resultat_ban": "210 Avenue de Brédasque 13090 Aix-en-Provence",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/6147809188"
-    },
-    {
       "id": "92300004",
       "adresse": "2/10 BLD FORT DE VAUX",
       "cp": "75017",
@@ -87075,23 +87593,6 @@
       "osm_id": "node/4685615470"
     },
     {
-      "id": "20100005",
-      "adresse": "Ld bellagamba",
-      "cp": "20100",
-      "ville": "SARTENE",
-      "enseigne": "Vito",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 39,
-      "distance_osm_metres": 0,
-      "score_ban": 0.7540084415584415,
-      "resultat_ban": "Bella Gamba 20100 Sartène",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/70681559"
-    },
-    {
       "id": "11106001",
       "adresse": "199 avenue de Bordeaux",
       "cp": "11100",
@@ -87415,6 +87916,23 @@
       "osm_id": "way/1337500414"
     },
     {
+      "id": "58700002",
+      "adresse": "LE BRIOU",
+      "cp": "58700",
+      "ville": "PREMERY",
+      "enseigne": "Carrefour",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 36,
+      "distance_osm_metres": 10,
+      "score_ban": 0.9411563636363636,
+      "resultat_ban": "Le Briou 58700 Prémery",
+      "corrigee": true,
+      "source_correction": "BAN + OpenStreetMap",
+      "osm_id": "node/1456094040"
+    },
+    {
       "id": "34110002",
       "adresse": "27 avenue du marechal juin",
       "cp": "34110",
@@ -87483,23 +88001,6 @@
       "osm_id": "node/9440591921"
     },
     {
-      "id": "58700002",
-      "adresse": "LE BRIOU",
-      "cp": "58700",
-      "ville": "PREMERY",
-      "enseigne": "Carrefour",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 36,
-      "distance_osm_metres": 0,
-      "score_ban": 0.9411563636363636,
-      "resultat_ban": "Le Briou 58700 Prémery",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap",
-      "osm_id": "node/1456094040"
-    },
-    {
       "id": "66300012",
       "adresse": "1 AVENUE COTE VERMEILLE",
       "cp": "66300",
@@ -87515,23 +88016,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/1583223971"
-    },
-    {
-      "id": "18150001",
-      "adresse": "34 rue jean comte",
-      "cp": "18150",
-      "ville": "LA GUERCHE SUR L AUBOIS",
-      "enseigne": "bi1",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 36,
-      "distance_osm_metres": 0,
-      "score_ban": 0.9564709090909091,
-      "resultat_ban": "34 Rue Jean Comte 18150 La Guerche-sur-l'Aubois",
-      "corrigee": true,
-      "source_correction": "BAN + OpenStreetMap",
-      "osm_id": "way/447178583"
     },
     {
       "id": "25410004",
@@ -88106,7 +88590,7 @@
       ],
       "ecart_ban_metres": 32,
       "distance_osm_metres": 165,
-      "score_ban": 0.9718027272727272,
+      "score_ban": 0.9718681818181818,
       "resultat_ban": "1 Route de Metz 57100 Thionville",
       "corrigee": true,
       "source_correction": "BAN + OpenStreetMap",
@@ -89352,23 +89836,6 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/364760654"
-    },
-    {
-      "id": "62250011",
-      "adresse": "AUTOROUTE A16 - AIRE DES DEUX CAPS",
-      "cp": "62250",
-      "ville": "LEUBRINGHEN",
-      "enseigne": "Total",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 26,
-      "distance_osm_metres": 0,
-      "score_ban": 0.5587811764705882,
-      "resultat_ban": "Aire des 2 Caps 62250 Leubringhen",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/785145495"
     },
     {
       "id": "3500006",
@@ -91173,23 +91640,6 @@
       "osm_id": "node/7588684694"
     },
     {
-      "id": "94450004",
-      "adresse": "1 BIS AV GABRIEL PERI",
-      "cp": "94450",
-      "ville": "Limeil-Brévannes",
-      "enseigne": "Total Access",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 19,
-      "distance_osm_metres": 0,
-      "score_ban": 0.8005586641929499,
-      "resultat_ban": "1bis Avenue Gabriel Péri 94450 Limeil-Brévannes",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/5592636862"
-    },
-    {
       "id": "21320004",
       "adresse": "ZA LE PRE RABY / CREANCEY",
       "cp": "21320",
@@ -91205,6 +91655,23 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/41123003"
+    },
+    {
+      "id": "94450004",
+      "adresse": "1 BIS AV GABRIEL PERI",
+      "cp": "94450",
+      "ville": "Limeil-Brévannes",
+      "enseigne": "Total Access",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 19,
+      "distance_osm_metres": 0,
+      "score_ban": 0.8005586641929499,
+      "resultat_ban": "1bis Avenue Gabriel Péri 94450 Limeil-Brévannes",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "node/5592636862"
     },
     {
       "id": "48100001",
@@ -93104,7 +93571,7 @@
       ],
       "ecart_ban_metres": 13,
       "distance_osm_metres": 0,
-      "score_ban": 0.8192049350649351,
+      "score_ban": 0.8192640259740259,
       "resultat_ban": "127 Avenue de l'Yser 33700 Mérignac",
       "corrigee": true,
       "source_correction": "OpenStreetMap",
@@ -93894,23 +94361,6 @@
       "osm_id": "node/25209822"
     },
     {
-      "id": "40006001",
-      "adresse": "1234 Avenue du Vignau",
-      "cp": "40000",
-      "ville": "Mont-de-Marsan",
-      "enseigne": "E.Leclerc",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 10,
-      "distance_osm_metres": 454,
-      "score_ban": 0.9721245454545454,
-      "resultat_ban": "1234 Avenue du Vignau 40000 Mont-de-Marsan",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/44696387"
-    },
-    {
       "id": "94370003",
       "adresse": "1 Rue de Paris",
       "cp": "94370",
@@ -94261,8 +94711,8 @@
       ],
       "ecart_ban_metres": 10,
       "distance_osm_metres": 0,
-      "score_ban": 0.730371585081585,
-      "resultat_ban": "33 Route de Paris 69210 L'Arbresle",
+      "score_ban": 0.8595757142857141,
+      "resultat_ban": "33 Rue de Paris 69210 L'Arbresle",
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "way/135834705"
@@ -94555,6 +95005,23 @@
       "corrigee": true,
       "source_correction": "OpenStreetMap",
       "osm_id": "node/2899170248"
+    },
+    {
+      "id": "6000029",
+      "adresse": "57, av. J.RAYBAUD",
+      "cp": "06000",
+      "ville": "NICE",
+      "enseigne": "Total",
+      "motifs": [
+        "coordonnees corrigees"
+      ],
+      "ecart_ban_metres": 9,
+      "distance_osm_metres": 0,
+      "score_ban": 0.6498326262626262,
+      "resultat_ban": "57 Avenue Joseph Raybaud 06000 Nice",
+      "corrigee": true,
+      "source_correction": "OpenStreetMap",
+      "osm_id": "way/139906051"
     },
     {
       "id": "70130001",
@@ -95536,7 +96003,7 @@
       ],
       "ecart_ban_metres": 2,
       "distance_osm_metres": 0,
-      "score_ban": 0.9691590909090909,
+      "score_ban": 0.9691245454545453,
       "resultat_ban": "145 Rue de Paris 95380 Louvres",
       "corrigee": true,
       "source_correction": "BAN + OpenStreetMap",
@@ -95560,125 +96027,6 @@
       "osm_id": "node/3115276418"
     },
     {
-      "id": "40350001",
-      "adresse": "160, route d'Estibeaux",
-      "cp": "40350",
-      "ville": "Pouillon",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 646,
-      "score_ban": 0.9585645454545454,
-      "resultat_ban": "160 Route d'Estibeaux 40350 Pouillon",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/7062689101"
-    },
-    {
-      "id": "62100012",
-      "adresse": "361 Avenue Antoine de Saint-Exupéry",
-      "cp": "62100",
-      "ville": "Calais",
-      "enseigne": "Esso",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 644,
-      "score_ban": 0.9803718181818181,
-      "resultat_ban": "361 Avenue Antoine de Saint Exupéry 62100 Calais",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/4655902018"
-    },
-    {
-      "id": "3300002",
-      "adresse": "24 Rue de la République",
-      "cp": "03300",
-      "ville": "CUSSET",
-      "enseigne": "Carrefour Market",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 631,
-      "score_ban": 0.9592609090909091,
-      "resultat_ban": "24 Rue de la République 03300 Cusset",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/133446934"
-    },
-    {
-      "id": "13230002",
-      "adresse": "107, avenue du Port",
-      "cp": "13230",
-      "ville": "PORT-SAINT-LOUIS-DU-RHôNE",
-      "enseigne": "Netto",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 630,
-      "score_ban": 0.9674590909090909,
-      "resultat_ban": "107 Avenue du Port 13230 Port-Saint-Louis-du-Rhône",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/5582972162"
-    },
-    {
-      "id": "59246005",
-      "adresse": "1 RUE SAINT JEAN",
-      "cp": "59246",
-      "ville": "MONS EN PEVELE",
-      "enseigne": "Carrefour",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 627,
-      "score_ban": 0.9599754545454545,
-      "resultat_ban": "1 Rue Saint Jean 59246 Mons-en-Pévèle",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/7331495376"
-    },
-    {
-      "id": "44406001",
-      "adresse": "1 Impasse Ordronneau",
-      "cp": "44400",
-      "ville": "REZé",
-      "enseigne": "E.Leclerc",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 592,
-      "score_ban": 0.9589527272727272,
-      "resultat_ban": "1 Impasse Ordronneau 44400 Rezé",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/297543553"
-    },
-    {
-      "id": "27000004",
-      "adresse": "1 Rue de Fauville",
-      "cp": "27000",
-      "ville": "ÉVREUX",
-      "enseigne": "Intermarché",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 583,
-      "score_ban": 0.9697545454545453,
-      "resultat_ban": "1 Rue de Fauville 27000 Évreux",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/359519625"
-    },
-    {
       "id": "92140015",
       "adresse": "6 AVENUE CLAUDE TREBIGNAUD",
       "cp": "92140",
@@ -95695,57 +96043,6 @@
       "corrigee": true,
       "source_correction": "Base Adresse Nationale",
       "osm_id": "way/71877009"
-    },
-    {
-      "id": "92230010",
-      "adresse": "113 AV LAURENT CELY",
-      "cp": "92230",
-      "ville": "GENNEVILLIERS",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 573,
-      "score_ban": 0.8413264693446088,
-      "resultat_ban": "113 Avenue Laurent Cély 92230 Gennevilliers",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/31964247"
-    },
-    {
-      "id": "24210004",
-      "adresse": "837 Avenue de la Libération",
-      "cp": "24210",
-      "ville": "Thenon",
-      "enseigne": "Carrefour",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 570,
-      "score_ban": 0.95561,
-      "resultat_ban": "837 Avenue de la Libération 24210 Thenon",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/454963231"
-    },
-    {
-      "id": "67210001",
-      "adresse": "14 Rue du Général Leclerc",
-      "cp": "67210",
-      "ville": "Obernai",
-      "enseigne": "E.Leclerc",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 555,
-      "score_ban": 0.9670945454545453,
-      "resultat_ban": "14 Rue du Général Leclerc 67210 Obernai",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/170003356"
     },
     {
       "id": "14710001",
@@ -95766,159 +96063,6 @@
       "osm_id": "node/4423403990"
     },
     {
-      "id": "76100005",
-      "adresse": "23 BOULEVARD DE L' EUROPE",
-      "cp": "76100",
-      "ville": "ROUEN",
-      "enseigne": "Total",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 540,
-      "score_ban": 0.9767318181818182,
-      "resultat_ban": "23 Boulevard de l'Europe 76100 Rouen",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/65037402"
-    },
-    {
-      "id": "91470008",
-      "adresse": "RN 152, Route d'Arpajon",
-      "cp": "91470",
-      "ville": "LIMOURS",
-      "enseigne": "Carrefour Market",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 524,
-      "score_ban": 0.8815561038961037,
-      "resultat_ban": "152 Route d’Arpajon 91470 Limours",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/12964148683"
-    },
-    {
-      "id": "95500011",
-      "adresse": "RD 370 RUE NUNGESSER ET COLI",
-      "cp": "95500",
-      "ville": "GONESSE",
-      "enseigne": "Total Access",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 515,
-      "score_ban": 0.8913920620842573,
-      "resultat_ban": "370 Rue Nungesser et Coli 95500 Gonesse",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/105029706"
-    },
-    {
-      "id": "71260004",
-      "adresse": "143 rue du four a chaux",
-      "cp": "71260",
-      "ville": "LUGNY",
-      "enseigne": "Total",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 513,
-      "score_ban": 0.9420627272727273,
-      "resultat_ban": "143 Rue du Four à Chaux 71260 Lugny",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/3135242220"
-    },
-    {
-      "id": "9100003",
-      "adresse": "6 Avenue de Foix",
-      "cp": "09100",
-      "ville": "PAMIERS",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 502,
-      "score_ban": 0.965,
-      "resultat_ban": "6 Avenue de Foix 09100 Pamiers",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/4927819176"
-    },
-    {
-      "id": "31700005",
-      "adresse": "2 Allée Émile Zola",
-      "cp": "31700",
-      "ville": "Blagnac",
-      "enseigne": "E.Leclerc",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 500,
-      "score_ban": 0.9625736363636364,
-      "resultat_ban": "2 Allée Émile Zola 31700 Blagnac",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/1444464636"
-    },
-    {
-      "id": "45000007",
-      "adresse": "44 QUAI BARENTIN",
-      "cp": "45000",
-      "ville": "ORLEANS",
-      "enseigne": "Total Access",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 496,
-      "score_ban": 0.9709563636363635,
-      "resultat_ban": "44 Quai Barentin 45000 Orléans",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/12432984725"
-    },
-    {
-      "id": "80210001",
-      "adresse": "43 RUE VICTOR HUGO",
-      "cp": "80210",
-      "ville": "FEUQUIèRES-EN-VIMEU",
-      "enseigne": "Carrefour",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 495,
-      "score_ban": 0.9578854545454545,
-      "resultat_ban": "43 Rue Victor Hugo 80210 Feuquières-en-Vimeu",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/2440193382"
-    },
-    {
-      "id": "59450002",
-      "adresse": "121 AVENUE ROGER SALENGRO",
-      "cp": "59450",
-      "ville": "Sin-le-Noble",
-      "enseigne": "Esso Express",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 493,
-      "score_ban": 0.9707109090909091,
-      "resultat_ban": "121 Avenue Roger Salengro 59450 Sin-le-Noble",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/4685653739"
-    },
-    {
       "id": "1380002",
       "adresse": "1 ROUTE DU BOURG",
       "cp": "01380",
@@ -95937,123 +96081,21 @@
       "osm_id": "node/5581375987"
     },
     {
-      "id": "87700001",
-      "adresse": "3 Avenue Pasteur",
-      "cp": "87700",
-      "ville": "Aixe-sur-Vienne",
-      "enseigne": "TotalEnergies",
+      "id": "42610002",
+      "adresse": "2A rue du 8 mai 1945",
+      "cp": "42610",
+      "ville": "saint romain le puy",
+      "enseigne": "Intermarché",
       "motifs": [
         "coordonnees corrigees"
       ],
       "ecart_ban_metres": 0,
-      "distance_osm_metres": 484,
-      "score_ban": 0.9620927272727272,
-      "resultat_ban": "3 Avenue Pasteur 87700 Aixe-sur-Vienne",
+      "distance_osm_metres": 121,
+      "score_ban": 0.9603363636363635,
+      "resultat_ban": "2A Rue du 8 mai 1945 42610 Saint-Romain-le-Puy",
       "corrigee": true,
       "source_correction": "OpenStreetMap",
-      "osm_id": "node/5386740917"
-    },
-    {
-      "id": "18103001",
-      "adresse": "1 Rue du Mouton",
-      "cp": "18100",
-      "ville": "Vierzon",
-      "enseigne": "E.Leclerc",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 483,
-      "score_ban": 0.967921818181818,
-      "resultat_ban": "1 Rue du Mouton 18100 Vierzon",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/13721078200"
-    },
-    {
-      "id": "12160003",
-      "adresse": "600 Avenue de Rodez",
-      "cp": "12160",
-      "ville": "Baraqueville",
-      "enseigne": "Carrefour Market",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 482,
-      "score_ban": 0.9603127272727271,
-      "resultat_ban": "600 Avenue de Rodez 12160 Baraqueville",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/871994310"
-    },
-    {
-      "id": "19316001",
-      "adresse": "14,rue louis taurisson",
-      "cp": "19100",
-      "ville": "BRIVE-LA-GAILLARDE",
-      "enseigne": "Carrefour",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 472,
-      "score_ban": 0.9658845454545454,
-      "resultat_ban": "14 Rue Louis Taurisson 19100 Brive-la-Gaillarde",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/124580078"
-    },
-    {
-      "id": "70300011",
-      "adresse": "37 Rue Edouard Herriot,",
-      "cp": "70300",
-      "ville": "Saint-Sauveur",
-      "enseigne": "Eni",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 461,
-      "score_ban": 0.957300909090909,
-      "resultat_ban": "37 Rue Edouard Herriot 70300 Saint-Sauveur",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/4886528696"
-    },
-    {
-      "id": "87220003",
-      "adresse": "47, Avenue Winston Churchill",
-      "cp": "87220",
-      "ville": "FEYTIAT",
-      "enseigne": "TotalEnergies",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 456,
-      "score_ban": 0.9610772727272727,
-      "resultat_ban": "47 Avenue Winston Churchill 87220 Feytiat",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "node/7501723537"
-    },
-    {
-      "id": "77150005",
-      "adresse": "Avenue des Hyverneaux",
-      "cp": "77150",
-      "ville": "Lésigny",
-      "enseigne": "Carrefour",
-      "motifs": [
-        "coordonnees corrigees"
-      ],
-      "ecart_ban_metres": 0,
-      "distance_osm_metres": 383,
-      "score_ban": 0.9492863636363634,
-      "resultat_ban": "Avenue des Hyverneaux 77150 Lésigny",
-      "corrigee": true,
-      "source_correction": "OpenStreetMap",
-      "osm_id": "way/113447833"
+      "osm_id": "node/9315794046"
     },
     {
       "id": "11400005",
@@ -96080,7 +96122,6 @@
       "ville": "Cleon D'Andran",
       "enseigne": "Natura' Pro Cooperative",
       "motifs": [
-        "correspondance OpenStreetMap ambigue",
         "coordonnees corrigees"
       ],
       "ecart_ban_metres": 0,
