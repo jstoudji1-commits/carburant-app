@@ -86,13 +86,22 @@
             margin-top:14px;
         }
 
-        input{
+        input,
+        select,
+        textarea{
             min-height:46px;
             padding:0 12px;
             border:1px solid #c8d5ce;
             border-radius:8px;
+            background:#fff;
             color:var(--ink);
             font-size:15px;
+        }
+
+        textarea{
+            min-height:96px;
+            padding:10px 12px;
+            resize:vertical;
         }
 
         .station-tools,
@@ -132,6 +141,47 @@
             display:flex;
             align-items:end;
             gap:8px;
+        }
+
+        .tariff-form{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:12px;
+            padding:18px;
+            border-bottom:1px solid var(--line);
+            background:#fbfdfb;
+        }
+
+        .tariff-form label{
+            display:grid;
+            gap:5px;
+            color:#425463;
+            font-size:12px;
+            font-weight:900;
+        }
+
+        .tariff-form .wide{
+            grid-column:1 / -1;
+        }
+
+        .tariff-offers{
+            grid-column:1 / -1;
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:10px;
+        }
+
+        .tariff-offer{
+            display:grid;
+            gap:8px;
+            padding:12px;
+            border:1px solid var(--line);
+            border-radius:9px;
+            background:#fff;
+        }
+
+        .tariff-offer strong{
+            font-size:13px;
         }
 
         button{
@@ -279,11 +329,18 @@
             .login-row,
             .stats,
             .station-tools,
-            .station-form{
+            .station-form,
+            .tariff-form,
+            .tariff-offers{
                 grid-template-columns:1fr;
             }
 
             .station-form .wide{
+                grid-column:auto;
+            }
+
+            .tariff-form .wide,
+            .tariff-offers{
                 grid-column:auto;
             }
 
@@ -409,6 +466,100 @@
 
             <section class="panel">
                 <div class="panel-head">
+                    <div>
+                        <h2>Prix des bornes de recharge</h2>
+                        <p class="muted">
+                            Enregistre un tarif par r&eacute;seau ou pour une borne pr&eacute;cise.
+                            Les valeurs manuelles sont r&eacute;appliqu&eacute;es apr&egrave;s chaque mise &agrave; jour IRVE.
+                        </p>
+                    </div>
+                    <button type="button" onclick="nouveauTarifIrve()">
+                        Nouveau tarif
+                    </button>
+                </div>
+                <form
+                    id="tarif-irve-form"
+                    class="tariff-form"
+                    onsubmit="enregistrerTarifIrve(event)"
+                >
+                    <input id="tarif-irve-id" type="hidden">
+                    <label>
+                        Port&eacute;e
+                        <select id="tarif-irve-scope">
+                            <option value="network">R&eacute;seau complet</option>
+                            <option value="station">Borne / station pr&eacute;cise</option>
+                        </select>
+                    </label>
+                    <label>
+                        Valeur &agrave; reconna&icirc;tre
+                        <input id="tarif-irve-match" type="text" required placeholder="Ex. Lidl ou FR*ABC*P123">
+                    </label>
+                    <label>
+                        Nom affich&eacute; du r&eacute;seau
+                        <input id="tarif-irve-network" type="text" required placeholder="Ex. Lidl E-Mobilit&eacute;">
+                    </label>
+                    <label>
+                        Prix public de calcul (&euro;/kWh)
+                        <input id="tarif-irve-comparison-price" type="number" min="0" max="5" step="0.001" required>
+                    </label>
+                    <label>
+                        Libell&eacute; du prix public
+                        <input id="tarif-irve-comparison-label" type="text" value="Tarif public">
+                    </label>
+                    <label>
+                        Petite ligne sous la bulle
+                        <input id="tarif-irve-marker" type="text" maxlength="70" placeholder="Fid&eacute;lit&eacute; 0,29 &euro;/kWh">
+                    </label>
+                    <div class="tariff-offers">
+                        <div class="tariff-offer" data-offer="public">
+                            <strong>Carte bancaire / public</strong>
+                            <input class="offer-label" type="text" value="Carte bancaire">
+                            <input class="offer-price" type="number" min="0" max="5" step="0.001" placeholder="Prix &euro;/kWh">
+                            <input class="offer-session" type="number" min="0" max="100" step="0.01" placeholder="Frais de session &euro;">
+                            <input class="offer-details" type="text" placeholder="Conditions">
+                        </div>
+                        <div class="tariff-offer" data-offer="loyalty">
+                            <strong>Carte de fid&eacute;lit&eacute;</strong>
+                            <input class="offer-label" type="text" value="Carte de fid&eacute;lit&eacute;">
+                            <input class="offer-price" type="number" min="0" max="5" step="0.001" placeholder="Prix &euro;/kWh">
+                            <input class="offer-session" type="number" min="0" max="100" step="0.01" placeholder="Frais de session &euro;">
+                            <input class="offer-details" type="text" placeholder="Nom de la carte et conditions">
+                        </div>
+                        <div class="tariff-offer" data-offer="subscription">
+                            <strong>Abonnement / autre offre</strong>
+                            <input class="offer-label" type="text" value="Abonnement">
+                            <input class="offer-price" type="number" min="0" max="5" step="0.001" placeholder="Prix &euro;/kWh">
+                            <input class="offer-session" type="number" min="0" max="100" step="0.01" placeholder="Frais de session &euro;">
+                            <input class="offer-details" type="text" placeholder="Prix mensuel, quota, conditions">
+                        </div>
+                    </div>
+                    <label class="wide">
+                        Conditions tarifaires compl&egrave;tes
+                        <textarea id="tarif-irve-display" maxlength="1500" placeholder="D&eacute;tail affich&eacute; dans la fiche de la borne"></textarea>
+                    </label>
+                    <label>
+                        URL de la source
+                        <input id="tarif-irve-source-url" type="url" placeholder="https://...">
+                    </label>
+                    <label>
+                        Nom de la source
+                        <input id="tarif-irve-source-label" type="text" value="Source du tarif">
+                    </label>
+                    <label>
+                        Date de v&eacute;rification
+                        <input id="tarif-irve-verified" type="date">
+                    </label>
+                    <div class="station-form-actions wide">
+                        <button type="submit">Enregistrer le tarif</button>
+                        <button type="button" class="ghost" onclick="nouveauTarifIrve()">Effacer le formulaire</button>
+                    </div>
+                    <p class="status wide" id="tarif-irve-status"></p>
+                </form>
+                <div class="table-wrap" id="tarifs-irve-wrap"></div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
                     <h2>Stations service</h2>
                     <button type="button" onclick="rechercherStationsAdmin()">
                         Rechercher
@@ -492,6 +643,7 @@
         var loginStatus = document.getElementById("login-status");
         var passwordInput = document.getElementById("admin-password");
         var stationsAdmin = [];
+        var tarifsIrveAdmin = [];
 
         function texteDate(valeur) {
             if (!valeur) {
@@ -526,7 +678,7 @@
 
             var response = await fetch(url, options);
             if (!response.ok) {
-                var message = "Acces admin refuse.";
+                var message = "Accès administrateur refusé.";
                 try {
                     var erreur = await response.json();
                     message = erreur.detail || message;
@@ -571,7 +723,7 @@
                 "dossier : "
                 + (stockage && stockage.data_dir
                     ? stockage.data_dir
-                    : "non renseigne")
+                    : "non renseigné")
             );
             morceaux.push(
                 "AdSense slot : "
@@ -784,6 +936,152 @@
             await rechercherStationsAdmin();
         }
 
+        function valeurNombreOptionnelle(element) {
+            var valeur = element.value.trim();
+            return valeur === "" ? null : Number(valeur);
+        }
+
+        function offresTarifIrveFormulaire() {
+            return Array.from(document.querySelectorAll(".tariff-offer"))
+                .map(function(bloc) {
+                    return {
+                        label: bloc.querySelector(".offer-label").value.trim(),
+                        price_eur_kwh: valeurNombreOptionnelle(
+                            bloc.querySelector(".offer-price")
+                        ),
+                        session_fee_eur: valeurNombreOptionnelle(
+                            bloc.querySelector(".offer-session")
+                        ),
+                        details: bloc.querySelector(".offer-details").value.trim()
+                    };
+                })
+                .filter(function(offre) {
+                    return offre.label && (
+                        offre.price_eur_kwh !== null
+                        || offre.session_fee_eur !== null
+                        || offre.details
+                    );
+                });
+        }
+
+        function afficherTarifsIrve(tarifs) {
+            var conteneur = document.getElementById("tarifs-irve-wrap");
+            tarifsIrveAdmin = tarifs || [];
+            if (!tarifsIrveAdmin.length) {
+                conteneur.innerHTML = '<p class="empty">Aucun tarif IRVE manuel.</p>';
+                return;
+            }
+            conteneur.innerHTML = '<table><thead><tr>'
+                + '<th>Réseau</th><th>Portée</th><th>Prix public</th>'
+                + '<th>Remise bulle</th><th>Vérifié le</th><th>Action</th>'
+                + '</tr></thead><tbody>'
+                + tarifsIrveAdmin.map(function(tarif) {
+                    return '<tr><td><strong>'
+                        + echapperHtml(tarif.network_name || "-")
+                        + '</strong></td><td>'
+                        + echapperHtml(
+                            (tarif.scope === "station" ? "Station : " : "Réseau : ")
+                            + (tarif.match_value || "")
+                        )
+                        + '</td><td>'
+                        + Number(tarif.comparison_price_eur_kwh).toLocaleString(
+                            "fr-FR", { minimumFractionDigits: 3, maximumFractionDigits: 3 }
+                        ) + ' €/kWh</td><td>'
+                        + echapperHtml(tarif.marker_discount_text || "-")
+                        + '</td><td>' + echapperHtml(tarif.verified_at || "-")
+                        + '</td><td><div class="actions">'
+                        + '<button type="button" onclick="modifierTarifIrve(\''
+                        + echapperHtml(tarif.id) + '\')">Modifier</button>'
+                        + '<button type="button" class="danger" onclick="supprimerTarifIrve(\''
+                        + echapperHtml(tarif.id) + '\')">Supprimer</button>'
+                        + '</div></td></tr>';
+                }).join("")
+                + '</tbody></table>';
+        }
+
+        async function chargerTarifsIrve() {
+            var donnees = await requeteAdmin("/api/admin/tarifs-irve");
+            afficherTarifsIrve(donnees.tarifs || []);
+        }
+
+        function nouveauTarifIrve() {
+            document.getElementById("tarif-irve-form").reset();
+            document.getElementById("tarif-irve-id").value = "";
+            document.getElementById("tarif-irve-comparison-label").value = "Tarif public";
+            document.getElementById("tarif-irve-source-label").value = "Source du tarif";
+            document.getElementById("tarif-irve-verified").value =
+                new Date().toISOString().slice(0, 10);
+            document.getElementById("tarif-irve-status").textContent = "";
+        }
+
+        function modifierTarifIrve(id) {
+            var tarif = tarifsIrveAdmin.find(function(item) {
+                return String(item.id) === String(id);
+            });
+            if (!tarif) return;
+            nouveauTarifIrve();
+            document.getElementById("tarif-irve-id").value = tarif.id || "";
+            document.getElementById("tarif-irve-scope").value = tarif.scope || "network";
+            document.getElementById("tarif-irve-match").value = tarif.match_value || "";
+            document.getElementById("tarif-irve-network").value = tarif.network_name || "";
+            document.getElementById("tarif-irve-comparison-price").value =
+                tarif.comparison_price_eur_kwh ?? "";
+            document.getElementById("tarif-irve-comparison-label").value =
+                tarif.comparison_label || "Tarif public";
+            document.getElementById("tarif-irve-marker").value =
+                tarif.marker_discount_text || "";
+            document.getElementById("tarif-irve-display").value = tarif.display_text || "";
+            document.getElementById("tarif-irve-source-url").value = tarif.source_url || "";
+            document.getElementById("tarif-irve-source-label").value =
+                tarif.source_label || "Source du tarif";
+            document.getElementById("tarif-irve-verified").value = tarif.verified_at || "";
+            var blocs = Array.from(document.querySelectorAll(".tariff-offer"));
+            blocs.forEach(function(bloc, index) {
+                var offre = (tarif.offers || [])[index] || {};
+                if (offre.label) bloc.querySelector(".offer-label").value = offre.label;
+                bloc.querySelector(".offer-price").value = offre.price_eur_kwh ?? "";
+                bloc.querySelector(".offer-session").value = offre.session_fee_eur ?? "";
+                bloc.querySelector(".offer-details").value = offre.details || "";
+            });
+            document.getElementById("tarif-irve-form").scrollIntoView({behavior:"smooth"});
+        }
+
+        async function enregistrerTarifIrve(event) {
+            event.preventDefault();
+            var statut = document.getElementById("tarif-irve-status");
+            statut.textContent = "Enregistrement du tarif...";
+            await requeteAdmin("/api/admin/tarifs-irve", {
+                method: "POST",
+                body: JSON.stringify({
+                    id: document.getElementById("tarif-irve-id").value,
+                    scope: document.getElementById("tarif-irve-scope").value,
+                    match_value: document.getElementById("tarif-irve-match").value,
+                    network_name: document.getElementById("tarif-irve-network").value,
+                    comparison_price_eur_kwh: Number(
+                        document.getElementById("tarif-irve-comparison-price").value
+                    ),
+                    comparison_label: document.getElementById("tarif-irve-comparison-label").value,
+                    marker_discount_text: document.getElementById("tarif-irve-marker").value,
+                    offers: offresTarifIrveFormulaire(),
+                    display_text: document.getElementById("tarif-irve-display").value,
+                    source_url: document.getElementById("tarif-irve-source-url").value,
+                    source_label: document.getElementById("tarif-irve-source-label").value,
+                    verified_at: document.getElementById("tarif-irve-verified").value
+                })
+            });
+            statut.textContent = "Tarif enregistré et applicable immédiatement.";
+            await chargerTarifsIrve();
+        }
+
+        async function supprimerTarifIrve(id) {
+            if (!window.confirm("Supprimer ce tarif IRVE manuel ?")) return;
+            await requeteAdmin(
+                "/api/admin/tarifs-irve/" + encodeURIComponent(id),
+                {method:"DELETE"}
+            );
+            await chargerTarifsIrve();
+        }
+
         async function chargerAdmin() {
             var donnees = await requeteAdmin("/api/admin/donnees");
             afficherStats(donnees.stats || {});
@@ -793,6 +1091,7 @@
             );
             afficherComptes(donnees.comptes || []);
             afficherTesteurs(donnees.testeurs || []);
+            await chargerTarifsIrve();
             await chargerStatutEmailAdmin();
             loginCard.hidden = true;
             dashboard.hidden = false;
@@ -848,7 +1147,7 @@
             if (provider !== "smtp") {
                 morceaux.push("API active");
             } else if (configuration.ready) {
-                morceaux.push("SMTP pret");
+                morceaux.push("SMTP prêt");
             } else {
                 morceaux.push(
                     "SMTP incomplet : " + (manquants.join(", ") || "inconnu")
@@ -856,13 +1155,13 @@
             }
 
             morceaux.push(
-                "compte " + (configuration.user || "non renseigne")
+                "compte " + (configuration.user || "non renseigné")
             );
             morceaux.push(
                 "mot de passe "
                 + (
                     configuration.password_configured
-                        ? configuration.password_length + " caracteres"
+                        ? configuration.password_length + " caractères"
                         : "absent"
                 )
             );
@@ -880,7 +1179,7 @@
             ) {
                 morceaux.push(
                     "attention : un mot de passe d'application Google "
-                    + "fait normalement 16 caracteres"
+                    + "fait normalement 16 caractères"
                 );
             }
 
