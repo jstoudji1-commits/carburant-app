@@ -88,6 +88,15 @@ GUIDES_EDITORIAUX = {
                     {"label": "Signaler un prix ou une position", "url": "/guides/signaler-erreur-station"},
                 ],
             },
+            {
+                "title": "Consommer moins au quotidien",
+                "paragraphs": [
+                    "Le guide d’écoconduite réunit les gestes utiles avant le départ, au volant et pendant l’entretien. Il indique aussi les fausses bonnes idées à éviter pour que l’économie ne se fasse jamais au détriment de la sécurité ou de la mécanique.",
+                ],
+                "links": [
+                    {"label": "Découvrir tous les conseils d’écoconduite", "url": "/guides/moins-consommer-carburant"},
+                ],
+            },
         ],
         highlights=[
             {"title": "Données expliquées", "text": "Origine, date, contrôles et limites sont décrits clairement."},
@@ -506,5 +515,250 @@ GUIDES_EDITORIAUX = {
             {"label": "Comprendre les sources", "url": "/guides/sources-prix-carburants"},
             {"label": "Contacter OptiPlein", "url": "/contact"},
         ],
+    ),
+    "guide_ecoconduite": guide(
+        "guides/moins-consommer-carburant",
+        "Comment consommer moins de carburant : guide complet | OptiPlein",
+        "Plus de 70 conseils pratiques et sûrs pour réduire sa consommation de carburant grâce à l’écoconduite, l’entretien et une meilleure préparation des trajets.",
+        "Guide pratique d’écoconduite",
+        "Comment consommer moins de carburant",
+        "Il n’existe pas de geste magique : les économies viennent d’une somme de bonnes habitudes. Ce guide rassemble les actions les plus utiles, des plus simples aux plus techniques, sans jamais sacrifier la sécurité.",
+        [
+            {
+                "title": "1. Réduire les kilomètres inutiles",
+                "paragraphs": [
+                    "Le litre le moins cher reste celui qui n’est pas consommé. Avant d’optimiser la conduite, vérifier si le déplacement, l’horaire ou l’itinéraire peuvent être adaptés. Un trajet légèrement plus court ou plus fluide vaut souvent davantage qu’une technique de conduite complexe.",
+                ],
+                "bullets": [
+                    "Regrouper plusieurs courses dans une même sortie plutôt que multiplier les démarrages à froid.",
+                    "Préparer l’itinéraire avant de partir pour éviter les erreurs, demi-tours et recherches de station.",
+                    "Décaler le départ hors des heures de pointe lorsque l’emploi du temps le permet.",
+                    "Comparer la durée et la distance : le parcours le plus rapide n’est pas toujours le plus court ni le moins énergivore.",
+                    "Éviter un détour vers une station moins chère lorsque le carburant consommé annule la remise.",
+                    "Privilégier la marche, le vélo ou les transports collectifs pour les petits trajets adaptés.",
+                    "Partager le véhicule par covoiturage : la consommation de la voiture varie peu, mais elle est répartie entre davantage de voyageurs.",
+                    "Téléphoner ou vérifier les horaires avant un déplacement incertain afin d’éviter un aller-retour inutile.",
+                ],
+            },
+            {
+                "title": "2. Préparer la voiture avant le départ",
+                "paragraphs": [
+                    "La résistance au roulement, la masse et l’aérodynamique influencent directement l’effort demandé au moteur. Quelques contrôles rapides évitent une surconsommation permanente et améliorent également la sécurité.",
+                ],
+                "bullets": [
+                    "Contrôler la pression des pneus à froid au moins une fois par mois et avant un long trajet.",
+                    "Utiliser la pression recommandée par le constructeur, y compris la valeur prévue pour un véhicule très chargé.",
+                    "Ne jamais surgonfler au-delà des préconisations pour chercher une économie : l’adhérence et l’usure peuvent se dégrader.",
+                    "Retirer coffre de toit, galerie, porte-skis ou porte-vélos dès qu’ils ne servent plus.",
+                    "Vider les objets lourds transportés sans nécessité, tout en conservant les équipements de sécurité obligatoires ou utiles.",
+                    "Répartir correctement la charge et respecter les limites de masse du véhicule.",
+                    "Fermer complètement le coffre et vérifier qu’aucun élément extérieur ne flotte au vent.",
+                    "Nettoyer suffisamment pare-brise, vitres, phares et caméras : économiser ne justifie jamais une visibilité réduite.",
+                ],
+            },
+            {
+                "title": "3. Démarrer sans faire chauffer inutilement",
+                "paragraphs": [
+                    "Un moteur froid consomme davantage. Sur la plupart des véhicules modernes, il est préférable de démarrer puis de rouler doucement plutôt que de laisser chauffer longtemps à l’arrêt. Le manuel du constructeur reste la référence.",
+                ],
+                "bullets": [
+                    "Mettre la ceinture, régler le GPS et préparer l’habitacle avant de démarrer le moteur lorsque c’est possible.",
+                    "Après le démarrage, partir calmement sans accélération forte pendant les premiers kilomètres.",
+                    "Ne pas faire monter le régime à vide pour accélérer la chauffe.",
+                    "Dégivrer et désembuer complètement avant de rouler ; la sécurité prime sur la consommation.",
+                    "Éviter d’enchaîner plusieurs très courts déplacements avec refroidissement complet du moteur entre chacun.",
+                    "Sur diesel, respecter les recommandations liées au filtre à particules et ne pas interrompre volontairement une régénération signalée.",
+                ],
+            },
+            {
+                "title": "4. Accélérer et changer de rapport avec souplesse",
+                "paragraphs": [
+                    "Les accélérations brutales injectent beaucoup d’énergie qui sera souvent dissipée au freinage suivant. L’objectif n’est pas d’accélérer dangereusement lentement, mais d’atteindre la vitesse utile de façon progressive et adaptée au trafic.",
+                ],
+                "bullets": [
+                    "Appuyer progressivement sur l’accélérateur et éviter les départs pied au plancher.",
+                    "Passer les rapports sans pousser inutilement le moteur dans les hauts régimes.",
+                    "Suivre l’indicateur de changement de rapport lorsqu’il reste compatible avec la circulation et la pente.",
+                    "Ne pas rouler en sous-régime avec vibrations ou manque de reprise : rétrograder si le moteur peine.",
+                    "Sur boîte automatique, limiter les demandes brusques qui déclenchent inutilement le kick-down.",
+                    "Utiliser le mode Éco s’il convient au trajet, tout en gardant la possibilité d’accélérer franchement lorsqu’une situation de sécurité l’exige.",
+                    "Après l’accélération, stabiliser rapidement la vitesse au lieu de continuer à gagner puis perdre quelques kilomètres-heure.",
+                ],
+            },
+            {
+                "title": "5. Anticiper pour moins freiner",
+                "paragraphs": [
+                    "L’anticipation est le cœur de l’écoconduite. Toute vitesse gagnée puis supprimée par les freins correspond à de l’énergie perdue, sauf récupération partielle sur certains hybrides. Une distance de sécurité généreuse permet de lever le pied plus tôt.",
+                ],
+                "bullets": [
+                    "Regarder loin devant pour détecter feu rouge, bouchon, rond-point, limitation ou véhicule lent.",
+                    "Conserver une distance de sécurité suffisante afin d’éviter les freinages en cascade.",
+                    "Lever l’accélérateur tôt lorsque le ralentissement est certain.",
+                    "Rester en prise et utiliser le frein moteur selon les recommandations du véhicule.",
+                    "Ne pas descendre une pente au point mort : le contrôle du véhicule diminue et l’économie n’est pas garantie.",
+                    "Laisser repartir doucement la circulation plutôt que d’alterner accélérateur et frein dans un bouchon.",
+                    "Adapter l’allure avant un virage pour limiter le freinage tardif puis la réaccélération.",
+                    "Ne jamais franchir un feu ou une priorité pour éviter de freiner : le Code de la route reste absolu.",
+                ],
+            },
+            {
+                "title": "6. Stabiliser et modérer la vitesse",
+                "paragraphs": [
+                    "À vitesse élevée, la résistance de l’air augmente fortement. L’ADEME indique qu’une réduction de 10 km/h sur autoroute peut économiser entre 1 et 3 litres sur 500 km selon le véhicule, avec un temps de parcours un peu plus long.",
+                ],
+                "bullets": [
+                    "Réduire volontairement l’allure sur autoroute lorsque les conditions et le temps disponible le permettent.",
+                    "Respecter les limitations : dépasser la vitesse autorisée augmente à la fois risque, consommation et sanctions.",
+                    "Éviter les oscillations permanentes autour de la vitesse choisie.",
+                    "Utiliser le régulateur sur terrain régulier et circulation fluide s’il aide à stabiliser l’allure.",
+                    "Désactiver ou reprendre la main si le régulateur accélère trop fortement dans une côte ou devient inadapté au trafic.",
+                    "Employer le limiteur lorsque cela aide à éviter les accélérations involontaires.",
+                    "Accepter une légère baisse de vitesse en montée plutôt que maintenir coûte que coûte une allure élevée, sans gêner dangereusement les autres.",
+                    "Rester cohérent avec le flux de circulation : rouler anormalement lentement peut créer un danger et des dépassements.",
+                ],
+            },
+            {
+                "title": "7. Gérer arrêts, bouchons et ville",
+                "paragraphs": [
+                    "La conduite urbaine cumule démarrages, moteur froid et temps au ralenti. La meilleure stratégie consiste à fluidifier le trajet et à couper le moteur lors des attentes réellement prolongées, si le véhicule et la situation le permettent.",
+                ],
+                "bullets": [
+                    "Utiliser le système Stop & Start lorsqu’il fonctionne normalement et que son usage n’est pas déconseillé par le constructeur.",
+                    "Couper le moteur pendant une attente prolongée à l’arrêt complet ; l’ADEME indique qu’au-delà d’environ dix secondes, le ralenti peut consommer davantage qu’un redémarrage moderne.",
+                    "Ne jamais couper le moteur pendant que le véhicule roule.",
+                    "Éviter les longues attentes moteur tournant devant une école, un commerce ou une gare.",
+                    "Laisser un espace permettant d’avancer par petites phases fluides dans les embouteillages.",
+                    "Choisir une place accessible plutôt que tourner longtemps pour chercher la place la plus proche.",
+                    "Respecter les zones à faibles émissions, plans de circulation et voies réservées sans improviser de raccourci interdit.",
+                ],
+            },
+            {
+                "title": "8. Utiliser chauffage, climatisation et équipements avec mesure",
+                "paragraphs": [
+                    "Le confort et la visibilité restent essentiels. Il s’agit de limiter les usages excessifs, pas de conduire dans un habitacle dangereux. L’ADEME estime que la climatisation peut augmenter la consommation selon le climat, le véhicule et l’usage.",
+                ],
+                "bullets": [
+                    "À l’arrêt, ouvrir brièvement les portes ou fenêtres d’un véhicule très chaud avant d’activer la climatisation.",
+                    "Choisir une température raisonnable plutôt qu’un écart extrême avec l’extérieur.",
+                    "Utiliser le recyclage d’air pendant la phase de refroidissement lorsque le manuel le recommande, puis renouveler l’air si nécessaire.",
+                    "À basse vitesse, une ouverture modérée des vitres peut suffire ; à vitesse élevée, les fenêtres grandes ouvertes dégradent l’aérodynamique.",
+                    "Stationner à l’ombre ou utiliser un pare-soleil lorsque c’est possible et autorisé.",
+                    "Éteindre dégivrage arrière, sièges chauffants et autres gros consommateurs lorsqu’ils ne sont plus nécessaires.",
+                    "Ne jamais réduire le désembuage, l’éclairage ou les essuie-glaces nécessaires à la sécurité.",
+                    "Entretenir le circuit de climatisation s’il devient inefficace plutôt que le faire fonctionner constamment au maximum.",
+                ],
+            },
+            {
+                "title": "9. Entretenir pour éviter la surconsommation",
+                "paragraphs": [
+                    "Un défaut mécanique peut augmenter la consommation bien avant la panne. L’entretien doit suivre le carnet du constructeur, avec des pièces, fluides et dimensions compatibles.",
+                ],
+                "bullets": [
+                    "Respecter les échéances de vidange et utiliser la viscosité d’huile homologuée pour le moteur.",
+                    "Remplacer les filtres selon le plan d’entretien, sans monter de pièce prétendument économique non homologuée.",
+                    "Faire contrôler un voyant moteur, une fumée inhabituelle, une perte de puissance ou une hausse soudaine de consommation.",
+                    "Vérifier qu’un frein ne reste pas légèrement serré si une roue chauffe ou si la voiture avance moins librement.",
+                    "Faire contrôler le parallélisme si le véhicule tire d’un côté ou si les pneus s’usent irrégulièrement.",
+                    "Choisir des pneus adaptés, de bonne dimension et correctement étiquetés, sans sacrifier l’adhérence nécessaire à l’usage.",
+                    "Respecter le contrôle technique et corriger les défauts qui influencent moteur, freinage ou pneumatiques.",
+                    "Surveiller les niveaux et rechercher la cause d’une fuite au lieu de seulement compléter le fluide.",
+                    "Conserver à jour les logiciels du véhicule lorsque le constructeur publie une correction pertinente.",
+                ],
+            },
+            {
+                "title": "10. Adapter la conduite à la météo et au relief",
+                "paragraphs": [
+                    "Froid, pluie, vent et dénivelé modifient naturellement la consommation. Il faut ajuster ses attentes plutôt que compenser par une conduite risquée.",
+                ],
+                "bullets": [
+                    "Prévoir davantage de carburant en hiver ou lors d’un trajet très montagneux.",
+                    "Réduire l’allure sous la pluie : cela améliore la sécurité et limite l’effort nécessaire pour évacuer l’eau.",
+                    "Anticiper un fort vent de face et éviter de chercher à maintenir une vitesse élevée à tout prix.",
+                    "Utiliser le rapport adapté en montée sans faire peiner ni hurler le moteur.",
+                    "Descendre en prise avec un rapport permettant de contrôler la vitesse sans échauffer les freins.",
+                    "Ne jamais suivre un poids lourd de près pour profiter de son aspiration : c’est extrêmement dangereux.",
+                    "Déneiger correctement le véhicule avant le départ, sans laisser une masse ou des plaques susceptibles de tomber.",
+                    "Avec une remorque, vérifier pression, charge, attelage et vitesse ; la hausse de consommation est normale.",
+                ],
+            },
+            {
+                "title": "11. Cas des hybrides et technologies récentes",
+                "paragraphs": [
+                    "Les véhicules hybrides demandent les mêmes bases de conduite souple, mais la récupération d’énergie et le fonctionnement électrique ajoutent quelques leviers. Les indications du tableau de bord et du constructeur priment.",
+                ],
+                "bullets": [
+                    "Freiner progressivement afin de favoriser la récupération lorsque le véhicule le permet, sans allonger dangereusement la distance d’arrêt.",
+                    "Éviter d’accélérer fortement puis de compter sur la régénération : une partie de l’énergie est toujours perdue.",
+                    "Utiliser le mode électrique là où il est pertinent plutôt que forcer son activation à vitesse ou charge inadaptée.",
+                    "Pour un hybride rechargeable, recharger régulièrement selon les recommandations évite de transporter une batterie peu utilisée.",
+                    "Programmer le préchauffage ou le préconditionnement lorsque le véhicule est branché si cette fonction existe.",
+                    "Ne pas chercher à reproduire une technique trouvée en ligne si elle contredit le manuel ou les alertes du véhicule.",
+                ],
+            },
+            {
+                "title": "12. Mesurer les progrès correctement",
+                "paragraphs": [
+                    "Une seule valeur au tableau de bord peut être trompeuse. Pour savoir si une habitude fonctionne, comparer plusieurs pleins sur des trajets similaires et tenir compte de la météo, de la charge et du trafic.",
+                ],
+                "bullets": [
+                    "Remettre à zéro un compteur de trajet au début d’une période de mesure.",
+                    "Calculer ponctuellement la consommation réelle : litres ajoutés divisés par kilomètres parcourus, puis multipliés par 100.",
+                    "Comparer des périodes suffisamment longues plutôt qu’un seul trajet favorable.",
+                    "Noter température, autoroute, remorque ou coffre de toit pour expliquer les écarts.",
+                    "Surveiller une augmentation persistante : elle peut révéler pression insuffisante, entretien nécessaire ou changement d’usage.",
+                    "Se fixer un objectif réaliste, par exemple réduire progressivement la moyenne sans augmenter le temps ou le stress de façon excessive.",
+                    "Utiliser l’ordinateur de bord comme tendance, tout en sachant qu’il peut différer légèrement du calcul à la pompe.",
+                ],
+            },
+            {
+                "title": "13. Fausses bonnes idées et pratiques dangereuses",
+                "paragraphs": [
+                    "Certaines techniques de « hypermiling » promettent des records mais exposent le conducteur, les autres usagers ou la mécanique. Elles n’ont pas leur place dans une conduite économique responsable.",
+                ],
+                "bullets": [
+                    "Ne pas couper le moteur en roulant : direction, freinage et aides peuvent être affectés.",
+                    "Ne pas rouler au point mort dans une descente.",
+                    "Ne pas surgonfler les pneus au-delà de la valeur constructeur.",
+                    "Ne pas coller un camion ou un autre véhicule pour réduire la résistance de l’air.",
+                    "Ne pas franchir un stop, accélérer à l’orange ou négliger une priorité pour conserver son élan.",
+                    "Ne pas éteindre les feux, le désembuage ou les essuie-glaces indispensables.",
+                    "Ne pas utiliser un carburant différent sans compatibilité explicite du constructeur.",
+                    "Ne pas supposer qu’un carburant premium réduit automatiquement la consommation suffisamment pour compenser son prix.",
+                    "Ne pas neutraliser un équipement antipollution ou modifier illégalement la gestion moteur.",
+                    "Ne pas manipuler le téléphone ou l’application pour surveiller la consommation pendant la conduite.",
+                ],
+            },
+            {
+                "title": "14. La checklist simple avant chaque long trajet",
+                "paragraphs": [
+                    "Pour retenir l’essentiel, cette vérification rapide concentre les gestes ayant le meilleur rapport entre effort, sécurité et économie.",
+                ],
+                "bullets": [
+                    "Trajet et arrêts préparés, circulation vérifiée avant le départ.",
+                    "Pneus contrôlés à froid selon la charge prévue.",
+                    "Galerie et poids inutiles retirés.",
+                    "Carburant compatible et autonomie suffisante.",
+                    "Conduite souple, regard loin devant et distances de sécurité respectées.",
+                    "Vitesse stable et modérée, sans gêner la circulation.",
+                    "Climatisation raisonnable, visibilité toujours parfaite.",
+                    "Pause programmée pour rester attentif : la fatigue augmente les erreurs et détruit les bénéfices d’une conduite préparée.",
+                ],
+            },
+        ],
+        sources=[
+            {"label": "ADEME – L’écoconduite pour consommer moins", "url": "https://agirpourlatransition.ademe.fr/particuliers/economiser/carburant/ecoconduite-solution-consommer-moins-carburant-limiter-emissions-co2"},
+            {"label": "Sécurité routière – Écoconduite en voiture", "url": "https://www.securite-routiere.gouv.fr/chacun-son-mode-de-deplacement/dangers-de-la-route-en-voiture/mieux-conduire-en-voiture/eco"},
+            {"label": "Ministère de la Transition écologique – gestes efficaces", "url": "https://www.ecologie.gouv.fr/economie-energie-ete"},
+            {"label": "Sécurité routière – entretien de la voiture", "url": "https://www.securite-routiere.gouv.fr/chacun-son-mode-de-deplacement/dangers-de-la-route-en-voiture/entretien-de-la-voiture/conseils-pour"},
+        ],
+        related=[
+            {"label": "Calculer la station la plus rentable", "url": "/guides/calcul-station-rentable"},
+            {"label": "Comprendre les carburants", "url": "/guides/carburants-disponibles"},
+            {"label": "Ouvrir l’application", "url": "/web"},
+        ],
+        published="10 août 2026",
+        updated="10 août 2026",
+        published_iso="2026-08-10",
+        updated_iso="2026-08-10",
     ),
 }
