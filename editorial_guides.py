@@ -155,6 +155,17 @@ GUIDES_EDITORIAUX = {
                 ],
             },
             {
+                "title": "Pourquoi les prix diffèrent-ils entre carburants et stations ?",
+                "paragraphs": [
+                    "Le panneau TTC additionne le coût du produit, sa transformation, son transport et son stockage, les charges de la station, sa marge commerciale, l’accise sur l’énergie puis la TVA. Le pétrole brut compte, mais il n’explique donc jamais seul le prix final ni son évolution quotidienne.",
+                    "Les barèmes d’accise diffèrent fortement selon le produit. L’E85 et le GPLc bénéficient notamment d’une fiscalité plus faible que les essences conventionnelles, tandis que l’E85 incorpore une part importante de bioéthanol. Entre deux stations, le volume vendu, la proximité d’un dépôt, les services, les horaires, le modèle automatique ou autoroutier et la concurrence locale peuvent aussi modifier le prix.",
+                    "La TVA est proportionnelle et porte sur une base comprenant l’accise. À l’inverse, l’accise est principalement fixée par quantité. Pour suivre tout le chemin du prix, du brut jusqu’à la pompe, consulter le guide consacré aux sources et à la décomposition des carburants.",
+                ],
+                "links": [
+                    {"label": "Comprendre la décomposition complète du prix", "url": "/guides/sources-prix-carburants"},
+                ],
+            },
+            {
                 "title": "Comment choisir sans risque ?",
                 "paragraphs": [
                     "La première règle est de suivre la documentation du constructeur. Une différence de quelques centimes ne justifie jamais l’utilisation d’un carburant non compatible. En cas de doute, vérifier l’étiquette de la trappe, le manuel ou demander conseil à un professionnel.",
@@ -170,6 +181,8 @@ GUIDES_EDITORIAUX = {
             {"label": "D’où viennent les prix ?", "url": "/guides/sources-prix-carburants"},
             {"label": "Comment est calculée la rentabilité ?", "url": "/guides/calcul-station-rentable"},
         ],
+        updated="12 août 2026",
+        updated_iso="2026-08-12",
     ),
     "guide_sources": guide(
         "guides/sources-prix-carburants",
@@ -191,6 +204,82 @@ GUIDES_EDITORIAUX = {
                 "paragraphs": [
                     "L’import traite Gazole, SP95, SP98, E10, E85 et GPLc. Lorsqu’une station ne publie pas un produit, la cellule reste vide. L’application ne remplace pas une valeur absente par une moyenne nationale et ne copie pas le prix d’un carburant voisin.",
                     "Cette règle évite de fabriquer un classement séduisant mais faux. Une station ne participe au calcul que si son prix pour le carburant du véhicule est numérique, positif et situé dans le rayon choisi.",
+                ],
+            },
+            {
+                "title": "De quoi se compose un prix à la pompe ?",
+                "paragraphs": [
+                    "Le prix TTC payé par l’automobiliste peut être lu comme l’addition de plusieurs étages : coût du carburant avant taxes, coûts et marges de raffinage, transport et distribution, accise sur l’énergie — encore souvent appelée TICPE — puis TVA. Ces postes n’évoluent pas tous de la même manière ni au même moment.",
+                    "Une présentation simplifiée consiste à écrire : prix TTC = (produit hors taxes + raffinage et logistique + distribution + accise) + TVA. Cette formule aide à comprendre le mécanisme, mais elle ne permet pas de reconstituer exactement la comptabilité d’une station à partir du seul panneau de prix.",
+                ],
+                "bullets": [
+                    "Matière première ou composant énergétique : pétrole brut, produits pétroliers raffinés, éthanol, biocomposants ou GPL selon le carburant.",
+                    "Transformation : raffinage, mélange des composants et respect des spécifications saisonnières et réglementaires.",
+                    "Logistique : importation éventuelle, transport maritime ou par oléoduc, dépôts, stockage stratégique et livraison aux stations.",
+                    "Distribution : exploitation de la station, personnel, énergie, maintenance, moyens de paiement, loyers et marge commerciale.",
+                    "Fiscalité : accise fixe par quantité et TVA proportionnelle appliquée au prix hors TVA, accise comprise.",
+                ],
+            },
+            {
+                "title": "La matière première et le taux de change",
+                "paragraphs": [
+                    "Pour l’essence et le gazole, le pétrole brut reste un déterminant important, mais un litre de brut n’est pas un litre directement vendu à la pompe. Le brut doit être transporté, raffiné puis transformé en différents produits. Sa qualité, son origine, les coûts maritimes et la disponibilité mondiale influencent son prix.",
+                    "Le pétrole et de nombreux produits raffinés s’échangent en dollars. Une hausse du baril peut être partiellement compensée par un euro plus fort ; inversement, un euro plus faible renchérit l’achat en euros même si le cours en dollars varie peu. C’est pourquoi le panneau de la station ne suit pas mécaniquement le Brent au jour le jour.",
+                    "L’E85 incorpore une forte proportion de bioéthanol, variable selon la saison, et le GPLc provient de filières liées au raffinage du pétrole et au traitement du gaz naturel. Leurs coûts de matière première et leur fiscalité ne sont donc pas identiques à ceux du SP95 ou du gazole.",
+                ],
+            },
+            {
+                "title": "Raffinage, mélange et saisonnalité",
+                "paragraphs": [
+                    "La marge de raffinage rémunère la transformation du brut en essence, gazole, kérosène, GPL et autres produits. Elle dépend de l’équilibre entre l’offre des raffineries et la demande pour chaque produit. Une maintenance, une panne, une tension sur les stocks ou une forte demande de gazole peut faire évoluer le prix du produit raffiné indépendamment du baril.",
+                    "Les carburants doivent respecter des caractéristiques techniques précises. Les formulations peuvent changer selon la saison, notamment pour le comportement au froid ou la volatilité. Des biocomposants sont incorporés selon les produits : jusqu’à 10 % d’éthanol pour le SP95-E10, tandis que la proportion d’éthanol de l’E85 varie davantage. Ces mélanges ont leur propre coût.",
+                    "La “marge de raffinage” n’est pas automatiquement le bénéfice net d’un raffineur. Elle doit aussi couvrir énergie, personnel, maintenance, investissements, arrêts techniques, conformité environnementale et risques industriels.",
+                ],
+            },
+            {
+                "title": "Transport, stockage et sécurité d’approvisionnement",
+                "paragraphs": [
+                    "Après raffinage ou importation, le carburant passe par des terminaux et dépôts avant d’être livré. Il peut voyager par navire, oléoduc, train ou camion-citerne. La distance, le volume livré, l’accès au dépôt et le coût de l’énergie expliquent une partie des écarts géographiques.",
+                    "Le stockage représente également un coût : installations classées, contrôles de qualité, sécurité incendie, assurance, immobilisation financière des stocks et obligations de stocks stratégiques. Une petite station livrée en faibles volumes n’a pas nécessairement les mêmes coûts unitaires qu’un hypermarché à fort débit proche d’un dépôt.",
+                    "Sur autoroute, les contraintes d’exploitation, les redevances et un environnement concurrentiel différent peuvent contribuer à un prix supérieur. À l’inverse, certaines grandes surfaces utilisent le carburant comme produit d’appel et acceptent une marge de distribution très faible pendant certaines périodes.",
+                ],
+            },
+            {
+                "title": "Marge de distribution : ce qu’elle finance réellement",
+                "paragraphs": [
+                    "La marge brute de transport-distribution est l’écart entre le prix hors taxes de vente et le coût d’approvisionnement du produit. Elle ne correspond pas au bénéfice net conservé par la station. Elle finance la livraison, le stockage local, les pertes techniques, les contrôles, le terminal de paiement, les commissions bancaires, les salaires, le nettoyage, la maintenance et l’investissement.",
+                    "Les modèles économiques diffèrent fortement. Une station automatique de grande surface à gros volume, une station indépendante avec boutique et une aire d’autoroute ouverte en permanence n’ont ni les mêmes charges ni les mêmes services. Deux stations achetant un produit proche peuvent donc afficher des prix différents sans qu’un seul poste explique tout l’écart.",
+                    "Une remise fidélité, une opération à prix coûtant ou un coupon réduit temporairement le montant payé, mais ne modifie pas nécessairement le prix officiel déclaré de la même façon. OptiPlein doit distinguer le prix accessible à tous des avantages soumis à une carte, un compte ou une durée limitée.",
+                ],
+            },
+            {
+                "title": "Accise et TVA : deux mécanismes différents",
+                "paragraphs": [
+                    "L’accise sur les produits énergétiques, historiquement appelée TICPE pour les carburants pétroliers, est principalement calculée sur la quantité vendue. Elle représente donc un montant par litre, hectolitre, kilogramme ou unité énergétique selon le produit. À barème inchangé, une hausse du prix du pétrole n’augmente pas automatiquement cette part fixe.",
+                    "La TVA est au taux normal et se calcule sur le prix hors TVA comprenant le produit, les coûts, les marges et l’accise. Elle augmente donc lorsque le prix hors TVA augmente. On entend parfois que la TVA est appliquée “sur la taxe” : cela décrit le fait que l’accise fait partie de la base soumise à TVA.",
+                    "Exemple purement pédagogique : si produit, raffinage, logistique et distribution représentent 0,80 €/L et l’accise 0,60 €/L, la base hors TVA vaut 1,40 €. Une TVA de 20 % représente alors 0,28 €, pour un prix TTC de 1,68 €/L. Cet exemple n’est pas le prix réel d’un carburant ni le barème d’une région donnée.",
+                ],
+                "bullets": [
+                    "L’accise est largement fixe par quantité : elle amortit en proportion une partie des petites variations du produit brut.",
+                    "La TVA est proportionnelle : son montant en centimes augmente lorsque sa base augmente.",
+                    "Les barèmes peuvent dépendre du produit, de l’année et de dispositions territoriales ou temporaires.",
+                    "Une comparaison sérieuse doit toujours préciser la date, le territoire et l’unité du barème cité.",
+                ],
+            },
+            {
+                "title": "Pourquoi l’E85 et le GPLc sont souvent moins chers",
+                "paragraphs": [
+                    "Le prix inférieur de l’E85 ne vient pas seulement de sa matière première. Son niveau d’accise est nettement inférieur à celui des essences conventionnelles. Le GPLc bénéficie lui aussi d’une fiscalité spécifique. Le Guide 2026 sur la fiscalité des énergies montre des barèmes très différents selon SP95/SP98, E10, gazole, E85 et GPLc.",
+                    "Un prix au litre inférieur ne garantit toutefois pas le même coût d’usage. L’E85 peut entraîner une consommation volumique supérieure selon le véhicule et la saison. Le GPLc nécessite un véhicule compatible et sa consommation en litres peut différer de celle à l’essence. Il faut comparer coût pour 100 km, compatibilité et usage réel, pas uniquement les centimes au litre.",
+                    "OptiPlein conserve donc chaque carburant dans une catégorie séparée. Il ne transforme pas artificiellement un prix E85 en équivalent SP95 et ne recommande jamais un produit incompatible avec le véhicule.",
+                ],
+            },
+            {
+                "title": "Pourquoi les baisses et hausses arrivent avec un décalage",
+                "paragraphs": [
+                    "Une station ne remplit pas nécessairement ses cuves chaque jour. Le carburant vendu aujourd’hui peut avoir été acheté à un prix antérieur. Les contrats d’approvisionnement, rotations de stocks et dates de livraison créent un délai entre marchés de gros et prix de détail.",
+                    "La concurrence locale joue aussi : une station peut ajuster rapidement son prix face à un concurrent, attendre une prochaine livraison ou lancer une opération commerciale. Les hausses et les baisses ne se transmettent donc ni instantanément ni de manière uniforme dans toutes les communes.",
+                    "Enfin, le fichier public reflète les déclarations des points de vente. La date de téléchargement d’OptiPlein ne signifie pas que chaque prix vient d’être modifié. La date de déclaration de la station et le panneau sur place restent indispensables pour évaluer la fraîcheur réelle.",
                 ],
             },
             {
@@ -231,13 +320,19 @@ GUIDES_EDITORIAUX = {
         ],
         sources=[
             {"label": "Flux officiel des prix des carburants", "url": "https://donnees.roulez-eco.fr/opendata/instantane"},
+            {"label": "Ministère de la Transition écologique – chaîne pétrolière", "url": "https://www.ecologie.gouv.fr/politiques-publiques/chaine-petroliere"},
+            {"label": "Ministère de la Transition écologique – Guide 2026 sur la fiscalité des énergies", "url": "https://www.ecologie.gouv.fr/sites/default/files/documents/Guide%202026%20sur%20fiscalit%C3%A9%20des%20%C3%A9nergies.pdf"},
+            {"label": "Ministère de l’Économie – prix, marges et consommation de carburants", "url": "https://www.economie.gouv.fr/files/rapport-prix-marges-consommation-carburants.pdf"},
             {"label": "Base nationale IRVE", "url": "https://transport.data.gouv.fr/datasets/base-nationale-des-lieux-de-recharge-de-vehicules-electriques"},
             {"label": "Licence Ouverte Etalab 2.0", "url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"},
         ],
         related=[
             {"label": "Les six carburants expliqués", "url": "/guides/carburants-disponibles"},
             {"label": "Signaler une information incorrecte", "url": "/guides/signaler-erreur-station"},
+            {"label": "Réduire sa consommation de carburant", "url": "/guides/moins-consommer-carburant"},
         ],
+        updated="12 août 2026",
+        updated_iso="2026-08-12",
     ),
     "guide_rentabilite": guide(
         "guides/calcul-station-rentable",
