@@ -477,6 +477,24 @@
                         Nouveau tarif
                     </button>
                 </div>
+                <div class="station-tools">
+                    <input
+                        id="borne-irve-search"
+                        type="search"
+                        placeholder="ID de borne, enseigne, opérateur, adresse, ville..."
+                        onkeydown="if(event.key === 'Enter'){event.preventDefault(); rechercherBornesIrveAdmin();}"
+                    >
+                    <button type="button" onclick="rechercherBornesIrveAdmin()">
+                        Rechercher une borne
+                    </button>
+                </div>
+                <p class="status" id="borne-irve-search-status" style="padding:0 18px"></p>
+                <div class="table-wrap" id="bornes-irve-wrap">
+                    <p class="empty">
+                        Recherchez d’abord la borne concernée, puis sélectionnez-la
+                        pour enregistrer un tarif propre à cette station.
+                    </p>
+                </div>
                 <form
                     id="tarif-irve-form"
                     class="tariff-form"
@@ -644,6 +662,7 @@
         var passwordInput = document.getElementById("admin-password");
         var stationsAdmin = [];
         var tarifsIrveAdmin = [];
+        var bornesIrveAdmin = [];
 
         function texteDate(valeur) {
             if (!valeur) {
@@ -997,6 +1016,87 @@
                         + '</div></td></tr>';
                 }).join("")
                 + '</tbody></table>';
+        }
+
+        function afficherBornesIrveAdmin(bornes) {
+            var conteneur = document.getElementById("bornes-irve-wrap");
+            bornesIrveAdmin = bornes || [];
+            if (!bornesIrveAdmin.length) {
+                conteneur.innerHTML = '<p class="empty">Aucune borne IRVE trouvée.</p>';
+                return;
+            }
+            conteneur.innerHTML = '<table><thead><tr>'
+                + '<th>Identifiant</th><th>Enseigne / station</th>'
+                + '<th>Opérateur</th><th>Adresse</th><th>Technique</th><th>Action</th>'
+                + '</tr></thead><tbody>'
+                + bornesIrveAdmin.map(function(borne, index) {
+                    var coordonneesValides = Number.isFinite(Number(borne.latitude))
+                        && Number.isFinite(Number(borne.longitude));
+                    var carte = coordonneesValides
+                        ? '<a href="https://www.google.com/maps?q='
+                            + encodeURIComponent(borne.latitude + ',' + borne.longitude)
+                            + '" target="_blank" rel="noopener noreferrer">Voir sur la carte</a>'
+                        : 'Coordonnées absentes';
+                    return '<tr><td><strong>' + echapperHtml(borne.source_id)
+                        + '</strong><br><small>' + echapperHtml(borne.id) + '</small>'
+                        + (borne.tarif_manuel
+                            ? '<br><span class="badge premium">Tarif manuel '
+                                + echapperHtml(borne.tarif_manuel.prix) + ' €/kWh</span>'
+                            : '') + '</td>'
+                        + '<td><strong>' + echapperHtml(borne.enseigne || "-") + '</strong>'
+                        + '<br>' + echapperHtml(borne.station || "-") + '</td>'
+                        + '<td>' + echapperHtml(borne.operateur || "-") + '</td>'
+                        + '<td>' + echapperHtml(borne.adresse || "-") + '<br>'
+                        + echapperHtml([borne.cp, borne.ville].filter(Boolean).join(" "))
+                        + '<br>' + carte + '</td>'
+                        + '<td>' + Number(borne.puissance_kw || 0).toLocaleString("fr-FR")
+                        + ' kW<br>' + Number(borne.nbre_pdc || 0) + ' point(s)'
+                        + '<br>' + echapperHtml((borne.prises || []).join(", ") || "Prises N/C")
+                        + '</td><td>'
+                        + (borne.tarif_manuel
+                            ? '<button type="button" onclick="modifierTarifIrve(\''
+                                + echapperHtml(borne.tarif_manuel.id)
+                                + '\')">Modifier son tarif</button>'
+                            : '<button type="button" onclick="selectionnerBorneIrveAdmin('
+                                + index + ')">Choisir cette borne</button>')
+                        + '</td></tr>';
+                }).join("") + '</tbody></table>';
+        }
+
+        async function rechercherBornesIrveAdmin() {
+            var champ = document.getElementById("borne-irve-search");
+            var statut = document.getElementById("borne-irve-search-status");
+            var recherche = champ.value.trim();
+            if (recherche.length < 2) {
+                statut.textContent = "Saisissez au moins deux caractères.";
+                return;
+            }
+            statut.textContent = "Recherche dans le fichier national IRVE...";
+            try {
+                var donnees = await requeteAdmin(
+                    "/api/admin/bornes-irve?q=" + encodeURIComponent(recherche)
+                );
+                afficherBornesIrveAdmin(donnees.bornes || []);
+                statut.textContent = Number((donnees.bornes || []).length)
+                    + " station(s) trouvée(s).";
+            } catch (erreur) {
+                statut.textContent = erreur.message;
+            }
+        }
+
+        function selectionnerBorneIrveAdmin(index) {
+            var borne = bornesIrveAdmin[index];
+            if (!borne) return;
+            nouveauTarifIrve();
+            document.getElementById("tarif-irve-scope").value = "station";
+            document.getElementById("tarif-irve-match").value =
+                borne.source_id || borne.id || "";
+            document.getElementById("tarif-irve-network").value =
+                borne.enseigne || borne.station || borne.operateur || "Borne de recharge";
+            document.getElementById("tarif-irve-status").textContent =
+                "Borne sélectionnée : " + (borne.station || borne.enseigne || borne.source_id)
+                + ". Complétez les tarifs puis enregistrez.";
+            document.getElementById("tarif-irve-form").scrollIntoView({behavior:"smooth"});
         }
 
         async function chargerTarifsIrve() {
