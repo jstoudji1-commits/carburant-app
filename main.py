@@ -1270,6 +1270,111 @@ def station_resume_admin(station):
     }
 
 
+def rechercher_bornes_irve_admin(texte, limite=60):
+
+    recherche = " ".join(str(texte or "").casefold().split())
+    if len(recherche) < 2:
+        return []
+
+    try:
+        chemin = rafraichir_cache_csv(
+            IRVE_STATIQUE_URL,
+            IRVE_STATIQUE_CACHE,
+            IRVE_STATIQUE_TTL_SECONDES,
+        )
+    except Exception as erreur:
+        logger.exception("Recherche IRVE administrateur indisponible.")
+        raise HTTPException(
+            status_code=503,
+            detail="Le fichier national IRVE est indisponible.",
+        ) from erreur
+
+    stations = {}
+    champs_recherche = (
+        "id_station_itinerance",
+        "id_station_local",
+        "id_pdc_itinerance",
+        "id_pdc_local",
+        "nom_enseigne",
+        "nom_station",
+        "nom_operateur",
+        "adresse_station",
+        "consolidated_code_postal",
+        "consolidated_commune",
+    )
+
+    for ligne in lignes_csv_cache(chemin):
+        contenu = " ".join(
+            str(ligne.get(champ) or "").casefold()
+            for champ in champs_recherche
+        )
+        if recherche not in contenu:
+            continue
+
+        station_source_id = str(
+            ligne.get("id_station_itinerance")
+            or ligne.get("id_station_local")
+            or ligne.get("id_pdc_itinerance")
+            or ligne.get("id_pdc_local")
+            or ""
+        ).strip()
+        if not station_source_id:
+            continue
+
+        station = stations.setdefault(
+            station_source_id,
+            {
+                "id": "irve-" + station_source_id,
+                "source_id": station_source_id,
+                "enseigne": str(ligne.get("nom_enseigne") or "").strip(),
+                "station": str(ligne.get("nom_station") or "").strip(),
+                "operateur": str(ligne.get("nom_operateur") or "").strip(),
+                "adresse": str(ligne.get("adresse_station") or "").strip(),
+                "cp": str(ligne.get("consolidated_code_postal") or "").strip(),
+                "ville": str(ligne.get("consolidated_commune") or "").strip(),
+                "latitude": None,
+                "longitude": None,
+                "puissance_kw": 0.0,
+                "prises": set(),
+                "pdc": set(),
+            },
+        )
+        latitude, longitude = coordonnees_irve(ligne)
+        if latitude is not None and longitude is not None:
+            station["latitude"] = latitude
+            station["longitude"] = longitude
+        station["puissance_kw"] = max(
+            station["puissance_kw"],
+            valeur_float_irve(ligne.get("puissance_nominale")) or 0.0,
+        )
+        station["prises"].update(prises_irve(ligne))
+        identifiant_pdc = str(
+            ligne.get("id_pdc_itinerance")
+            or ligne.get("id_pdc_local")
+            or ""
+        ).strip()
+        if identifiant_pdc:
+            station["pdc"].add(identifiant_pdc)
+
+        if len(stations) >= limite:
+            break
+
+    resultats = []
+    for station in stations.values():
+        station["prises"] = sorted(station["prises"])
+        station["nbre_pdc"] = len(station.pop("pdc"))
+        resultats.append(station)
+
+    return sorted(
+        resultats,
+        key=lambda station: (
+            station.get("ville", "").casefold(),
+            station.get("enseigne", "").casefold(),
+            station.get("station", "").casefold(),
+        ),
+    )
+
+
 def limiter_texte_compte(valeur, longueur):
 
     return str(valeur or "").strip()[:longueur]
@@ -4277,6 +4382,34 @@ def lister_tarifs_irve_admin(request: Request):
             ),
         )
     }
+
+
+@app.get("/api/admin/bornes-irve")
+def rechercher_bornes_irve_depuis_admin(
+    request: Request,
+    q: str = "",
+):
+
+    verifier_admin(request)
+    bornes = rechercher_bornes_irve_admin(q)
+    tarifs = charger_tarifs_irve_admin()
+    tarifs_station = {
+        str(tarif.get("match_value") or "").casefold(): tarif
+        for tarif in tarifs.values()
+        if tarif.get("scope") == "station"
+    }
+    for borne in bornes:
+        tarif = (
+            tarifs_station.get(str(borne.get("source_id") or "").casefold())
+            or tarifs_station.get(str(borne.get("id") or "").casefold())
+        )
+        if tarif:
+            borne["tarif_manuel"] = {
+                "id": tarif.get("id", ""),
+                "prix": tarif.get("comparison_price_eur_kwh"),
+                "libelle": tarif.get("comparison_label", "Tarif public"),
+            }
+    return {"bornes": bornes}
 
 
 @app.post("/api/admin/tarifs-irve")
