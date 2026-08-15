@@ -1270,10 +1270,25 @@ def station_resume_admin(station):
     }
 
 
-def rechercher_bornes_irve_admin(texte, limite=60):
+def rechercher_bornes_irve_admin(
+    texte="",
+    reseau="",
+    code_postal="",
+    limite=60,
+):
 
     recherche = " ".join(str(texte or "").casefold().split())
-    if len(recherche) < 2:
+    recherche_reseau = " ".join(str(reseau or "").casefold().split())
+    recherche_cp = "".join(
+        caractere
+        for caractere in str(code_postal or "").strip()
+        if caractere.isdigit()
+    )
+    if (
+        len(recherche) < 2
+        and len(recherche_reseau) < 2
+        and len(recherche_cp) < 2
+    ):
         return []
 
     try:
@@ -1308,7 +1323,22 @@ def rechercher_bornes_irve_admin(texte, limite=60):
             str(ligne.get(champ) or "").casefold()
             for champ in champs_recherche
         )
-        if recherche not in contenu:
+        contenu_reseau = " ".join(
+            str(ligne.get(champ) or "").casefold()
+            for champ in (
+                "nom_enseigne",
+                "nom_station",
+                "nom_operateur",
+            )
+        )
+        code_postal_ligne = str(
+            ligne.get("consolidated_code_postal") or ""
+        ).strip()
+        if recherche and recherche not in contenu:
+            continue
+        if recherche_reseau and recherche_reseau not in contenu_reseau:
+            continue
+        if recherche_cp and not code_postal_ligne.startswith(recherche_cp):
             continue
 
         station_source_id = str(
@@ -4388,10 +4418,21 @@ def lister_tarifs_irve_admin(request: Request):
 def rechercher_bornes_irve_depuis_admin(
     request: Request,
     q: str = "",
+    reseau: str = "",
+    code_postal: str = "",
 ):
 
     verifier_admin(request)
-    bornes = rechercher_bornes_irve_admin(q)
+    if code_postal and not re.fullmatch(r"\d{2,5}", code_postal.strip()):
+        raise HTTPException(
+            status_code=400,
+            detail="Le code postal doit contenir entre 2 et 5 chiffres.",
+        )
+    bornes = rechercher_bornes_irve_admin(
+        texte=q,
+        reseau=reseau,
+        code_postal=code_postal,
+    )
     tarifs = charger_tarifs_irve_admin()
     tarifs_station = {
         str(tarif.get("match_value") or "").casefold(): tarif
