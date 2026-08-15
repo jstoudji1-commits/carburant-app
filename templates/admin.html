@@ -116,6 +116,10 @@
             grid-template-columns:minmax(0, 1fr) auto;
         }
 
+        .station-tools.irve-search-tools{
+            grid-template-columns:minmax(0, 1fr) minmax(140px, 220px) auto;
+        }
+
         .station-form{
             grid-template-columns:repeat(3, minmax(0, 1fr));
             background:#fbfdfb;
@@ -329,6 +333,7 @@
             .login-row,
             .stats,
             .station-tools,
+            .station-tools.irve-search-tools,
             .station-form,
             .tariff-form,
             .tariff-offers{
@@ -477,11 +482,21 @@
                         Nouveau tarif
                     </button>
                 </div>
-                <div class="station-tools">
+                <div class="station-tools irve-search-tools">
                     <input
-                        id="borne-irve-search"
+                        id="borne-irve-reseau"
                         type="search"
-                        placeholder="ID de borne, enseigne, opérateur, adresse, ville..."
+                        placeholder="Réseau, enseigne ou opérateur (ex. Lidl)"
+                        onkeydown="if(event.key === 'Enter'){event.preventDefault(); rechercherBornesIrveAdmin();}"
+                    >
+                    <input
+                        id="borne-irve-code-postal"
+                        type="text"
+                        inputmode="numeric"
+                        maxlength="5"
+                        pattern="[0-9]{2,5}"
+                        placeholder="Code postal"
+                        oninput="this.value=this.value.replace(/[^0-9]/g, '').slice(0, 5)"
                         onkeydown="if(event.key === 'Enter'){event.preventDefault(); rechercherBornesIrveAdmin();}"
                     >
                     <button type="button" onclick="rechercherBornesIrveAdmin()">
@@ -491,7 +506,7 @@
                 <p class="status" id="borne-irve-search-status" style="padding:0 18px"></p>
                 <div class="table-wrap" id="bornes-irve-wrap">
                     <p class="empty">
-                        Recherchez d’abord la borne concernée, puis sélectionnez-la
+                        Saisissez un réseau, un code postal ou les deux, puis sélectionnez la borne
                         pour enregistrer un tarif propre à cette station.
                     </p>
                 </div>
@@ -1064,21 +1079,35 @@
         }
 
         async function rechercherBornesIrveAdmin() {
-            var champ = document.getElementById("borne-irve-search");
+            var champReseau = document.getElementById("borne-irve-reseau");
+            var champCodePostal = document.getElementById("borne-irve-code-postal");
             var statut = document.getElementById("borne-irve-search-status");
-            var recherche = champ.value.trim();
-            if (recherche.length < 2) {
-                statut.textContent = "Saisissez au moins deux caractères.";
+            var reseau = champReseau.value.trim();
+            var codePostal = champCodePostal.value.trim();
+            if (!reseau && !codePostal) {
+                statut.textContent = "Saisissez un réseau, un code postal ou les deux.";
+                return;
+            }
+            if (reseau && reseau.length < 2) {
+                statut.textContent = "Le nom du réseau doit contenir au moins deux caractères.";
+                return;
+            }
+            if (codePostal && !/^\d{2,5}$/.test(codePostal)) {
+                statut.textContent = "Le code postal doit contenir entre 2 et 5 chiffres.";
                 return;
             }
             statut.textContent = "Recherche dans le fichier national IRVE...";
             try {
                 var donnees = await requeteAdmin(
-                    "/api/admin/bornes-irve?q=" + encodeURIComponent(recherche)
+                    "/api/admin/bornes-irve?reseau=" + encodeURIComponent(reseau)
+                    + "&code_postal=" + encodeURIComponent(codePostal)
                 );
                 afficherBornesIrveAdmin(donnees.bornes || []);
                 statut.textContent = Number((donnees.bornes || []).length)
-                    + " station(s) trouvée(s).";
+                    + " station(s) trouvée(s)"
+                    + (reseau ? " pour « " + reseau + " »" : "")
+                    + (codePostal ? " dans le secteur " + codePostal : "")
+                    + ".";
             } catch (erreur) {
                 statut.textContent = erreur.message;
             }
