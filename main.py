@@ -95,6 +95,7 @@ def lire_variable_adsense_slot():
 
 ADSENSE_SLOT_MAP = lire_variable_adsense_slot()
 signalements_recents = {}
+contributions_tarifs_recentes = {}
 mise_a_jour_admin_lock = threading.Lock()
 ATTENTE_VERROU_ADMIN_SECONDES = 45
 
@@ -156,6 +157,10 @@ IRVE_TARIFS_ADMIN_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS / "irve_admin_tariffs.json"
 )
 IRVE_TARIF_ADMIN_PREFIXE = "__irve_tarif_admin__:"
+IRVE_CONTRIBUTION_PREFIXE = "__irve_contribution__:"
+IRVE_CONTRIBUTIONS_FICHIER = (
+    DOSSIER_DONNEES_UTILISATEURS / "irve_user_tariffs.json"
+)
 try:
     IRVE_TARIFS_RESEAUX = json.loads(
         IRVE_TARIFS_RESEAUX_FICHIER.read_text(encoding="utf-8")
@@ -592,6 +597,32 @@ class AdminTarifIrve(BaseModel):
     source_url: str = Field(default="", max_length=500)
     source_label: str = Field(default="Source du tarif", max_length=120)
     verified_at: str = Field(default="", max_length=20)
+
+
+class ContributionTarifIrve(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    station_id: str = Field(min_length=1, max_length=120)
+    station_name: str = Field(default="", max_length=160)
+    price_eur_kwh: float = Field(gt=0, le=5)
+    offer_type: Literal[
+        "bank_card",
+        "operator_card",
+        "subscription",
+        "other",
+    ] = "bank_card"
+    session_fee_eur: Optional[float] = Field(default=None, ge=0, le=100)
+    details: str = Field(default="", max_length=500)
+    source_url: str = Field(default="", max_length=500)
+
+
+class AdminValidationContributionIrve(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["approved", "rejected"]
+    review_note: str = Field(default="", max_length=500)
 
 
 class AdminTestEmail(BaseModel):
@@ -3025,6 +3056,10 @@ def appliquer_tarification_reseau_irve(station):
     station["tarif_source_url"] = str(tarif.get("source_url") or "")
     station["tarif_source_label"] = str(tarif.get("source_label") or "")
     station["tarif_verifie_le"] = str(tarif.get("verified_at") or "")
+    station["tarif_provenance"] = "optiplein"
+    station["tarif_confirme_le"] = str(
+        tarif.get("verified_at") or date_iso_maintenant()
+    )
 
 
 def charger_tarifs_irve_admin():
@@ -3129,6 +3164,142 @@ def supprimer_tarif_irve_admin(tarif_id):
     )
 
 
+def charger_contributions_tarifs_irve():
+
+    corrections_postgres = charger_corrections_stations_postgres()
+    if corrections_postgres is not None:
+        contributions = {}
+        for cle, payload in corrections_postgres.get("stations", {}).items():
+            if not str(cle).startswith(IRVE_CONTRIBUTION_PREFIXE):
+                continue
+            contribution_id = str(cle)[len(IRVE_CONTRIBUTION_PREFIXE):]
+            payload = dict(payload or {})
+            if payload.get("deleted"):
+                continue
+            payload["id"] = contribution_id
+            contributions[contribution_id] = payload
+        return contributions
+
+    if not IRVE_CONTRIBUTIONS_FICHIER.exists():
+        return {}
+
+    try:
+        donnees = json.loads(
+            IRVE_CONTRIBUTIONS_FICHIER.read_text(encoding="utf-8")
+        )
+        return dict(donnees.get("contributions", {}))
+    except (OSError, ValueError, TypeError):
+        logger.exception("Impossible de lire les contributions tarifaires IRVE.")
+        return {}
+
+
+def enregistrer_contribution_tarif_irve(payload):
+
+    contribution_id = str(payload.get("id") or secrets.token_hex(10))
+    payload = dict(payload)
+    payload["id"] = contribution_id
+    payload["type"] = "irve_user_tariff"
+    payload["updated_at"] = date_iso_maintenant()
+
+    if enregistrer_correction_station_postgres(
+        IRVE_CONTRIBUTION_PREFIXE + contribution_id,
+        payload,
+    ):
+        return payload
+
+    donnees = {"contributions": charger_contributions_tarifs_irve()}
+    donnees["contributions"][contribution_id] = payload
+    donnees["updated_at"] = payload["updated_at"]
+    ecrire_fichier_enrichissement_stations(
+        IRVE_CONTRIBUTIONS_FICHIER,
+        donnees,
+    )
+    return payload
+
+
+def libelle_contributeur_tarif(utilisateur, email):
+
+    profil = utilisateur.get("data", {}).get("profil", {})
+    nom = " ".join(str(profil.get("nom") or "").split())
+    if nom:
+        return nom[:80]
+
+    identifiant = str(email or "utilisateur").split("@", 1)[0]
+    if len(identifiant) <= 2:
+        return "Utilisateur OptiPlein"
+    return identifiant[:2] + "***"
+
+
+def contribution_tarif_irve_pour_station(station, contributions):
+
+    identifiants = {
+        str(station.get("id") or "").casefold(),
+        str(station.get("source_id") or "").casefold(),
+    }
+    candidates = [
+        contribution
+        for contribution in contributions.values()
+        if str(contribution.get("station_id") or "").casefold()
+        in identifiants
+        and contribution.get("status") in {"pending", "approved"}
+    ]
+    if not candidates:
+        return None
+
+    return sorted(
+        candidates,
+        key=lambda contribution: (
+            str(
+                contribution.get("reviewed_at")
+                or contribution.get("created_at")
+                or ""
+            ),
+            contribution.get("status") == "approved",
+        ),
+    )[-1]
+
+
+def appliquer_contribution_tarif_irve(station, contributions):
+
+    contribution = contribution_tarif_irve_pour_station(
+        station,
+        contributions,
+    )
+    if not contribution:
+        return
+
+    statut = contribution.get("status", "pending")
+    prix = valeur_float_irve(contribution.get("price_eur_kwh"))
+    # La proposition est publiée immédiatement avec son statut explicite. En
+    # cas de refus, elle disparaît au prochain chargement et la source
+    # précédente redevient visible.
+    if prix is not None:
+        station["prix"] = prix
+        station["prix_estime"] = False
+        station["tarification"] = str(
+            contribution.get("display_text")
+            or contribution.get("details")
+            or contribution.get("offer_label")
+            or "Tarif communiqué par un utilisateur"
+        )
+        station["tarifs_options"] = [
+            {
+                "label": contribution.get("offer_label", "Tarif communiqué"),
+                "price_eur_kwh": prix,
+                "session_fee_eur": contribution.get("session_fee_eur"),
+                "details": contribution.get("details", ""),
+            }
+        ]
+
+    station["tarif_contributeur"] = str(
+        contribution.get("contributor_label") or "Utilisateur OptiPlein"
+    )
+    station["tarif_declare_le"] = str(contribution.get("created_at") or "")
+    station["tarif_contribution_statut"] = statut
+    station["tarif_confirme_le"] = str(contribution.get("reviewed_at") or "")
+    station["tarif_contribution_id"] = str(contribution.get("id") or "")
+
+
 def appliquer_tarification_admin_irve(station, tarifs_admin):
 
     noms_reseau = station.get("_reseau_noms") or []
@@ -3178,6 +3349,10 @@ def appliquer_tarification_admin_irve(station, tarifs_admin):
     station["tarif_source_label"] = str(tarif.get("source_label") or "")
     station["tarif_verifie_le"] = str(tarif.get("verified_at") or "")
     station["tarif_admin"] = True
+    station["tarif_provenance"] = "optiplein"
+    station["tarif_confirme_le"] = str(
+        tarif.get("verified_at") or tarif.get("updated_at") or ""
+    )
 
 
 def charger_disponibilites_irve():
@@ -3324,6 +3499,7 @@ def preparer_bornes_irve(
 
     disponibilites = charger_disponibilites_irve()
     tarifs_irve_admin = charger_tarifs_irve_admin()
+    contributions_tarifs_irve = charger_contributions_tarifs_irve()
     rayon = max(1, min(100, int(rayon or 25)))
     stations = {}
 
@@ -3381,7 +3557,10 @@ def preparer_bornes_irve(
                 "prix": IRVE_PRIX_KWH_ESTIME,
                 "prix_estime": True,
                 "tarification": "",
+                "tarif_provenance": "",
+                "tarif_confirme_le": "",
                 "_prix_kwh_trouves": set(),
+                "_tarif_dates_source": set(),
                 "_reseau_noms": set(),
             },
         )
@@ -3401,6 +3580,10 @@ def preparer_bornes_irve(
         prix, prix_estime = prix_kwh_irve(ligne)
         if not prix_estime:
             station["_prix_kwh_trouves"].add(prix)
+            if ligne.get("date_maj"):
+                station["_tarif_dates_source"].add(
+                    str(ligne.get("date_maj"))
+                )
         if ligne.get("tarification") and not station["tarification"]:
             station["tarification"] = ligne.get("tarification", "")
 
@@ -3414,9 +3597,12 @@ def preparer_bornes_irve(
     bornes = []
     for station in stations.values():
         prix_trouves = station.pop("_prix_kwh_trouves", set())
+        dates_tarif_source = station.pop("_tarif_dates_source", set())
         if len(prix_trouves) == 1:
             station["prix"] = prix_trouves.pop()
             station["prix_estime"] = False
+            station["tarif_provenance"] = "optiplein"
+            station["tarif_confirme_le"] = max(dates_tarif_source or {""})
         else:
             # Aucun tarif ou plusieurs tarifs distincts sur une meme station :
             # le prix unique serait trompeur pour la comparaison.
@@ -3424,6 +3610,10 @@ def preparer_bornes_irve(
             station["prix_estime"] = True
         appliquer_tarification_reseau_irve(station)
         appliquer_tarification_admin_irve(station, tarifs_irve_admin)
+        appliquer_contribution_tarif_irve(
+            station,
+            contributions_tarifs_irve,
+        )
         station.pop("_reseau_noms", None)
         station["prises"] = sorted(station["prises"])
         station["disponibilite"] = libelle_disponibilite_irve(station)
@@ -4486,6 +4676,77 @@ def effacer_tarif_irve_admin(tarif_id: str, request: Request):
     return {"ok": True}
 
 
+@app.get("/api/admin/contributions-tarifs-irve")
+def lister_contributions_tarifs_irve_admin(request: Request):
+
+    verifier_admin(request)
+    contributions = charger_contributions_tarifs_irve()
+    return {
+        "contributions": sorted(
+            contributions.values(),
+            key=lambda contribution: (
+                contribution.get("status") != "pending",
+                str(contribution.get("created_at") or ""),
+            ),
+            reverse=False,
+        )
+    }
+
+
+@app.post("/api/admin/contributions-tarifs-irve/{contribution_id}")
+def valider_contribution_tarif_irve_admin(
+    contribution_id: str,
+    validation: AdminValidationContributionIrve,
+    request: Request,
+):
+
+    verifier_admin(request)
+    if not re.fullmatch(r"[a-fA-F0-9]{20}", contribution_id):
+        raise HTTPException(status_code=400, detail="Identifiant invalide.")
+    contributions = charger_contributions_tarifs_irve()
+    contribution = contributions.get(contribution_id)
+    if not contribution:
+        raise HTTPException(status_code=404, detail="Contribution introuvable.")
+
+    maintenant = date_iso_maintenant()
+    contribution["status"] = validation.status
+    contribution["reviewed_at"] = maintenant
+    contribution["review_note"] = validation.review_note.strip()
+
+    if validation.status == "approved":
+        offre = AdminOffreTarifIrve(
+            label=str(contribution.get("offer_label") or "Tarif communiqué"),
+            price_eur_kwh=contribution.get("price_eur_kwh"),
+            session_fee_eur=contribution.get("session_fee_eur"),
+            details=str(contribution.get("details") or ""),
+        )
+        tarif = AdminTarifIrve(
+            id="contrib_" + contribution_id[:20],
+            scope="station",
+            match_value=str(contribution.get("station_id") or ""),
+            network_name=str(
+                contribution.get("station_name") or "Borne de recharge"
+            ),
+            comparison_price_eur_kwh=float(
+                contribution.get("price_eur_kwh")
+            ),
+            comparison_label=str(
+                contribution.get("offer_label") or "Tarif communiqué"
+            ),
+            offers=[offre],
+            display_text=str(contribution.get("details") or ""),
+            source_url=str(contribution.get("source_url") or ""),
+            source_label="Contribution validée par OptiPlein",
+            verified_at=maintenant[:10],
+        )
+        enregistrer_tarif_irve_admin(tarif)
+
+    contribution = enregistrer_contribution_tarif_irve(contribution)
+    contribution_public = dict(contribution)
+    contribution_public.pop("contributor_email", None)
+    return {"ok": True, "contribution": contribution_public}
+
+
 @app.post("/api/admin/forcer-mise-a-jour")
 async def forcer_mise_a_jour_admin(request: Request):
 
@@ -5097,6 +5358,62 @@ def get_bornes_irve(
         "data_version": version_irve(),
         "source": "irve",
     }
+
+
+@app.post("/api/bornes-irve/contribution-tarif")
+def proposer_tarif_borne_irve(
+    contribution: ContributionTarifIrve,
+    request: Request,
+):
+
+    email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    maintenant = time.time()
+    precedentes = [
+        instant
+        for instant in contributions_tarifs_recentes.get(email, [])
+        if maintenant - instant < 3600
+    ]
+    if len(precedentes) >= 8:
+        raise HTTPException(
+            status_code=429,
+            detail="Trop de propositions récentes. Réessayez dans une heure.",
+        )
+    if contribution.source_url and not contribution.source_url.startswith(
+        "https://"
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Le lien justificatif doit commencer par https://.",
+        )
+
+    libelles_offres = {
+        "bank_card": "Carte bancaire / paiement direct",
+        "operator_card": "Carte de l’opérateur ou fidélité",
+        "subscription": "Abonnement",
+        "other": "Autre tarif",
+    }
+    cree_le = date_iso_maintenant()
+    payload = {
+        "station_id": contribution.station_id.strip(),
+        "station_name": contribution.station_name.strip(),
+        "price_eur_kwh": contribution.price_eur_kwh,
+        "offer_type": contribution.offer_type,
+        "offer_label": libelles_offres[contribution.offer_type],
+        "session_fee_eur": contribution.session_fee_eur,
+        "details": contribution.details.strip(),
+        "source_url": contribution.source_url.strip(),
+        "contributor_email": email,
+        "contributor_label": libelle_contributeur_tarif(utilisateur, email),
+        "created_at": cree_le,
+        "status": "pending",
+        "reviewed_at": "",
+        "review_note": "",
+    }
+    payload = enregistrer_contribution_tarif_irve(payload)
+    contributions_tarifs_recentes[email] = precedentes + [maintenant]
+    payload_public = dict(payload)
+    payload_public.pop("contributor_email", None)
+    return {"ok": True, "contribution": payload_public}
 
 
 @app.get("/api/derniere-mise-a-jour")
