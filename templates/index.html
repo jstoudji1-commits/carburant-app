@@ -797,27 +797,51 @@ body{
     transform:translateY(-1px);
 }
 
-.filtre-bornes-disponibles{
+.filtres-bornes-electriques{
     display:flex;
     align-items:center;
-    gap:9px;
-    margin-top:14px;
-    padding:10px 11px;
-    border:1px solid #b9d9bf;
-    border-radius:8px;
-    background:#f0fdf4;
-    color:#087a2c;
-    font-size:13px;
-    font-weight:900;
-    cursor:pointer;
+    gap:10px;
+    margin:12px 18px 0;
 }
 
-.filtre-bornes-disponibles input{
-    width:19px;
-    height:19px;
-    margin:0;
-    accent-color:#16a34a;
+.filtre-borne-electrique{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:42px;
+    padding:9px 15px;
+    border:1px solid rgba(20,159,56,0.32);
+    border-radius:999px;
+    background:#fff;
+    color:#123826;
+    box-shadow:0 4px 12px rgba(16,37,54,0.08);
+    font-size:13px;
+    font-weight:900;
+    line-height:1.15;
+    text-align:center;
     cursor:pointer;
+    user-select:none;
+}
+
+.filtre-borne-electrique input{
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+    pointer-events:none;
+}
+
+.filtre-borne-electrique:has(input:checked){
+    border-color:#15803d;
+    background:#15803d;
+    color:#fff;
+    box-shadow:0 5px 14px rgba(21,128,61,0.24);
+}
+
+.filtre-borne-electrique:has(input:focus-visible){
+    outline:3px solid rgba(21,128,61,0.28);
+    outline-offset:2px;
 }
 
 .favoris-liste{
@@ -2915,6 +2939,18 @@ body{
         padding:14px;
     }
 
+    .filtres-bornes-electriques{
+        gap:8px;
+        margin:12px 12px 0;
+    }
+
+    .filtre-borne-electrique{
+        flex:1 1 0;
+        min-width:0;
+        padding:9px 8px;
+        font-size:12px;
+    }
+
     .bottom-icon{
         display:none;
     }
@@ -3609,19 +3645,6 @@ body{
                 </label>
             </div>
 
-            {% if carburant == "electrique" %}
-            <label
-                class="filtre-bornes-disponibles"
-                for="bornes-disponibles-seulement"
-            >
-                <input
-                    type="checkbox"
-                    id="bornes-disponibles-seulement"
-                >
-                Bornes disponibles uniquement
-            </label>
-            {% endif %}
-
             <input
                 type="hidden"
                 id="latitude"
@@ -3909,6 +3932,34 @@ body{
                 </section>
             </div>
         </div>
+
+        {% if carburant == "electrique" %}
+        <div
+            class="filtres-bornes-electriques"
+            aria-label="Filtres des bornes électriques"
+        >
+            <label
+                class="filtre-borne-electrique"
+                for="bornes-disponibles-seulement"
+            >
+                <input
+                    type="checkbox"
+                    id="bornes-disponibles-seulement"
+                >
+                <span>Disponibles seulement</span>
+            </label>
+            <label
+                class="filtre-borne-electrique"
+                for="bornes-tarifs-disponibles"
+            >
+                <input
+                    type="checkbox"
+                    id="bornes-tarifs-disponibles"
+                >
+                <span>Tarifs disponibles</span>
+            </label>
+        </div>
+        {% endif %}
 
         <div id="bottom-card" class="bottom-card">
             <div id="bottom-card-icon" class="bottom-icon">Eco</div>
@@ -6870,6 +6921,15 @@ function bornesDisponiblesSeulementActives() {
 
 }
 
+function bornesAvecTarifsSeulementActives() {
+
+    var filtre = document.getElementById(
+        "bornes-tarifs-disponibles"
+    );
+    return modeElectriqueActif() && filtre && filtre.checked;
+
+}
+
 function actualiserPrixMinimumAutour(stations) {
 
     var carburant = document.getElementById("stat-carburant");
@@ -6938,11 +6998,19 @@ function remplacerStationsSurCarte(stations, mettreAJourSource) {
         stationsIrveNonFiltrees = stations.slice();
     }
 
-    var stationsAffichees = bornesDisponiblesSeulementActives()
-        ? stations.filter(function(station) {
-            return Number(station.disponibles) > 0;
-        })
-        : stations;
+    var stationsAffichees = stations.filter(function(station) {
+        if (bornesDisponiblesSeulementActives()
+                && Number(station.disponibles) <= 0) {
+            return false;
+        }
+
+        if (bornesAvecTarifsSeulementActives()
+                && !prixStationDisponible(station.prix)) {
+            return false;
+        }
+
+        return true;
+    });
 
     markers.forEach(function(markerStation) {
         map.removeLayer(markerStation);
@@ -6983,6 +7051,24 @@ if (filtreBornesDisponibles) {
         localStorage.setItem(
             "optiplein-bornes-disponibles",
             filtreBornesDisponibles.checked ? "true" : "false"
+        );
+        remplacerStationsSurCarte(stationsIrveNonFiltrees, false);
+        calculerMeilleureStation();
+    });
+}
+
+var filtreBornesAvecTarifs = document.getElementById(
+    "bornes-tarifs-disponibles"
+);
+
+if (filtreBornesAvecTarifs) {
+    filtreBornesAvecTarifs.checked =
+        localStorage.getItem("optiplein-bornes-tarifs") === "true";
+
+    filtreBornesAvecTarifs.addEventListener("change", function() {
+        localStorage.setItem(
+            "optiplein-bornes-tarifs",
+            filtreBornesAvecTarifs.checked ? "true" : "false"
         );
         remplacerStationsSurCarte(stationsIrveNonFiltrees, false);
         calculerMeilleureStation();
