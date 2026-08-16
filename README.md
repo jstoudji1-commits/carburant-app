@@ -39,6 +39,12 @@ Puis redemarrer l'application sans `DATABASE_URL`.
 
 ## Mise a jour des bornes de recharge
 
+Les utilisateurs connectes peuvent proposer ou corriger le tarif d'une borne
+depuis sa fiche sur la carte. La proposition est affichee immediatement avec
+la mention `En attente de validation par OptiPlein`. L'administration dispose
+d'une file de validation ; une proposition acceptee devient un tarif confirme
+et une proposition refusee cesse d'etre appliquee.
+
 L'application telecharge automatiquement le fichier statique national IRVE
 tous les jours a 06:00, heure de Paris. Le fichier est conserve dans le dossier
 configure par `OPTIPLEIN_DATA_DIR` (`/var/data` sur Render) afin que la derniere
