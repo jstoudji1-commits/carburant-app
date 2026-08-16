@@ -1095,6 +1095,41 @@ body{
     font-weight:800;
 }
 
+.tarif-provenance{
+    display:block;
+    margin-top:5px;
+    color:#40576a;
+    font-size:10px;
+    font-weight:700;
+    line-height:1.3;
+}
+
+.tarif-provenance.pending{
+    color:#9a5b08;
+}
+
+.tarif-contribution-link{
+    display:inline-flex;
+    margin-top:6px;
+    padding:0;
+    border:0;
+    background:transparent;
+    color:var(--green-dark);
+    font:inherit;
+    font-size:11px;
+    font-weight:900;
+    text-decoration:underline;
+    text-underline-offset:2px;
+    cursor:pointer;
+}
+
+.tarif-contribution-note{
+    margin:-4px 0 2px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.35;
+}
+
 .station-popup .popup-actions{
     gap:6px;
     margin-top:0;
@@ -4148,6 +4183,100 @@ body{
     </section>
 </div>
 
+<div
+    id="tarif-contribution-modal"
+    class="problem-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tarif-contribution-title"
+    onclick="fermerContributionTarifDepuisFond(event)"
+    hidden
+>
+    <section class="problem-dialog">
+        <button
+            type="button"
+            class="problem-close"
+            aria-label="Fermer"
+            onclick="fermerContributionTarif()"
+        >&times;</button>
+        <h2 id="tarif-contribution-title">D&eacute;clarer un tarif</h2>
+        <p class="tarif-contribution-note">
+            Le tarif sera affich&eacute; comme contribution en attente, puis contr&ocirc;l&eacute;
+            par OptiPlein. Votre adresse e-mail ne sera jamais affich&eacute;e.
+        </p>
+        <form
+            id="tarif-contribution-form"
+            class="problem-form"
+            onsubmit="envoyerContributionTarif(event)"
+        >
+            <input id="tarif-contribution-station-id" type="hidden">
+            <input id="tarif-contribution-station-name" type="hidden">
+            <div class="problem-field">
+                <label for="tarif-contribution-type">Type de tarif</label>
+                <select id="tarif-contribution-type" required>
+                    <option value="bank_card">Carte bancaire / paiement direct</option>
+                    <option value="operator_card">Carte de l'op&eacute;rateur ou fid&eacute;lit&eacute;</option>
+                    <option value="subscription">Abonnement</option>
+                    <option value="other">Autre</option>
+                </select>
+            </div>
+            <div class="problem-field">
+                <label for="tarif-contribution-prix">Prix (&euro;/kWh)</label>
+                <input
+                    id="tarif-contribution-prix"
+                    type="number"
+                    min="0.001"
+                    max="5"
+                    step="0.001"
+                    inputmode="decimal"
+                    required
+                >
+            </div>
+            <div class="problem-field">
+                <label for="tarif-contribution-session">Frais par session (&euro;, facultatif)</label>
+                <input
+                    id="tarif-contribution-session"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    inputmode="decimal"
+                >
+            </div>
+            <div class="problem-field">
+                <label for="tarif-contribution-details">Conditions ou pr&eacute;cisions</label>
+                <textarea
+                    id="tarif-contribution-details"
+                    maxlength="500"
+                    placeholder="Ex. tarif sans abonnement, badge requis, plage horaire..."
+                ></textarea>
+            </div>
+            <div class="problem-field">
+                <label for="tarif-contribution-source">Lien justificatif (facultatif)</label>
+                <input
+                    id="tarif-contribution-source"
+                    type="url"
+                    maxlength="500"
+                    placeholder="https://..."
+                >
+            </div>
+            <p id="tarif-contribution-status" class="problem-status" role="status"></p>
+            <div class="problem-actions">
+                <button
+                    type="button"
+                    class="problem-action cancel"
+                    onclick="fermerContributionTarif()"
+                >Annuler</button>
+                <button
+                    id="tarif-contribution-submit"
+                    type="submit"
+                    class="problem-action send"
+                >Publier le tarif</button>
+            </div>
+        </form>
+    </section>
+</div>
+
 <p
     id="position"
     style="display:none;"
@@ -4557,11 +4686,126 @@ window.envoyerSignalement = async function(event) {
 
 };
 
+window.ouvrirContributionTarif = function(station) {
+
+    if (!compteUtilisateurConnecte()) {
+        window.alert(
+            "Connectez-vous à votre compte OptiPlein pour déclarer un tarif."
+        );
+        basculerPanneauVehicule();
+        return;
+    }
+
+    if (!station || !station.id) {
+        return;
+    }
+    var fenetre = document.getElementById("tarif-contribution-modal");
+    var formulaire = document.getElementById("tarif-contribution-form");
+    var statut = document.getElementById("tarif-contribution-status");
+    formulaire.reset();
+    document.getElementById("tarif-contribution-station-id").value = station.id;
+    document.getElementById("tarif-contribution-station-name").value =
+        station.enseigne || "Borne de recharge";
+    if (prixStationDisponible(station.prix)) {
+        document.getElementById("tarif-contribution-prix").value =
+            Number(station.prix).toFixed(3);
+    }
+    statut.textContent = "";
+    statut.className = "problem-status";
+    fenetre.hidden = false;
+    document.getElementById("tarif-contribution-type").focus();
+
+};
+
+window.fermerContributionTarif = function() {
+
+    var fenetre = document.getElementById("tarif-contribution-modal");
+    if (fenetre) {
+        fenetre.hidden = true;
+    }
+
+};
+
+window.fermerContributionTarifDepuisFond = function(event) {
+
+    if (event.target === event.currentTarget) {
+        fermerContributionTarif();
+    }
+
+};
+
+window.envoyerContributionTarif = async function(event) {
+
+    event.preventDefault();
+    var bouton = document.getElementById("tarif-contribution-submit");
+    var statut = document.getElementById("tarif-contribution-status");
+    var fraisSession = document.getElementById(
+        "tarif-contribution-session"
+    ).value.trim();
+    bouton.disabled = true;
+    bouton.textContent = "Publication...";
+    statut.textContent = "";
+    statut.className = "problem-status";
+
+    try {
+        var reponse = await fetch("/api/bornes-irve/contribution-tarif", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + jetonCompte(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                station_id: document.getElementById(
+                    "tarif-contribution-station-id"
+                ).value,
+                station_name: document.getElementById(
+                    "tarif-contribution-station-name"
+                ).value,
+                price_eur_kwh: Number(document.getElementById(
+                    "tarif-contribution-prix"
+                ).value),
+                offer_type: document.getElementById(
+                    "tarif-contribution-type"
+                ).value,
+                session_fee_eur: fraisSession === ""
+                    ? null
+                    : Number(fraisSession),
+                details: document.getElementById(
+                    "tarif-contribution-details"
+                ).value,
+                source_url: document.getElementById(
+                    "tarif-contribution-source"
+                ).value
+            })
+        });
+        var resultat = await reponse.json().catch(function() { return {}; });
+        if (!reponse.ok) {
+            throw new Error(
+                resultat.detail || "Le tarif n’a pas pu être publié."
+            );
+        }
+        statut.textContent = "Tarif publié, en attente de validation par OptiPlein.";
+        statut.className = "problem-status success";
+        window.setTimeout(function() {
+            fermerContributionTarif();
+            actualiserStationsSelonPosition(true);
+        }, 1100);
+    } catch (erreur) {
+        statut.textContent = erreur.message;
+        statut.className = "problem-status error";
+    } finally {
+        bouton.disabled = false;
+        bouton.textContent = "Publier le tarif";
+    }
+
+};
+
 document.addEventListener(
     "keydown",
     function(event) {
         if (event.key === "Escape") {
             fermerSignalement();
+            fermerContributionTarif();
         }
     }
 );
@@ -6681,6 +6925,31 @@ function htmlDetailsBorneIrve(station) {
                 ? ' · vérifié le ' + echapperHtml(tarifVerifieLe)
                 : '')
         : '';
+    var dateDeclaree = formaterDateTarif(station.tarifDeclareLe);
+    var dateConfirmee = formaterDateTarif(station.tarifConfirmeLe);
+    var provenanceHtml = "";
+    if (station.tarifContributionStatut === "pending") {
+        provenanceHtml = '<span class="tarif-provenance pending">Déclaré par '
+            + echapperHtml(station.tarifContributeur || "Utilisateur OptiPlein")
+            + (dateDeclaree ? ' le ' + echapperHtml(dateDeclaree) : '')
+            + ' · En attente de validation par OptiPlein</span>';
+    } else if (station.tarifContributionStatut === "approved") {
+        provenanceHtml = '<span class="tarif-provenance">Déclaré par '
+            + echapperHtml(station.tarifContributeur || "Utilisateur OptiPlein")
+            + (dateDeclaree ? ' le ' + echapperHtml(dateDeclaree) : '')
+            + ' · Confirmé par OptiPlein'
+            + (dateConfirmee ? ' le ' + echapperHtml(dateConfirmee) : '')
+            + '</span>';
+    } else if (station.tarifProvenance === "optiplein"
+            && prixStationDisponible(station.prix)) {
+        provenanceHtml = '<span class="tarif-provenance">Déclaré et confirmé par OptiPlein'
+            + (dateConfirmee ? ' le ' + echapperHtml(dateConfirmee) : '')
+            + '</span>';
+    }
+    var contributionHtml = '<button type="button" class="tarif-contribution-link"'
+        + ' onclick="ouvrirContributionTarif(stationsCarteParId['
+        + JSON.stringify(station.id)
+        + '])">Déclarer ou corriger ce tarif</button>';
 
     return ''
         + '<p class="station-popup-distance">'
@@ -6699,7 +6968,22 @@ function htmlDetailsBorneIrve(station) {
                 + echapperHtml(detailTarification)
             : '')
         + sourceTarifHtml
+        + provenanceHtml
+        + contributionHtml
         + '</p>';
+
+}
+
+function formaterDateTarif(valeur) {
+
+    if (!valeur) {
+        return "";
+    }
+    var date = new Date(valeur);
+    if (Number.isNaN(date.getTime())) {
+        return String(valeur).slice(0, 10);
+    }
+    return date.toLocaleDateString("fr-FR");
 
 }
 
@@ -6761,7 +7045,12 @@ function normaliserStationCarte(station) {
         tarifSourceUrl: station.tarif_source_url || "",
         tarifSourceLabel: station.tarif_source_label || "",
         tarifVerifieLe: station.tarif_verifie_le || "",
-        tarifRemiseCourte: station.tarif_remise_courte || ""
+        tarifRemiseCourte: station.tarif_remise_courte || "",
+        tarifProvenance: station.tarif_provenance || "",
+        tarifContributeur: station.tarif_contributeur || "",
+        tarifDeclareLe: station.tarif_declare_le || "",
+        tarifConfirmeLe: station.tarif_confirme_le || "",
+        tarifContributionStatut: station.tarif_contribution_statut || ""
     };
 
 }
