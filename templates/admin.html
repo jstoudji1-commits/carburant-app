@@ -482,6 +482,16 @@
                         Nouveau tarif
                     </button>
                 </div>
+                <div style="padding:0 18px 12px">
+                    <h3>Contributions tarifaires &agrave; valider</h3>
+                    <p class="muted">
+                        Les propositions en attente sont visibles immédiatement dans
+                        l'application avec une mention explicite jusqu'à votre décision.
+                    </p>
+                </div>
+                <div class="table-wrap" id="contributions-tarifs-irve-wrap">
+                    <p class="empty">Chargement des contributions...</p>
+                </div>
                 <div class="station-tools irve-search-tools">
                     <input
                         id="borne-irve-reseau"
@@ -678,6 +688,7 @@
         var stationsAdmin = [];
         var tarifsIrveAdmin = [];
         var bornesIrveAdmin = [];
+        var contributionsTarifsIrveAdmin = [];
 
         function texteDate(valeur) {
             if (!valeur) {
@@ -1033,6 +1044,93 @@
                 + '</tbody></table>';
         }
 
+        function afficherContributionsTarifsIrve(contributions) {
+            var conteneur = document.getElementById(
+                "contributions-tarifs-irve-wrap"
+            );
+            contributionsTarifsIrveAdmin = contributions || [];
+            if (!contributionsTarifsIrveAdmin.length) {
+                conteneur.innerHTML = '<p class="empty">Aucune contribution tarifaire.</p>';
+                return;
+            }
+            conteneur.innerHTML = '<table><thead><tr>'
+                + '<th>Statut</th><th>Borne</th><th>Contributeur</th>'
+                + '<th>Tarif proposé</th><th>Justificatif</th><th>Action</th>'
+                + '</tr></thead><tbody>'
+                + contributionsTarifsIrveAdmin.map(function(contribution) {
+                    var statut = contribution.status === "approved"
+                        ? "Confirmé"
+                        : contribution.status === "rejected"
+                            ? "Refusé"
+                            : "En attente";
+                    var source = contribution.source_url
+                        ? '<a href="' + echapperHtml(contribution.source_url)
+                            + '" target="_blank" rel="noopener noreferrer">Ouvrir</a>'
+                        : "-";
+                    var actions = contribution.status === "pending"
+                        ? '<div class="actions"><button type="button" onclick="traiterContributionTarifIrve(\''
+                            + echapperHtml(contribution.id)
+                            + '\', \'approved\')">Valider</button>'
+                            + '<button type="button" class="danger" onclick="traiterContributionTarifIrve(\''
+                            + echapperHtml(contribution.id)
+                            + '\', \'rejected\')">Refuser</button></div>'
+                        : echapperHtml(contribution.reviewed_at || "-");
+                    return '<tr><td><span class="badge '
+                        + (contribution.status === "approved" ? "premium" : "free")
+                        + '">' + statut + '</span></td><td><strong>'
+                        + echapperHtml(contribution.station_name || "Borne de recharge")
+                        + '</strong><br><small>'
+                        + echapperHtml(contribution.station_id || "")
+                        + '</small></td><td>'
+                        + echapperHtml(contribution.contributor_label || "Utilisateur OptiPlein")
+                        + '<br><small>' + echapperHtml(contribution.created_at || "")
+                        + '</small></td><td><strong>'
+                        + Number(contribution.price_eur_kwh).toLocaleString(
+                            "fr-FR", {minimumFractionDigits:3, maximumFractionDigits:3}
+                        ) + ' €/kWh</strong><br>'
+                        + echapperHtml(contribution.offer_label || "")
+                        + (contribution.session_fee_eur === null
+                            || contribution.session_fee_eur === undefined
+                            ? ""
+                            : '<br>Frais : ' + Number(contribution.session_fee_eur)
+                                .toLocaleString("fr-FR") + ' €')
+                        + '<br><small>' + echapperHtml(contribution.details || "")
+                        + '</small></td><td>' + source + '</td><td>'
+                        + actions + '</td></tr>';
+                }).join("")
+                + '</tbody></table>';
+        }
+
+        async function chargerContributionsTarifsIrve() {
+            var donnees = await requeteAdmin(
+                "/api/admin/contributions-tarifs-irve"
+            );
+            afficherContributionsTarifsIrve(donnees.contributions || []);
+        }
+
+        async function traiterContributionTarifIrve(id, statut) {
+            var verbe = statut === "approved" ? "valider" : "refuser";
+            if (!window.confirm("Voulez-vous " + verbe + " cette contribution ?")) {
+                return;
+            }
+            var note = window.prompt(
+                "Note interne facultative :",
+                ""
+            );
+            if (note === null) return;
+            await requeteAdmin(
+                "/api/admin/contributions-tarifs-irve/" + encodeURIComponent(id),
+                {
+                    method: "POST",
+                    body: JSON.stringify({status: statut, review_note: note})
+                }
+            );
+            await Promise.all([
+                chargerContributionsTarifsIrve(),
+                chargerTarifsIrve()
+            ]);
+        }
+
         function afficherBornesIrveAdmin(bornes) {
             var conteneur = document.getElementById("bornes-irve-wrap");
             bornesIrveAdmin = bornes || [];
@@ -1221,6 +1319,7 @@
             afficherComptes(donnees.comptes || []);
             afficherTesteurs(donnees.testeurs || []);
             await chargerTarifsIrve();
+            await chargerContributionsTarifsIrve();
             await chargerStatutEmailAdmin();
             loginCard.hidden = true;
             dashboard.hidden = false;
