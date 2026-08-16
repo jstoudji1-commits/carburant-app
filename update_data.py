@@ -61,6 +61,9 @@ ENTETES_STATION = [
     "latitude",
     "longitude",
     "enseigne",
+    "ouvert_24h",
+    "horaires",
+    "services",
 ]
 ENTETES = (
     ENTETES_STATION
@@ -181,6 +184,32 @@ def _coordonnees(valeur):
         return ""
 
 
+def _horaires_station(noeud_horaires):
+
+    jours = []
+    for jour in noeud_horaires.findall("jour"):
+        plages = []
+        for horaire in jour.findall("horaire"):
+            ouverture = str(horaire.attrib.get("ouverture") or "").strip()
+            fermeture = str(horaire.attrib.get("fermeture") or "").strip()
+            if ouverture or fermeture:
+                plages.append(
+                    {
+                        "ouverture": ouverture,
+                        "fermeture": fermeture,
+                    }
+                )
+        jours.append(
+            {
+                "id": str(jour.attrib.get("id") or ""),
+                "nom": str(jour.attrib.get("nom") or ""),
+                "ferme": str(jour.attrib.get("ferme") or "") == "1",
+                "plages": plages,
+            }
+        )
+    return jours
+
+
 def _lignes_depuis_xml(contenu):
 
     root = ET.fromstring(contenu)
@@ -198,6 +227,9 @@ def _lignes_depuis_xml(contenu):
             "longitude": _coordonnees(
                 station.attrib.get("longitude")
             ),
+            "ouvert_24h": "",
+            "horaires": "[]",
+            "services": "[]",
             **{carburant: "" for carburant in CARBURANTS},
         }
 
@@ -210,6 +242,32 @@ def _lignes_depuis_xml(contenu):
             elif enfant.tag == "adresse":
 
                 donnees["adresse"] = enfant.text or ""
+
+            elif enfant.tag == "horaires":
+
+                donnees["ouvert_24h"] = (
+                    "1"
+                    if str(enfant.attrib.get("automate-24-24") or "") == "1"
+                    else ""
+                )
+                donnees["horaires"] = json.dumps(
+                    _horaires_station(enfant),
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                )
+
+            elif enfant.tag == "services":
+
+                services = [
+                    " ".join(str(service.text or "").split())
+                    for service in enfant.findall("service")
+                    if str(service.text or "").strip()
+                ]
+                donnees["services"] = json.dumps(
+                    services,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                )
 
             elif enfant.tag == "prix":
 
@@ -277,6 +335,9 @@ def _lignes_depuis_csv(contenu):
             "longitude": _coordonnees(
                 station.get("longitude")
             ),
+            "ouvert_24h": station.get("ouvert_24h", ""),
+            "horaires": station.get("horaires", "[]"),
+            "services": station.get("services", "[]"),
             "gazole": _prix(
                 station.get("Prix Gazole")
                 or station.get("gazole")
@@ -1215,4 +1276,3 @@ def mettre_a_jour_si_necessaire(max_age_minutes=10):
 
 if __name__ == "__main__":
     mettre_a_jour_stations()
-

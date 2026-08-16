@@ -2710,6 +2710,29 @@ def charger_stations(appliquer_corrections=True):
     return stations
 
 
+def liste_json_station(valeur):
+
+    if isinstance(valeur, list):
+        return valeur
+    if not valeur:
+        return []
+    try:
+        resultat = json.loads(str(valeur))
+        return resultat if isinstance(resultat, list) else []
+    except (ValueError, TypeError):
+        return []
+
+
+def station_ouverte_24h(station):
+
+    return str(station.get("ouvert_24h") or "").strip().casefold() in {
+        "1",
+        "true",
+        "oui",
+        "yes",
+    }
+
+
 def distance_km(
     lat1,
     lon1,
@@ -5305,6 +5328,9 @@ def get_stations_proches(
                     "confiance_demain_selectionnee",
                     "",
                 ),
+                "ouvert_24h": station_ouverte_24h(station),
+                "horaires": liste_json_station(station.get("horaires")),
+                "services": liste_json_station(station.get("services")),
             }
             for station in stations
         ],
