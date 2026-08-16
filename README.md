@@ -66,9 +66,3 @@ Cette mise a jour peut etre desactivee avec :
 ```bash
 OPTIPLEIN_IRVE_DYNAMIC_UPDATE=false
 ```
-
-## Horaires et services des stations-service
-
-La mise a jour automatique des prix conserve egalement les horaires, l'acces
-par automate 24 h/24 et les services declares dans le flux gouvernemental.
-Ces informations apparaissent dans la fiche de chaque station sur la carte.
