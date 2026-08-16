@@ -1022,85 +1022,6 @@ body{
     overflow:hidden;
 }
 
-.station-popup.carburant-popup{
-    width:min(430px, calc(100vw - 42px));
-}
-
-.station-popup-carburant-corps{
-    display:grid;
-    grid-template-columns:minmax(0, 1fr) 132px;
-    gap:9px;
-    align-items:start;
-}
-
-.station-popup-carburant-principal{
-    min-width:0;
-}
-
-.station-popup-infos-pratiques{
-    min-width:0;
-    padding:7px;
-    border:1px solid #dfe9e2;
-    border-radius:8px;
-    background:#f7fbf8;
-}
-
-.station-popup-horaires-title,
-.station-popup-services-title{
-    display:block;
-    margin:0 0 4px;
-    color:#123826;
-    font-size:10px;
-    font-weight:900;
-    text-transform:uppercase;
-}
-
-.station-popup-horaire-actuel{
-    display:block;
-    color:#173a2a;
-    font-size:11px;
-    font-weight:900;
-    line-height:1.25;
-}
-
-.station-popup-horaires-details{
-    margin-top:4px;
-    color:#526671;
-    font-size:9px;
-}
-
-.station-popup-horaires-details summary{
-    cursor:pointer;
-}
-
-.station-popup-horaires-semaine{
-    display:grid;
-    gap:2px;
-    margin-top:4px;
-}
-
-.station-popup-services-title{
-    margin-top:8px;
-}
-
-.station-popup-services{
-    display:flex;
-    flex-wrap:wrap;
-    gap:4px;
-}
-
-.station-service-pictogramme{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    width:25px;
-    height:25px;
-    border:1px solid #d7e4da;
-    border-radius:7px;
-    background:#fff;
-    font-size:15px;
-    line-height:1;
-}
 
 .station-popup .popup-identite-prix{
     justify-content:flex-start;
@@ -1234,17 +1155,6 @@ body{
     .station-popup .popup-action{
         font-size:12px;
         padding:8px 8px;
-    }
-}
-
-@media (max-width: 370px){
-    .station-popup-carburant-corps{
-        grid-template-columns:minmax(0, 1fr) 116px;
-        gap:6px;
-    }
-
-    .station-popup-infos-pratiques{
-        padding:6px;
     }
 }
 
@@ -6636,121 +6546,6 @@ if (logoStationPrixMinimum) {
     );
 }
 
-function horaireLisibleStation(valeur) {
-    return String(valeur || "")
-        .replace(".", "h")
-        .replace(/^0(?=\d)/, "");
-}
-
-function normaliserListeStation(valeur) {
-    if (Array.isArray(valeur)) {
-        return valeur;
-    }
-    if (!valeur) {
-        return [];
-    }
-    try {
-        var liste = JSON.parse(String(valeur));
-        return Array.isArray(liste) ? liste : [];
-    } catch (erreur) {
-        return [];
-    }
-}
-
-function libelleJourHoraireStation(jour) {
-    if (!jour || jour.ferme) {
-        return "Fermé";
-    }
-    var plages = Array.isArray(jour.plages) ? jour.plages : [];
-    if (!plages.length) {
-        return "Non renseigné";
-    }
-    return plages.map(function(plage) {
-        return horaireLisibleStation(plage.ouverture)
-            + "–"
-            + horaireLisibleStation(plage.fermeture);
-    }).join(", ");
-}
-
-function pictogrammesServicesStation(services) {
-    var definitions = [
-        {motifs:["automate cb", "carte bancaire"], icone:"💳", nom:"Paiement par carte"},
-        {motifs:["toilettes"], icone:"🚻", nom:"Toilettes"},
-        {motifs:["lavage"], icone:"🧼", nom:"Lavage"},
-        {motifs:["gonflage"], icone:"🛞", nom:"Gonflage"},
-        {motifs:["boutique"], icone:"🛒", nom:"Boutique"},
-        {motifs:["restauration", "bar"], icone:"🍴", nom:"Restauration"},
-        {motifs:["dab", "distributeur automatique de billets"], icone:"🏧", nom:"Distributeur de billets"},
-        {motifs:["réparation", "reparation", "entretien"], icone:"🔧", nom:"Entretien"},
-        {motifs:["piste poids lourds"], icone:"🚚", nom:"Poids lourds"},
-        {motifs:["relais colis"], icone:"📦", nom:"Relais colis"},
-        {motifs:["wifi"], icone:"📶", nom:"Wi-Fi"},
-        {motifs:["douches"], icone:"🚿", nom:"Douches"},
-        {motifs:["bornes électriques", "bornes electriques"], icone:"⚡", nom:"Recharge électrique"},
-        {motifs:["location de véhicule", "location de vehicule"], icone:"🚗", nom:"Location de véhicule"},
-        {motifs:["laverie"], icone:"👕", nom:"Laverie"},
-        {motifs:["gaz domestique"], icone:"🔥", nom:"Gaz domestique"},
-        {motifs:["carburant additivé", "carburant additive"], icone:"⛽", nom:"Carburant additivé"},
-        {motifs:["additifs carburants"], icone:"🧴", nom:"Additifs carburants"},
-        {motifs:["fioul domestique", "pétrole lampant", "petrole lampant"], icone:"🛢️", nom:"Fioul ou pétrole lampant"},
-        {motifs:["camping-cars", "camping cars"], icone:"🚐", nom:"Aire de camping-cars"},
-        {motifs:["espace bébé", "espace bebe"], icone:"👶", nom:"Espace bébé"},
-        {motifs:["gnv"], icone:"🟢", nom:"GNV"}
-    ];
-    var textes = normaliserListeStation(services).map(function(service) {
-        return normaliserNomEnseigne(service);
-    });
-    return definitions.filter(function(definition) {
-        return definition.motifs.some(function(motif) {
-            return textes.some(function(texte) {
-                return texte.indexOf(normaliserNomEnseigne(motif)) !== -1;
-            });
-        });
-    }).slice(0, 10).map(function(definition) {
-        return '<span class="station-service-pictogramme" role="img" title="'
-            + echapperHtml(definition.nom)
-            + '" aria-label="' + echapperHtml(definition.nom) + '">'
-            + definition.icone + '</span>';
-    }).join("");
-}
-
-function htmlHorairesServicesStation(station) {
-    if (stationElectrique(station)) {
-        return "";
-    }
-    var jours = normaliserListeStation(station.horaires);
-    var ouvert24h = Boolean(station.ouvert24h);
-    var indexJour = (new Date().getDay() + 6) % 7;
-    var jourActuel = jours.find(function(jour) {
-        return Number(jour.id) === indexJour + 1;
-    }) || jours[indexJour];
-    var horaireActuel = ouvert24h
-        ? "24 h/24"
-        : jourActuel
-            ? libelleJourHoraireStation(jourActuel)
-            : "Non renseignés";
-    var semaineHtml = !ouvert24h && jours.length
-        ? '<details class="station-popup-horaires-details"><summary>Voir la semaine</summary>'
-            + '<div class="station-popup-horaires-semaine">'
-            + jours.map(function(jour) {
-                return '<span><strong>' + echapperHtml(
-                    String(jour.nom || "").slice(0, 3)
-                ) + '</strong> ' + echapperHtml(libelleJourHoraireStation(jour))
-                    + '</span>';
-            }).join("") + '</div></details>'
-        : "";
-    var servicesHtml = pictogrammesServicesStation(station.services);
-    return '<aside class="station-popup-infos-pratiques">'
-        + '<span class="station-popup-horaires-title">Horaires</span>'
-        + '<span class="station-popup-horaire-actuel">' + echapperHtml(horaireActuel) + '</span>'
-        + semaineHtml
-        + '<span class="station-popup-services-title">Services</span>'
-        + (servicesHtml
-            ? '<div class="station-popup-services">' + servicesHtml + '</div>'
-            : '<span class="station-popup-horaire-actuel">Non renseignés</span>')
-        + '</aside>';
-}
-
 {% for station in stations %}
 
 {% if station.latitude and station.longitude %}
@@ -6762,11 +6557,7 @@ var stationFavori{{ loop.index }} = {
     cp: {{ station.cp|tojson }},
     ville: {{ station.ville|tojson }},
     latitude: {{ station.latitude|tojson }},
-    longitude: {{ station.longitude|tojson }},
-    ouvert24h: {{ station.ouvert_24h|default("")|tojson }} === "1",
-    horaires: {{ station.horaires|default("[]")|tojson }},
-    services: {{ station.services|default("[]")|tojson }},
-    energie: "fuel"
+    longitude: {{ station.longitude|tojson }}
 };
 
 var stationPartage{{ loop.index }} = {
@@ -6851,7 +6642,7 @@ var marker = L.marker(
 
 .bindPopup(`
 
-    <div class="station-popup carburant-popup">
+    <div class="station-popup">
 
         <div class="popup-identite-prix">
             ${logoEnseignePopup{{ loop.index }}}
@@ -6886,8 +6677,6 @@ var marker = L.marker(
             </div>
         </div>
 
-        <div class="station-popup-carburant-corps">
-        <div class="station-popup-carburant-principal">
         <p class="station-popup-adresse">
             ${echapperHtml(stationFavori{{ loop.index }}.adresse || "")}<br>
             ${echapperHtml(
@@ -6909,10 +6698,6 @@ var marker = L.marker(
             Distance : {{ station.distance }} km
         </p>
         {% endif %}
-        </div>
-        ${htmlHorairesServicesStation(stationFavori{{ loop.index }})}
-        </div>
-
         <div class="popup-actions">
 
             <button
@@ -7265,10 +7050,7 @@ function normaliserStationCarte(station) {
         tarifContributeur: station.tarif_contributeur || "",
         tarifDeclareLe: station.tarif_declare_le || "",
         tarifConfirmeLe: station.tarif_confirme_le || "",
-        tarifContributionStatut: station.tarif_contribution_statut || "",
-        ouvert24h: Boolean(station.ouvert_24h),
-        horaires: normaliserListeStation(station.horaires),
-        services: normaliserListeStation(station.services)
+        tarifContributionStatut: station.tarif_contribution_statut || ""
     };
 
 }
@@ -7332,14 +7114,8 @@ function creerMarqueurStationDynamique(stationBrute) {
             )
             + ' km</p>'
         : "";
-    var carburantClassique = !stationElectrique(station);
-    var infosPratiquesHtml = carburantClassique
-        ? htmlHorairesServicesStation(station)
-        : "";
     var popupHtml = ''
-        + '<div class="station-popup'
-        + (carburantClassique ? ' carburant-popup' : '')
-        + '">'
+        + '<div class="station-popup">'
         + '<div class="popup-identite-prix">'
         + logoPopup
         + '<div class="popup-identite-texte">'
@@ -7360,9 +7136,6 @@ function creerMarqueurStationDynamique(stationBrute) {
         + '<p class="favoris-info">Favoris</p>'
         + '</div>'
         + '</div>'
-        + (carburantClassique
-            ? '<div class="station-popup-carburant-corps"><div class="station-popup-carburant-principal">'
-            : '')
         + '<p class="station-popup-adresse">'
         + echapperHtml(station.adresse || "")
         + '<br>'
@@ -7381,9 +7154,6 @@ function creerMarqueurStationDynamique(stationBrute) {
         + htmlTendanceDemainPremium(tendanceDemain)
         + htmlDetailsBorneIrve(station)
         + distanceHtml
-        + (carburantClassique
-            ? '</div>' + infosPratiquesHtml + '</div>'
-            : '')
         + '<div class="popup-actions">'
         + '<button onclick="tracerItineraire('
         + station.latitude
