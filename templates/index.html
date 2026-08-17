@@ -1005,13 +1005,9 @@ body{
     overflow:hidden;
 }
 
-.maplibregl-popup-close-button{
-    width:24px;
-    height:24px;
-    color:#214053;
-    font-size:18px;
-    line-height:22px;
-    z-index:2;
+.maplibregl-popup-close-button,
+.leaflet-popup-close-button{
+    display:none;
 }
 
 .station-popup{
@@ -1025,11 +1021,15 @@ body{
 
 .station-popup .popup-identite-prix{
     justify-content:flex-start;
-    gap:8px;
+    gap:6px;
     margin-bottom:5px;
     padding-bottom:5px;
-    padding-right:16px;
+    padding-right:0;
     border-bottom:1px solid #edf2ef;
+}
+
+.station-popup .popup-identite-texte{
+    flex:1 1 auto;
 }
 
 .station-popup .popup-identite-prix .enseigne-logo{
@@ -1069,7 +1069,7 @@ body{
     display:flex;
     align-items:center;
     justify-content:flex-start;
-    gap:0;
+    gap:4px;
     margin:0;
     margin-left:-2px;
     flex:0 0 auto;
@@ -1083,6 +1083,43 @@ body{
     font-size:16px;
     flex:0 0 auto;
     box-shadow:none;
+}
+
+.station-popup-icon-button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:24px;
+    height:24px;
+    flex:0 0 auto;
+    padding:0;
+    border:1px solid #dce6df;
+    border-radius:7px;
+    background:#f7faf8;
+    color:#214053;
+    cursor:pointer;
+}
+
+.station-popup-icon-button:hover,
+.station-popup-icon-button:focus-visible{
+    border-color:var(--green);
+    color:var(--green-dark);
+}
+
+.station-popup-icon-button.copied{
+    border-color:var(--green);
+    background:#eefaf1;
+    color:var(--green-dark);
+}
+
+.station-popup-icon-button svg{
+    width:14px;
+    height:14px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
 }
 
 .station-popup-favori .favoris-info{
@@ -5017,14 +5054,49 @@ window.partagerPrixStation = async function(event, station) {
     var bouton = event && event.currentTarget;
 
     if (bouton) {
+        var boutonIcone = bouton.classList.contains(
+            "station-popup-icon-button"
+        );
         var libelleInitial = bouton.textContent;
-        bouton.textContent = "Copi\u00e9 !";
+        var titreInitial = bouton.getAttribute("title") || "Partager";
+        if (boutonIcone) {
+            bouton.classList.add("copied");
+            bouton.setAttribute("title", "Lien copié");
+            bouton.setAttribute("aria-label", "Lien copié");
+        } else {
+            bouton.textContent = "Copi\u00e9 !";
+        }
         window.setTimeout(
             function() {
-                bouton.textContent = libelleInitial;
+                if (boutonIcone) {
+                    bouton.classList.remove("copied");
+                    bouton.setAttribute("title", titreInitial);
+                    bouton.setAttribute("aria-label", titreInitial);
+                } else {
+                    bouton.textContent = libelleInitial;
+                }
             },
             1800
         );
+    }
+
+};
+
+window.fermerPopupStation = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    if (map && typeof map.closePopup === "function") {
+        map.closePopup();
+        return;
+    }
+    var fermetureNative = document.querySelector(
+        ".maplibregl-popup-close-button, .leaflet-popup-close-button"
+    );
+    if (fermetureNative) {
+        fermetureNative.click();
     }
 
 };
@@ -6671,6 +6743,33 @@ var marker = L.marker(
                     &#9734;
                 </button>
 
+                <button
+                    type="button"
+                    class="station-popup-icon-button"
+                    aria-label="Partager"
+                    title="Partager"
+                    onclick="partagerPrixStation(event, stationPartage{{ loop.index }})"
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="18" cy="5" r="2.5"></circle>
+                        <circle cx="6" cy="12" r="2.5"></circle>
+                        <circle cx="18" cy="19" r="2.5"></circle>
+                        <path d="m8.2 10.8 7.5-4.4M8.2 13.2l7.5 4.4"></path>
+                    </svg>
+                </button>
+
+                <button
+                    type="button"
+                    class="station-popup-icon-button"
+                    aria-label="Fermer"
+                    title="Fermer"
+                    onclick="fermerPopupStation(event)"
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 6l12 12M18 6 6 18"></path>
+                    </svg>
+                </button>
+
                 <p class="favoris-info">
                     0 / 3 favoris
                 </p>
@@ -6732,14 +6831,6 @@ var marker = L.marker(
                 hidden
             >
                 Google Maps
-            </button>
-
-            <button
-                type="button"
-                class="popup-action share"
-                onclick="partagerPrixStation(event, stationPartage{{ loop.index }})"
-            >
-                Partager
             </button>
 
         </div>
@@ -7133,6 +7224,22 @@ function creerMarqueurStationDynamique(stationBrute) {
         + ' onclick="changerFavori(stationsCarteParId['
         + JSON.stringify(station.id)
         + '])">\u2606</button>'
+        + '<button type="button" class="station-popup-icon-button"'
+        + ' aria-label="Partager" title="Partager"'
+        + ' onclick="partagerPrixStation(event, stationsCarteParId['
+        + JSON.stringify(station.id)
+        + '])"><svg viewBox="0 0 24 24" aria-hidden="true">'
+        + '<circle cx="18" cy="5" r="2.5"></circle>'
+        + '<circle cx="6" cy="12" r="2.5"></circle>'
+        + '<circle cx="18" cy="19" r="2.5"></circle>'
+        + '<path d="m8.2 10.8 7.5-4.4M8.2 13.2l7.5 4.4"></path>'
+        + '</svg></button>'
+        + '<button type="button" class="station-popup-icon-button"'
+        + ' aria-label="Fermer" title="Fermer"'
+        + ' onclick="fermerPopupStation(event)">'
+        + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+        + '<path d="M6 6l12 12M18 6 6 18"></path>'
+        + '</svg></button>'
         + '<p class="favoris-info">Favoris</p>'
         + '</div>'
         + '</div>'
@@ -7172,10 +7279,6 @@ function creerMarqueurStationDynamique(stationBrute) {
         + ','
         + station.longitude
         + ')" hidden>Google Maps</button>'
-        + '<button type="button" class="popup-action share"'
-        + ' onclick="partagerPrixStation(event, stationsCarteParId['
-        + JSON.stringify(station.id)
-        + '])">Partager</button>'
         + '</div>'
         + '</div>';
     var markerStation = L.marker(
