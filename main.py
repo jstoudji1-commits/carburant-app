@@ -3674,6 +3674,18 @@ PAGES_EDITORIALES = {
                 "title": "Carte lisible",
                 "text": "Les stations et les prix sont affich\u00e9s directement sur la carte pour comparer rapidement.",
             },
+            {
+                "title": "Carburant et \u00e9lectricit\u00e9",
+                "text": "Une m\u00eame carte permet de consulter les carburants compatibles et les bornes de recharge, sans bloquer l'exploration des autres \u00e9nergies.",
+            },
+            {
+                "title": "Donn\u00e9es expliqu\u00e9es",
+                "text": "Sources, dates, tarifs estim\u00e9s et limites sont document\u00e9s pour distinguer une information certaine d'une valeur \u00e0 v\u00e9rifier.",
+            },
+            {
+                "title": "Signalements utiles",
+                "text": "Une anomalie de prix, de position ou de disponibilit\u00e9 peut \u00eatre signal\u00e9e avec les \u00e9l\u00e9ments n\u00e9cessaires \u00e0 sa v\u00e9rification.",
+            },
         ],
         "sections": [
             {
@@ -3723,6 +3735,49 @@ PAGES_EDITORIALES = {
                 "links": [
                     {"label": "D\u00e9couvrir tous les guides", "url": "/guides"},
                     {"label": "Comprendre les sources", "url": "/guides/sources-prix-carburants"},
+                ],
+            },
+            {
+                "title": "Du prix affich\u00e9 au co\u00fbt r\u00e9el",
+                "paragraphs": [
+                    "La station la moins ch\u00e8re sur son panneau n'est pas toujours la plus \u00e9conomique. Il faut ajouter l'\u00e9nergie consomm\u00e9e pour l'atteindre, tenir compte de la quantit\u00e9 \u00e0 acheter et v\u00e9rifier que la diff\u00e9rence de prix compense le d\u00e9tour.",
+                    "OptiPlein conserve le carburant du v\u00e9hicule s\u00e9lectionn\u00e9 comme r\u00e9f\u00e9rence du calcul de rentabilit\u00e9. La carte reste librement consultable pour comparer Gazole, SP95, SP98, E10, E85, GPLc ou recharge \u00e9lectrique.",
+                ],
+                "links": [
+                    {"label": "V\u00e9rifier la formule de rentabilit\u00e9", "url": "/guides/calcul-station-rentable"},
+                    {"label": "Choisir le bon carburant", "url": "/guides/carburants-disponibles"},
+                ],
+            },
+            {
+                "title": "Recharge \u00e9lectrique : lire un tarif sans se tromper",
+                "paragraphs": [
+                    "Un tarif de recharge peut d\u00e9pendre du paiement par carte bancaire, d'une carte de mobilit\u00e9, d'un abonnement, de la dur\u00e9e de connexion ou de frais fixes. Le prix au kWh affich\u00e9 sur la carte est un point de comparaison, pas la reproduction automatique de toutes les conditions commerciales.",
+                    "Lorsqu'un tarif est absent de la source nationale, OptiPlein le signale comme indisponible, estim\u00e9 ou d\u00e9clar\u00e9 par une source identifi\u00e9e. Avant de brancher le v\u00e9hicule, il reste essentiel de lire l'\u00e9cran de la borne ou l'application utilis\u00e9e pour payer.",
+                ],
+                "links": [
+                    {"label": "Comprendre les tarifs de recharge", "url": "/guides/tarifs-recharge-electrique"},
+                    {"label": "Lire les statuts de disponibilit\u00e9", "url": "/guides/disponibilite-bornes-irve"},
+                ],
+            },
+            {
+                "title": "Une m\u00e9thode transparente, avec ses limites",
+                "paragraphs": [
+                    "Les prix des carburants sont d\u00e9clar\u00e9s par les points de vente dans le dispositif public. Les bornes proviennent de jeux de donn\u00e9es nationaux et de compl\u00e9ments tarifaires document\u00e9s. Une saisie tardive, une borne en maintenance ou une coordonn\u00e9e impr\u00e9cise peuvent donc cr\u00e9er un \u00e9cart.",
+                    "L'application pr\u00e9f\u00e8re afficher une donn\u00e9e manquante plut\u00f4t que fabriquer un prix. La date, la provenance et le statut de validation permettent \u00e0 l'utilisateur d'appr\u00e9cier la fiabilit\u00e9 de l'information avant de se d\u00e9placer.",
+                ],
+                "links": [
+                    {"label": "Lire la m\u00e9thodologie des donn\u00e9es", "url": "/guides/sources-prix-carburants"},
+                    {"label": "Signaler une anomalie", "url": "/guides/signaler-erreur-station"},
+                ],
+            },
+            {
+                "title": "Des ressources pour mieux d\u00e9cider",
+                "paragraphs": [
+                    "Le centre de ressources rassemble des guides sur la composition du prix \u00e0 la pompe, l'\u00e9coconduite, la pr\u00e9paration d'un trajet, la recharge rapide, la batterie et la protection des donn\u00e9es de localisation.",
+                ],
+                "links": [
+                    {"label": "Parcourir le centre de ressources", "url": "/guides"},
+                    {"label": "Consulter la FAQ compl\u00e8te", "url": "/faq"},
                 ],
             },
         ],
@@ -4014,6 +4069,102 @@ PAGES_EDITORIALES = {
                     "Consultez la politique de confidentialit\u00e9 pour conna\u00eetre pr\u00e9cis\u00e9ment "
                     "les traitements, dur\u00e9es de conservation et moyens d'exercer vos droits."
                 ),
+            },
+            {
+                "question": "Pourquoi la station au prix le plus bas n'est-elle pas toujours la plus rentable ?",
+                "answer": "Le prix unitaire n'est qu'une partie du calcul. Une station plus proche peut devenir plus rentable si le d\u00e9tour vers l'autre station consomme davantage que l'\u00e9conomie attendue. La quantit\u00e9 \u00e0 acheter et la consommation du v\u00e9hicule comptent aussi.",
+            },
+            {
+                "question": "Quel carburant est utilis\u00e9 pour le calcul de rentabilit\u00e9 ?",
+                "answer": "Le calcul reste fix\u00e9 sur l'\u00e9nergie du v\u00e9hicule actif. Vous pouvez n\u00e9anmoins afficher tous les autres carburants et l'\u00e9lectricit\u00e9 sur la carte sans modifier ce calcul de r\u00e9f\u00e9rence.",
+            },
+            {
+                "question": "Pourquoi certaines stations n'affichent-elles aucun prix ?",
+                "answer": "Une station peut ne pas vendre le produit choisi, ne pas avoir encore transmis son nouveau prix ou fournir une donn\u00e9e inutilisable. OptiPlein laisse alors le tarif vide au lieu de recopier une moyenne ou le prix d'un autre carburant.",
+            },
+            {
+                "question": "À quelle fr\u00e9quence les prix des carburants sont-ils actualis\u00e9s ?",
+                "answer": "L'application r\u00e9cup\u00e8re r\u00e9guli\u00e8rement le flux officiel. La fra\u00eecheur finale d\u00e9pend toutefois du moment o\u00f9 le point de vente a d\u00e9clar\u00e9 sa modification. La date affich\u00e9e aide \u00e0 rep\u00e9rer une valeur ancienne.",
+            },
+            {
+                "question": "Que signifie un tarif de recharge d\u00e9clar\u00e9 par un utilisateur ?",
+                "answer": "Il s'agit d'une information saisie depuis la fiche de la borne. Elle peut \u00eatre visible rapidement avec la mention de son auteur et de sa date, mais reste signal\u00e9e en attente tant qu'OptiPlein ne l'a pas contr\u00f4l\u00e9e.",
+            },
+            {
+                "question": "Que signifie \u00ab confirm\u00e9 par OptiPlein \u00bb ?",
+                "answer": "Cette mention indique qu'une source exploitable ou un justificatif a \u00e9t\u00e9 v\u00e9rifi\u00e9 \u00e0 la date indiqu\u00e9e. Elle ne garantit pas que l'op\u00e9rateur n'a pas modifi\u00e9 son tarif depuis cette validation.",
+            },
+            {
+                "question": "Pourquoi plusieurs tarifs peuvent-ils appara\u00eetre pour une m\u00eame borne ?",
+                "answer": "Le paiement direct par carte bancaire, un badge de mobilit\u00e9, une carte de fid\u00e9lit\u00e9 ou un abonnement peuvent utiliser des bar\u00e8mes diff\u00e9rents. Des frais fixes, au temps ou d'occupation peuvent aussi s'ajouter au prix du kWh.",
+            },
+            {
+                "question": "Le bouton \u00ab tarifs disponibles \u00bb garantit-il un prix complet ?",
+                "answer": "Non. Il filtre les bornes pour lesquelles OptiPlein poss\u00e8de au moins une information tarifaire exploitable. Il faut encore ouvrir la fiche pour lire les conditions, le mode de paiement, la date et les \u00e9ventuels frais compl\u00e9mentaires.",
+            },
+            {
+                "question": "Le bouton \u00ab disponibles seulement \u00bb est-il en temps r\u00e9el ?",
+                "answer": "Il utilise le dernier \u00e9tat dynamique re\u00e7u. Une borne peut changer d'\u00e9tat entre deux mises \u00e0 jour ou ne transmettre aucune information ; dans ce dernier cas, elle n'est pas consid\u00e9r\u00e9e comme disponible avec certitude.",
+            },
+            {
+                "question": "Pourquoi une borne verte peut-elle \u00eatre occup\u00e9e \u00e0 mon arriv\u00e9e ?",
+                "answer": "La disponibilit\u00e9 change rapidement. Une autre personne peut commencer une recharge apr\u00e8s la derni\u00e8re mise \u00e0 jour, et certains op\u00e9rateurs transmettent les changements avec un d\u00e9lai. La couleur constitue une indication, pas une r\u00e9servation.",
+            },
+            {
+                "question": "Comment choisir entre recharge rapide et recharge normale ?",
+                "answer": "V\u00e9rifiez la puissance maximale accept\u00e9e par le v\u00e9hicule, le temps disponible, le niveau de batterie et le tarif. Une borne tr\u00e8s puissante n'acc\u00e9l\u00e8re pas la recharge au-del\u00e0 de la limite r\u00e9elle du v\u00e9hicule.",
+            },
+            {
+                "question": "Pourquoi le prix de recharge se calcule-t-il en kWh ?",
+                "answer": "Le kilowattheure mesure l'\u00e9nergie achet\u00e9e. Pour estimer le co\u00fbt, OptiPlein multiplie les kWh n\u00e9cessaires par le tarif applicable, puis ajoute seulement les frais compl\u00e9mentaires connus. Aucun volume en litres n'intervient.",
+            },
+            {
+                "question": "Pourquoi l'itin\u00e9raire peut-il mener \u00e0 une autre entr\u00e9e que le marqueur ?",
+                "answer": "Les coordonn\u00e9es ouvertes peuvent repr\u00e9senter la parcelle ou le centre du site plut\u00f4t que son acc\u00e8s routier. Le service de navigation choisit ensuite un point accessible sur la route. Signalez tout \u00e9cart important avec une position ou une photo v\u00e9rifiable.",
+            },
+            {
+                "question": "Puis-je pr\u00e9parer un trajet avant d'\u00eatre dans mon v\u00e9hicule ?",
+                "answer": "Oui. La fonction de pr\u00e9paration permet de choisir un d\u00e9part et une destination, puis d'\u00e9tudier les ravitaillements. Contr\u00f4lez toujours l'autonomie, les horaires et les conditions r\u00e9elles avant le d\u00e9part.",
+            },
+            {
+                "question": "Pourquoi augmenter le rayon de recherche ?",
+                "answer": "Un rayon plus grand offre davantage de choix mais peut proposer des d\u00e9tours moins int\u00e9ressants. Commencez par un rayon proche, puis agrandissez-le si aucun prix ou aucune borne compatible n'est disponible.",
+            },
+            {
+                "question": "Que faire si ma position GPS semble fausse ?",
+                "answer": "Activez la localisation pr\u00e9cise, quittez les zones couvertes ou entour\u00e9es de grands b\u00e2timents si possible, puis relancez la localisation. Sur mobile, v\u00e9rifiez aussi l'autorisation du navigateur et d\u00e9sactivez temporairement les modes d'\u00e9conomie d'\u00e9nergie trop restrictifs.",
+            },
+            {
+                "question": "Comment ajouter une station ou une borne aux favoris ?",
+                "answer": "Ouvrez sa fiche puis touchez l'\u00e9toile. Un compte peut \u00eatre n\u00e9cessaire pour synchroniser les favoris entre plusieurs appareils ; sans synchronisation, certaines pr\u00e9f\u00e9rences restent propres au navigateur.",
+            },
+            {
+                "question": "Puis-je partager une station pr\u00e9cise ?",
+                "answer": "Oui. L'ic\u00f4ne de partage plac\u00e9e pr\u00e8s de l'\u00e9toile dans la fiche permet d'utiliser les options de partage du t\u00e9l\u00e9phone lorsque le navigateur les prend en charge.",
+            },
+            {
+                "question": "Comment fermer rapidement une fiche sur la carte ?",
+                "answer": "Touchez l'ic\u00f4ne de fermeture de la fiche ou un espace libre de la carte. La fiche se ferme sans supprimer le marqueur ni changer le carburant affich\u00e9.",
+            },
+            {
+                "question": "Pourquoi les r\u00e9sultats changent-ils apr\u00e8s avoir modifi\u00e9 mon v\u00e9hicule ?",
+                "answer": "La consommation, l'\u00e9nergie, la capacit\u00e9 du r\u00e9servoir ou de la batterie et la quantit\u00e9 demand\u00e9e influencent le co\u00fbt net. Une valeur plus proche de votre usage r\u00e9el produit une comparaison plus pertinente.",
+            },
+            {
+                "question": "OptiPlein remplace-t-il l'application de l'op\u00e9rateur de recharge ?",
+                "answer": "Non. OptiPlein aide \u00e0 comparer et \u00e0 localiser. L'application ou le terminal de l'op\u00e9rateur reste la r\u00e9f\u00e9rence pour l'authentification, le prix contractuel, le lancement, l'arr\u00eat et la facture de la session.",
+            },
+            {
+                "question": "Les guides sont-ils accessibles sans compte ?",
+                "answer": "Oui. Le centre de ressources et la FAQ sont publics depuis le menu du site. Ils expliquent les calculs, les sources, les carburants, les tarifs de recharge, l'\u00e9coconduite et les limites des donn\u00e9es.",
+            },
+            {
+                "question": "Comment demander la suppression de mon compte ou exercer mes droits ?",
+                "answer": "Utilisez les fonctions pr\u00e9vues dans le compte lorsqu'elles sont disponibles ou contactez OptiPlein \u00e0 l'adresse indiqu\u00e9e sur la page Contact. Pr\u00e9cisez la demande sans envoyer de mot de passe ni de document inutile.",
+            },
+            {
+                "question": "La publicit\u00e9 modifie-t-elle le classement des stations ?",
+                "answer": "Non. Une annonce \u00e9ventuelle est s\u00e9par\u00e9e des r\u00e9sultats. Le classement repose sur les donn\u00e9es de prix, le v\u00e9hicule, la position et les param\u00e8tres du calcul, pas sur l'achat d'un emplacement publicitaire.",
             },
         ],
     },

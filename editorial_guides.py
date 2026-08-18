@@ -97,6 +97,43 @@ GUIDES_EDITORIAUX = {
                     {"label": "Découvrir tous les conseils d’écoconduite", "url": "/guides/moins-consommer-carburant"},
                 ],
             },
+            {
+                "title": "Pr\u00e9parer un trajet sans mauvaise surprise",
+                "paragraphs": [
+                    "Autonomie, d\u00e9tour, horaires, solution de secours et marge de s\u00e9curit\u00e9 : le guide de trajet rassemble une m\u00e9thode simple pour les longs parcours en voiture thermique, hybride ou \u00e9lectrique.",
+                ],
+                "links": [
+                    {"label": "Pr\u00e9parer un trajet carburant ou \u00e9lectrique", "url": "/guides/preparer-trajet-ravitaillement"},
+                ],
+            },
+            {
+                "title": "Mieux comprendre la recharge rapide",
+                "paragraphs": [
+                    "Puissance annonc\u00e9e, puissance accept\u00e9e, courbe de charge, temp\u00e9rature et niveau de batterie expliquent pourquoi une borne de 300 kW ne recharge pas toujours trois fois plus vite qu'une borne de 100 kW.",
+                ],
+                "links": [
+                    {"label": "Lire le guide de la recharge rapide", "url": "/guides/recharge-rapide-puissance"},
+                    {"label": "Pr\u00e9server la batterie", "url": "/guides/preserver-batterie-electrique"},
+                ],
+            },
+            {
+                "title": "R\u00e9gler la localisation et le rayon",
+                "paragraphs": [
+                    "Une position impr\u00e9cise ou un rayon trop large peut rendre la carte difficile \u00e0 interpr\u00e9ter. Ce guide explique les autorisations, la pr\u00e9cision GPS, les coordonn\u00e9es des stations et le choix du rayon.",
+                ],
+                "links": [
+                    {"label": "Comprendre le GPS et le rayon", "url": "/guides/gps-rayon-coordonnees"},
+                ],
+            },
+            {
+                "title": "D\u00e9crypter un tarif communautaire",
+                "paragraphs": [
+                    "Une contribution utilisateur doit rester tra\u00e7able. Le guide explique les mentions \u00ab d\u00e9clar\u00e9 \u00bb, \u00ab en attente \u00bb et \u00ab confirm\u00e9 par OptiPlein \u00bb, ainsi que les preuves utiles pour contr\u00f4ler un tarif.",
+                ],
+                "links": [
+                    {"label": "Comprendre les contributions tarifaires", "url": "/guides/contribuer-tarif-recharge"},
+                ],
+            },
         ],
         highlights=[
             {"title": "Données expliquées", "text": "Origine, date, contrôles et limites sont décrits clairement."},
@@ -855,5 +892,319 @@ GUIDES_EDITORIAUX = {
         updated="10 août 2026",
         published_iso="2026-08-10",
         updated_iso="2026-08-10",
+    ),
+    "guide_trajet": guide(
+        "guides/preparer-trajet-ravitaillement",
+        "Pr\u00e9parer un trajet carburant ou \u00e9lectrique | OptiPlein",
+        "M\u00e9thode pratique pour choisir ses arr\u00eats, conserver une marge d'autonomie et pr\u00e9voir une solution de secours avant un long trajet.",
+        "Guide de voyage",
+        "Pr\u00e9parer un trajet sans mauvaise surprise",
+        "Un bon arr\u00eat ne se choisit pas uniquement avec le prix le plus bas. Il doit \u00eatre atteignable, ouvert, compatible, raisonnablement proche du parcours et accompagn\u00e9 d'une solution de secours.",
+        [
+            {
+                "title": "Commencer par les besoins du v\u00e9hicule",
+                "paragraphs": [
+                    "En carburant, relever le produit compatible, la consommation r\u00e9elle sur route et la capacit\u00e9 utile du r\u00e9servoir. En \u00e9lectrique, noter la capacit\u00e9 utile de batterie, la consommation habituelle, le connecteur et les puissances maximales accept\u00e9es en courant alternatif et continu.",
+                    "Une valeur issue de votre usage r\u00e9cent est plus utile qu'une homologation id\u00e9ale. Le froid, la pluie, le vent, l'autoroute, le relief, les bagages ou une remorque peuvent augmenter la consommation.",
+                ],
+                "bullets": [
+                    "S\u00e9lectionner le bon v\u00e9hicule dans OptiPlein avant le calcul.",
+                    "V\u00e9rifier le carburant ou le connecteur dans le manuel et sur le v\u00e9hicule.",
+                    "Pr\u00e9voir une consommation plus prudente si les conditions sont difficiles.",
+                    "Ne jamais planifier jusqu'\u00e0 la derni\u00e8re goutte ou au dernier pour cent de batterie.",
+                ],
+            },
+            {
+                "title": "Choisir une marge d'autonomie",
+                "paragraphs": [
+                    "La marge absorbe une sortie manqu\u00e9e, un bouchon, une station ferm\u00e9e ou une borne indisponible. Elle doit augmenter lorsque le secteur est peu dense, la m\u00e9t\u00e9o d\u00e9favorable ou l'itin\u00e9raire difficile.",
+                    "En voiture \u00e9lectrique, arriver avec une batterie relativement basse peut favoriser la puissance de charge, mais seulement si une solution de repli reste accessible. La recherche d'une recharge rapide ne doit jamais transformer le trajet en pari.",
+                ],
+            },
+            {
+                "title": "Comparer l'arr\u00eat, pas seulement le panneau",
+                "paragraphs": [
+                    "Pour une station-service, comparer prix, d\u00e9tour, quantit\u00e9 achet\u00e9e et acc\u00e8s. Pour une borne, ajouter le mode de paiement, la puissance r\u00e9ellement utile, la disponibilit\u00e9, les frais de session ou d'occupation et le temps d'arr\u00eat probable.",
+                ],
+                "bullets": [
+                    "V\u00e9rifier que la station se trouve du bon c\u00f4t\u00e9 de l'autoroute ou qu'elle est accessible sans grand d\u00e9tour.",
+                    "Ouvrir la fiche pour lire la date et la provenance du prix.",
+                    "En recharge, contr\u00f4ler le tarif du moyen de paiement que vous utiliserez vraiment.",
+                    "Pr\u00e9f\u00e9rer un site avec plusieurs points de charge lorsqu'une forte affluence est possible.",
+                ],
+            },
+            {
+                "title": "Pr\u00e9voir un plan B",
+                "paragraphs": [
+                    "Identifier au moins une seconde station ou borne avant de partir. Le plan B doit \u00eatre atteignable avec la marge restante, compatible et ouvert. Une capture d'\u00e9cran ne remplace pas une nouvelle v\u00e9rification, car prix et disponibilit\u00e9 peuvent changer.",
+                    "Sur un long trajet \u00e9lectrique, mieux vaut conna\u00eetre plusieurs r\u00e9seaux et disposer d'au moins un moyen de paiement alternatif. Le paiement direct par carte bancaire n'est pas disponible partout et son tarif peut diff\u00e9rer d'un badge ou d'un abonnement.",
+                ],
+            },
+            {
+                "title": "La checklist juste avant de partir",
+                "paragraphs": ["Une derni\u00e8re v\u00e9rification prend deux minutes et limite les mauvaises surprises."],
+                "bullets": [
+                    "Destination, arr\u00eat principal et solution de secours enregistr\u00e9s.",
+                    "Autonomie suffisante pour atteindre le plan B.",
+                    "Horaires et accessibilit\u00e9 contr\u00f4l\u00e9s lorsque l'information est disponible.",
+                    "Prix et date de mise \u00e0 jour relus.",
+                    "Moyen de paiement, badge ou application pr\u00eats pour la recharge.",
+                    "T\u00e9l\u00e9phone charg\u00e9 et itin\u00e9raire lanc\u00e9 avant de conduire.",
+                ],
+            },
+        ],
+        related=[
+            {"label": "Calculer la station rentable", "url": "/guides/calcul-station-rentable"},
+            {"label": "Comprendre les tarifs de recharge", "url": "/guides/tarifs-recharge-electrique"},
+        ],
+        published="18 ao\u00fbt 2026",
+        updated="18 ao\u00fbt 2026",
+        published_iso="2026-08-18",
+        updated_iso="2026-08-18",
+    ),
+    "guide_recharge_rapide": guide(
+        "guides/recharge-rapide-puissance",
+        "Recharge rapide : puissance, dur\u00e9e et courbe de charge | OptiPlein",
+        "Comprendre la diff\u00e9rence entre puissance de borne, puissance accept\u00e9e et vitesse r\u00e9elle de recharge d'une voiture \u00e9lectrique.",
+        "Guide recharge \u00e9lectrique",
+        "Pourquoi la puissance affich\u00e9e n'est pas toujours atteinte",
+        "Le nombre inscrit sur la borne est une puissance maximale du mat\u00e9riel. La voiture, la batterie et les conditions de la session d\u00e9cident de la puissance r\u00e9ellement re\u00e7ue.",
+        [
+            {
+                "title": "kW et kWh : deux unit\u00e9s diff\u00e9rentes",
+                "paragraphs": [
+                    "Le kilowatt, not\u00e9 kW, mesure une puissance instantan\u00e9e. Le kilowattheure, not\u00e9 kWh, mesure une quantit\u00e9 d'\u00e9nergie. Une borne peut d\u00e9livrer 100 kW pendant une partie de la session et ajouter, par exemple, 25 kWh en quinze minutes dans des conditions id\u00e9ales.",
+                    "Le tarif au kWh facture l'\u00e9nergie. Un tarif \u00e0 la minute facture le temps, m\u00eame lorsque la puissance diminue. Il faut donc lire l'unit\u00e9 avant de comparer deux offres.",
+                ],
+            },
+            {
+                "title": "La limite la plus basse s'impose",
+                "paragraphs": [
+                    "La puissance r\u00e9elle est limit\u00e9e par le maillon le plus faible : borne, c\u00e2ble, architecture du v\u00e9hicule, batterie, partage de puissance du site ou temp\u00e9rature. Brancher une voiture limit\u00e9e \u00e0 80 kW sur une borne de 300 kW ne la fait pas charger \u00e0 300 kW.",
+                ],
+                "bullets": [
+                    "Puissance maximale accept\u00e9e par le mod\u00e8le de voiture.",
+                    "Niveau de batterie au d\u00e9but de la session.",
+                    "Temp\u00e9rature et pr\u00e9conditionnement de la batterie.",
+                    "Puissance partag\u00e9e avec une autre borne du m\u00eame site.",
+                    "Limites temporaires du r\u00e9seau ou du mat\u00e9riel.",
+                ],
+            },
+            {
+                "title": "La courbe de charge",
+                "paragraphs": [
+                    "La puissance n'est pas constante. Elle augmente, atteint un plateau puis diminue g\u00e9n\u00e9ralement lorsque la batterie se remplit afin de la prot\u00e9ger. Le pic publicitaire ne suffit donc pas \u00e0 pr\u00e9dire la dur\u00e9e totale ; la courbe moyenne entre le niveau de d\u00e9part et le niveau vis\u00e9 est plus repr\u00e9sentative.",
+                    "Lors d'un trajet, plusieurs arr\u00eats courts dans la plage rapide du v\u00e9hicule peuvent parfois \u00eatre plus efficaces qu'une attente jusqu'\u00e0 100 %. Cette strat\u00e9gie doit rester compatible avec l'autonomie et les solutions de secours.",
+                ],
+            },
+            {
+                "title": "Temp\u00e9rature et pr\u00e9conditionnement",
+                "paragraphs": [
+                    "Une batterie tr\u00e8s froide ou tr\u00e8s chaude peut limiter la puissance. Si le v\u00e9hicule poss\u00e8de un pr\u00e9conditionnement automatique, programmer la borne dans son syst\u00e8me de navigation peut aider \u00e0 placer la batterie dans une plage favorable avant l'arriv\u00e9e.",
+                    "Le fonctionnement varie selon les mod\u00e8les. Il faut suivre le manuel et ne pas multiplier des acc\u00e9l\u00e9rations ou manipulations improvis\u00e9es pour chauffer la batterie.",
+                ],
+            },
+            {
+                "title": "Choisir une borne coh\u00e9rente",
+                "bullets": [
+                    "Comparer la puissance de la borne avec celle accept\u00e9e par le v\u00e9hicule.",
+                    "Lire le tarif complet et les frais d'occupation apr\u00e8s la charge.",
+                    "V\u00e9rifier le connecteur et la pr\u00e9sence d'un c\u00e2ble attach\u00e9 en recharge rapide.",
+                    "Pr\u00e9f\u00e9rer le niveau de charge n\u00e9cessaire au prochain arr\u00eat plut\u00f4t qu'un objectif automatique de 100 %.",
+                    "Lib\u00e9rer la place une fois la session termin\u00e9e.",
+                ],
+                "paragraphs": ["La borne la plus puissante n'est donc pas toujours la meilleure : prix, fiabilit\u00e9, emplacement et temps r\u00e9el comptent ensemble."],
+            },
+        ],
+        related=[
+            {"label": "Tarifs de recharge", "url": "/guides/tarifs-recharge-electrique"},
+            {"label": "Pr\u00e9server la batterie", "url": "/guides/preserver-batterie-electrique"},
+        ],
+        published="18 ao\u00fbt 2026",
+        updated="18 ao\u00fbt 2026",
+        published_iso="2026-08-18",
+        updated_iso="2026-08-18",
+    ),
+    "guide_batterie": guide(
+        "guides/preserver-batterie-electrique",
+        "Pr\u00e9server la batterie d'une voiture \u00e9lectrique | OptiPlein",
+        "Conseils prudents sur la recharge quotidienne, la chaleur, le stationnement et les charges rapides pour limiter le vieillissement de la batterie.",
+        "Guide batterie",
+        "Pr\u00e9server sa batterie sans compliquer chaque trajet",
+        "La batterie est con\u00e7ue pour \u00eatre utilis\u00e9e. L'objectif n'est pas d'\u00e9viter toute charge rapide ou tout plein complet, mais d'adopter des habitudes raisonnables compatibles avec les consignes du constructeur.",
+        [
+            {
+                "title": "Le manuel du v\u00e9hicule reste prioritaire",
+                "paragraphs": [
+                    "Les chimies, syst\u00e8mes de refroidissement et r\u00e9serves cach\u00e9es diff\u00e8rent. Une limite quotidienne pertinente pour un mod\u00e8le peut \u00eatre inutile pour un autre. Utiliser les r\u00e9glages recommand\u00e9s par le constructeur et respecter les campagnes de mise \u00e0 jour.",
+                ],
+            },
+            {
+                "title": "Adapter la charge au besoin r\u00e9el",
+                "paragraphs": [
+                    "Pour les usages quotidiens, programmer une limite laissant une marge suffisante peut \u00e9viter de maintenir la batterie longtemps \u00e0 un niveau tr\u00e8s \u00e9lev\u00e9. Avant un long trajet, charger davantage reste l'usage normal du v\u00e9hicule lorsqu'il est pr\u00e9vu par le constructeur.",
+                ],
+                "bullets": [
+                    "Programmer la fin de charge pr\u00e8s de l'heure de d\u00e9part lorsque la fonction existe.",
+                    "Ne pas immobiliser volontairement la voiture plusieurs jours compl\u00e8tement charg\u00e9e ou presque vide sans recommandation adapt\u00e9e.",
+                    "Brancher selon les besoins plut\u00f4t que chercher syst\u00e9matiquement une d\u00e9charge profonde.",
+                    "Conserver une marge avant d'arriver \u00e0 un niveau critique, surtout par froid.",
+                ],
+            },
+            {
+                "title": "Chaleur, froid et stationnement",
+                "paragraphs": [
+                    "La chaleur acc\u00e9l\u00e8re de nombreux m\u00e9canismes de vieillissement. Lorsque c'est possible, stationner \u00e0 l'ombre ou dans un lieu temp\u00e9r\u00e9 et laisser la gestion thermique fonctionner comme pr\u00e9vu. En hiver, le froid r\u00e9duit temporairement l'autonomie et la puissance sans signifier automatiquement une perte permanente de capacit\u00e9.",
+                    "Le pr\u00e9conditionnement de l'habitacle lorsque le v\u00e9hicule est branch\u00e9 peut am\u00e9liorer le confort et pr\u00e9server l'autonomie de d\u00e9part.",
+                ],
+            },
+            {
+                "title": "Recharge rapide : utile, mais pas obligatoire au quotidien",
+                "paragraphs": [
+                    "La recharge rapide est faite pour les trajets et les besoins ponctuels. Une recharge plus lente \u00e0 domicile ou \u00e0 destination peut \u00eatre plus pratique et moins ch\u00e8re lorsqu'elle est disponible. Il n'est toutefois pas n\u00e9cessaire de refuser une charge rapide utile par peur d'endommager imm\u00e9diatement la batterie.",
+                ],
+            },
+            {
+                "title": "Surveiller sans s'alarmer",
+                "paragraphs": [
+                    "L'autonomie affich\u00e9e varie avec la consommation r\u00e9cente, la temp\u00e9rature et le parcours. Elle ne mesure pas directement l'\u00e9tat de sant\u00e9 de la batterie. Une baisse soudaine persistante, un message d'alerte ou une recharge anormalement lente justifie un diagnostic professionnel.",
+                ],
+                "bullets": [
+                    "Comparer sur plusieurs trajets semblables, pas sur une seule journ\u00e9e froide.",
+                    "Maintenir les pneus \u00e0 la pression recommand\u00e9e.",
+                    "Installer les mises \u00e0 jour officielles utiles.",
+                    "Consulter le r\u00e9seau constructeur en cas d'alerte haute tension ou thermique.",
+                ],
+            },
+        ],
+        related=[
+            {"label": "Comprendre la recharge rapide", "url": "/guides/recharge-rapide-puissance"},
+            {"label": "Pr\u00e9parer un trajet", "url": "/guides/preparer-trajet-ravitaillement"},
+        ],
+        published="18 ao\u00fbt 2026",
+        updated="18 ao\u00fbt 2026",
+        published_iso="2026-08-18",
+        updated_iso="2026-08-18",
+    ),
+    "guide_gps": guide(
+        "guides/gps-rayon-coordonnees",
+        "GPS, rayon et coordonn\u00e9es des stations | OptiPlein",
+        "Comprendre la localisation du t\u00e9l\u00e9phone, les coordonn\u00e9es ouvertes des stations et le choix du rayon de recherche sur OptiPlein.",
+        "Guide carte et localisation",
+        "Pourquoi un marqueur ou un itin\u00e9raire peut sembler d\u00e9cal\u00e9",
+        "La carte combine la position du t\u00e9l\u00e9phone, les coordonn\u00e9es publi\u00e9es pour la station et le point routier choisi par le service de navigation. Ces trois positions peuvent diff\u00e9rer l\u00e9g\u00e8rement.",
+        [
+            {
+                "title": "Comment le t\u00e9l\u00e9phone estime sa position",
+                "paragraphs": [
+                    "Le navigateur demande l'autorisation de localisation puis utilise les informations fournies par l'appareil. Le GPS, les r\u00e9seaux Wi-Fi et le r\u00e9seau mobile peuvent contribuer \u00e0 l'estimation. En int\u00e9rieur, dans un parking couvert ou entre de grands immeubles, la pr\u00e9cision peut se d\u00e9grader.",
+                ],
+                "bullets": [
+                    "Autoriser la position pr\u00e9cise pour le site.",
+                    "Activer les services de localisation de l'appareil.",
+                    "Attendre quelques secondes dans un espace d\u00e9gag\u00e9 si le point est tr\u00e8s impr\u00e9cis.",
+                    "Recharger la page ou relancer la localisation apr\u00e8s avoir chang\u00e9 l'autorisation.",
+                ],
+            },
+            {
+                "title": "D'o\u00f9 viennent les coordonn\u00e9es des stations",
+                "paragraphs": [
+                    "Les jeux de donn\u00e9es peuvent placer le point sur la parcelle, le b\u00e2timent, la station ou une entr\u00e9e. Pour les grands parkings, centres commerciaux ou aires d'autoroute, quelques dizaines de m\u00e8tres peuvent s\u00e9parer le marqueur de l'acc\u00e8s r\u00e9el.",
+                    "OptiPlein conserve la coordonn\u00e9e source tant qu'aucune correction v\u00e9rifiable n'est disponible. D\u00e9placer automatiquement tous les points vers la route la plus proche risquerait de placer une station du mauvais c\u00f4t\u00e9 d'une voie rapide.",
+                ],
+            },
+            {
+                "title": "Pourquoi la navigation choisit un autre point",
+                "paragraphs": [
+                    "Un moteur d'itin\u00e9raire doit rejoindre une voie praticable. Si le marqueur se trouve au centre d'un parking, il peut choisir l'entr\u00e9e routi\u00e8re la plus proche. Sur une route divis\u00e9e, cette entr\u00e9e peut imposer une boucle pour respecter le sens de circulation.",
+                ],
+            },
+            {
+                "title": "Choisir un rayon utile",
+                "paragraphs": [
+                    "Un petit rayon facilite la lecture et limite les d\u00e9tours. Un rayon plus grand aide dans les zones peu denses ou lorsqu'aucune station compatible n'a de prix. Le r\u00e9sum\u00e9 du prix le plus bas et le calcul doivent uniquement comparer les stations effectivement charg\u00e9es dans le rayon actif.",
+                ],
+                "bullets": [
+                    "Commencer par les stations proches.",
+                    "Agrandir progressivement si les r\u00e9sultats sont insuffisants.",
+                    "Regarder la distance routi\u00e8re et pas seulement la distance \u00e0 vol d'oiseau.",
+                    "Sur autoroute, v\u00e9rifier le sens et l'accessibilit\u00e9 de l'aire.",
+                ],
+            },
+            {
+                "title": "Signaler une coordonn\u00e9e incorrecte",
+                "paragraphs": [
+                    "Indiquer le nom, l'adresse, la coordonn\u00e9e ou l'entr\u00e9e correcte, la date et une preuve publique ou une photo sans donn\u00e9e personnelle. Un lien cartographique peut aider, mais il faut expliquer s'il d\u00e9signe la borne, le parking ou son acc\u00e8s.",
+                ],
+            },
+        ],
+        related=[
+            {"label": "Signaler une erreur", "url": "/guides/signaler-erreur-station"},
+            {"label": "Pr\u00e9parer un trajet", "url": "/guides/preparer-trajet-ravitaillement"},
+        ],
+        published="18 ao\u00fbt 2026",
+        updated="18 ao\u00fbt 2026",
+        published_iso="2026-08-18",
+        updated_iso="2026-08-18",
+    ),
+    "guide_contribution_tarif": guide(
+        "guides/contribuer-tarif-recharge",
+        "D\u00e9clarer et faire valider un tarif de recharge | OptiPlein",
+        "Comprendre comment contribuer un prix de recharge, quelles preuves fournir et ce que signifient les statuts de validation OptiPlein.",
+        "Guide communautaire",
+        "Contribuer un tarif de recharge utile et v\u00e9rifiable",
+        "Les tarifs de recharge sont souvent absents des donn\u00e9es ouvertes. Une contribution peut aider imm\u00e9diatement les autres utilisateurs, \u00e0 condition d'indiquer le bon moyen de paiement, la date et les frais associ\u00e9s.",
+        [
+            {
+                "title": "Les informations \u00e0 relever",
+                "paragraphs": ["Avant de saisir un prix, identifier exactement le site et lire l'ensemble du bar\u00e8me. Un simple montant sans unit\u00e9 ni condition peut induire en erreur."],
+                "bullets": [
+                    "R\u00e9seau, nom du site, adresse ou identifiant de la borne.",
+                    "Prix au kWh avec taxes comprises si cette pr\u00e9cision est disponible.",
+                    "Mode de paiement : carte bancaire, badge, application, carte de fid\u00e9lit\u00e9 ou abonnement.",
+                    "Frais fixes de session, facturation \u00e0 la minute ou p\u00e9nalit\u00e9 d'occupation.",
+                    "Date d'observation et, si possible, lien officiel, capture ou photographie lisible.",
+                ],
+            },
+            {
+                "title": "D\u00e9clar\u00e9, en attente et confirm\u00e9",
+                "paragraphs": [
+                    "Une valeur saisie par un utilisateur peut \u00eatre affich\u00e9e avec la mention \u00ab d\u00e9clar\u00e9 par \u00bb et sa date. Le statut en attente avertit qu'OptiPlein n'a pas encore contr\u00f4l\u00e9 la preuve ou la coh\u00e9rence du tarif.",
+                    "Apr\u00e8s v\u00e9rification, la mention \u00ab confirm\u00e9 par OptiPlein \u00bb et une date peuvent \u00eatre ajout\u00e9es. La confirmation porte sur l'information contr\u00f4l\u00e9e \u00e0 cette date ; elle ne bloque pas les changements commerciaux futurs.",
+                ],
+            },
+            {
+                "title": "Saisir plusieurs offres sans les confondre",
+                "paragraphs": [
+                    "Un r\u00e9seau peut proposer 0,55 \u20ac/kWh par paiement direct, 0,45 \u20ac/kWh avec sa carte et 0,29 \u20ac/kWh avec abonnement. Ces prix doivent rester trois offres distinctes, car l'abonnement ou la carte peuvent avoir un co\u00fbt, des conditions d'acc\u00e8s ou une dur\u00e9e d'engagement.",
+                    "Le marqueur peut mettre en avant un tarif de comparaison, tandis que la fiche d\u00e9taille les alternatives sur une ligne courte. L'utilisateur doit pouvoir savoir imm\u00e9diatement quel prix correspond \u00e0 son moyen de paiement.",
+                ],
+            },
+            {
+                "title": "Ce qu'il ne faut pas publier",
+                "bullets": [
+                    "Une estimation personnelle pr\u00e9sent\u00e9e comme un tarif officiel.",
+                    "Un prix promotionnel sans date de fin ni condition.",
+                    "Une facture contenant nom, plaque, identifiant de compte ou coordonn\u00e9es bancaires.",
+                    "Le tarif d'une autre station suppos\u00e9 identique pour tout le r\u00e9seau.",
+                    "Un prix hors taxes pr\u00e9sent\u00e9 comme le montant pay\u00e9 par le public.",
+                ],
+                "paragraphs": ["Les contributions doivent respecter la vie priv\u00e9e et rester factuelles. Une donn\u00e9e douteuse peut \u00eatre rejet\u00e9e ou retir\u00e9e apr\u00e8s signalement."],
+            },
+            {
+                "title": "Quand mettre \u00e0 jour une contribution",
+                "paragraphs": [
+                    "Contribuer de nouveau lorsqu'un panneau, une application officielle ou une session r\u00e9cente montre un tarif diff\u00e9rent. Ne pas remplacer une offre de fid\u00e9lit\u00e9 par le paiement direct : ajouter ou corriger la bonne cat\u00e9gorie avec sa date.",
+                ],
+            },
+        ],
+        related=[
+            {"label": "Comprendre tous les tarifs de recharge", "url": "/guides/tarifs-recharge-electrique"},
+            {"label": "Signaler une anomalie", "url": "/guides/signaler-erreur-station"},
+        ],
+        published="18 ao\u00fbt 2026",
+        updated="18 ao\u00fbt 2026",
+        published_iso="2026-08-18",
+        updated_iso="2026-08-18",
     ),
 }
