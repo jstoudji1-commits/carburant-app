@@ -7391,6 +7391,16 @@ function remplacerStationsSurCarte(stations, mettreAJourSource) {
     }
 
     var stationsAffichees = stations.filter(function(station) {
+        var carburantCarte = String(carburantSelectionne || "").toLowerCase();
+
+        // Protection côté navigateur : même si une ancienne réponse API est
+        // encore en cache, une station sans tarif E85 ou GPLc ne doit jamais
+        // rester visible lorsque ce carburant est sélectionné.
+        if ((carburantCarte === "e85" || carburantCarte === "gplc")
+                && !prixStationDisponible(station.prix)) {
+            return false;
+        }
+
         if (bornesDisponiblesSeulementActives()
                 && Number(station.disponibles) <= 0) {
             return false;
