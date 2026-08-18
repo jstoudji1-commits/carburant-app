@@ -2756,6 +2756,20 @@ def preparer_stations_pour_carte(
 
     stations_preparees = []
 
+    # Pour l'E85 et le GPLc, l'absence de prix dans le flux officiel signifie
+    # que le produit n'est pas déclaré disponible à la vente. Ces stations ne
+    # doivent donc pas apparaître sous forme de marqueurs "Indisponible" quand
+    # l'utilisateur consulte précisément l'un de ces deux carburants.
+    masquer_sans_prix = carburant in {"e85", "gplc"}
+
+    def prix_selectionne_disponible(station):
+        try:
+            prix = float(str(station.get(carburant, "")).replace(",", "."))
+        except (TypeError, ValueError):
+            return False
+
+        return math.isfinite(prix) and prix > 0 and prix != 9.999
+
     def prix_tri(station):
         try:
             return float(str(station.get(carburant, "")).replace(",", "."))
@@ -2764,6 +2778,9 @@ def preparer_stations_pour_carte(
 
     if latitude is not None and longitude is not None:
         for station in stations:
+            if masquer_sans_prix and not prix_selectionne_disponible(station):
+                continue
+
             try:
                 distance = distance_km(
                     latitude,
@@ -2783,7 +2800,11 @@ def preparer_stations_pour_carte(
 
         stations_preparees.sort(key=lambda x: x["distance"])
     else:
-        stations_preparees = [station.copy() for station in stations]
+        stations_preparees = [
+            station.copy()
+            for station in stations
+            if not masquer_sans_prix or prix_selectionne_disponible(station)
+        ]
         stations_preparees.sort(
             key=prix_tri
         )
