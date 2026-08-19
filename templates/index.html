@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="robots" content="noindex, follow">
     <title>OptiPlein - Optimisateur de carburant</title>
     <link rel="icon" type="image/png" href="/static/favicon.png">
     {% if adsense_client %}
@@ -25,7 +26,7 @@
     --line:#dce4ea;
     --panel:#ffffff;
     --shadow:0 12px 30px rgba(16,37,54,0.16);
-    --ad-banner-height:60px;
+    --ad-banner-height:{% if adsense_client and adsense_slot_map %}60px{% else %}0px{% endif %};
 }
 
 *{
@@ -3765,12 +3766,12 @@ body{
 
     <main class="map-column">
         <div class="map-stage">
+            {% if adsense_client and adsense_slot_map %}
             <div
                 id="ad-banner"
                 class="ad-banner"
                 role="complementary"
             >
-                {% if adsense_client and adsense_slot_map %}
                 <ins
                     class="adsbygoogle"
                     style="display:block;width:100%;height:100%;"
@@ -3782,13 +3783,8 @@ body{
                 <span class="ad-fallback" hidden>
                     Publicit&eacute; - D&eacute;couverte Premium gratuite avec compte.
                 </span>
-                {% else %}
-                <span class="ad-fallback">
-                    Publicit&eacute; discr&egrave;te - D&eacute;couverte Premium gratuite
-                    avec compte.
-                </span>
-                {% endif %}
             </div>
+            {% endif %}
             <div id="map"></div>
             <div
                 class="trip-map-tools"
@@ -10576,7 +10572,12 @@ function lireVehicules() {
                         ancienneConso
                     ),
                     parametres: "",
-                    jauge: Number(localStorage.getItem("vehicule-jauge")) || 50
+                    jauge: (function() {
+                        var valeur = Number(localStorage.getItem("vehicule-jauge"));
+                        return Number.isFinite(valeur)
+                            ? Math.max(0, Math.min(100, valeur))
+                            : 50;
+                    })()
                 }
             ];
             enregistrerVehicules(vehicules);
@@ -10616,11 +10617,18 @@ function vehiculeActif() {
     var vehicules = lireVehicules();
     var actifId = localStorage.getItem(vehiculeActifCle);
 
-    return vehicules.find(
+    var actif = vehicules.find(
         function(vehicule) {
             return vehicule.id === actifId;
         }
-    ) || vehicules[0] || null;
+    ) || null;
+
+    if (!actif && vehicules[0]) {
+        actif = vehicules[0];
+        localStorage.setItem(vehiculeActifCle, actif.id);
+    }
+
+    return actif;
 
 }
 
@@ -10683,7 +10691,22 @@ function synchroniserCarburantAvecVehicule(vehicule) {
     }
 
     controle.checked = true;
-    soumettreSelectionCarburant(controle);
+
+    // Sauvegarder le nouvel actif avant le rechargement. Sans cela, la
+    // restauration du compte pouvait remettre l'ancien véhicule avant la
+    // sauvegarde différée.
+    if (compteUtilisateurConnecte()) {
+        window.clearTimeout(sauvegardeCompteTimer);
+        sauvegarderCompteMaintenant()
+            .catch(function(erreur) {
+                definirStatutCompte(erreur.message, "error");
+            })
+            .finally(function() {
+                soumettreSelectionCarburant(controle);
+            });
+    } else {
+        soumettreSelectionCarburant(controle);
+    }
     return true;
 
 }
@@ -10700,7 +10723,11 @@ function synchroniserAnciennesClesVehicule(vehicule) {
     localStorage.setItem("vehicule-conso", vehicule.conso || "");
     localStorage.setItem("vehicule-autonomie", vehicule.autonomie || "");
     localStorage.setItem("vehicule-parametres", vehicule.parametres || "");
-    localStorage.setItem("vehicule-jauge", String(vehicule.jauge || 50));
+    var jauge = Number(vehicule.jauge);
+    localStorage.setItem(
+        "vehicule-jauge",
+        String(Number.isFinite(jauge) ? Math.max(0, Math.min(100, jauge)) : 50)
+    );
     programmerSauvegardeCompte();
 
 }
@@ -11249,7 +11276,7 @@ window.nouveauVehicule = function() {
         return;
     }
 
-    localStorage.removeItem(vehiculeActifCle);
+    // Le véhicule actif reste valide pendant la saisie du brouillon.
     champsVehicule.forEach(
         function(champId) {
             var champ = document.getElementById(champId);
@@ -11263,7 +11290,10 @@ window.nouveauVehicule = function() {
     if (jauge) {
         jauge.value = "50";
     }
-    actualiserJaugeReservoir();
+    var valeurJauge = document.getElementById("vehicule-jauge-valeur");
+    if (valeurJauge) {
+        valeurJauge.textContent = "50 %";
+    }
     actualiserProfilVehicule();
     afficherEditeurVehicule(false);
     actualiserListeVehicules();
@@ -12655,11 +12685,13 @@ window.enregistrerVehicule = function(event) {
 
     var vehicules = lireVehicules();
     var actifId = localStorage.getItem(vehiculeActifCle);
-    var indexActif = vehicules.findIndex(
-        function(vehicule) {
-            return vehicule.id === actifId;
-        }
-    );
+    var indexActif = editionVehiculeExistant
+        ? vehicules.findIndex(
+            function(vehicule) {
+                return vehicule.id === actifId;
+            }
+        )
+        : -1;
     var jauge = document.getElementById("vehicule-jauge");
     var profil = profilVehiculeValide(
         document.getElementById("vehicule-profil").value
@@ -12679,7 +12711,12 @@ window.enregistrerVehicule = function(event) {
         conso: document.getElementById("vehicule-conso").value.trim(),
         autonomie: autonomie,
         parametres: document.getElementById("vehicule-parametres").value.trim(),
-        jauge: Number(jauge ? jauge.value : 50) || 50
+        jauge: (function() {
+            var valeur = Number(jauge ? jauge.value : 50);
+            return Number.isFinite(valeur)
+                ? Math.max(0, Math.min(100, valeur))
+                : 50;
+        })()
     };
 
     if (
@@ -12706,17 +12743,21 @@ window.enregistrerVehicule = function(event) {
     programmerSauvegardeCompte();
     oublierCarburantCarteManuel();
 
+    actualiserNomBoutonVehicule();
+    actualiserListeVehicules();
+    editeurVehiculeOuvert = false;
+    editionVehiculeExistant = false;
+    fermerPanneauVehicule();
+
     if (synchroniserCarburantAvecVehicule(vehicule)) {
         return;
     }
 
-    actualiserNomBoutonVehicule();
-    actualiserListeVehicules();
     calculerMeilleureStation();
-    editeurVehiculeOuvert = false;
-    editionVehiculeExistant = false;
-    fermerPanneauVehicule();
-    document.getElementById("vehicle-button").focus();
+    var boutonVehicule = document.getElementById("vehicle-button");
+    if (boutonVehicule) {
+        boutonVehicule.focus();
+    }
 
 };
 

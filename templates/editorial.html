@@ -29,7 +29,20 @@
     {% endif %}
 
     <script type="application/ld+json">
-    {% if page.article %}
+    {% if page.person %}
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Jérôme Stoudji",
+        "url": {{ canonical_url|tojson }},
+        "jobTitle": "Créateur et éditeur d'OptiPlein",
+        "worksFor": {
+            "@type": "Organization",
+            "name": "OptiPlein",
+            "url": {{ base_url|tojson }}
+        }
+    }
+    {% elif page.article %}
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -39,7 +52,8 @@
         "dateModified": {{ page.updated_iso|tojson }},
         "author": {
             "@type": "Person",
-            "name": {{ page.author|tojson }}
+            "name": {{ page.author|tojson }}{% if page.author_url %},
+            "url": {{ (base_url ~ page.author_url)|tojson }}{% endif %}
         },
         "publisher": {
             "@type": "Organization",
@@ -58,6 +72,26 @@
     }
     {% endif %}
     </script>
+    {% if page.faq_items %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {% for item in page.faq_items %}
+            {
+                "@type": "Question",
+                "name": {{ item.question|tojson }},
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": {{ item.answer|tojson }}
+                }
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }
+    </script>
+    {% endif %}
 
     <style>
         :root{
@@ -213,6 +247,11 @@
             font-weight:700;
         }
 
+        .article-meta a{
+            color:var(--green-dark);
+            text-underline-offset:3px;
+        }
+
         .hero-actions{
             display:flex;
             flex-wrap:wrap;
@@ -333,6 +372,47 @@
             margin:6px 0;
         }
 
+        .data-bars{
+            display:grid;
+            gap:12px;
+            margin-top:20px;
+            padding:16px;
+            border:1px solid var(--line);
+            border-radius:10px;
+            background:var(--soft);
+        }
+
+        .data-bar-head{
+            display:flex;
+            justify-content:space-between;
+            gap:14px;
+            margin-bottom:5px;
+            font-size:14px;
+        }
+
+        .data-bar-head strong{
+            color:var(--ink);
+        }
+
+        .data-bar-head span{
+            color:var(--muted);
+            text-align:right;
+        }
+
+        .data-bar-track{
+            height:12px;
+            overflow:hidden;
+            border-radius:999px;
+            background:#dce8df;
+        }
+
+        .data-bar-fill{
+            height:100%;
+            min-width:2px;
+            border-radius:inherit;
+            background:linear-gradient(90deg, var(--green-dark), var(--green));
+        }
+
         .resource-links{
             display:flex;
             flex-wrap:wrap;
@@ -382,8 +462,95 @@
             gap:14px;
         }
 
-        .faq-item h2{
-            font-size:21px;
+        .faq-toolbar{
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            gap:12px;
+            align-items:center;
+            margin-bottom:16px;
+            padding:16px;
+            border:1px solid var(--line);
+            border-radius:10px;
+            background:#fff;
+        }
+
+        .faq-toolbar label{
+            display:grid;
+            gap:6px;
+            color:var(--ink);
+            font-size:14px;
+            font-weight:900;
+        }
+
+        .faq-toolbar input{
+            width:100%;
+            min-height:46px;
+            padding:0 13px;
+            border:1px solid #c8d5ce;
+            border-radius:8px;
+            color:var(--ink);
+            background:#fff;
+            font:inherit;
+        }
+
+        .faq-count{
+            color:var(--muted);
+            font-size:14px;
+            font-weight:800;
+            white-space:nowrap;
+        }
+
+        details.faq-item{
+            padding:0;
+            overflow:hidden;
+        }
+
+        .faq-item summary{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:16px;
+            padding:19px 22px;
+            color:var(--ink);
+            font-size:19px;
+            font-weight:900;
+            line-height:1.25;
+            cursor:pointer;
+            list-style:none;
+        }
+
+        .faq-item summary::-webkit-details-marker{
+            display:none;
+        }
+
+        .faq-item summary::after{
+            content:"+";
+            flex:0 0 auto;
+            color:var(--green-dark);
+            font-size:26px;
+            line-height:1;
+        }
+
+        .faq-item[open] summary::after{
+            content:"\2212";
+        }
+
+        .faq-item .faq-answer{
+            padding:0 22px 20px;
+        }
+
+        .faq-item[hidden]{
+            display:none;
+        }
+
+        .faq-empty{
+            display:none;
+            padding:20px;
+            border:1px dashed #b9d9bf;
+            border-radius:10px;
+            color:var(--muted);
+            background:#fff;
+            text-align:center;
         }
 
         .contact-card{
@@ -507,6 +674,10 @@
                 grid-template-columns:1fr;
             }
 
+            .faq-toolbar{
+                grid-template-columns:1fr;
+            }
+
             .footer-links{
                 justify-content:flex-start;
             }
@@ -538,7 +709,9 @@
                 <p class="lead">{{ page.lead }}</p>
                 {% if page.author or page.published or page.updated %}
                 <div class="article-meta">
-                    {% if page.author %}<span>Par {{ page.author }}</span>{% endif %}
+                    {% if page.author %}
+                    <span>Par {% if page.author_url %}<a href="{{ page.author_url }}">{{ page.author }}</a>{% else %}{{ page.author }}{% endif %}</span>
+                    {% endif %}
                     {% if page.published %}<span>Publi&eacute; le {{ page.published }}</span>{% endif %}
                     {% if page.updated %}<span>Mis &agrave; jour le {{ page.updated }}</span>{% endif %}
                 </div>
@@ -590,13 +763,21 @@
             {% endif %}
 
             {% if page.faq_items %}
+            <div class="faq-toolbar">
+                <label for="faq-search">
+                    Rechercher dans les questions
+                    <input id="faq-search" type="search" placeholder="Ex. tarif, GPS, borne, compte…" autocomplete="off">
+                </label>
+                <span class="faq-count" id="faq-count">{{ page.faq_items|length }} réponses</span>
+            </div>
             <section class="faq-list" aria-label="Questions fréquentes">
                 {% for item in page.faq_items %}
-                <article class="faq-item">
-                    <h2>{{ item.question }}</h2>
-                    <p>{{ item.answer }}</p>
-                </article>
+                <details class="faq-item" data-faq-text="{{ (item.question ~ ' ' ~ item.answer)|lower|e }}">
+                    <summary>{{ item.question }}</summary>
+                    <div class="faq-answer"><p>{{ item.answer }}</p></div>
+                </details>
                 {% endfor %}
+                <p class="faq-empty" id="faq-empty">Aucune réponse ne correspond à cette recherche. Essayez un mot plus court ou consultez les guides.</p>
             </section>
             {% endif %}
 
@@ -614,6 +795,21 @@
                         <li>{{ item }}</li>
                         {% endfor %}
                     </ul>
+                    {% endif %}
+                    {% if section.metrics %}
+                    <div class="data-bars" aria-label="Couverture des prix par carburant">
+                        {% for metric in section.metrics %}
+                        <div class="data-bar">
+                            <div class="data-bar-head">
+                                <strong>{{ metric.label }}</strong>
+                                <span>{{ metric.display }} &middot; {{ metric.detail }}</span>
+                            </div>
+                            <div class="data-bar-track" aria-hidden="true">
+                                <div class="data-bar-fill" style="width:{{ metric.value }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% endif %}
                     {% if section.links %}
                     <div class="resource-links">
@@ -671,5 +867,35 @@
             </nav>
         </div>
     </footer>
+    {% if page.faq_items %}
+    <script>
+        (() => {
+            const input = document.getElementById("faq-search");
+            const count = document.getElementById("faq-count");
+            const empty = document.getElementById("faq-empty");
+            const items = Array.from(document.querySelectorAll(".faq-item"));
+            if (!input || !count || !empty) return;
+
+            const normaliser = (texte) => String(texte || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim();
+
+            input.addEventListener("input", () => {
+                const termes = normaliser(input.value).split(/\s+/).filter(Boolean);
+                let visibles = 0;
+                items.forEach((item) => {
+                    const contenu = normaliser(item.dataset.faqText);
+                    const correspond = termes.every((terme) => contenu.includes(terme));
+                    item.hidden = !correspond;
+                    if (correspond) visibles += 1;
+                });
+                count.textContent = `${visibles} réponse${visibles > 1 ? "s" : ""}`;
+                empty.style.display = visibles ? "none" : "block";
+            });
+        })();
+    </script>
+    {% endif %}
 </body>
 </html>
