@@ -72,6 +72,7 @@ EMAIL_SIGNALEMENT = os.getenv(
     "optiplein5@gmail.com"
 )
 APP_BASE_URL = os.getenv("APP_BASE_URL", "").strip().rstrip("/")
+DOMAINE_CANONIQUE = "optiplein.fr"
 ADSENSE_CLIENT = os.getenv(
     "ADSENSE_CLIENT",
     "ca-pub-4904497922619715",
@@ -1577,7 +1578,8 @@ def vehicule_compte_nettoye(vehicule):
             autonomie = ""
 
     try:
-        jauge = int(float(vehicule.get("jauge", 50) or 50))
+        valeur_jauge = vehicule.get("jauge", 50)
+        jauge = 50 if valeur_jauge in (None, "") else int(float(valeur_jauge))
     except (TypeError, ValueError):
         jauge = 50
 
@@ -2550,6 +2552,26 @@ app = FastAPI(
     lifespan=duree_de_vie_application
 )
 
+
+@app.middleware("http")
+async def rediriger_vers_domaine_canonique(request: Request, call_next):
+
+    hote_transmis = request.headers.get("x-forwarded-host", "")
+    hote_recu = hote_transmis.split(",", 1)[0].strip()
+    if not hote_recu:
+        hote_recu = request.headers.get("host", "").strip()
+
+    hote_sans_port = hote_recu.split(":", 1)[0].lower()
+    domaines_publics = {DOMAINE_CANONIQUE, "www." + DOMAINE_CANONIQUE}
+
+    if hote_sans_port in domaines_publics and hote_sans_port != DOMAINE_CANONIQUE:
+        destination = "https://" + DOMAINE_CANONIQUE + request.url.path
+        if request.url.query:
+            destination += "?" + request.url.query
+        return RedirectResponse(url=destination, status_code=308)
+
+    return await call_next(request)
+
 app.mount(
     "/static",
     StaticFiles(directory="static"),
@@ -2756,11 +2778,10 @@ def preparer_stations_pour_carte(
 
     stations_preparees = []
 
-    # Pour l'E85 et le GPLc, l'absence de prix dans le flux officiel signifie
-    # que le produit n'est pas déclaré disponible à la vente. Ces stations ne
-    # doivent donc pas apparaître sous forme de marqueurs "Indisponible" quand
-    # l'utilisateur consulte précisément l'un de ces deux carburants.
-    masquer_sans_prix = carburant in {"e85", "gplc"}
+    # Quel que soit le carburant choisi, une ligne sans prix exploitable ne
+    # prouve pas que ce produit est vendu par la station. Elle ne doit donc ni
+    # apparaître sur la carte, ni participer au classement du rayon.
+    masquer_sans_prix = True
 
     def prix_selectionne_disponible(station):
         try:
@@ -3654,6 +3675,7 @@ def preparer_bornes_irve(
 MENU_PAGES_EDITORIALES = [
     ("accueil", "Accueil", "/"),
     ("guides", "Guides", "/guides"),
+    ("observatoire", "Observatoire", "/observatoire-donnees"),
     ("fonctionnement", "Fonctionnement", "/comment-fonctionne-optiplein"),
     ("pourquoi", "Pourquoi OptiPlein", "/pourquoi-optiplein"),
     ("faq", "FAQ", "/faq"),
@@ -3788,6 +3810,7 @@ PAGES_EDITORIALES = {
                 ],
                 "links": [
                     {"label": "Lire la m\u00e9thodologie des donn\u00e9es", "url": "/guides/sources-prix-carburants"},
+                    {"label": "Voir les mesures de couverture", "url": "/observatoire-donnees"},
                     {"label": "Signaler une anomalie", "url": "/guides/signaler-erreur-station"},
                 ],
             },
@@ -3799,6 +3822,7 @@ PAGES_EDITORIALES = {
                 "links": [
                     {"label": "Parcourir le centre de ressources", "url": "/guides"},
                     {"label": "Consulter la FAQ compl\u00e8te", "url": "/faq"},
+                    {"label": "D\u00e9couvrir l'\u00e9diteur et sa m\u00e9thode", "url": "/auteur/jerome-stoudji"},
                 ],
             },
         ],
@@ -3957,7 +3981,72 @@ PAGES_EDITORIALES = {
                     )
                 ],
             },
+            {
+                "title": "Qui construit OptiPlein ?",
+                "paragraphs": [
+                    "OptiPlein est con\u00e7u et \u00e9dit\u00e9 par J\u00e9r\u00f4me Stoudji. Le projet est n\u00e9 de situations concr\u00e8tes rencontr\u00e9es sur la route : prix attirant mais trop \u00e9loign\u00e9, station mal positionn\u00e9e, tarif de recharge incomplet ou information de disponibilit\u00e9 difficile \u00e0 interpr\u00e9ter.",
+                    "Les calculs, choix d'affichage et limites des sources sont document\u00e9s publiquement. Les corrections reposent sur des donn\u00e9es officielles, des sources d'op\u00e9rateurs ou des signalements accompagn\u00e9s d'\u00e9l\u00e9ments v\u00e9rifiables.",
+                ],
+                "links": [
+                    {"label": "Consulter la page de l'\u00e9diteur", "url": "/auteur/jerome-stoudji"},
+                    {"label": "Voir l'observatoire des donn\u00e9es", "url": "/observatoire-donnees"},
+                ],
+            },
         ],
+    },
+    "auteur": {
+        "slug": "auteur/jerome-stoudji",
+        "title": "J\u00e9r\u00f4me Stoudji, cr\u00e9ateur d'OptiPlein",
+        "nav_title": "L'\u00e9diteur",
+        "description": "Pr\u00e9sentation de J\u00e9r\u00f4me Stoudji, cr\u00e9ateur et \u00e9diteur d'OptiPlein, et de la m\u00e9thode employ\u00e9e pour documenter les prix et les stations.",
+        "eyebrow": "Auteur et \u00e9diteur",
+        "hero_title": "J\u00e9r\u00f4me Stoudji, cr\u00e9ateur d'OptiPlein",
+        "lead": "Je construis OptiPlein comme un outil ind\u00e9pendant d'aide \u00e0 la d\u00e9cision, en confrontant les donn\u00e9es ouvertes aux probl\u00e8mes r\u00e9ellement rencontr\u00e9s par les conducteurs.",
+        "person": True,
+        "sections": [
+            {
+                "title": "Pourquoi ce projet ?",
+                "paragraphs": [
+                    "Comparer un montant sur un panneau ne suffit pas lorsque la station impose un d\u00e9tour ou lorsque la borne applique plusieurs tarifs. OptiPlein cherche \u00e0 remettre le prix dans son contexte : distance, consommation du v\u00e9hicule, quantit\u00e9 achet\u00e9e, disponibilit\u00e9 et mode de paiement.",
+                    "Le projet \u00e9volue \u00e0 partir des retours d'usage. Les anomalies observ\u00e9es sont transform\u00e9es en contr\u00f4les : exclusion des prix manquants, distinction entre litres et kWh, conservation du carburant du v\u00e9hicule pour la rentabilit\u00e9 et identification explicite des tarifs communautaires.",
+                ],
+            },
+            {
+                "title": "Comment les contenus sont-ils produits ?",
+                "paragraphs": [
+                    "Les guides partent d'une fonctionnalit\u00e9 ou d'une question rencontr\u00e9e dans l'application. Les formules sont expliqu\u00e9es, les termes techniques sont d\u00e9finis et les limites sont conserv\u00e9es dans le texte au lieu d'\u00eatre masqu\u00e9es.",
+                    "Les informations externes sont reli\u00e9es \u00e0 leurs sources publiques ou aux pages officielles des op\u00e9rateurs. Les analyses de couverture publi\u00e9es dans l'observatoire sont recalcul\u00e9es depuis le fichier effectivement utilis\u00e9 par OptiPlein.",
+                ],
+            },
+            {
+                "title": "Ind\u00e9pendance et corrections",
+                "paragraphs": [
+                    "Une enseigne ou un r\u00e9seau ne paie pas pour obtenir une meilleure position dans le classement. Une publicit\u00e9 \u00e9ventuelle reste s\u00e9par\u00e9e des r\u00e9sultats. Le classement repose sur les informations disponibles et les param\u00e8tres du v\u00e9hicule.",
+                    "Pour proposer une correction, il faut indiquer la station, la donn\u00e9e observ\u00e9e, la date et une source contr\u00f4lable. Une contribution non v\u00e9rifi\u00e9e peut \u00eatre affich\u00e9e comme telle avant confirmation par OptiPlein.",
+                ],
+                "links": [
+                    {"label": "Signaler une anomalie", "url": "/guides/signaler-erreur-station"},
+                    {"label": "Contacter OptiPlein", "url": "/contact"},
+                ],
+            },
+        ],
+    },
+    "observatoire": {
+        "slug": "observatoire-donnees",
+        "title": "Observatoire des donn\u00e9es carburant | OptiPlein",
+        "nav_title": "Observatoire",
+        "description": "Mesures originales sur la couverture des prix Gazole, E10, SP95, SP98, E85 et GPLc dans le fichier carburant utilis\u00e9 par OptiPlein.",
+        "eyebrow": "Analyse originale OptiPlein",
+        "hero_title": "Ce que contient r\u00e9ellement le fichier charg\u00e9",
+        "lead": "Cette page ne reprend pas une moyenne g\u00e9n\u00e9rique : les indicateurs sont recalcul\u00e9s depuis les stations actuellement utilis\u00e9es par l'application.",
+        "article": True,
+        "author": "J\u00e9r\u00f4me Stoudji, cr\u00e9ateur d'OptiPlein",
+        "author_url": "/auteur/jerome-stoudji",
+        "published": "19 ao\u00fbt 2026",
+        "updated": "19 ao\u00fbt 2026",
+        "published_iso": "2026-08-19",
+        "updated_iso": "2026-08-19",
+        "sections": [],
     },
     "faq": {
         "slug": "faq",
@@ -4457,12 +4546,170 @@ def chemin_page_editoriale(identifiant):
     return "/" + slug if slug else "/"
 
 
+def construire_page_observatoire(page):
+
+    stations = charger_stations()
+    total = len(stations)
+    carburants = [
+        ("gazole", "Gazole"),
+        ("e10", "SP95-E10"),
+        ("sp95", "SP95"),
+        ("sp98", "SP98"),
+        ("e85", "E85"),
+        ("gplc", "GPLc"),
+    ]
+
+    def prix_valide(valeur):
+        try:
+            prix = float(str(valeur or "").replace(",", "."))
+        except (TypeError, ValueError):
+            return False
+        return math.isfinite(prix) and prix > 0 and prix != 9.999
+
+    def pourcentage(nombre):
+        if not total:
+            return "0,0"
+        return f"{nombre * 100 / total:.1f}".replace(".", ",")
+
+    def format_entier(nombre):
+        return f"{nombre:,}".replace(",", "\u202f")
+
+    couverture = []
+    couverture_metriques = []
+    for cle, libelle in carburants:
+        nombre = sum(1 for station in stations if prix_valide(station.get(cle)))
+        taux = nombre * 100 / total if total else 0
+        couverture.append(
+            f"{libelle} : {format_entier(nombre)} stations, soit {pourcentage(nombre)} % du fichier."
+        )
+        couverture_metriques.append(
+            {
+                "label": libelle,
+                "value": round(taux, 1),
+                "display": pourcentage(nombre) + " %",
+                "detail": format_entier(nombre) + " stations",
+            }
+        )
+
+    coordonnees_valides = 0
+    enseignes_renseignees = 0
+    stations_avec_un_prix = 0
+    for station in stations:
+        try:
+            latitude = float(station.get("latitude", ""))
+            longitude = float(station.get("longitude", ""))
+            if -90 <= latitude <= 90 and -180 <= longitude <= 180:
+                coordonnees_valides += 1
+        except (TypeError, ValueError):
+            pass
+        if str(station.get("enseigne", "")).strip():
+            enseignes_renseignees += 1
+        if any(prix_valide(station.get(cle)) for cle, _ in carburants):
+            stations_avec_un_prix += 1
+
+    date_donnees = date_mise_a_jour_stations()
+    if date_donnees:
+        date_locale = date_donnees.astimezone(ZoneInfo("Europe/Paris"))
+        date_texte = date_locale.strftime("%d/%m/%Y \u00e0 %H:%M")
+        date_iso = date_locale.date().isoformat()
+    else:
+        date_texte = "date non disponible"
+        date_iso = datetime.now().date().isoformat()
+
+    total_texte = format_entier(total)
+    page["updated"] = date_texte
+    page["updated_iso"] = date_iso
+    page["highlights"] = [
+        {
+            "title": total_texte + " stations analys\u00e9es",
+            "text": "Nombre de lignes du fichier carburant effectivement charg\u00e9 par OptiPlein.",
+        },
+        {
+            "title": pourcentage(stations_avec_un_prix) + " % avec au moins un prix",
+            "text": "Une ligne sans prix exploitable ne participe pas au classement du carburant concern\u00e9.",
+        },
+        {
+            "title": pourcentage(coordonnees_valides) + " % g\u00e9olocalis\u00e9es",
+            "text": "Part des stations dont latitude et longitude sont num\u00e9riques et dans les limites terrestres.",
+        },
+    ]
+    page["sections"] = [
+        {
+            "title": "Couverture observ\u00e9e pour chaque carburant",
+            "paragraphs": [
+                "Une station est compt\u00e9e uniquement si le prix est num\u00e9rique, strictement positif et diff\u00e9rent de la valeur technique 9,999. L'absence de prix n'est donc jamais transform\u00e9e en disponibilit\u00e9 suppos\u00e9e.",
+            ],
+            "bullets": couverture,
+            "metrics": couverture_metriques,
+        },
+        {
+            "title": "Pourquoi l'E85 et le GPLc affichent moins de marqueurs",
+            "paragraphs": [
+                "Ces carburants ne sont pas vendus dans toutes les stations. Lorsque l'utilisateur s\u00e9lectionne E85 ou GPLc, OptiPlein masque d\u00e9sormais les lignes sans prix valide au lieu d'afficher une station qui ne d\u00e9clare pas ce produit \u00e0 la vente.",
+                "Cette r\u00e8gle ne prouve pas qu'une station ne vendra jamais le carburant : elle signifie qu'aucune offre exploitable n'est pr\u00e9sente dans le fichier charg\u00e9 \u00e0 la date de l'analyse.",
+            ],
+        },
+        {
+            "title": "Coordonn\u00e9es et enseignes",
+            "paragraphs": [
+                f"{format_entier(coordonnees_valides)} stations poss\u00e8dent des coordonn\u00e9es num\u00e9riques valides et {format_entier(enseignes_renseignees)} disposent d'une enseigne renseign\u00e9e dans la version analys\u00e9e. Ces contr\u00f4les ne garantissent pas que le marqueur corresponde exactement \u00e0 l'entr\u00e9e routi\u00e8re du site.",
+                "Les grands parkings, aires d'autoroute et parcelles commerciales peuvent pr\u00e9senter un d\u00e9calage entre le point publi\u00e9 et l'acc\u00e8s utilis\u00e9 par le moteur d'itin\u00e9raire. Une correction n'est appliqu\u00e9e qu'avec un \u00e9l\u00e9ment v\u00e9rifiable.",
+            ],
+        },
+        {
+            "title": "Journal des contr\u00f4les issus de l'usage",
+            "paragraphs": [
+                "Ces changements r\u00e9pondent \u00e0 des cas observ\u00e9s dans l'application. Ils sont publi\u00e9s ici pour distinguer le travail propre \u00e0 OptiPlein d'une simple republication du fichier source.",
+            ],
+            "bullets": [
+                "19 ao\u00fbt 2026 : exclusion des stations sans prix valide lors de l'affichage E85 ou GPLc.",
+                "18 ao\u00fbt 2026 : ajout d'un guide d\u00e9di\u00e9 aux coordonn\u00e9es, aux entr\u00e9es de parking et au rayon de recherche.",
+                "Ao\u00fbt 2026 : distinction explicite entre prix de recharge estim\u00e9, d\u00e9clar\u00e9 par un utilisateur et confirm\u00e9 par OptiPlein.",
+                "Ao\u00fbt 2026 : calcul \u00e9lectrique exprim\u00e9 en kWh et conservation du carburant du v\u00e9hicule pour le classement de rentabilit\u00e9.",
+                "Ao\u00fbt 2026 : ajout d'une relance de chargement lorsque la carte \u00e9lectrique reste vide apr\u00e8s un changement d'\u00e9nergie.",
+            ],
+        },
+        {
+            "title": "M\u00e9thode, date et reproductibilit\u00e9",
+            "paragraphs": [
+                f"Calcul effectu\u00e9 sur le fichier actif le {date_texte}, sans moyenne nationale ajout\u00e9e et sans estimation des prix manquants.",
+                "Les r\u00e9sultats changent avec les d\u00e9clarations des points de vente et les mises \u00e0 jour automatiques. Cette page est donc recalcul\u00e9e c\u00f4t\u00e9 serveur \u00e0 chaque consultation au lieu de conserver des chiffres promotionnels fig\u00e9s.",
+            ],
+            "links": [
+                {"label": "Comprendre la source des prix", "url": "/guides/sources-prix-carburants"},
+                {"label": "Lire le guide des coordonn\u00e9es", "url": "/guides/gps-rayon-coordonnees"},
+            ],
+        },
+    ]
+    page["sources"] = [
+        {
+            "label": "Flux instantan\u00e9 officiel des prix des carburants",
+            "url": "https://donnees.roulez-eco.fr/opendata/instantane",
+        },
+    ]
+    page["related"] = [
+        {"label": "M\u00e9thode de calcul de rentabilit\u00e9", "url": "/guides/calcul-station-rentable"},
+        {"label": "Signaler une anomalie", "url": "/guides/signaler-erreur-station"},
+    ]
+    return page
+
+
 def contexte_page_editoriale(request, identifiant):
 
     base_url = url_base_application(request)
     chemin = chemin_page_editoriale(identifiant)
     page = dict(PAGES_EDITORIALES[identifiant])
+    if identifiant == "observatoire":
+        page = construire_page_observatoire(page)
     page["path"] = chemin
+
+    pages_adsense_autorisees = {
+        "accueil",
+        "guides",
+        "faq",
+        "observatoire",
+        *GUIDES_EDITORIAUX.keys(),
+    }
 
     return {
         "page": page,
@@ -4470,7 +4717,9 @@ def contexte_page_editoriale(request, identifiant):
         "menu_pages": MENU_PAGES_EDITORIALES,
         "footer_pages": [
             ("guides", "Guides", "/guides"),
+            ("observatoire", "Observatoire", "/observatoire-donnees"),
             ("a-propos", "\u00c0 propos", "/a-propos"),
+            ("auteur", "L'\u00e9diteur", "/auteur/jerome-stoudji"),
             ("contact", "Contact", "/contact"),
             ("mentions", "Mentions l\u00e9gales", "/mentions-legales"),
             ("confidentialite", "Confidentialit\u00e9", "/confidentialite"),
@@ -4480,7 +4729,11 @@ def contexte_page_editoriale(request, identifiant):
         "canonical_url": base_url + chemin,
         "base_url": base_url,
         "og_image": base_url + "/static/logo.png",
-        "adsense_client": ADSENSE_CLIENT,
+        "adsense_client": (
+            ADSENSE_CLIENT
+            if identifiant in pages_adsense_autorisees
+            else ""
+        ),
     }
 
 
@@ -4503,9 +4756,9 @@ def accueil_editorial(request: Request):
 
 
 @app.get("/accueil")
-def accueil_editorial_alias(request: Request):
+def accueil_editorial_alias():
 
-    return rendre_page_editoriale(request, "accueil")
+    return RedirectResponse(url="/", status_code=308)
 
 
 @app.get("/comment-fonctionne-optiplein")
@@ -4547,6 +4800,18 @@ def page_guide(request: Request, article_slug: str):
 def page_a_propos(request: Request):
 
     return rendre_page_editoriale(request, "a-propos")
+
+
+@app.get("/auteur/jerome-stoudji")
+def page_auteur(request: Request):
+
+    return rendre_page_editoriale(request, "auteur")
+
+
+@app.get("/observatoire-donnees")
+def page_observatoire(request: Request):
+
+    return rendre_page_editoriale(request, "observatoire")
 
 
 @app.get("/faq")
@@ -4598,8 +4863,8 @@ def landing_page(request: Request):
         request=request,
         name="landing.html",
         context={
-            "adsense_client": ADSENSE_CLIENT,
-            "adsense_active": bool(ADSENSE_CLIENT),
+            "adsense_client": "",
+            "adsense_active": False,
         }
     )
 
@@ -6517,11 +6782,11 @@ def page_web(
             ),
             "data_version": version_donnees_stations(),
 
-            "adsense_client": ADSENSE_CLIENT,
+            "adsense_client": "",
 
-            "adsense_slot_map": ADSENSE_SLOT_MAP,
+            "adsense_slot_map": "",
 
-            "adsense_active": bool(ADSENSE_CLIENT),
+            "adsense_active": False,
 
         }
 
@@ -6549,6 +6814,8 @@ def robots_txt(request: Request):
     return PlainTextResponse(
         "User-agent: *\n"
         "Allow: /\n"
+        "Disallow: /admin\n"
+        "Disallow: /api/\n"
         f"Sitemap: {base_url}/sitemap.xml\n",
         media_type="text/plain",
     )
@@ -6558,7 +6825,7 @@ def robots_txt(request: Request):
 def verification_google_search_console():
 
     return Response(
-        content="google-site-verification: googlef0990c8c7ae0d469.html",
+        content="google-site-verification: googlef0990c8c7ae0d469.html\n",
         media_type="text/html",
     )
 
@@ -6567,29 +6834,25 @@ def verification_google_search_console():
 def sitemap_xml(request: Request):
 
     base_url = url_base_application(request)
-    chemins = []
+    pages_sitemap = []
 
-    for identifiant in PAGES_EDITORIALES:
+    for identifiant, page in PAGES_EDITORIALES.items():
         chemin = chemin_page_editoriale(identifiant)
-        if chemin not in chemins:
-            chemins.append(chemin)
+        if not any(entree[0] == chemin for entree in pages_sitemap):
+            pages_sitemap.append(
+                (
+                    chemin,
+                    page.get("updated_iso", "2026-08-19"),
+                )
+            )
 
-    chemins.extend(
-        [
-            "/landing",
-            "/web",
-            "/suppression-compte",
-        ]
-    )
-
-    date_jour = datetime.now().date().isoformat()
     entrees = "\n".join(
         "    <url>\n"
         f"        <loc>{base_url}{chemin}</loc>\n"
-        f"        <lastmod>{date_jour}</lastmod>\n"
+        f"        <lastmod>{date_modification}</lastmod>\n"
         "        <changefreq>weekly</changefreq>\n"
         "    </url>"
-        for chemin in chemins
+        for chemin, date_modification in pages_sitemap
     )
 
     return Response(
