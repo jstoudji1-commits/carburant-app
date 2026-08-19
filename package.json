@@ -4,7 +4,8 @@
   "description": "��#\u0000 \u0000c\u0000a\u0000r\u0000b\u0000u\u0000r\u0000a\u0000n\u0000t\u0000-\u0000a\u0000p\u0000p\u0000\r\u0000 \u0000",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "python3 tests/run_checks.py && node tests/check_vehicle_state.js",
+    "test:backend": "python3 -m unittest -v tests/test_backend.py"
   },
   "repository": {
     "type": "git",
