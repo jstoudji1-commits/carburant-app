@@ -92,6 +92,43 @@
     }
     </script>
     {% endif %}
+    {% if breadcrumbs %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {% for item in breadcrumbs %}
+            {
+                "@type": "ListItem",
+                "position": {{ loop.index }},
+                "name": {{ item.label|tojson }},
+                "item": {{ (base_url ~ item.url)|tojson }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }
+    </script>
+    {% endif %}
+    {% if guide_cards %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Guides OptiPlein",
+        "itemListElement": [
+            {% for guide in guide_cards %}
+            {
+                "@type": "ListItem",
+                "position": {{ loop.index }},
+                "url": {{ (base_url ~ guide.url)|tojson }},
+                "name": {{ guide.title|tojson }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }
+    </script>
+    {% endif %}
 
     <style>
         :root{
@@ -252,6 +289,29 @@
             text-underline-offset:3px;
         }
 
+        .breadcrumbs{
+            width:min(1060px, calc(100% - 32px));
+            margin:18px auto 0;
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+            color:var(--muted);
+            font-size:14px;
+            font-weight:700;
+        }
+
+        .breadcrumbs a{
+            color:var(--green-dark);
+            text-decoration:none;
+        }
+
+        .breadcrumbs span:not(:last-child)::after,
+        .breadcrumbs a::after{
+            content:"/";
+            margin-left:6px;
+            color:#9aaba1;
+        }
+
         .hero-actions{
             display:flex;
             flex-wrap:wrap;
@@ -341,6 +401,108 @@
         .sections{
             display:grid;
             gap:16px;
+        }
+
+        .article-toc{
+            margin:0 0 16px;
+            padding:20px 22px;
+            border:1px solid var(--line);
+            border-radius:10px;
+            background:#f5fff7;
+        }
+
+        .article-toc h2{
+            margin:0 0 10px;
+            font-size:21px;
+        }
+
+        .article-toc ol{
+            margin:0;
+            padding-left:22px;
+            columns:2;
+            column-gap:36px;
+        }
+
+        .article-toc li{
+            break-inside:avoid;
+            margin:6px 0;
+        }
+
+        .article-toc a{
+            color:var(--green-dark);
+            font-weight:800;
+            text-underline-offset:3px;
+        }
+
+        .guide-directory{
+            margin:0 0 22px;
+        }
+
+        .guide-directory-head{
+            margin-bottom:14px;
+        }
+
+        .guide-directory-head h2{
+            margin:0 0 5px;
+            font-size:clamp(25px,4vw,36px);
+        }
+
+        .guide-directory-head p{
+            margin:0;
+            color:var(--muted);
+        }
+
+        .guide-grid{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:14px;
+        }
+
+        .guide-card{
+            display:flex;
+            min-height:100%;
+            flex-direction:column;
+            padding:20px;
+            border:1px solid var(--line);
+            border-radius:10px;
+            color:inherit;
+            background:#fff;
+            box-shadow:0 10px 24px rgba(16,37,54,.06);
+            text-decoration:none;
+        }
+
+        .guide-card:hover,
+        .guide-card:focus-visible{
+            border-color:#8bc99a;
+            transform:translateY(-2px);
+        }
+
+        .guide-card-category{
+            color:var(--green-dark);
+            font-size:12px;
+            font-weight:900;
+            letter-spacing:.04em;
+            text-transform:uppercase;
+        }
+
+        .guide-card h3{
+            margin:8px 0;
+            font-size:20px;
+            line-height:1.18;
+        }
+
+        .guide-card p{
+            flex:1;
+            margin:0;
+            color:var(--muted);
+            font-size:15px;
+        }
+
+        .guide-card-meta{
+            margin-top:14px;
+            color:var(--muted);
+            font-size:13px;
+            font-weight:800;
         }
 
         .section,
@@ -669,6 +831,14 @@
                 grid-template-columns:1fr;
             }
 
+            .guide-grid{
+                grid-template-columns:1fr;
+            }
+
+            .article-toc ol{
+                columns:1;
+            }
+
             .contact-card,
             .footer-inner{
                 grid-template-columns:1fr;
@@ -702,6 +872,17 @@
     </header>
 
     <main>
+        {% if breadcrumbs %}
+        <nav class="breadcrumbs" aria-label="Fil d'Ariane">
+            {% for item in breadcrumbs %}
+                {% if loop.last %}
+                <span aria-current="page">{{ item.label }}</span>
+                {% else %}
+                <a href="{{ item.url }}">{{ item.label }}</a>
+                {% endif %}
+            {% endfor %}
+        </nav>
+        {% endif %}
         <section class="hero">
             <div class="hero-copy">
                 <p class="eyebrow">{{ page.eyebrow }}</p>
@@ -714,6 +895,8 @@
                     {% endif %}
                     {% if page.published %}<span>Publi&eacute; le {{ page.published }}</span>{% endif %}
                     {% if page.updated %}<span>Mis &agrave; jour le {{ page.updated }}</span>{% endif %}
+                    {% if page.category %}<span>{{ page.category }}</span>{% endif %}
+                    {% if page.reading_time %}<span>{{ page.reading_time }} min de lecture</span>{% endif %}
                 </div>
                 {% endif %}
 
@@ -739,6 +922,54 @@
         </section>
 
         <div class="content">
+            {% if guide_cards %}
+            <section class="guide-directory" aria-labelledby="guide-directory-title">
+                <div class="guide-directory-head">
+                    <h2 id="guide-directory-title">Tous les guides pratiques</h2>
+                    <p>Choisissez un sujet. Chaque article poss&egrave;de sa propre adresse, ses sources et sa date de mise &agrave; jour.</p>
+                </div>
+                <div class="guide-grid">
+                    {% for guide in guide_cards %}
+                    <a class="guide-card" href="{{ guide.url }}">
+                        <span class="guide-card-category">{{ guide.category }}</span>
+                        <h3>{{ guide.title }}</h3>
+                        <p>{{ guide.description }}</p>
+                        <span class="guide-card-meta">{{ guide.reading_time }} min de lecture{% if guide.updated %} &middot; Mis &agrave; jour le {{ guide.updated }}{% endif %}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if featured_guides %}
+            <section class="guide-directory" aria-labelledby="featured-guides-title">
+                <div class="guide-directory-head">
+                    <h2 id="featured-guides-title">Guides recommand&eacute;s</h2>
+                    <p>Des explications ind&eacute;pendantes de la carte pour comprendre les prix, les calculs et la recharge.</p>
+                </div>
+                <div class="guide-grid">
+                    {% for guide in featured_guides %}
+                    <a class="guide-card" href="{{ guide.url }}">
+                        <span class="guide-card-category">{{ guide.category }}</span>
+                        <h3>{{ guide.title }}</h3>
+                        <p>{{ guide.description }}</p>
+                        <span class="guide-card-meta">{{ guide.reading_time }} min de lecture</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if page.toc %}
+            <nav class="article-toc" aria-labelledby="article-toc-title">
+                <h2 id="article-toc-title">Dans ce guide</h2>
+                <ol>
+                    {% for item in page.toc %}
+                    <li><a href="#{{ item.anchor }}">{{ item.label }}</a></li>
+                    {% endfor %}
+                </ol>
+            </nav>
+            {% endif %}
             {% if page.contact %}
             <section class="contact-card">
                 <div>
@@ -784,7 +1015,7 @@
             {% if page.sections %}
             <section class="sections" aria-label="Contenu">
                 {% for section in page.sections %}
-                <article class="section">
+                <article class="section"{% if section.anchor %} id="{{ section.anchor }}"{% endif %}>
                     <h2>{{ section.title }}</h2>
                     {% for paragraphe in section.paragraphs %}
                     <p>{{ paragraphe }}</p>
