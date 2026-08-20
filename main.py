@@ -72,7 +72,9 @@ EMAIL_SIGNALEMENT = os.getenv(
     "optiplein5@gmail.com"
 )
 APP_BASE_URL = os.getenv("APP_BASE_URL", "").strip().rstrip("/")
-DOMAINE_CANONIQUE = "optiplein.fr"
+# L'hébergement redirige déjà le domaine nu vers www. Conserver www comme
+# unique domaine canonique évite une boucle entre le proxy et l'application.
+DOMAINE_CANONIQUE = "www.optiplein.fr"
 ADSENSE_CLIENT = os.getenv(
     "ADSENSE_CLIENT",
     "ca-pub-4904497922619715",
@@ -2562,7 +2564,8 @@ async def rediriger_vers_domaine_canonique(request: Request, call_next):
         hote_recu = request.headers.get("host", "").strip()
 
     hote_sans_port = hote_recu.split(":", 1)[0].lower()
-    domaines_publics = {DOMAINE_CANONIQUE, "www." + DOMAINE_CANONIQUE}
+    domaine_nu = DOMAINE_CANONIQUE.removeprefix("www.")
+    domaines_publics = {domaine_nu, "www." + domaine_nu}
 
     if hote_sans_port in domaines_publics and hote_sans_port != DOMAINE_CANONIQUE:
         destination = "https://" + DOMAINE_CANONIQUE + request.url.path
