@@ -66,3 +66,18 @@ Cette mise a jour peut etre desactivee avec :
 ```bash
 OPTIPLEIN_IRVE_DYNAMIC_UPDATE=false
 ```
+
+## Indexation et diffusion AdSense
+
+Le domaine canonique public est `https://www.optiplein.fr`. Les requetes recues
+sur `optiplein.fr` sont redirigees vers cette version par l'hebergement, et
+l'application ne tente jamais de les renvoyer dans le sens inverse.
+
+Pendant la phase de validation AdSense, le code publicitaire est limite aux
+pages editoriales substantielles : accueil, guides, FAQ et observatoire. Il est
+desactive sur la carte `/web`, la page testeur `/landing`, l'administration et
+les pages utilitaires. La carte et la landing portent aussi une directive
+`noindex` et ne figurent pas dans le sitemap editorial.
+
+Les operations manuelles a effectuer dans Google Search Console sont detaillees
+dans `SEARCH_CONSOLE_CHECKLIST.md`.
