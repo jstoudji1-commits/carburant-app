@@ -4703,6 +4703,79 @@ def contexte_page_editoriale(request, identifiant):
         page = construire_page_observatoire(page)
     page["path"] = chemin
 
+    categories_guides = {
+        "guide_carburants": "Carburants",
+        "guide_sources": "Données et prix",
+        "guide_rentabilite": "Calcul et économies",
+        "guide_tarifs_irve": "Recharge électrique",
+        "guide_disponibilite": "Recharge électrique",
+        "guide_signalement": "Qualité des données",
+        "guide_ecoconduite": "Écoconduite",
+        "guide_trajet": "Trajets",
+        "guide_recharge_rapide": "Recharge électrique",
+        "guide_batterie": "Recharge électrique",
+        "guide_gps": "Carte et GPS",
+        "guide_contribution_tarif": "Données et prix",
+    }
+
+    def carte_guide(identifiant_guide, guide):
+        nombre_mots = sum(
+            len(str(paragraphe).split())
+            for section in guide.get("sections", [])
+            for paragraphe in section.get("paragraphs", [])
+        )
+        return {
+            "identifiant": identifiant_guide,
+            "title": guide.get("hero_title", guide.get("nav_title", "Guide")),
+            "description": guide.get("description", ""),
+            "url": chemin_page_editoriale(identifiant_guide),
+            "category": categories_guides.get(identifiant_guide, "Guide pratique"),
+            "reading_time": max(2, round(nombre_mots / 210)),
+            "updated": guide.get("updated", ""),
+        }
+
+    cartes_guides = [
+        carte_guide(identifiant_guide, guide)
+        for identifiant_guide, guide in GUIDES_EDITORIAUX.items()
+        if identifiant_guide != "guides"
+    ]
+
+    if page.get("article") and identifiant != "guides":
+        sections = []
+        for index, section in enumerate(page.get("sections", []), start=1):
+            section_copie = dict(section)
+            section_copie["anchor"] = f"partie-{index}"
+            sections.append(section_copie)
+        page["sections"] = sections
+        page["toc"] = [
+            {"label": section.get("title", "Section"), "anchor": section["anchor"]}
+            for section in sections
+        ]
+        carte_courante = next(
+            (
+                carte
+                for carte in cartes_guides
+                if carte["identifiant"] == identifiant
+            ),
+            None,
+        )
+        if carte_courante:
+            page["category"] = carte_courante["category"]
+            page["reading_time"] = carte_courante["reading_time"]
+
+    breadcrumbs = [{"label": "Accueil", "url": "/"}]
+    if identifiant == "guides":
+        breadcrumbs.append({"label": "Guides", "url": "/guides"})
+    elif page.get("article"):
+        breadcrumbs.extend(
+            [
+                {"label": "Guides", "url": "/guides"},
+                {"label": page.get("hero_title", "Guide"), "url": chemin},
+            ]
+        )
+    elif identifiant == "faq":
+        breadcrumbs.append({"label": "FAQ", "url": "/faq"})
+
     pages_adsense_autorisees = {
         "accueil",
         "guides",
@@ -4713,6 +4786,13 @@ def contexte_page_editoriale(request, identifiant):
 
     return {
         "page": page,
+        "breadcrumbs": breadcrumbs if len(breadcrumbs) > 1 else [],
+        "guide_cards": cartes_guides if identifiant == "guides" else [],
+        "featured_guides": (
+            cartes_guides[:6]
+            if identifiant in {"accueil", "faq"}
+            else []
+        ),
         "active_page": identifiant,
         "menu_pages": MENU_PAGES_EDITORIALES,
         "footer_pages": [
