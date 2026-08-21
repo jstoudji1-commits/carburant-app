@@ -6871,6 +6871,8 @@ def page_web(
 
             "adsense_active": False,
 
+            "menu_pages": MENU_PAGES_EDITORIALES,
+
         }
 
     )    
