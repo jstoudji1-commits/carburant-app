@@ -2,7 +2,7 @@
 
 
 PUBLICATION = "8 août 2026"
-AUTHOR = "J. Stoudji, éditeur d’OptiPlein"
+AUTHOR = "Jérôme Stoudji, créateur d’OptiPlein"
 
 
 def guide(slug, title, description, eyebrow, hero_title, lead, sections, **extra):
@@ -19,6 +19,7 @@ def guide(slug, title, description, eyebrow, hero_title, lead, sections, **extra
         "published_iso": "2026-08-08",
         "updated_iso": "2026-08-08",
         "author": AUTHOR,
+        "author_url": "/auteur/jerome-stoudji",
         "article": True,
         "sections": sections,
     }
@@ -410,15 +411,15 @@ GUIDES_EDITORIAUX = {
             {
                 "title": "Étape 4 : temps supplémentaire",
                 "paragraphs": [
-                    "OptiPlein peut convertir les minutes supplémentaires en coût indicatif à partir d’une vitesse moyenne de détour et d’une valeur horaire interne. Cette composante ne prétend pas donner une valeur universelle au temps : elle évite seulement qu’un détour important soit présenté comme gratuit.",
-                    "L’explication affichée distingue le coût de l’achat, le coût de l’énergie consommée pour le détour et le temps estimé. L’utilisateur peut ainsi comprendre pourquoi une station légèrement plus chère mais beaucoup plus proche est retenue.",
+                    "Les minutes supplémentaires restent affichées comme une information distincte. Elles ne sont plus converties en euros dans l’économie annoncée, car la valeur personnelle du temps varie selon l’utilisateur et le contexte du trajet.",
+                    "L’explication affichée distingue donc le coût de l’achat, le coût de l’énergie consommée pour le détour et la durée estimée. Le classement monétaire repose sur la quantité réellement achetée et le détour, puis la distance départage les stations offrant la même économie.",
                 ],
             },
             {
                 "title": "Exemple complet",
                 "paragraphs": [
                     "Prenons un réservoir de 50 L, rempli à 30 %, une consommation de 6,5 L/100 km et 35 L à acheter. La station A est sur le trajet à 1,80 €/L : achat 63 €. La station B est à 1,76 €/L : achat 61,60 €, mais elle ajoute 8 km.",
-                    "Le détour consomme 0,52 L, soit environ 0,94 € au prix de référence. Le coût énergétique de B atteint donc 62,54 €. Son avantage n’est plus que de 0,46 €, auquel il faut comparer le temps supplémentaire. Selon ce temps, A peut être considérée comme plus rentable malgré son prix au litre supérieur.",
+                    "Le détour consomme 0,52 L, soit environ 0,94 € au prix de référence. Le coût énergétique de B atteint donc 62,54 €. Son avantage monétaire n’est plus que de 0,46 €. Le temps supplémentaire est affiché à part afin que le conducteur puisse juger lui-même s’il accepte ce détour.",
                 ],
             },
             {
