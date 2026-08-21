@@ -3319,12 +3319,12 @@ body{
                     <div class="plan-comparison-row">
                         <div class="plan-comparison-cell plan-comparison-feature">Comparaison</div>
                         <div class="plan-comparison-cell plan-comparison-free">Prix moyen</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">2e station</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Prix moyen local</div>
                     </div>
                     <div class="plan-comparison-row">
                         <div class="plan-comparison-cell plan-comparison-feature">&Eacute;conomie affich&eacute;e</div>
                         <div class="plan-comparison-cell plan-comparison-free">&Eacute;conomie estim&eacute;e</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">&Eacute;conomie r&eacute;elle &agrave; destination</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">&Eacute;conomie nette actualis&eacute;e</div>
                     </div>
                     <div class="plan-comparison-row">
                         <div class="plan-comparison-cell plan-comparison-feature">Arr&ecirc;ts rentables sur trajet</div>
@@ -11870,6 +11870,24 @@ function nombreVehiculeEnregistre(cle) {
 var vitesseDetourRentabiliteKmH = 42;
 var coutTempsRentabiliteEuroHeure = 9;
 
+function calculerEconomieMonetaireStation(
+    quantiteAchetee,
+    prixStation,
+    prixReference,
+    coutDetour
+) {
+
+    var quantite = Math.max(0, Number(quantiteAchetee || 0));
+    var ecartPrix = Math.max(
+        0,
+        Number(prixReference || 0) - Number(prixStation || 0)
+    );
+    var gainBrut = quantite * ecartPrix;
+
+    return Math.max(0, gainBrut - Math.max(0, Number(coutDetour || 0)));
+
+}
+
 function formaterEurosRentabilite(valeur) {
 
     return Number(valeur || 0).toLocaleString(
@@ -11991,8 +12009,8 @@ function calculerCoutOptimisationStation(options) {
         (tempsPerduMinutes + tempsRechargeMinutes)
         / 60
         * coutTempsRentabiliteEuroHeure;
-    var coutTotal =
-        coutCarburantAchete + coutCarburantDetour + coutTempsPerdu;
+    var coutTotal = coutCarburantAchete + coutCarburantDetour;
+    var scoreDecision = coutTotal + coutTempsPerdu;
 
     return {
         quantiteAchetee: quantiteAchetee,
@@ -12005,7 +12023,8 @@ function calculerCoutOptimisationStation(options) {
         tempsRechargeMinutes: tempsRechargeMinutes,
         puissanceRechargeKw: puissanceRechargeKw,
         coutTempsPerdu: coutTempsPerdu,
-        coutTotal: coutTotal
+        coutTotal: coutTotal,
+        scoreDecision: scoreDecision
     };
 
 }
@@ -12049,9 +12068,7 @@ function ajouterExplicationRentabilite(
                     + " kW"
                 : ""
         )
-        + " = "
-        + formaterEurosRentabilite(station.coutTempsPerdu)
-        + " (9 \u20ac/h)"
+        + " (information non convertie en euros)"
         + ". Gain net "
         + formaterEurosRentabilite(economie)
         + reference
@@ -12209,68 +12226,32 @@ function calculerRentabiliteStations(
                 tempsRechargeMinutes: optimisation.tempsRechargeMinutes,
                 puissanceRechargeKw: optimisation.puissanceRechargeKw,
                 coutTempsPerdu: optimisation.coutTempsPerdu,
-                coutTotal: optimisation.coutTotal
+                coutTotal: optimisation.coutTotal,
+                scoreDecision: optimisation.scoreDecision,
+                economieMonetaire: calculerEconomieMonetaireStation(
+                    quantiteACompleter,
+                    station.prix,
+                    prixTrajetReference,
+                    optimisation.coutCarburantDetour
+                )
             });
 
         }
     );
 
-    if (!comptePremiumActif()) {
-        var coutPleinReference = quantiteACompleter * prixTrajetReference;
-
-        return {
-            stationsCalculees: stationsCalculees,
-            coutReference: coutPleinReference,
-            libelleReference:
-                " par rapport au prix moyen local"
-        };
-    }
-
-    var coutReferenceParStation = stationsCalculees.map(
-        function(stationReference) {
-            return {
-                station: stationReference,
-                cout: stationReference.coutTotal
-            };
-        }
-    );
-
     stationsCalculees.forEach(
         function(station) {
-
-            var meilleureReference = coutReferenceParStation
-                .filter(
-                    function(reference) {
-                        return reference.station.id !== station.id;
-                    }
-                )
-                .reduce(
-                    function(meilleure, reference) {
-                        return !meilleure || reference.cout < meilleure.cout
-                            ? reference
-                            : meilleure;
-                    },
-                    null
-                );
-
-            station.economieComparee = meilleureReference
-                ? Math.max(
-                    0,
-                    meilleureReference.cout - station.coutTotal
-                )
-                : 0;
-            station.stationReferenceRentable = meilleureReference
-                ? meilleureReference.station
-                : null;
+            station.economieComparee = station.economieMonetaire;
+            station.stationReferenceRentable = null;
 
         }
     );
 
     return {
         stationsCalculees: stationsCalculees,
-        coutReference: null,
+        coutReference: quantiteACompleter * prixTrajetReference,
         libelleReference:
-            " par rapport \u00e0 la 2e station la plus rentable"
+            " par rapport au prix moyen local"
     };
 
 }
@@ -12474,19 +12455,8 @@ function choisirMeilleureStationRentabilite(stations, electrique) {
 
     return stations.reduce(
         function(meilleure, station) {
-            var memePrixElectrique =
-                electrique
-                && Math.abs(station.prix - meilleure.prix) < 0.0005;
-
-            if (memePrixElectrique) {
-                return station.distanceCalculee
-                    < meilleure.distanceCalculee
-                    ? station
-                    : meilleure;
-            }
-
-            if (station.coutTotal !== meilleure.coutTotal) {
-                return station.coutTotal < meilleure.coutTotal
+            if (station.economieMonetaire !== meilleure.economieMonetaire) {
+                return station.economieMonetaire > meilleure.economieMonetaire
                     ? station
                     : meilleure;
             }
@@ -12626,13 +12596,7 @@ window.calculerMeilleureStation = function() {
         stationsCalculees,
         rentabiliteElectrique
     );
-    var economie = comptePremiumActif()
-        ? meilleureStation.economieComparee
-        : Math.max(
-            0,
-            resultatRentabilite.coutReference
-                - meilleureStation.coutTotal
-        );
+    var economie = meilleureStation.economieMonetaire;
     var stationReferenceAffichee =
         meilleureStation.stationReferenceRentable || null;
     var cleStationRentable = [
@@ -12733,7 +12697,7 @@ window.calculerMeilleureStation = function() {
     var economieLibelle = document.createElement("span");
     economieLibelle.className = "economy-saving-label";
     economieLibelle.textContent = comptePremiumActif()
-        ? "\u00c9conomie r\u00e9elle \u00e0 destination "
+        ? "\u00c9conomie nette estim\u00e9e "
         : "\u00c9conomie estim\u00e9e ";
     var economieMontant = document.createElement("span");
     economieMontant.textContent = economieFormatee + " \u20ac";
@@ -13574,17 +13538,13 @@ function coutDetourStation(position, consommation) {
     var kilometresDetour = position.ecartMetres * 2 / 1000;
     var coutCarburantDetour =
         kilometresDetour * consommation / 100 * position.station.prix;
-    var tempsPerduMinutes =
-        kilometresDetour / vitesseDetourRentabiliteKmH * 60;
-    var coutTempsPerdu =
-        tempsPerduMinutes / 60 * coutTempsRentabiliteEuroHeure;
     var penaliteSortieAutoroute = stationAutoroute || position.ecartMetres <= 800
         ? 0
         : position.ecartMetres <= 1300
             ? 1.50
             : 3.00;
 
-    return coutCarburantDetour + coutTempsPerdu + penaliteSortieAutoroute;
+    return coutCarburantDetour + penaliteSortieAutoroute;
 
 }
 
