@@ -92,6 +92,84 @@ body{
     background:#e3f6e7;
 }
 
+.app-site-menu{
+    position:relative;
+    flex:0 0 auto;
+}
+
+.app-menu-toggle{
+    width:46px;
+    height:46px;
+    display:grid;
+    place-content:center;
+    gap:5px;
+    padding:0;
+    border:1px solid #b9d9c1;
+    border-radius:9px;
+    color:var(--green-dark);
+    background:#f1faf3;
+    cursor:pointer;
+}
+
+.app-menu-toggle span{
+    width:23px;
+    height:3px;
+    border-radius:99px;
+    background:currentColor;
+    transition:transform .18s ease, opacity .18s ease;
+}
+
+.app-menu-toggle[aria-expanded="true"] span:nth-child(1){
+    transform:translateY(8px) rotate(45deg);
+}
+
+.app-menu-toggle[aria-expanded="true"] span:nth-child(2){
+    opacity:0;
+}
+
+.app-menu-toggle[aria-expanded="true"] span:nth-child(3){
+    transform:translateY(-8px) rotate(-45deg);
+}
+
+.app-main-nav{
+    position:absolute;
+    top:calc(100% + 12px);
+    right:0;
+    width:min(320px, calc(100vw - 28px));
+    max-height:calc(100vh - 110px);
+    overflow:auto;
+    display:grid;
+    gap:4px;
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:11px;
+    background:#fff;
+    box-shadow:var(--shadow);
+}
+
+.app-main-nav[hidden]{
+    display:none;
+}
+
+.app-main-nav a{
+    display:flex;
+    align-items:center;
+    min-height:45px;
+    padding:0 13px;
+    border-radius:8px;
+    color:var(--muted);
+    font-size:15px;
+    font-weight:800;
+    text-decoration:none;
+}
+
+.app-main-nav a:hover,
+.app-main-nav a:focus-visible,
+.app-main-nav a[aria-current="page"]{
+    color:var(--green-dark);
+    background:var(--green-soft);
+}
+
 .vehicle-menu{
     position:relative;
 }
@@ -2910,10 +2988,9 @@ body{
         gap:7px;
     }
 
-    .guides-link{
-        min-height:40px;
-        padding:0 10px;
-        font-size:13px;
+    .app-menu-toggle{
+        width:42px;
+        height:42px;
     }
 
     .vehicle-panel{
@@ -3094,9 +3171,25 @@ body{
     >
 
     <div class="top-actions">
-        <a class="guides-link" href="/guides" aria-label="Consulter les guides OptiPlein">
-            Guides
-        </a>
+        <div class="app-site-menu" id="app-site-menu">
+            <button
+                class="app-menu-toggle"
+                id="app-menu-toggle"
+                type="button"
+                aria-label="Ouvrir le menu"
+                aria-expanded="false"
+                aria-controls="app-main-nav"
+                onclick="basculerMenuPrincipal(event)"
+            >
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="app-main-nav" id="app-main-nav" aria-label="Navigation principale" hidden>
+                {% for identifiant, libelle, chemin in menu_pages %}
+                <a href="{{ chemin }}">{{ libelle }}</a>
+                {% endfor %}
+                <a href="/web" aria-current="page">Application</a>
+            </nav>
+        </div>
         <div class="vehicle-menu" id="vehicle-menu">
             <button
                 type="button"
@@ -4844,6 +4937,55 @@ document.addEventListener(
     }
 );
 
+window.fermerMenuPrincipal = function(rendreFocus) {
+
+    var navigation = document.getElementById("app-main-nav");
+    var bouton = document.getElementById("app-menu-toggle");
+
+    if (navigation) {
+        navigation.hidden = true;
+    }
+    if (bouton) {
+        bouton.setAttribute("aria-expanded", "false");
+        bouton.setAttribute("aria-label", "Ouvrir le menu");
+        if (rendreFocus) {
+            bouton.focus();
+        }
+    }
+
+};
+
+window.basculerMenuPrincipal = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var navigation = document.getElementById("app-main-nav");
+    var bouton = document.getElementById("app-menu-toggle");
+
+    if (!navigation || !bouton) {
+        return;
+    }
+
+    var ouvrir = navigation.hidden;
+    navigation.hidden = !ouvrir;
+    bouton.setAttribute("aria-expanded", ouvrir ? "true" : "false");
+    bouton.setAttribute(
+        "aria-label",
+        ouvrir ? "Fermer le menu" : "Ouvrir le menu"
+    );
+    if (ouvrir) {
+        fermerPanneauVehicule();
+        var premierLien = navigation.querySelector("a");
+        if (premierLien) {
+            premierLien.focus();
+        }
+    }
+
+};
+
 window.fermerPanneauVehicule = function() {
 
     var panneau = document.getElementById("vehicle-panel");
@@ -4874,6 +5016,9 @@ window.basculerPanneauVehicule = function(event) {
     }
 
     var ouvrir = panneau.hidden;
+    if (ouvrir) {
+        fermerMenuPrincipal(false);
+    }
     panneau.hidden = !ouvrir;
     bouton.setAttribute(
         "aria-expanded",
@@ -4905,9 +5050,13 @@ window.addEventListener(
     function(event) {
 
         var menu = document.getElementById("vehicle-menu");
+        var menuPrincipal = document.getElementById("app-site-menu");
 
         if (menu && !menu.contains(event.target)) {
             fermerPanneauVehicule();
+        }
+        if (menuPrincipal && !menuPrincipal.contains(event.target)) {
+            fermerMenuPrincipal(false);
         }
 
     }
@@ -4919,6 +5068,7 @@ window.addEventListener(
 
         if (event.key === "Escape") {
             fermerPanneauVehicule();
+            fermerMenuPrincipal(true);
         }
 
     }

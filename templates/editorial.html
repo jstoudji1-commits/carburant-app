@@ -186,27 +186,79 @@
             display:block;
         }
 
+        .site-menu{
+            position:relative;
+            flex:0 0 auto;
+        }
+
+        .menu-toggle{
+            width:48px;
+            height:48px;
+            display:grid;
+            place-content:center;
+            gap:5px;
+            padding:0;
+            border:1px solid #b9d9bf;
+            border-radius:10px;
+            color:var(--green-dark);
+            background:#f5fff7;
+            cursor:pointer;
+        }
+
+        .menu-toggle span{
+            width:24px;
+            height:3px;
+            border-radius:99px;
+            background:currentColor;
+            transition:transform .18s ease, opacity .18s ease;
+        }
+
+        .menu-toggle[aria-expanded="true"] span:nth-child(1){
+            transform:translateY(8px) rotate(45deg);
+        }
+
+        .menu-toggle[aria-expanded="true"] span:nth-child(2){
+            opacity:0;
+        }
+
+        .menu-toggle[aria-expanded="true"] span:nth-child(3){
+            transform:translateY(-8px) rotate(-45deg);
+        }
+
         .main-nav{
-            display:flex;
-            align-items:center;
-            justify-content:flex-end;
-            gap:8px;
-            flex-wrap:wrap;
+            position:absolute;
+            top:calc(100% + 10px);
+            right:0;
+            width:min(320px, calc(100vw - 28px));
+            max-height:calc(100vh - 100px);
+            overflow:auto;
+            display:grid;
+            gap:4px;
+            padding:10px;
+            border:1px solid var(--line);
+            border-radius:12px;
+            background:#fff;
+            box-shadow:0 18px 46px rgba(16,37,54,.22);
+        }
+
+        .main-nav[hidden]{
+            display:none;
         }
 
         .main-nav a{
-            display:inline-flex;
+            display:flex;
             align-items:center;
-            justify-content:center;
-            min-height:40px;
-            padding:0 12px;
+            min-height:46px;
+            padding:0 14px;
             border-radius:8px;
             color:var(--muted);
-            font-size:14px;
+            font-size:15px;
             font-weight:800;
             text-decoration:none;
         }
 
+        .main-nav a:hover,
+        .main-nav a:focus-visible,
         .main-nav a[aria-current="page"]{
             color:var(--green-dark);
             background:#e8f7ec;
@@ -791,25 +843,6 @@
                 overflow:hidden;
             }
 
-            .main-nav{
-                flex:1;
-                justify-content:flex-start;
-                flex-wrap:nowrap;
-                overflow-x:auto;
-                overscroll-behavior-inline:contain;
-                scrollbar-width:none;
-            }
-
-            .main-nav::-webkit-scrollbar{
-                display:none;
-            }
-
-            .main-nav a{
-                flex:0 0 auto;
-                padding:0 10px;
-                font-size:13px;
-            }
-
             .brand img{
                 width:112px;
                 max-width:none;
@@ -860,15 +893,27 @@
             <img src="/static/logo.png" alt="OptiPlein">
         </a>
 
-        <nav class="main-nav" aria-label="Navigation principale">
-            {% for identifiant, libelle, chemin in menu_pages %}
-            <a
-                href="{{ chemin }}"
-                {% if identifiant == active_page %}aria-current="page"{% endif %}
-            >{{ libelle }}</a>
-            {% endfor %}
-            <a class="app-link" href="/web">Application</a>
-        </nav>
+        <div class="site-menu" id="site-menu">
+            <button
+                class="menu-toggle"
+                id="menu-toggle"
+                type="button"
+                aria-label="Ouvrir le menu"
+                aria-expanded="false"
+                aria-controls="main-nav"
+            >
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="main-nav" id="main-nav" aria-label="Navigation principale" hidden>
+                {% for identifiant, libelle, chemin in menu_pages %}
+                <a
+                    href="{{ chemin }}"
+                    {% if identifiant == active_page %}aria-current="page"{% endif %}
+                >{{ libelle }}</a>
+                {% endfor %}
+                <a class="app-link" href="/web">Ouvrir l'application</a>
+            </nav>
+        </div>
     </header>
 
     <main>
@@ -1098,6 +1143,35 @@
             </nav>
         </div>
     </footer>
+    <script>
+        (() => {
+            const menu = document.getElementById("site-menu");
+            const bouton = document.getElementById("menu-toggle");
+            const navigation = document.getElementById("main-nav");
+            if (!menu || !bouton || !navigation) return;
+
+            const fermer = (rendreFocus = false) => {
+                navigation.hidden = true;
+                bouton.setAttribute("aria-expanded", "false");
+                bouton.setAttribute("aria-label", "Ouvrir le menu");
+                if (rendreFocus) bouton.focus();
+            };
+
+            bouton.addEventListener("click", () => {
+                const ouvrir = navigation.hidden;
+                navigation.hidden = !ouvrir;
+                bouton.setAttribute("aria-expanded", String(ouvrir));
+                bouton.setAttribute("aria-label", ouvrir ? "Fermer le menu" : "Ouvrir le menu");
+                if (ouvrir) navigation.querySelector("a")?.focus();
+            });
+            document.addEventListener("click", (event) => {
+                if (!menu.contains(event.target)) fermer();
+            });
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape" && !navigation.hidden) fermer(true);
+            });
+        })();
+    </script>
     {% if page.faq_items %}
     <script>
         (() => {
