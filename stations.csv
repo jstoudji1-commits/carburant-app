@@ -187,7 +187,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 76200002,76200,Dieppe,78 RUE GAMBETTA,49.916,1.075,Esso Express,2.203,2.005,2.138,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 24240003,24240,Sigoulès-et-Flaugeac,18 place de l'ancien temple,44.757399,0.411063,Carrefour Contact,2.199,,2.199,2.099,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 76260005,76260,EU,24 BD. FAIDHERBE - RD 925,50.051,1.423,Total,2.250,1.990,1.990,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-31200022,31200,TOULOUSE,55 BOULEVARD DE SUISSE,43.616,1.421,Total Access,2.248,1.990,1.990,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+31200022,31200,TOULOUSE,55 BOULEVARD DE SUISSE,43.616,1.421,Total Access,2.248,,,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 57790001,57790,LORQUIN,1BIS RUE DU GENERAL DE GAULLE,48.671,7.0,Intermarché,2.299,2.129,2.245,,0.829,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 59282001,59282,DOUCHY-LES-MINES,28 ROUTE D'HASPRES,50.3047737,3.4028794,Intermarché,2.199,1.969,,,0.828,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 78120005,78120,RAMBOUILLET,rue Clos Batant,48.6460788,1.8561934,E.Leclerc,2.221,2.037,2.132,2.072,,,egal,egal,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -1109,12 +1109,12 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 10400003,10400,Nogent-sur-Seine,47 Route de Bray,48.48593,3.49118,Intermarché,2.193,1.989,2.128,2.065,,,egal,egal,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 79110002,79110,FONTENILLE-ST-MARTIN-D'ENTRAIGUE,55 route de Niort,46.124,-0.134,Avia,2.239,,2.169,2.169,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 30150002,30150,ROQUEMAURE,834 ROUTE D'AVIGNON,44.045,4.787,Intermarché,2.299,2.149,2.199,,0.999,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-91100014,91100,CORBEIL ESSONNES,AUTOROUTE A6 - AIRE DES LISSES,48.5950918,2.4417184,TotalEnergies,2.250,1.990,,,0.999,1.074,egal,egal,,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 35660004,35660,Renac,8 lotissemennt beauregard,47.717,-1.976,Total,2.204,1.990,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 92250002,92250,La Garenne-Colombes,13 Avenue de Verdun-1916,48.906,2.236,Esso,2.228,1.999,2.116,,0.924,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 79110003,79110,CHEF-BOUTONNE,6 avenue Louis Doignon,46.107,-0.07,Intermarché,2.199,2.009,2.129,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 26600002,26600,Tain-l'Hermitage,PLACE DU MARCHE AUX FRUITS,45.072,4.834,Total,2.185,,,1.990,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 10190001,10190,ESTISSAC,AVENUE DE LA REPUBLIQUE,48.2684981,3.8057498,Avia XPress,2.269,,,2.169,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+91100014,91100,CORBEIL ESSONNES,AUTOROUTE A6 - AIRE DES LISSES,48.5950918,2.4417184,TotalEnergies,2.250,,,,0.999,1.074,egal,egal,,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 33240014,33240,CADILLAC-EN-FRONSADAIS,38 AV DU FRONSADAIS,44.968756,-0.37667,TotalEnergies,2.250,,,1.990,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 45750002,45750,Saint-Pryvé-Saint-Mesmin,1 Avenue du Traité de Rome,47.883197,1.8637781,Système U,2.199,1.999,2.089,2.049,,,egal,egal,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 25000027,25000,BESANCON,2 RUE RENE CHAR,47.2171723,5.9466104,Intermarché,2.297,2.028,2.158,,,0.999,egal,egal,egal,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -2602,13 +2602,13 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 40700004,40700,Hagetmau,Avenue du Tursan,43.6583182,-0.5859742,Carrefour Market,2.209,,2.109,2.089,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 29740001,29740,PLOBANNALEC-LESCONIL,Rue de Lesconil,47.8191326,-4.2294608,Système U,2.195,,2.045,2.009,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 59290001,59290,WASQUEHAL,AVENUE DU GRAND COTTIGNIES,50.68195,3.1281,Carrefour,2.219,1.989,2.078,,0.828,1.018,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-69170004,69170,TARARE,RN 7 - 60 RUE EDOUARD HERRIOT,45.8902939,4.4456455,TotalEnergies,2.250,1.990,1.990,,0.869,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 35320003,35320,CREVIN,10 rue de Bel Air,47.934352,-1.667273,Système U,2.189,,2.089,2.039,0.815,,egal,,egal,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 26300012,26300,ALIXAN,60 RUE DES MARGUERITES,45.0,5.001,TotalEnergies,2.248,,,,0.899,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 20169002,20169,BONIFACIO,sennola,41.391,9.165,Ets. Botti,2.250,,,2.010,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 31390001,31390,Carbonne,Route de l'Arize,43.303161,1.220811,Auchan,2.199,1.994,2.094,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 50430003,50430,Lessay,94 RUE DE LA SAINTE CROIX,49.21327,-1.5296868,Avia,2.199,,2.089,2.050,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 91420002,91420,Morangis,RUE DE SAVIGNY,48.693,2.337,Elan,2.240,,1.990,1.990,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+69170004,69170,TARARE,RN 7 - 60 RUE EDOUARD HERRIOT,45.8902939,4.4456455,TotalEnergies,2.250,,1.990,,0.869,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 91450001,91450,ÉTIOLLES,Rond Point des Coudray,48.639,2.458,Carrefour,2.209,,2.139,2.089,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 73200003,73600,MOûTIERS,Avenue des Salines Royales,45.4858403,6.5247927,Carrefour,2.259,2.019,2.099,2.059,0.859,,egal,egal,egal,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 32000006,32000,AUCH,RUE MARGUERITE DURAS,43.664,0.618,Intermarché,2.230,2.010,2.099,,0.828,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -3383,7 +3383,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 74290002,74290,Menthon-Saint-Bernard,530 Route d'Annecy,45.866,6.188,Elan,2.250,,,1.990,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 36000009,36000,CHâTEAUROUX,PARKING CARREFOUR CENTRE VILLE,46.8057323,1.698127,TotalEnergies,2.194,1.990,,,,,hausse,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 44390001,44390,NORT-SUR-ERDRE,1 rue de Bretagne - ZAC de la Pancarte,47.439,-1.48,Intermarché,2.179,1.999,2.059,,0.828,1.099,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-78000019,78000,VERSAILLES,15 AV DU GENERAL PERSHING,48.818,2.15,TotalEnergies,2.250,1.990,,,0.879,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+78000019,78000,VERSAILLES,15 AV DU GENERAL PERSHING,48.818,2.15,TotalEnergies,2.250,,,,0.879,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 63350003,63350,MARINGUES,Rond Point Sud-Route de Clermont Ferrand,45.912,3.334,Independent,2.238,1.999,2.088,2.067,0.899,,egal,egal,egal,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 24270005,24270,LANOUAILLE,LA PLANCHE,45.3856073,1.1346489,Carrefour,2.187,2.039,2.119,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 12100010,12100,MILLAU,25 AVENUE EDOUARD ALFRED MARTEL,44.114,3.082,Servifioul,2.248,,2.159,2.078,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -3446,7 +3446,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 7200011,07200,Vesseaux,37 ROUTE D'AUBENAS - LA PRADE,44.648,4.44,Seb Auto Service,2.256,,,,,,egal,,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 44230003,44230,Saint-Sébastien-sur-Loire,2 Rue Pierre Mendès France,47.1927746,-1.4916314,Auchan,2.177,1.999,2.069,,0.809,0.999,baisse,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 26200004,26200,MONTéLIMAR,Avenue des Catalins,44.567,4.759,E.Leclerc,2.209,,2.068,2.059,0.828,,egal,,egal,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-10270007,10270,Fresnoy-le-Château,AUTOROUTE A5 - AIRE TROYES-LE-PLESSIS,48.214156,4.240981,Total,2.250,1.990,1.990,,0.999,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 51370002,51370,SAINT-BRICE-COURCELLES,La Croix MaurencienneZone Industrielle de St-Brice,49.281,4.004,E.Leclerc,2.195,1.987,2.064,,0.819,0.995,hausse,hausse,hausse,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 53102002,53102,Mayenne,"582, rue du Prieuré de Berne",48.2983756,-0.6338103,E.Leclerc,2.179,1.979,,2.019,,,egal,egal,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 38320006,38320,EYBENS,ROCADE SUD,45.151835,5.739984,Total,2.250,1.990,,,0.899,0.999,egal,egal,,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -3459,6 +3458,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 57260001,57260,Dieuze,105 Impasse Jean Laurain,48.811,6.714,Independent,2.379,2.099,2.105,2.030,,,egal,egal,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 73200008,73200,Albertville,ZI du Chiriac,45.655,6.364,Intermarché,2.265,1.989,2.115,,0.829,1.025,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 55190003,55190,PAGNY SUR MEUSE,ROUTE DÉPARTEMENTALE 36D,48.686,5.726,Total Access,2.250,1.990,,,,0.989,egal,egal,egal,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+10270007,10270,Fresnoy-le-Château,AUTOROUTE A5 - AIRE TROYES-LE-PLESSIS,48.214156,4.240981,Total,2.250,,,,0.999,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 91260002,91260,JUVISY-SUR-ORGE,Avenue Camille Desmoulins,48.695,2.356,Intermarché,2.279,2.037,2.129,,0.828,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 63730001,63730,Les Martres-de-Veyre,Avenue du Commandant Berrier,45.685,3.195,Auchan,2.229,1.999,2.089,,0.829,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 93110006,93110,ROSNY SOUS BOIS,116 AVENUE DU PRESIDENT JOHN KENNEDY,48.879981,2.492748,Avia,2.239,2.099,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -3882,12 +3882,12 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 14400010,14400,VAUCELLES,ROUTE NATIONALE 13,49.285,-0.736,TotalEnergies,2.191,1.990,,,0.852,0.935,egal,egal,,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 82600001,82600,VERDUN-SUR-GARONNE,"195, Route de Mas Grenier",43.854,1.228,U,2.199,,2.099,2.039,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 72260001,72260,MAROLLES-LES-BRAULTS,15 Rue Mohain,48.254,0.314,Système U,2.229,2.059,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-76700006,76700,HARFLEUR,3 RUE FREDERIC CHOPIN,49.5108452,0.1997851,TotalEnergies,2.250,1.990,,,0.829,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 71960001,71960,PRISSé,"Espace commercial ""Les deux roches"" ZA du Pré de Lit",46.3288851,4.7425732,Système U,2.249,2.019,2.099,2.059,0.899,,egal,egal,egal,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 74520012,74520,Valleiry,A 40 AIRE DE VALLEIRY SUD,46.09636,5.96418,Avia,2.409,2.219,2.299,,,1.160,egal,egal,egal,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 85440001,85440,Talmont-Saint-Hilaire,86 AVENUE DES SABLES,46.469,-1.629,Système U,2.169,1.979,2.049,2.019,,,egal,egal,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 25000007,25000,Besançon,17 Rue de l'Amitié,47.23329,5.98521,Super U,2.269,2.019,,2.079,0.829,,egal,egal,,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 44320002,44320,Arthon-en-Retz,ZA LE BUTAI,47.114543,-1.951124,Super U,2.179,1.999,2.069,,0.829,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+76700006,76700,HARFLEUR,3 RUE FREDERIC CHOPIN,49.5108452,0.1997851,TotalEnergies,2.250,,,,0.829,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 77176001,77176,SAVIGNY-LE-TEMPLE,8 avenue du 8 mai 1945,48.601883,2.5607875,Esso,2.250,1.990,,,0.856,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 74100008,74100,VETRAZ-MONTHOUX,17 rue des Teppes,46.1848515,6.2768633,Intermarché,2.269,2.009,2.119,,0.828,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 54340002,54340,POMPEY,ZA TURLOMONT,48.768,6.124,Avia,2.289,2.149,2.249,,0.899,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -4089,13 +4089,13 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 82100006,82100,Castelsarrasin,ZAC du Barraouet,44.0577447,1.1028997,Intermarché,2.257,1.999,2.133,2.065,0.829,,egal,egal,egal,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 25390001,25390,ORCHAMPS-VENNES,RUE DE LA VERDOLLE,47.128171,6.5228685,Super U,2.283,,2.134,2.077,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 80500003,80500,MONTDIDIER,Rue de Roye,49.6483673,2.5816139,E.Leclerc,2.199,1.989,2.080,,0.829,1.019,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-50100007,50100,Cherbourg-octeville,RUE DE LA SALINE,49.635,-1.615,TotalEnergies,2.194,1.990,,,0.849,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 11000005,11000,Carcassonne,13 Allée d'Iéna,43.211,2.345,Esso Express,2.238,2.029,2.109,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 78490002,78490,Méré,av arbre quenée,48.801553,1.820814,TotalEnergies,2.250,,1.990,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 27500004,27500,PONT-AUDEMER,Route de Bernay,49.3471154,0.5245305,Intermarché,2.209,1.999,2.099,,0.828,1.049,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 25370002,25370,Les Hôpitaux-Neufs,"52, route de Lausanne",46.7711247,6.3791788,Intermarché,2.264,,2.128,2.075,0.828,,baisse,,baisse,baisse,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 59151003,59151,BUGNICOURT,15T RTE NATIONALE,50.292,3.145,,2.203,1.990,,,,0.992,egal,egal,,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 63110002,63110,BEAUMONT,rue des Frères Lumière,45.745,3.09,Auchan,2.214,1.975,2.083,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+50100007,50100,Cherbourg-octeville,RUE DE LA SALINE,49.635,-1.615,TotalEnergies,2.194,,,,0.849,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 77210002,77210,AVON,36 Avenue du Président Franklin Roosevelt,48.414944,2.719592,Carrefour,2.211,2.006,2.116,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 38500001,38500,VOIRON,Z.A DES BLANCHISSERIES,45.385,5.578,Carrefour,2.189,,2.050,2.027,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 25150005,25150,PONT-DE-ROIDE,59 Rue de Montbéliard,47.3878458,6.7721612,Total Access,2.250,,,,,,egal,,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -4591,7 +4591,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 35000021,35200,RENNES,"CENTRE COMMERCIAL ALMA, 10 RUE B",48.084098,-1.6761765,Total Access,2.199,,,,,,egal,,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 1430003,01430,CEIGNES,AIRE DE CEIGNES HAUT BUGEY,46.118096,5.491106,Eni,2.499,2.329,2.399,,,1.149,egal,egal,egal,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 85000003,85000,LA ROCHE-SUR-YON,Boulevard Stéphane Moreau,46.667737,-1.4093259,Super U,2.165,1.976,2.040,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-78690003,78690,LES ESSARTS LE ROI,37- RN 10,48.718,1.883,Total Access,2.221,1.990,,,0.839,0.929,egal,egal,,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+78690003,78690,LES ESSARTS LE ROI,37- RN 10,48.718,1.883,Total Access,2.221,,,,0.839,0.929,egal,egal,,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 38980001,38980,Viriville,497 Route de Châtenay,45.321,5.207,Elan,2.190,,1.990,1.990,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 84800003,84800,L'ISLE-SUR-LA-SORGUE,Route de Carpentras,43.931,5.064,Intermarché,2.259,1.989,2.119,,0.829,1.069,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 52500003,52500,FAYL BILLOT,ROUTE DE VESOUL,47.7829928,5.6093633,Intermarché,2.239,2.019,2.175,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -4711,8 +4711,8 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 30150001,30150,Roquemaure,Boulevard National,44.05271,4.77918,Station Servoz,2.299,2.089,2.179,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 30900004,30900,Nîmes,15 RUE DES POETES,43.821726,4.337124,Esso Express,2.248,1.990,2.070,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 30900015,30900,NIMES,2290 ROUTE DE MONTPELLIER,43.81305,4.33267,TotalEnergies,2.250,1.990,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+29600004,29600,Saint-Martin-des-Champs,ROUTE DE ROSCOFF CD.19,48.5726213,-3.8498702,Carrefour,,,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 31200009,31200,TOULOUSE,AVENUE DES ETATS-UNIS,43.6395265,1.4296116,Esso,2.250,,,,,,egal,,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-29600004,29600,Saint-Martin-des-Champs,ROUTE DE ROSCOFF CD.19,48.5726213,-3.8498702,Carrefour,2.250,,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 83390002,83390,CUERS,RN 97 Quartier Saint Lazare,43.233,6.07,Casino,2.239,2.032,2.114,,0.879,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 31210006,31210,MONTREJEAU,21 BIS AVENUE DE SAINT GAUDENS,43.087507,0.575941,Total,2.250,,2.163,2.123,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 31200008,31200,Toulouse,168 Avenue des États-Unis,43.64,1.429,Esso,2.282,2.030,2.140,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -5754,11 +5754,11 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 56800006,56800,PLOERMEL,ROUTE NATIONALE 24 - AIRE SUD DE BROCÉLIANDE,47.9198775,-2.3638984,Shell,2.250,1.990,,,0.999,1.084,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 4120004,04120,Castellane,Boulevard Saint Michel,43.8519067,6.5078782,Auchan,2.315,2.118,2.219,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 21230006,21230,Arnay-le-Duc,Rue Lucienne et Jean Barnet,47.131,4.48,Avia,2.269,,2.199,2.169,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+38090004,38090,Villefontaine,62 AVENUE DE LA VERPILLIERE,45.6177773,5.1530611,Avia,2.249,,2.139,2.109,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 13006003,13006,MARSEILLE,88 Boulevard Notre-Dame,43.2862,5.37408,Avia,2.299,,,2.199,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 21200007,21200,BEAUNE,AV DU GENERAL DE GAULLE,47.017,4.836,Esso,2.339,2.179,2.289,,1.169,1.289,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 91510002,91510,Lardy,10 Rue jacques Cartier,48.531,2.294,,2.189,1.979,2.098,,0.828,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 27620002,27620,GASNY,ROUTE DE FOURGES,49.09375,1.60616,,2.202,2.008,2.111,,,,baisse,hausse,hausse,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-38090004,38090,Villefontaine,62 AVENUE DE LA VERPILLIERE,45.6177773,5.1530611,Avia,2.249,,2.139,2.109,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 24400004,24400,Saint-Médard-de-Mussidan,ZI,45.038,0.354,,2.192,1.983,2.089,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 86036001,86000,Poitiers,93 Route de Gençay,46.566067,0.354405,E.Leclerc,2.178,1.974,2.039,,0.801,1.008,egal,egal,hausse,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 76220008,76220,Gournay-en-Bray,69 avenue de la première armée française,49.473,1.726,JBeauval,2.219,,,2.017,0.847,,egal,,,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -5797,12 +5797,12 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 8300006,08300,SAULT-LèS-RETHEL,24 Rue de Reims,49.5012693,4.3583707,Intermarché,2.209,1.995,2.125,,0.829,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 59118001,59118,WAMBRECHIES,491 rue de Quesnoy,50.692,3.051,Match,2.179,1.959,2.059,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 60112002,60112,Troissereux,Rue de Dieppe,49.4820675,2.0420743,Total,2.250,1.990,1.990,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+30200006,30200,ORSAN,ROUTE D'AVIGNON - RN 580,44.131,4.675,,2.250,,,,0.834,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 56230002,56230,QUESTEMBERT,ZA de Lenruit,47.670067,-2.4506869,Intermarché,2.199,,,1.990,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 86180002,86180,BUXEROLLES,10 rue de la Charletterie,46.588974,0.369434,Système U,2.178,1.999,2.089,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 69651001,69651,Limas,19 avenue Edouard Hérriot,45.979,4.733,TotalEnergies,2.250,1.990,1.990,,0.899,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 57800002,57800,Betting,RN 3,49.139,6.799,Esso Express,2.268,2.073,2.153,,0.943,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 72000002,72100,LE MANS,BOULEVARD WINSTON CHURCHILL,47.992,0.225,Carrefour,2.219,2.009,2.089,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-30200006,30200,ORSAN,ROUTE D'AVIGNON - RN 580,44.131,4.675,,2.250,1.990,1.990,,0.834,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 82700004,82700,Finhan,59 BIS RD 813,43.9139074,1.225074,Carrefour,2.299,2.099,2.169,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 15300002,15300,Murat,36 Av. Hector Peschaud,45.107651,2.863003,Intermarché,2.250,,,,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 44000005,44300,Nantes,55 Boulevard Jules Verne,47.23769,-1.53264,TotalEnergies,2.250,,1.990,1.990,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -7512,13 +7512,13 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 11400004,11400,Castelnaudary,ROUTE DE CARCASSONNE,43.311,1.971,Total,2.250,1.990,1.990,,0.875,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 78380004,78380,BOUGIVAL,58 QUAI BOISSY D'ANGLAS,48.86849,2.131833,TotalEnergies,2.247,1.990,,,0.894,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 81115001,81100,Castres,"10, Rue Albert Calmette",43.589,2.186,,2.223,1.984,2.045,,0.854,1.036,hausse,hausse,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-83330001,83330,Le Beausset,BD.DU 11 NOVEMBRE,43.196,5.804,Augier,2.250,1.990,1.990,,0.858,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 62110001,62110,Hénin-Beaumont,1230 BOULEVARD ALBERT SCHWEITZER,50.416,2.976,Total,2.250,1.990,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 38260004,38260,La Côte-Saint-André,2935 chemin de la voie ferrée,45.3511259,5.2818948,Total,2.250,1.990,1.990,,,1.010,egal,egal,egal,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 24230003,24230,Montcaret,113 route du perigord pourpre,44.853236,0.06675,Total,2.235,,,1.990,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 1410001,01410,CHEZERY-FORENS,PLACE DE LA MAIRIE,46.223,5.868,Avia,2.320,2.150,2.250,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 62970003,62970,Courcelles-lès-Lens,RUE LOUIS BLANC,50.41648,3.0254,E.Leclerc,2.199,1.999,2.089,2.049,,,egal,egal,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 58300001,58300,DECIZE,Route de Champvert,46.838,3.479,,2.199,2.025,2.099,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+83330001,83330,Le Beausset,BD.DU 11 NOVEMBRE,43.196,5.804,Augier,2.250,,1.990,,0.858,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 7110004,07110,Largentière,76 avenue de la République,44.538,4.293,Carrefour,2.229,2.029,2.129,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 13008018,13008,Marseille,96 rue Jean Mermoz,43.274103,5.387068,Relais de Mermoz,2.299,,,2.199,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 17000005,17000,La Rochelle,124 Boulevard André Sautel,46.17,-1.127,E.Leclerc,2.173,1.969,2.030,,0.819,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -7632,10 +7632,10 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 86130002,86130,Dissay,RN10 - LONGEVE,46.719,0.42,Total,2.222,,1.990,,,,hausse,,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 60130001,60130,SAINT-JUST-EN-CHAUSSéE,Z.I. Nord,49.512,2.431,E.Leclerc,2.160,,2.067,2.024,0.827,,egal,,egal,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 38200014,38200,Vienne,14 Cours de Verdun,45.52,4.87,TotalEnergies,2.250,1.990,1.990,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-37170006,37170,CHAMBRAY-LÈS-TOURS,340 avenue du grand sud RD910,47.3162756,0.7107986,Total Access,2.236,1.990,,,0.829,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 13440002,13440,CABANNES,QUARTIER SAINT MICHEL,43.85945,4.9521535,Distrifioul Provence,2.295,2.031,2.150,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 49450006,49450,Saint-Macaire-en-Mauges,76 RUE CHOLETAISE - ST MACAIRE EN MAUGES,47.1218414,-0.984908,Total,2.199,1.990,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 76280004,76280,GONNEVILLE LA MALLET,20 RUE DU GENERAL FAIDHERBE,49.639,0.226,TotalEnergies,,,,,,,,,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+37170006,37170,CHAMBRAY-LÈS-TOURS,340 avenue du grand sud RD910,47.3162756,0.7107986,Total Access,2.236,,,,0.829,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 50190001,50190,PéRIERS,Rue de Carentan,49.189547,-1.4048248,Carrefour,2.219,,2.090,2.065,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 33500005,33500,LIBOURNE,11 Rue Pierre Benoit,44.90603,-0.23355,Intermarché,2.187,1.999,2.089,,,,hausse,hausse,hausse,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 73250001,73250,Saint-Pierre-d'Albigny,ZI DU CAROUGE,45.5533515,6.164034,Intermarché,2.249,1.999,2.139,2.069,,,egal,egal,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -7655,7 +7655,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 84120006,84120,Pertuis,"Route d'Aix en Provence, Quartier Saint Martin",43.681,5.501,Carrefour Market,2.258,2.026,,,0.754,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 38260002,38260,LA FRETTE,510 Route de Grenoble,45.387,5.369,TotalEnergies,2.250,1.990,1.990,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 12150007,12150,Sévérac d'Aveyron,37 AVENUE DE PARIS,44.329,3.069,Relais 9,2.248,,2.159,2.078,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-31400010,31400,TOULOUSE,36 ALLEE DES DEMOISELLES,43.5894951,1.4557131,TotalEnergies,2.250,1.990,1.990,,0.869,,egal,,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+31400010,31400,TOULOUSE,36 ALLEE DES DEMOISELLES,43.5894951,1.4557131,TotalEnergies,2.250,1.990,,,0.869,,egal,,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 13580002,13580,LA FARE-LES-OLIVIERS,Avenue des Puisatiers,43.549,5.184,Système U,2.199,,2.050,2.020,0.799,,egal,,egal,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 21800013,21800,CHEVIGNY SAINT SAUVEUR,1 RUE JEAN BAPTISTE SAY,47.304139,5.114495,Intermarché,2.249,2.029,,,0.828,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 62720002,62720,RINXENT,Rue Roger Salengro,50.807,1.73,,2.199,,2.089,2.029,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -8387,7 +8387,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 68000010,68000,Colmar,111 Route de Rouffach,48.064,7.34,Système U,2.329,2.159,2.229,,0.809,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 20153003,20153,GUITERA LES BAINS,RD 87,41.900404,9.097452,Total,2.229,,,1.990,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 44150004,44150,ANCENIS,BOULEVARD BAD BRUCKENAU,47.373,-1.185,Super U,2.159,1.989,2.067,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-76600025,76600,LE HAVRE,174 BOULEVARD DE L'AMIRAL MOUCH,49.48837,0.1502,TotalEnergies,2.203,,,,0.825,,egal,,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 46320002,46320,Durbans,l'aérodrome,44.670721,1.788755,TotalEnergies,,1.990,,,,,,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 66200005,66200,Latour-Bas-Elne,Zac des Aspres - Av. Lou Torrent,42.61,2.999,,2.269,2.029,2.159,,,,hausse,hausse,hausse,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 85210010,85210,SAINTE HERMINE,132 ROUTE DE NANTES,46.562323,-1.059185,Intermarché,2.239,2.019,2.119,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -8397,6 +8396,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 69500013,69500,BRON,142/144 AVENUE FRANKLIN ROOSEVELT,45.732574,4.908296,Intermarché,2.226,1.974,,,0.828,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 28150002,28150,Voves,Rue Denis Papin,48.279,1.623,Intermarché,2.179,1.969,2.079,,0.828,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 77260009,77260,LA FERTE SOUS JOUARRE,42 AVENUE FRANKLIN ROOSEVELT,48.944,3.121,Total,2.250,1.990,1.990,,,1.170,egal,egal,egal,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+76600025,76600,LE HAVRE,174 BOULEVARD DE L'AMIRAL MOUCH,49.48837,0.1502,TotalEnergies,2.203,,,,0.825,,egal,,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 30129003,30129,Redessan,Route de Beaucaire - Mas Volette,43.825232,4.495906,Auchan,2.259,1.999,,,0.829,,egal,egal,,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 50550003,50550,SAINT VAAST LA HOUGUE,1 RUE MARCEL PIGNOT,49.589136,-1.280108,Netto,2.196,1.998,2.096,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 34430003,34430,SAINT JEAN DE VEDAS,ROUTE DE SETE,43.5710484,3.8469766,Carrefour,2.269,2.012,2.109,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -8915,7 +8915,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 27009001,27000,EVREUX,Boulevard de Normandie,49.022,1.136,Cora,2.188,1.974,2.094,,,0.995,egal,egal,egal,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 26600014,26600,Pont-de-l'Isère,RN7,45.0062003,4.8709348,Total Access,2.228,1.990,,,0.844,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 11250001,11250,Rouffiac d'Aude,"100 chemin de la plaine, station service total",43.124,2.294,TotalEnergies,2.215,,,1.990,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-31700009,31700,BLAGNAC,120 ROUTE DE GRENADE,43.6381847,1.3902772,Total,2.243,1.990,1.990,,,0.989,egal,egal,egal,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+31700009,31700,BLAGNAC,120 ROUTE DE GRENADE,43.6381847,1.3902772,Total,2.243,1.990,,,,0.989,egal,egal,egal,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 56150005,56150,BAUD,17 rue d'Auray,47.87,-3.022,,2.222,1.990,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 88100006,88100,SAINTE-MARGUERITE,183 Rue Ernest Charlier,48.272,6.97,Carrefour,2.369,2.099,2.184,,0.828,1.035,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 84800001,84800,L'Isle-sur-la-Sorgue,82 CHEMIN DES ESPELUGUES,43.925,5.063,Système U,2.279,2.019,2.139,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -9702,7 +9702,6 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 87160008,87160,Saint-Sulpice-les-Feuilles,AUT A 20  AIRE DE BOISMANDE,46.313794,1.420283,Shell,2.661,2.528,2.678,,,1.117,hausse,hausse,hausse,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 31450003,31450,MONTGISCARD,Route Départ. 813 Lieu dit en Rouzaut,43.454,1.585,Intermarché,2.234,1.989,2.119,,0.828,1.129,hausse,egal,hausse,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 33500004,33500,Libourne,23 Avenue de la Roudet,44.9293121,-0.2403069,E.Leclerc,2.169,1.989,2.069,,0.828,1.042,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-64440003,64440,LARUNS,29 Avenue de Gerp,42.981734,-0.422651,TotalEnergies,2.200,,1.990,1.990,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 42120004,42120,LE COTEAU,31 boulevard Charles de Gaulle,46.015001,4.09651,TotalEnergies,2.250,1.990,1.990,,0.899,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 64130006,64130,Mauléon-Licharre,36 Boulevard des Pyrénées,43.226249,-0.885164,Carrefour Market,2.290,,2.290,2.199,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 57303001,57300,Mondelange,1 rue de Bousse BP20 MONDELANGE,49.262,6.175,Cora,2.380,2.180,,2.220,0.901,0.950,egal,egal,,egal,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -9711,6 +9710,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 18160002,18160,CHEZAL BENOIT,ROUTE D'ISSOUDUN,46.8362257,2.1086473,TotalEnergies,2.234,,,1.990,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 76620001,76620,Le Havre,centre commercial grand cap,49.523,0.11,Auchan,2.198,1.990,2.073,,0.824,0.981,hausse,egal,hausse,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 92000019,92000,NANTERRE,"77, AVENUE LENINE",48.888,2.19,TotalEnergies,2.243,1.990,1.990,,0.899,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+64440003,64440,LARUNS,29 Avenue de Gerp,42.981734,-0.422651,TotalEnergies,2.200,,,,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 72300006,72300,Sablé-sur-Sarthe,route de LAVAL,47.850864,-0.351916,Super U,2.189,2.009,,,,,hausse,hausse,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 34240001,34240,lamalou les bains,3 avenue d'alsace,43.588046,3.082975,TotalEnergies,2.250,,1.990,1.990,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 30700004,30700,Montaren-et-Saint-Médiers,Route d'Alès,44.025,4.389,Intermarché,2.231,1.989,2.107,2.064,0.828,,hausse,hausse,egal,egal,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
