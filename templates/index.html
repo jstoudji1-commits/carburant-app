@@ -1972,6 +1972,70 @@ body{
     white-space:nowrap;
 }
 
+.prix-bulle.avec-avantage-total{
+    min-width:188px;
+    align-items:stretch;
+    flex-direction:column;
+    gap:2px;
+    padding:4px 6px 3px;
+}
+
+.prix-bulle-ligne-principale{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    min-width:0;
+}
+
+.avantage-total-ligne{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    width:100%;
+    min-width:0;
+    overflow:hidden;
+    color:#40576a;
+    font-size:9px;
+    font-weight:800;
+    line-height:1.15;
+    text-align:left;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.avantage-total-carte{
+    position:relative;
+    flex:0 0 22px;
+    width:22px;
+    height:13px;
+    overflow:hidden;
+    border:1px solid #d8e0e7;
+    border-radius:3px;
+    background:#fff;
+    box-shadow:0 1px 2px rgba(16,37,54,0.18);
+}
+
+.avantage-total-carte::after{
+    content:"";
+    position:absolute;
+    right:2px;
+    bottom:2px;
+    width:5px;
+    height:2px;
+    border-radius:1px;
+    background:#e9eef2;
+}
+
+.avantage-total-carte img{
+    position:absolute;
+    top:2px;
+    left:2px;
+    width:10px;
+    height:9px;
+    object-fit:contain;
+}
+
 .borne-statut{
     display:inline-flex;
     align-items:center;
@@ -6756,6 +6820,22 @@ function creerLogoEnseigne(nom, contexte) {
         + '</span>';
 }
 
+function htmlAvantageCarburantTotal(avantage) {
+    if (!avantage || Number(avantage.prix_plafond) !== 1.99) {
+        return "";
+    }
+
+    return ''
+        + '<div class="avantage-total-ligne"'
+        + ' title="Avantage Carburant TotalEnergies : prix plafonné à 1,99 €/L"'
+        + ' aria-label="Carte Club TotalEnergies, prix plafonné à 1,99 euro par litre">'
+        + '<span class="avantage-total-carte" aria-hidden="true">'
+        + '<img src="/static/brand-logos/totalenergies.png" alt="">'
+        + '</span>'
+        + '<span>Carte Club · plafond 1,99 €/L</span>'
+        + '</div>';
+}
+
 var logoStationPrixMinimum = document.getElementById("stat-station-logo");
 if (logoStationPrixMinimum) {
     logoStationPrixMinimum.innerHTML = creerLogoEnseigne(
@@ -6800,6 +6880,10 @@ var logoEnseignePopup{{ loop.index }} = creerLogoEnseigne(
     nomEnseigne{{ loop.index }},
     "popup"
 );
+var avantageTotal{{ loop.index }} = {{ station.get("avantage_totalenergies")|tojson }};
+var avantageTotalHtml{{ loop.index }} = htmlAvantageCarburantTotal(
+    avantageTotal{{ loop.index }}
+);
 
 stationsEconomie.push({
     id: {{ station.id|tojson }},
@@ -6817,7 +6901,8 @@ var prixIcon = L.divIcon({
     className: "prix-marker",
 
     html: `
-        <div class="prix-bulle{% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %} indisponible{% endif %}">
+        <div class="prix-bulle{% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %} indisponible{% endif %}${avantageTotalHtml{{ loop.index }} ? " avec-avantage-total" : ""}">
+            ${avantageTotalHtml{{ loop.index }} ? '<div class="prix-bulle-ligne-principale">' : ''}
             ${logoEnseigneCarte{{ loop.index }}}
             <span>
             {% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %}
@@ -6836,11 +6921,13 @@ var prixIcon = L.divIcon({
                 {% if station.tendance_selectionnee == "baisse" %}&#8595;{% elif station.tendance_selectionnee == "hausse" %}&#8593;{% else %}={% endif %}
             </button>
             {% endif %}
+            ${avantageTotalHtml{{ loop.index }} ? '</div>' : ''}
+            ${avantageTotalHtml{{ loop.index }}}
         </div>
     `,
 
-    iconSize: [132, 36],
-    iconAnchor: [66, 18]
+    iconSize: avantageTotalHtml{{ loop.index }} ? [198, 49] : [132, 36],
+    iconAnchor: avantageTotalHtml{{ loop.index }} ? [99, 25] : [66, 18]
 
 });
 
@@ -7287,7 +7374,8 @@ function normaliserStationCarte(station) {
         tarifContributeur: station.tarif_contributeur || "",
         tarifDeclareLe: station.tarif_declare_le || "",
         tarifConfirmeLe: station.tarif_confirme_le || "",
-        tarifContributionStatut: station.tarif_contribution_statut || ""
+        tarifContributionStatut: station.tarif_contribution_statut || "",
+        avantageTotalenergies: station.avantage_totalenergies || null
     };
 
 }
@@ -7318,6 +7406,9 @@ function creerMarqueurStationDynamique(stationBrute) {
         ? " borne-irve statut-borne-" + statutDisponibiliteIrve(station)
         : "";
     var tarifPreferentielHtml = htmlTarifPreferentielMarqueur(station);
+    var avantageTotalHtml = htmlAvantageCarburantTotal(
+        station.avantageTotalenergies
+    );
     var classeTarifPreferentiel = tarifPreferentielHtml
         ? " avec-remise"
         : "";
@@ -7328,20 +7419,26 @@ function creerMarqueurStationDynamique(stationBrute) {
             + indisponible
             + classeStatutBorne
             + classeTarifPreferentiel
+            + (avantageTotalHtml ? " avec-avantage-total" : "")
             + '">'
-            + (tarifPreferentielHtml ? '<div class="prix-bulle-ligne-prix">' : '')
+            + (tarifPreferentielHtml
+                ? '<div class="prix-bulle-ligne-prix">'
+                : avantageTotalHtml
+                    ? '<div class="prix-bulle-ligne-principale">'
+                    : '')
             + logoCarte
             + '<span>' + echapperHtml(prixHtml) + '</span>'
             + htmlIndicateurTendance(station.tendance, station.prix)
-            + (tarifPreferentielHtml ? '</div>' : '')
+            + (tarifPreferentielHtml || avantageTotalHtml ? '</div>' : '')
             + tarifPreferentielHtml
+            + avantageTotalHtml
             + '</div>',
         iconSize: stationElectrique(station)
             ? (tarifPreferentielHtml ? [184, 49] : [146, 38])
-            : [132, 36],
+            : (avantageTotalHtml ? [198, 49] : [132, 36]),
         iconAnchor: stationElectrique(station)
             ? (tarifPreferentielHtml ? [92, 25] : [73, 19])
-            : [66, 18]
+            : (avantageTotalHtml ? [99, 25] : [66, 18])
     });
     var distanceHtml = station.distance !== null
         ? '<p class="station-popup-distance">Distance : '
