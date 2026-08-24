@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 import asyncio
 import csv
 from contextlib import asynccontextmanager, suppress
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from email.message import EmailMessage
 from email.utils import getaddresses
 import base64
@@ -131,6 +131,10 @@ TESTEURS_FICHIER = (
 )
 STATIONS_REPO_CSV = Path(__file__).resolve().parent / "stations.csv"
 STATIONS_RUNTIME_CSV = DOSSIER_DONNEES_UTILISATEURS / "stations.csv"
+TOTALENERGIES_AVANTAGE_FICHIER = (
+    Path(__file__).resolve().parent
+    / "totalenergies_avantage_carburant.json"
+)
 IRVE_STATIQUE_URL = (
     "https://proxy.transport.data.gouv.fr/resource/"
     "consolidation-transport-irve-statique"
@@ -2735,6 +2739,36 @@ def charger_stations(appliquer_corrections=True):
     return stations
 
 
+def charger_avantage_carburant_totalenergies():
+
+    try:
+        donnees = json.loads(
+            TOTALENERGIES_AVANTAGE_FICHIER.read_text(encoding="utf-8")
+        )
+        date_fin = date.fromisoformat(str(donnees.get("valid_until", "")))
+        if date.today() > date_fin:
+            return {}
+        stations = donnees.get("stations", {})
+        prix_plafond = float(donnees.get("price_cap_eur_per_litre"))
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        logger.exception(
+            "Impossible de charger les stations Avantage Carburant."
+        )
+        return {}
+
+    return {
+        str(identifiant): {
+            "nom": str(donnees.get("offer_name") or "Avantage Carburant"),
+            "prix_plafond": prix_plafond,
+            "valide_jusquau": date_fin.isoformat(),
+            "verifie_le": str(donnees.get("verified_at") or ""),
+            "source_url": str(station.get("source_url") or ""),
+        }
+        for identifiant, station in stations.items()
+        if isinstance(station, dict)
+    }
+
+
 def distance_km(
     lat1,
     lon1,
@@ -2780,6 +2814,7 @@ def preparer_stations_pour_carte(
 ):
 
     stations_preparees = []
+    avantages_totalenergies = charger_avantage_carburant_totalenergies()
 
     # Quel que soit le carburant choisi, une ligne sans prix exploitable ne
     # prouve pas que ce produit est vendu par la station. Elle ne doit donc ni
@@ -2847,6 +2882,9 @@ def preparer_stations_pour_carte(
         station["confiance_demain_selectionnee"] = station.get(
             f"confiance_demain_{carburant}",
             "",
+        )
+        station["avantage_totalenergies"] = avantages_totalenergies.get(
+            str(station.get("id", ""))
         )
 
     return stations_preparees
@@ -5824,6 +5862,9 @@ def get_stations_proches(
                 "confiance_demain": station.get(
                     "confiance_demain_selectionnee",
                     "",
+                ),
+                "avantage_totalenergies": station.get(
+                    "avantage_totalenergies"
                 ),
             }
             for station in stations
