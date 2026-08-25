@@ -7349,33 +7349,54 @@ function normaliserStationCarte(station) {
             : null,
         carburant: (station.carburant || carburantSelectionne).toUpperCase(),
         tendance: station.tendance || "",
-        tendanceDemain: station.tendance_demain || "stable",
-        confianceDemain: Number(station.confiance_demain) || 1,
+        tendanceDemain:
+            station.tendance_demain || station.tendanceDemain || "stable",
+        confianceDemain:
+            Number(station.confiance_demain ?? station.confianceDemain) || 1,
         energie: station.energie || "",
-        puissanceKw: Number(station.puissance_kw),
+        puissanceKw: Number(station.puissance_kw ?? station.puissanceKw),
         prises: Array.isArray(station.prises) ? station.prises : [],
         disponibilite: station.disponibilite || "",
         disponibles: Number(station.disponibles) || 0,
         occupes: Number(station.occupes) || 0,
-        horsService: Number(station.hors_service) || 0,
+        horsService: Number(station.hors_service ?? station.horsService) || 0,
         disponibiliteInconnue:
-            Number(station.disponibilite_inconnue) || 0,
-        nbrePdc: Number(station.nbre_pdc) || 0,
-        prixEstime: Boolean(station.prix_estime),
+            Number(
+                station.disponibilite_inconnue
+                ?? station.disponibiliteInconnue
+            ) || 0,
+        nbrePdc: Number(station.nbre_pdc ?? station.nbrePdc) || 0,
+        prixEstime: Boolean(station.prix_estime ?? station.prixEstime),
         tarification: station.tarification || "",
-        tarifsOptions: Array.isArray(station.tarifs_options)
-            ? station.tarifs_options
+        tarifsOptions: Array.isArray(
+            station.tarifs_options ?? station.tarifsOptions
+        )
+            ? (station.tarifs_options ?? station.tarifsOptions)
             : [],
-        tarifSourceUrl: station.tarif_source_url || "",
-        tarifSourceLabel: station.tarif_source_label || "",
-        tarifVerifieLe: station.tarif_verifie_le || "",
-        tarifRemiseCourte: station.tarif_remise_courte || "",
-        tarifProvenance: station.tarif_provenance || "",
-        tarifContributeur: station.tarif_contributeur || "",
-        tarifDeclareLe: station.tarif_declare_le || "",
-        tarifConfirmeLe: station.tarif_confirme_le || "",
-        tarifContributionStatut: station.tarif_contribution_statut || "",
-        avantageTotalenergies: station.avantage_totalenergies || null
+        tarifSourceUrl:
+            station.tarif_source_url || station.tarifSourceUrl || "",
+        tarifSourceLabel:
+            station.tarif_source_label || station.tarifSourceLabel || "",
+        tarifVerifieLe:
+            station.tarif_verifie_le || station.tarifVerifieLe || "",
+        tarifRemiseCourte:
+            station.tarif_remise_courte || station.tarifRemiseCourte || "",
+        tarifProvenance:
+            station.tarif_provenance || station.tarifProvenance || "",
+        tarifContributeur:
+            station.tarif_contributeur || station.tarifContributeur || "",
+        tarifDeclareLe:
+            station.tarif_declare_le || station.tarifDeclareLe || "",
+        tarifConfirmeLe:
+            station.tarif_confirme_le || station.tarifConfirmeLe || "",
+        tarifContributionStatut:
+            station.tarif_contribution_statut
+            || station.tarifContributionStatut
+            || "",
+        avantageTotalenergies:
+            station.avantage_totalenergies
+            || station.avantageTotalenergies
+            || null
     };
 
 }
