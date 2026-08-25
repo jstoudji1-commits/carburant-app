@@ -1973,7 +1973,7 @@ body{
 }
 
 .prix-bulle.avec-avantage-total{
-    min-width:126px;
+    min-width:108px;
     align-items:stretch;
     flex-direction:column;
     gap:2px;
@@ -1993,6 +1993,7 @@ body{
     align-items:center;
     gap:4px;
     width:100%;
+    justify-content:center;
     min-width:0;
     overflow:hidden;
     color:#40576a;
@@ -6832,7 +6833,7 @@ function htmlAvantageCarburantTotal(avantage) {
         + '<span class="avantage-total-carte" aria-hidden="true">'
         + '<img src="/static/brand-logos/totalenergies.png" alt="">'
         + '</span>'
-        + '<span>1,99 €/L</span>'
+        + '<span>1,99 €</span>'
         + '</div>';
 }
 
@@ -6926,8 +6927,8 @@ var prixIcon = L.divIcon({
         </div>
     `,
 
-    iconSize: avantageTotalHtml{{ loop.index }} ? [146, 49] : [132, 36],
-    iconAnchor: avantageTotalHtml{{ loop.index }} ? [73, 25] : [66, 18]
+    iconSize: avantageTotalHtml{{ loop.index }} ? [124, 49] : [132, 36],
+    iconAnchor: avantageTotalHtml{{ loop.index }} ? [62, 25] : [66, 18]
 
 });
 
@@ -7456,10 +7457,10 @@ function creerMarqueurStationDynamique(stationBrute) {
             + '</div>',
         iconSize: stationElectrique(station)
             ? (tarifPreferentielHtml ? [184, 49] : [146, 38])
-            : (avantageTotalHtml ? [146, 49] : [132, 36]),
+            : (avantageTotalHtml ? [124, 49] : [132, 36]),
         iconAnchor: stationElectrique(station)
             ? (tarifPreferentielHtml ? [92, 25] : [73, 19])
-            : (avantageTotalHtml ? [73, 25] : [66, 18])
+            : (avantageTotalHtml ? [62, 25] : [66, 18])
     });
     var distanceHtml = station.distance !== null
         ? '<p class="station-popup-distance">Distance : '
