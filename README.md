@@ -81,3 +81,18 @@ les pages utilitaires. La carte et la landing portent aussi une directive
 
 Les operations manuelles a effectuer dans Google Search Console sont detaillees
 dans `SEARCH_CONSOLE_CHECKLIST.md`.
+
+## Stations TotalEnergies participantes
+
+Le fichier `totalenergies_avantage_carburant.json` contient les stations du
+localisateur officiel portant le filtre `OpeAvantageCarburant`, rapprochées des
+identifiants gouvernementaux utilisés par la carte. Il est généré avec :
+
+```bash
+python3 update_totalenergies_avantage_carburant.py
+```
+
+Le script refuse de remplacer le fichier si la réponse officielle est
+anormalement faible. Les stations qui ne peuvent pas être rapprochées à moins
+de 500 mètres restent dans la section `unmatched` pour contrôle manuel et ne
+sont pas affichées comme participantes.

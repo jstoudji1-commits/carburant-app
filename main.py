@@ -2750,6 +2750,11 @@ def charger_avantage_carburant_totalenergies():
             return {}
         stations = donnees.get("stations", {})
         prix_plafond = float(donnees.get("price_cap_eur_per_litre"))
+        date_generation = str(
+            donnees.get("generated_at")
+            or donnees.get("verified_at")
+            or ""
+        )
     except (OSError, ValueError, TypeError, json.JSONDecodeError):
         logger.exception(
             "Impossible de charger les stations Avantage Carburant."
@@ -2761,7 +2766,7 @@ def charger_avantage_carburant_totalenergies():
             "nom": str(donnees.get("offer_name") or "Avantage Carburant"),
             "prix_plafond": prix_plafond,
             "valide_jusquau": date_fin.isoformat(),
-            "verifie_le": str(donnees.get("verified_at") or ""),
+            "verifie_le": date_generation,
             "source_url": str(station.get("source_url") or ""),
         }
         for identifiant, station in stations.items()
