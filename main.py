@@ -212,7 +212,9 @@ PBKDF2_ITERATIONS = 260000
 PREMIUM_TEST_ACTIF = True
 DELAI_VALIDATION_EMAIL_SECONDES = 24 * 60 * 60
 DELAI_RECUPERATION_MOT_DE_PASSE_SECONDES = 60 * 60
-DUREE_SESSION_COMPTE_SECONDES = 90 * 24 * 60 * 60
+# Une connexion reste valable un an sur l'appareil. La déconnexion volontaire,
+# un changement de secret ou l'expiration du jeton l'invalident toujours.
+DUREE_SESSION_COMPTE_SECONDES = 365 * 24 * 60 * 60
 
 
 class SignalementProbleme(BaseModel):
@@ -280,6 +282,7 @@ class MiseAJourPreferencesCompte(BaseModel):
     rayon_stations: int = 25
     theme: Literal["auto", "jour", "nuit"] = "auto"
     notifications: bool = True
+    carte_totalenergies: bool = False
 
 
 class ChoixVehiculePrincipalCompte(BaseModel):
@@ -1492,6 +1495,9 @@ def preferences_compte_nettoye(preferences, rayon_stations=25):
         "rayon_stations": max(5, min(50, rayon)),
         "theme": theme,
         "notifications": bool(preferences.get("notifications", True)),
+        "carte_totalenergies": bool(
+            preferences.get("carte_totalenergies", False)
+        ),
     }
 
 
@@ -6205,6 +6211,7 @@ def lire_donnees_compte(request: Request):
     return {
         "ok": True,
         "email": email,
+        "token": creer_session(email),
         "donnees": donnees_compte_premium_test(
             donnees
         ),
