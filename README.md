@@ -96,3 +96,18 @@ Le script refuse de remplacer le fichier si la réponse officielle est
 anormalement faible. Les stations qui ne peuvent pas être rapprochées à moins
 de 500 mètres restent dans la section `unmatched` pour contrôle manuel et ne
 sont pas affichées comme participantes.
+
+L’utilisateur peut activer « Avantage TotalEnergies 1,99 € » sous la carte.
+Cette préférence est sauvegardée avec son compte. Le calcul de rentabilité
+utilise alors le prix le plus faible entre le prix public et 1,99 €/L, seulement
+pour les stations participantes et les carburants éligibles. La recharge
+électrique n’est jamais concernée.
+
+## Persistance du compte
+
+Le jeton de connexion est conservé dans le stockage local de l’application,
+renouvelé à chaque synchronisation réussie et valable un an. Une panne réseau
+ou un démarrage lent du serveur conserve la connexion et déclenche une nouvelle
+tentative ; seuls un jeton invalide ou expiré, un compte absent ou une
+déconnexion volontaire effacent la session locale. La variable Render
+`ACCOUNT_TOKEN_SECRET` doit rester stable entre les déploiements.
