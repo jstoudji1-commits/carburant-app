@@ -883,6 +883,10 @@ body{
     margin:12px 18px 0;
 }
 
+.filtres-bornes-electriques[hidden]{
+    display:none;
+}
+
 .filtre-borne-electrique{
     position:relative;
     display:inline-flex;
@@ -4187,6 +4191,26 @@ body{
             </label>
         </div>
         {% endif %}
+
+        <div
+            class="filtres-bornes-electriques"
+            id="avantage-totalenergies-controle"
+            aria-label="Avantage Carburant TotalEnergies"
+            hidden
+        >
+            <label
+                class="filtre-borne-electrique"
+                for="carte-totalenergies-active"
+                title="Applique le plafond de 1,99 €/L aux stations participantes"
+            >
+                <input
+                    type="checkbox"
+                    id="carte-totalenergies-active"
+                    onchange="modifierCarteTotalenergies()"
+                >
+                <span>Avantage TotalEnergies 1,99 € activ&eacute;</span>
+            </label>
+        </div>
 
         <div id="bottom-card" class="bottom-card">
             <div id="bottom-card-icon" class="bottom-icon">Eco</div>
@@ -7874,6 +7898,7 @@ var alertesPrixCle = "optiplein-alertes-prix";
 var optimisationPremiumCle = "optiplein-optimisation-premium";
 var compteTokenCle = "optiplein-compte-token";
 var compteEmailCle = "optiplein-compte-email";
+var carteTotalenergiesCle = "optiplein-carte-totalenergies";
 var modeDecouvertePremiumActif = true;
 var choixFormuleMasquePendantTest = true;
 var publiciteAdsenseActive = {{ adsense_active|tojson }};
@@ -7882,6 +7907,7 @@ var nombreMaximumFavorisGratuit = 3;
 var nombreMaximumVehiculesGratuit = 1;
 var nombreMaximumVehiculesPremium = 5;
 var sauvegardeCompteTimer = null;
+var restaurationSessionCompteTimer = null;
 var applicationDonneesCompteEnCours = false;
 
 function planCompteActuel() {
@@ -8023,6 +8049,54 @@ function compteUtilisateurConnecte() {
     return Boolean(jetonCompte());
 
 }
+
+function carburantEligibleAvantageTotalenergies(carburant) {
+
+    return ["gazole", "sp95", "sp98", "e10", "e85", "gplc"].includes(
+        String(carburant || "").toLowerCase()
+    );
+
+}
+
+function carteTotalenergiesActive() {
+
+    return localStorage.getItem(carteTotalenergiesCle) === "true";
+
+}
+
+function actualiserControleCarteTotalenergies() {
+
+    var conteneur = document.getElementById(
+        "avantage-totalenergies-controle"
+    );
+    var caseCarte = document.getElementById("carte-totalenergies-active");
+    var vehicule = vehiculeActif();
+    var carburant = vehicule ? carburantPourVehicule(vehicule) : "";
+    var afficher = Boolean(
+        vehicule && carburantEligibleAvantageTotalenergies(carburant)
+    );
+
+    if (conteneur) {
+        conteneur.hidden = !afficher;
+    }
+    if (caseCarte) {
+        caseCarte.checked = carteTotalenergiesActive();
+        caseCarte.disabled = !afficher;
+    }
+
+}
+
+window.modifierCarteTotalenergies = function() {
+
+    var caseCarte = document.getElementById("carte-totalenergies-active");
+    localStorage.setItem(
+        carteTotalenergiesCle,
+        String(Boolean(caseCarte && caseCarte.checked))
+    );
+    programmerSauvegardeCompte();
+    calculerMeilleureStation();
+
+};
 
 function masquerPubliciteVide() {
 
@@ -8431,6 +8505,13 @@ function donneesCompteLocales() {
         favoris: lireFavoris(),
         vehicules: lireVehicules(),
         vehicule_actif: localStorage.getItem(vehiculeActifCle) || "",
+        preferences: {
+            carburant: carburantRentabiliteActuel(),
+            rayon_stations: rayonStationsCompteActuel(),
+            theme: "auto",
+            notifications: true,
+            carte_totalenergies: carteTotalenergiesActive()
+        },
         plan: compteUtilisateurConnecte() ? "premium" : planCompteActuel(),
         historique_economies: lireHistoriqueEconomies(),
         lieux_trajet: lireLieuxTrajet(),
@@ -8489,6 +8570,13 @@ function appliquerDonneesCompte(donnees) {
     localStorage.setItem(
         planCompteCle,
         donnees.plan === "premium" ? "premium" : "free"
+    );
+    localStorage.setItem(
+        carteTotalenergiesCle,
+        String(Boolean(
+            donnees.preferences
+            && donnees.preferences.carte_totalenergies
+        ))
     );
 
     if (donnees.vehicule_actif) {
@@ -8596,9 +8684,11 @@ async function requeteCompte(chemin, options) {
     );
 
     if (!reponse.ok) {
-        throw new Error(
+        var erreurRequete = new Error(
             resultat.detail || "Action impossible pour le moment."
         );
+        erreurRequete.status = reponse.status;
+        throw erreurRequete;
     }
 
     return resultat;
@@ -8717,6 +8807,8 @@ window.deconnecterCompteOptiPlein = function(event) {
 
     localStorage.removeItem(compteTokenCle);
     localStorage.removeItem(compteEmailCle);
+    window.clearTimeout(restaurationSessionCompteTimer);
+    restaurationSessionCompteTimer = null;
     actualiserInterfaceCompte();
     actualiserPlanCompte();
     calculerMeilleureStation();
@@ -8779,21 +8871,67 @@ async function restaurerSessionCompte() {
                 method: "GET"
             }
         );
+        if (resultat.token) {
+            localStorage.setItem(compteTokenCle, resultat.token);
+        }
+        if (resultat.email) {
+            localStorage.setItem(compteEmailCle, resultat.email);
+        }
         appliquerDonneesCompte(resultat.donnees || {});
+        window.clearTimeout(restaurationSessionCompteTimer);
+        restaurationSessionCompteTimer = null;
         definirStatutCompte(
             "Donn\u00e9es du compte synchronis\u00e9es.",
             "success"
         );
     } catch (erreur) {
-        localStorage.removeItem(compteTokenCle);
-        actualiserInterfaceCompte();
-        definirStatutCompte(
-            erreur.message,
-            "error"
-        );
+        if (
+            erreur.status === 401
+            || erreur.status === 403
+            || erreur.status === 404
+        ) {
+            localStorage.removeItem(compteTokenCle);
+            actualiserInterfaceCompte();
+            definirStatutCompte(erreur.message, "error");
+        } else {
+            // Une coupure réseau ou un serveur momentanément indisponible ne
+            // doit jamais déconnecter l'utilisateur au démarrage de l'app.
+            definirStatutCompte(
+                "Connexion conservée. La synchronisation reprendra automatiquement.",
+                ""
+            );
+            programmerRestaurationSessionCompte();
+        }
     }
 
 }
+
+function programmerRestaurationSessionCompte() {
+
+    if (
+        restaurationSessionCompteTimer
+        || !compteUtilisateurConnecte()
+    ) {
+        return;
+    }
+
+    restaurationSessionCompteTimer = window.setTimeout(
+        function() {
+            restaurationSessionCompteTimer = null;
+            restaurerSessionCompte();
+        },
+        30000
+    );
+
+}
+
+window.addEventListener("online", function() {
+    if (compteUtilisateurConnecte()) {
+        window.clearTimeout(restaurationSessionCompteTimer);
+        restaurationSessionCompteTimer = null;
+        restaurerSessionCompte();
+    }
+});
 
 function afficherRetourValidationEmail() {
 
@@ -12007,6 +12145,30 @@ function calculerEconomieMonetaireStation(
 
 }
 
+function prixRentabiliteAvecCarteTotalenergies(
+    station,
+    carteActive,
+    carburant
+) {
+
+    var prixPublic = Number(station && station.prix);
+    var avantage = station && station.avantageTotalenergies;
+    var plafond = Number(avantage && avantage.prix_plafond);
+
+    if (
+        !carteActive
+        || !carburantEligibleAvantageTotalenergies(carburant)
+        || !Number.isFinite(prixPublic)
+        || !Number.isFinite(plafond)
+        || plafond <= 0
+    ) {
+        return prixPublic;
+    }
+
+    return Math.min(prixPublic, plafond);
+
+}
+
 function formaterEurosRentabilite(valeur) {
 
     return Number(valeur || 0).toLocaleString(
@@ -12169,6 +12331,11 @@ function ajouterExplicationRentabilite(
         )
         + " = "
         + formaterEurosRentabilite(station.coutCarburantAchete)
+        + (
+            station.avantageTotalenergiesApplique
+                ? " au plafond Avantage TotalEnergies de 1,99 €/L"
+                : ""
+        )
         + ", d\u00e9tour "
         + formaterKmRentabilite(station.distanceDetourKm)
         + " = "
@@ -12205,6 +12372,24 @@ function calculerRentabiliteStations(
     consommation,
     quantiteACompleter
 ) {
+
+    var carburantRentabilite = carburantRentabiliteActuel();
+    var carteActive = carteTotalenergiesActive();
+    stationsDisponibles = stationsDisponibles.map(function(station) {
+        var prixPublic = Number(station.prix);
+        var prixEffectif = prixRentabiliteAvecCarteTotalenergies(
+            station,
+            carteActive,
+            carburantRentabilite
+        );
+
+        return Object.assign({}, station, {
+            prixPublic: prixPublic,
+            prix: prixEffectif,
+            avantageTotalenergiesApplique:
+                Number.isFinite(prixEffectif) && prixEffectif < prixPublic
+        });
+    });
 
     var prixTrajetReference = stationsDisponibles.reduce(
         function(total, station) {
@@ -12809,6 +12994,11 @@ window.calculerMeilleureStation = function() {
                 ? " \u20ac/kWh \u00b7 "
                 : " \u20ac/L \u00b7 "
         )
+        + (
+            meilleureStation.avantageTotalenergiesApplique
+                ? "plafond carte TotalEnergies appliqué \u00b7 "
+                : ""
+        )
         + distanceFormatee
         + " km \u00b7 ";
     var economieMiseEnAvant = document.createElement("span");
@@ -13084,6 +13274,7 @@ function chargerVehicule() {
     );
 
     actualiserProfilVehicule();
+    actualiserControleCarteTotalenergies();
 
     var jauge = document.getElementById("vehicule-jauge");
     if (jauge) {
