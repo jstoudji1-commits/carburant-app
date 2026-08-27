@@ -927,6 +927,101 @@ body{
     outline-offset:2px;
 }
 
+.avantage-totalenergies-controle{
+    display:block;
+}
+
+.avantage-totalenergies-option{
+    position:relative;
+    width:100%;
+    min-height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:13px 15px;
+    border:1px solid rgba(20,159,56,0.28);
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 4px 12px rgba(16,37,54,0.08);
+    color:var(--ink);
+    cursor:pointer;
+    user-select:none;
+    transition:border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.avantage-totalenergies-option:has(input:checked){
+    border-color:var(--green);
+    background:linear-gradient(135deg, #fff 0%, var(--green-soft) 100%);
+    box-shadow:0 0 0 2px rgba(20,159,56,0.12), 0 6px 16px rgba(16,37,54,0.10);
+}
+
+.avantage-totalenergies-option:has(input:focus-visible){
+    outline:3px solid rgba(20,159,56,0.26);
+    outline-offset:2px;
+}
+
+.avantage-totalenergies-option input{
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+}
+
+.avantage-totalenergies-texte{
+    min-width:0;
+    display:grid;
+    gap:4px;
+}
+
+.avantage-totalenergies-texte strong{
+    color:var(--ink);
+    font-size:14px;
+    font-weight:900;
+    line-height:1.2;
+}
+
+.avantage-totalenergies-texte small{
+    color:#526674;
+    font-size:12px;
+    font-weight:650;
+    line-height:1.3;
+}
+
+.avantage-totalenergies-interrupteur{
+    position:relative;
+    width:48px;
+    height:28px;
+    flex:0 0 48px;
+    border:1px solid #b7c4cc;
+    border-radius:999px;
+    background:#dbe3e7;
+    box-shadow:inset 0 1px 2px rgba(16,37,54,0.12);
+    transition:border-color 160ms ease, background 160ms ease;
+}
+
+.avantage-totalenergies-interrupteur::after{
+    content:"";
+    position:absolute;
+    top:3px;
+    left:3px;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 2px 5px rgba(16,37,54,0.28);
+    transition:transform 160ms ease;
+}
+
+.avantage-totalenergies-option input:checked + .avantage-totalenergies-texte + .avantage-totalenergies-interrupteur{
+    border-color:var(--green-dark);
+    background:var(--green);
+}
+
+.avantage-totalenergies-option input:checked + .avantage-totalenergies-texte + .avantage-totalenergies-interrupteur::after{
+    transform:translateX(20px);
+}
+
 .favoris-liste{
     display:none;
 }
@@ -3171,6 +3266,11 @@ body{
         font-size:12px;
     }
 
+    .avantage-totalenergies-option{
+        min-height:68px;
+        padding:12px 13px;
+    }
+
     .bottom-icon{
         display:none;
     }
@@ -4193,13 +4293,13 @@ body{
         {% endif %}
 
         <div
-            class="filtres-bornes-electriques"
+            class="filtres-bornes-electriques avantage-totalenergies-controle"
             id="avantage-totalenergies-controle"
             aria-label="Avantage Carburant TotalEnergies"
             hidden
         >
             <label
-                class="filtre-borne-electrique"
+                class="avantage-totalenergies-option"
                 for="carte-totalenergies-active"
                 title="Applique le plafond de 1,99 €/L aux stations participantes"
             >
@@ -4208,7 +4308,14 @@ body{
                     id="carte-totalenergies-active"
                     onchange="modifierCarteTotalenergies()"
                 >
-                <span>Avantage TotalEnergies 1,99 € activ&eacute;</span>
+                <span class="avantage-totalenergies-texte">
+                    <strong>Avantage TotalEnergies</strong>
+                    <small>Plafond 1,99 € dans les stations participantes</small>
+                </span>
+                <span
+                    class="avantage-totalenergies-interrupteur"
+                    aria-hidden="true"
+                ></span>
             </label>
         </div>
 
