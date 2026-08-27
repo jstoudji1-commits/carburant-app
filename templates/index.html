@@ -11956,7 +11956,11 @@ function convertirStationTrajetFrance(station) {
         latitude: Number(station.latitude),
         longitude: Number(station.longitude),
         prix: prix,
-        distance: null
+        distance: null,
+        avantageTotalenergies:
+            station.avantage_totalenergies
+            || station.avantageTotalenergies
+            || null
     };
 
 }
@@ -12273,6 +12277,30 @@ function prixRentabiliteAvecCarteTotalenergies(
     }
 
     return Math.min(prixPublic, plafond);
+
+}
+
+function appliquerAvantageTotalenergiesStationsTrajet(
+    stations,
+    carteActive,
+    carburant
+) {
+
+    return (stations || []).map(function(station) {
+        var prixPublic = Number(station && station.prix);
+        var prixEffectif = prixRentabiliteAvecCarteTotalenergies(
+            station,
+            carteActive,
+            carburant
+        );
+
+        return Object.assign({}, station, {
+            prixPublic: prixPublic,
+            prix: prixEffectif,
+            avantageTotalenergiesApplique:
+                Number.isFinite(prixEffectif) && prixEffectif < prixPublic
+        });
+    });
 
 }
 
@@ -14020,7 +14048,11 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
     var stationsDisponiblesTrajet = stationsSource
         || stationsTrajetFrance
         || stationsEconomie;
-    var stationsValides = stationsDisponiblesTrajet.filter(function(station) {
+    var stationsValides = appliquerAvantageTotalenergiesStationsTrajet(
+        stationsDisponiblesTrajet,
+        carteTotalenergiesActive(),
+        carburantRentabiliteActuel()
+    ).filter(function(station) {
         return station.prix > 0 && station.prix !== 9.999;
     });
 
@@ -14320,6 +14352,11 @@ function afficherMarqueursRavitaillement(arrets) {
                             maximumFractionDigits: 3
                         }
                     ) + " €"
+                    : ""
+            )
+            + (
+                station.avantageTotalenergiesApplique
+                    ? " · plafond TotalEnergies appliqué"
                     : ""
             );
         var icon = L.divIcon({
