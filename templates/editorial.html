@@ -28,6 +28,73 @@
     ></script>
     {% endif %}
 
+    {% if active_page == "accueil" %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": {{ (base_url ~ "/#organization")|tojson }},
+        "name": "OptiPlein",
+        "url": {{ base_url|tojson }},
+        "logo": {
+            "@type": "ImageObject",
+            "url": {{ (base_url ~ "/static/logo.png")|tojson }}
+        },
+        "founder": {
+            "@type": "Person",
+            "name": "Jérôme Stoudji",
+            "url": {{ (base_url ~ "/auteur/jerome-stoudji")|tojson }}
+        },
+        "areaServed": {
+            "@type": "Country",
+            "name": "France"
+        },
+        "knowsAbout": [
+            "prix des carburants",
+            "stations-service",
+            "recharge de véhicules électriques",
+            "économies de carburant",
+            "préparation d'itinéraires automobiles"
+        ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "@id": {{ (base_url ~ "/web#application")|tojson }},
+        "name": "OptiPlein",
+        "url": {{ (base_url ~ "/web")|tojson }},
+        "description": "Comparateur français de prix des carburants, de stations-service et de bornes de recharge avec calcul de rentabilité et préparation d'itinéraire.",
+        "applicationCategory": "TravelApplication",
+        "applicationSubCategory": "Comparateur de prix des carburants et assistant de trajet automobile",
+        "operatingSystem": "Web, Android, iOS",
+        "inLanguage": "fr-FR",
+        "isAccessibleForFree": true,
+        "audience": {
+            "@type": "Audience",
+            "audienceType": "Conducteurs en France"
+        },
+        "provider": {
+            "@id": {{ (base_url ~ "/#organization")|tojson }}
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR",
+            "description": "Accès gratuit pendant la phase de test"
+        },
+        "featureList": [
+            "Comparaison des prix des carburants",
+            "Recherche de stations-service proches",
+            "Calcul de la station la plus rentable",
+            "Préparation de trajets avec ravitaillements conseillés",
+            "Consultation des bornes de recharge électrique"
+        ]
+    }
+    </script>
+    {% endif %}
+
     <script type="application/ld+json">
     {% if page.person %}
     {
@@ -37,9 +104,7 @@
         "url": {{ canonical_url|tojson }},
         "jobTitle": "Créateur et éditeur d'OptiPlein",
         "worksFor": {
-            "@type": "Organization",
-            "name": "OptiPlein",
-            "url": {{ base_url|tojson }}
+            "@id": {{ (base_url ~ "/#organization")|tojson }}
         }
     }
     {% elif page.article %}
@@ -48,6 +113,15 @@
         "@type": "Article",
         "headline": {{ page.hero_title|tojson }},
         "description": {{ page.description|tojson }},
+        "articleSection": {{ (page.category or "Guides pratiques automobiles")|tojson }},
+        "keywords": [
+            {{ (page.category or "automobile")|tojson }},
+            "prix des carburants",
+            "stations-service",
+            "économies de carburant",
+            "itinéraires automobiles"
+        ],
+        "inLanguage": "fr-FR",
         "datePublished": {{ page.published_iso|tojson }},
         "dateModified": {{ page.updated_iso|tojson }},
         "author": {
@@ -56,9 +130,10 @@
             "url": {{ (base_url ~ page.author_url)|tojson }}{% endif %}
         },
         "publisher": {
-            "@type": "Organization",
-            "name": "OptiPlein",
-            "url": {{ base_url|tojson }}
+            "@id": {{ (base_url ~ "/#organization")|tojson }}
+        },
+        "isPartOf": {
+            "@id": {{ (base_url ~ "/#website")|tojson }}
         },
         "mainEntityOfPage": {{ canonical_url|tojson }}
     }
@@ -66,9 +141,21 @@
     {
         "@context": "https://schema.org",
         "@type": "WebSite",
+        "@id": {{ (base_url ~ "/#website")|tojson }},
         "name": "OptiPlein",
         "url": {{ base_url|tojson }},
-        "description": {{ page.description|tojson }}
+        "description": {{ page.description|tojson }},
+        "inLanguage": "fr-FR",
+        "publisher": {
+            "@id": {{ (base_url ~ "/#organization")|tojson }}
+        },
+        "about": [
+            {"@type": "Thing", "name": "Prix des carburants en France"},
+            {"@type": "Thing", "name": "Stations-service"},
+            {"@type": "Thing", "name": "Recharge de véhicules électriques"},
+            {"@type": "Thing", "name": "Économies de carburant"},
+            {"@type": "Thing", "name": "Itinéraires automobiles"}
+        ]
     }
     {% endif %}
     </script>
