@@ -6926,6 +6926,8 @@ def page_web(
 
             "menu_pages": MENU_PAGES_EDITORIALES,
 
+            "base_url": url_base_application(request),
+
         }
 
     )    
@@ -6983,6 +6985,9 @@ def sitemap_xml(request: Request):
                     page.get("updated_iso", "2026-08-19"),
                 )
             )
+
+    if not any(entree[0] == "/web" for entree in pages_sitemap):
+        pages_sitemap.append(("/web", "2026-08-28"))
 
     entrees = "\n".join(
         "    <url>\n"
