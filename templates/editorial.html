@@ -558,6 +558,31 @@
             font-weight:800;
         }
 
+        .guide-card-cta{
+            min-height:38px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            align-self:flex-start;
+            margin-top:14px;
+            padding:0 14px;
+            border:1px solid var(--green-dark);
+            border-radius:8px;
+            color:#fff;
+            background:var(--green-dark);
+            font-size:14px;
+            font-weight:900;
+            line-height:1;
+            transition:background .16s ease, border-color .16s ease, transform .16s ease;
+        }
+
+        .guide-card:hover .guide-card-cta,
+        .guide-card:focus-visible .guide-card-cta{
+            border-color:var(--green);
+            background:var(--green);
+            transform:translateX(2px);
+        }
+
         .section,
         .faq-item,
         .contact-card{
@@ -981,6 +1006,7 @@
                         <h3>{{ guide.title }}</h3>
                         <p>{{ guide.description }}</p>
                         <span class="guide-card-meta">{{ guide.reading_time }} min de lecture{% if guide.updated %} &middot; Mis &agrave; jour le {{ guide.updated }}{% endif %}</span>
+                        <span class="guide-card-cta">En savoir plus</span>
                     </a>
                     {% endfor %}
                 </div>
@@ -1000,6 +1026,7 @@
                         <h3>{{ guide.title }}</h3>
                         <p>{{ guide.description }}</p>
                         <span class="guide-card-meta">{{ guide.reading_time }} min de lecture</span>
+                        <span class="guide-card-cta">En savoir plus</span>
                     </a>
                     {% endfor %}
                 </div>
