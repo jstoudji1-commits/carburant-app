@@ -1,11 +1,44 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="fr">
 
 <head>
     <meta charset="utf-8">
-    <meta name="robots" content="noindex, follow">
+    <meta name="robots" content="index, follow">
+    <meta
+        name="description"
+        content="OptiPlein compare les prix des carburants, les stations-service et les bornes de recharge pour préparer un trajet automobile rentable."
+    >
+    <link rel="canonical" href="{{ base_url }}/web">
     <title>OptiPlein - Optimisateur de carburant</title>
     <link rel="icon" type="image/png" href="/static/favicon.png">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "@id": {{ (base_url ~ "/web#application")|tojson }},
+        "name": "OptiPlein",
+        "url": {{ (base_url ~ "/web")|tojson }},
+        "description": "Comparateur français de prix des carburants, de stations-service et de bornes de recharge avec calcul de rentabilité et préparation d'itinéraire.",
+        "applicationCategory": "TravelApplication",
+        "applicationSubCategory": "Comparateur de prix des carburants et assistant de trajet automobile",
+        "operatingSystem": "Web, Android, iOS",
+        "inLanguage": "fr-FR",
+        "isAccessibleForFree": true,
+        "audience": {
+            "@type": "Audience",
+            "audienceType": "Conducteurs en France"
+        },
+        "provider": {
+            "@id": {{ (base_url ~ "/#organization")|tojson }}
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR",
+            "description": "Accès gratuit pendant la phase de test"
+        }
+    }
+    </script>
     {% if adsense_client %}
     <script
         async
