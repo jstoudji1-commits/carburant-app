@@ -5858,11 +5858,27 @@ function configurerBoutonsNavigationExterneTrajetPrepare() {
 
 function actualiserNavigationPremium() {
 
+    var premium = comptePremiumActif();
+
     document.querySelectorAll(".premium-navigation").forEach(
         function(element) {
-            element.hidden = !comptePremiumActif();
+            element.hidden = !premium;
         }
     );
+
+    var jaugeReservoir = document.querySelector(
+        ".economy-reservoir-gauge"
+    );
+    if (jaugeReservoir) {
+        jaugeReservoir.hidden = !premium || navigationActive;
+    }
+
+    var jaugePlanificateur = document.querySelector(
+        ".trip-planner-gauge"
+    );
+    if (jaugePlanificateur) {
+        jaugePlanificateur.hidden = navigationActive;
+    }
 
 }
 
@@ -12133,10 +12149,7 @@ function cacherPopupStationPlusRentable() {
 
 function effacerItineraireNavigation() {
 
-    if (itineraireLayer) {
-        map.removeLayer(itineraireLayer);
-        itineraireLayer = null;
-    }
+    retirerCoucheItineraire();
 
     routeNavigation = null;
     coordonneesRouteNavigation = [];
@@ -12961,10 +12974,7 @@ function afficherTrajetPrepareDansEncadre() {
 
 window.annulerPreparationTrajet = function() {
 
-    if (itineraireLayer) {
-        map.removeLayer(itineraireLayer);
-        itineraireLayer = null;
-    }
+    retirerCoucheItineraire();
 
     trajetPrepare = null;
     jaugeTrajetTemporaire = null;
@@ -15219,6 +15229,7 @@ window.validerTrajetPrepare = async function() {
         configurerBoutonsNavigationExterneTrajetPrepare();
         fermerPlanificateurTrajet();
         navigationActive = true;
+        actualiserNavigationPremium();
         suiviCarteActif = true;
         orientationAutomatiqueActive = true;
         stabiliserCapDepartNavigation();
@@ -15259,12 +15270,7 @@ window.validerTrajetPrepare = async function() {
 
 function dessinerItineraire(coordonnees, afficherApercu) {
 
-    if (itineraireLayer) {
-
-        map.removeLayer(itineraireLayer);
-        itineraireLayer = null;
-
-    }
+    retirerCoucheItineraire();
 
     var donneesItineraire = {
         type: "Feature",
@@ -15319,6 +15325,25 @@ function dessinerItineraire(coordonnees, afficherApercu) {
             }
         );
     }
+
+}
+
+function retirerCoucheItineraire() {
+
+    if (!itineraireLayer) {
+        return;
+    }
+
+    if (typeof itineraireLayer.remove === "function") {
+        itineraireLayer.remove();
+    } else if (
+        typeof map.hasLayer === "function"
+        && map.hasLayer(itineraireLayer)
+    ) {
+        map.removeLayer(itineraireLayer);
+    }
+
+    itineraireLayer = null;
 
 }
 
@@ -15685,6 +15710,7 @@ window.demarrerNavigation = async function() {
         ? derniereEconomieEstimee
         : null;
     navigationActive = true;
+    actualiserNavigationPremium();
     suiviCarteActif = true;
     orientationAutomatiqueActive = true;
     activerOrientationTelephone();
@@ -15731,6 +15757,7 @@ window.demarrerNavigation = async function() {
 window.arreterNavigation = function() {
 
     navigationActive = false;
+    actualiserNavigationPremium();
     economieEstimeeFigee = null;
     jaugeTrajetTemporaire = null;
     trajetPrepare = null;
@@ -15802,6 +15829,7 @@ async function tracerItineraire(
 
     if (maintenirNavigation) {
         navigationActive = true;
+        actualiserNavigationPremium();
         document.getElementById("navigation-panel").hidden = false;
         document.getElementById("navigation-instruction").textContent =
             "Calcul en cours...";
