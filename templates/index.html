@@ -243,9 +243,46 @@ body{
     display:none;
 }
 
-.vehicle-panel-title{
+.vehicle-panel-heading{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:14px;
     margin:0 0 14px 0;
+}
+
+.vehicle-panel-title{
+    margin:0;
     font-size:17px;
+}
+
+.account-logout-link{
+    flex:0 0 auto;
+    padding:0;
+    border:0;
+    background:transparent;
+    color:#c5221f;
+    font:inherit;
+    font-size:13px;
+    font-weight:800;
+    line-height:1.2;
+    cursor:pointer;
+}
+
+.account-logout-link:hover,
+.account-logout-link:focus-visible{
+    color:#9f1714;
+    text-decoration:underline;
+    text-underline-offset:3px;
+}
+
+.account-logout-link:focus-visible{
+    outline:2px solid rgba(197,34,31,0.28);
+    outline-offset:3px;
+}
+
+.account-logout-link[hidden]{
+    display:none;
 }
 
 .account-plan{
@@ -345,11 +382,6 @@ body{
     border-color:var(--green);
     background:var(--green);
     color:white;
-}
-
-.account-sync-button.logout{
-    grid-column:1 / -1;
-    color:#b42318;
 }
 
 .account-sync-button[hidden]{
@@ -3413,9 +3445,20 @@ body{
                 aria-labelledby="vehicle-button"
                 hidden
             >
-                <p class="vehicle-panel-title">
-                    Mon compte
-                </p>
+                <div class="vehicle-panel-heading">
+                    <p class="vehicle-panel-title">
+                        Mon compte
+                    </p>
+                    <button
+                        type="button"
+                        class="account-logout-link"
+                        id="account-logout-button"
+                        onclick="deconnecterCompteOptiPlein(event)"
+                        hidden
+                    >
+                        D&eacute;connexion
+                    </button>
+                </div>
 
                 <div class="account-sync">
                     <p class="account-sync-title">
@@ -3455,15 +3498,6 @@ body{
                             onclick="creerCompteOptiPlein(event)"
                         >
                             Cr&eacute;er mon compte
-                        </button>
-                        <button
-                            type="button"
-                            class="account-sync-button logout"
-                            id="account-logout-button"
-                            onclick="deconnecterCompteOptiPlein(event)"
-                            hidden
-                        >
-                            D&eacute;connexion
                         </button>
                     </div>
                     <p
@@ -9023,10 +9057,7 @@ async function restaurerSessionCompte() {
         appliquerDonneesCompte(resultat.donnees || {});
         window.clearTimeout(restaurationSessionCompteTimer);
         restaurationSessionCompteTimer = null;
-        definirStatutCompte(
-            "Donn\u00e9es du compte synchronis\u00e9es.",
-            "success"
-        );
+        definirStatutCompte("", "");
     } catch (erreur) {
         if (
             erreur.status === 401
@@ -9392,6 +9423,7 @@ let utilisateurMarker = null;
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
+var accordGeolocalisationCle = "optiplein-geolocalisation-acceptee";
 var zoomNavigation = 16.8;
 var zoomGuidageActif = 18.2;
 var zoomGuidageLonguePortion = 15.7;
@@ -9547,12 +9579,9 @@ async function activerOrientationTelephone() {
         if (
             typeof DeviceOrientationEvent.requestPermission === "function"
         ) {
-            var permission =
-                await DeviceOrientationEvent.requestPermission();
-
-            if (permission !== "granted") {
-                return;
-            }
+            // Le cap GPS suffit pendant le déplacement. La permission de
+            // mouvement ne doit pas interrompre un itinéraire préparé.
+            return;
         }
 
         window.removeEventListener(
@@ -10515,6 +10544,59 @@ map.on(
     }
 );
 
+function geolocalisationAccepteeSurAppareil() {
+
+    return localStorage.getItem(accordGeolocalisationCle) === "1";
+
+}
+
+function memoriserAccordGeolocalisation() {
+
+    localStorage.setItem(accordGeolocalisationCle, "1");
+
+}
+
+async function demarrerGeolocalisationAuChargement() {
+
+    if (!navigator.geolocation) {
+        return;
+    }
+
+    if (
+        navigator.permissions
+        && typeof navigator.permissions.query === "function"
+    ) {
+        try {
+            var permissionGeolocalisation =
+                await navigator.permissions.query({
+                    name: "geolocation"
+                });
+
+            if (permissionGeolocalisation.state === "denied") {
+                return;
+            }
+
+            if (permissionGeolocalisation.state === "granted") {
+                memoriserAccordGeolocalisation();
+            }
+
+            if (
+                permissionGeolocalisation.state === "granted"
+                || geolocalisationAccepteeSurAppareil()
+                || permissionGeolocalisation.state === "prompt"
+            ) {
+                demarrerGeolocalisation();
+            }
+            return;
+        } catch (erreur) {
+            console.log("Etat de la permission GPS indisponible");
+        }
+    }
+
+    demarrerGeolocalisation();
+
+}
+
 function demarrerGeolocalisation() {
 
     if (suiviGeolocalisationId !== null) {
@@ -10527,6 +10609,8 @@ function demarrerGeolocalisation() {
         navigator.geolocation.watchPosition(
 
         function(position) {
+
+            memoriserAccordGeolocalisation();
 
             var latitudePrecedente = latitudeUtilisateur;
             var longitudePrecedente = longitudeUtilisateur;
@@ -10781,9 +10865,9 @@ function demarrerGeolocalisation() {
 
 // Lancement automatique au chargement
 
- window.addEventListener(
+window.addEventListener(
     "load",
-    demarrerGeolocalisation
+    demarrerGeolocalisationAuChargement
 );
 
 window.addEventListener(
@@ -15581,8 +15665,6 @@ function verifierEcartItineraire() {
 
 window.demarrerNavigation = async function() {
 
-    await activerOrientationTelephone();
-
     if (!routeNavigation && !destinationNavigation) {
         return;
     }
@@ -15605,6 +15687,7 @@ window.demarrerNavigation = async function() {
     navigationActive = true;
     suiviCarteActif = true;
     orientationAutomatiqueActive = true;
+    activerOrientationTelephone();
     stabiliserCapDepartNavigation();
     actualiserBoutonSuiviCarte();
     document.getElementById("navigation-panel").hidden = false;
