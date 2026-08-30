@@ -1,10 +1,44 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="fr">
 
 <head>
     <meta charset="utf-8">
+    <meta name="robots" content="index, follow">
+    <meta
+        name="description"
+        content="OptiPlein compare les prix des carburants, les stations-service et les bornes de recharge pour préparer un trajet automobile rentable."
+    >
+    <link rel="canonical" href="{{ base_url }}/web">
     <title>OptiPlein - Optimisateur de carburant</title>
     <link rel="icon" type="image/png" href="/static/favicon.png">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "@id": {{ (base_url ~ "/web#application")|tojson }},
+        "name": "OptiPlein",
+        "url": {{ (base_url ~ "/web")|tojson }},
+        "description": "Comparateur français de prix des carburants, de stations-service et de bornes de recharge avec calcul de rentabilité et préparation d'itinéraire.",
+        "applicationCategory": "TravelApplication",
+        "applicationSubCategory": "Comparateur de prix des carburants et assistant de trajet automobile",
+        "operatingSystem": "Web, Android, iOS",
+        "inLanguage": "fr-FR",
+        "isAccessibleForFree": true,
+        "audience": {
+            "@type": "Audience",
+            "audienceType": "Conducteurs en France"
+        },
+        "provider": {
+            "@id": {{ (base_url ~ "/#organization")|tojson }}
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR",
+            "description": "Accès gratuit pendant la phase de test"
+        }
+    }
+    </script>
     {% if adsense_client %}
     <script
         async
@@ -25,7 +59,7 @@
     --line:#dce4ea;
     --panel:#ffffff;
     --shadow:0 12px 30px rgba(16,37,54,0.16);
-    --ad-banner-height:60px;
+    --ad-banner-height:{% if adsense_client and adsense_slot_map %}60px{% else %}0px{% endif %};
 }
 
 *{
@@ -46,7 +80,7 @@ body{
     left:14px;
     right:14px;
     height:104px;
-    z-index:1200;
+    z-index:1500;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -67,6 +101,108 @@ body{
     display:flex;
     align-items:center;
     gap:18px;
+}
+
+.guides-link{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
+    padding:0 16px;
+    border:1px solid #b9d9c1;
+    border-radius:9px;
+    background:#f1faf3;
+    color:var(--green-dark);
+    font-size:15px;
+    font-weight:800;
+    text-decoration:none;
+    white-space:nowrap;
+}
+
+.guides-link:hover,
+.guides-link:focus-visible{
+    border-color:var(--green);
+    background:#e3f6e7;
+}
+
+.app-site-menu{
+    position:relative;
+    flex:0 0 auto;
+}
+
+.app-menu-toggle{
+    width:46px;
+    height:46px;
+    display:grid;
+    place-content:center;
+    gap:5px;
+    padding:0;
+    border:1px solid #b9d9c1;
+    border-radius:9px;
+    color:var(--green-dark);
+    background:#f1faf3;
+    cursor:pointer;
+}
+
+.app-menu-toggle span{
+    width:23px;
+    height:3px;
+    border-radius:99px;
+    background:currentColor;
+    transition:transform .18s ease, opacity .18s ease;
+}
+
+.app-menu-toggle[aria-expanded="true"] span:nth-child(1){
+    transform:translateY(8px) rotate(45deg);
+}
+
+.app-menu-toggle[aria-expanded="true"] span:nth-child(2){
+    opacity:0;
+}
+
+.app-menu-toggle[aria-expanded="true"] span:nth-child(3){
+    transform:translateY(-8px) rotate(-45deg);
+}
+
+.app-main-nav{
+    position:absolute;
+    top:calc(100% + 12px);
+    right:0;
+    z-index:20;
+    width:min(320px, calc(100vw - 28px));
+    max-height:calc(100vh - 110px);
+    max-height:calc(100dvh - 110px - var(--ad-banner-height));
+    overflow:auto;
+    display:grid;
+    gap:4px;
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:11px;
+    background:#fff;
+    box-shadow:var(--shadow);
+}
+
+.app-main-nav[hidden]{
+    display:none;
+}
+
+.app-main-nav a{
+    display:flex;
+    align-items:center;
+    min-height:45px;
+    padding:0 13px;
+    border-radius:8px;
+    color:var(--muted);
+    font-size:15px;
+    font-weight:800;
+    text-decoration:none;
+}
+
+.app-main-nav a:hover,
+.app-main-nav a:focus-visible,
+.app-main-nav a[aria-current="page"]{
+    color:var(--green-dark);
+    background:var(--green-soft);
 }
 
 .vehicle-menu{
@@ -107,9 +243,46 @@ body{
     display:none;
 }
 
-.vehicle-panel-title{
+.vehicle-panel-heading{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:14px;
     margin:0 0 14px 0;
+}
+
+.vehicle-panel-title{
+    margin:0;
     font-size:17px;
+}
+
+.account-logout-link{
+    flex:0 0 auto;
+    padding:0;
+    border:0;
+    background:transparent;
+    color:#c5221f;
+    font:inherit;
+    font-size:13px;
+    font-weight:800;
+    line-height:1.2;
+    cursor:pointer;
+}
+
+.account-logout-link:hover,
+.account-logout-link:focus-visible{
+    color:#9f1714;
+    text-decoration:underline;
+    text-underline-offset:3px;
+}
+
+.account-logout-link:focus-visible{
+    outline:2px solid rgba(197,34,31,0.28);
+    outline-offset:3px;
+}
+
+.account-logout-link[hidden]{
+    display:none;
 }
 
 .account-plan{
@@ -209,11 +382,6 @@ body{
     border-color:var(--green);
     background:var(--green);
     color:white;
-}
-
-.account-sync-button.logout{
-    grid-column:1 / -1;
-    color:#b42318;
 }
 
 .account-sync-button[hidden]{
@@ -742,6 +910,10 @@ body{
     background:#1167e8;
 }
 
+.fuel-dot.sp95{
+    background:#168349;
+}
+
 .fuel-dot.dark{
     background:#102536;
 }
@@ -771,27 +943,150 @@ body{
     transform:translateY(-1px);
 }
 
-.filtre-bornes-disponibles{
+.filtres-bornes-electriques{
     display:flex;
     align-items:center;
-    gap:9px;
-    margin-top:14px;
-    padding:10px 11px;
-    border:1px solid #b9d9bf;
-    border-radius:8px;
-    background:#f0fdf4;
-    color:#087a2c;
-    font-size:13px;
-    font-weight:900;
-    cursor:pointer;
+    gap:10px;
+    margin:12px 18px 0;
 }
 
-.filtre-bornes-disponibles input{
-    width:19px;
-    height:19px;
-    margin:0;
-    accent-color:#16a34a;
+.filtres-bornes-electriques[hidden]{
+    display:none;
+}
+
+.filtre-borne-electrique{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:42px;
+    padding:9px 15px;
+    border:1px solid rgba(20,159,56,0.32);
+    border-radius:999px;
+    background:#fff;
+    color:#123826;
+    box-shadow:0 4px 12px rgba(16,37,54,0.08);
+    font-size:13px;
+    font-weight:900;
+    line-height:1.15;
+    text-align:center;
     cursor:pointer;
+    user-select:none;
+}
+
+.filtre-borne-electrique input{
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+    pointer-events:none;
+}
+
+.filtre-borne-electrique:has(input:checked){
+    border-color:#15803d;
+    background:#15803d;
+    color:#fff;
+    box-shadow:0 5px 14px rgba(21,128,61,0.24);
+}
+
+.filtre-borne-electrique:has(input:focus-visible){
+    outline:3px solid rgba(21,128,61,0.28);
+    outline-offset:2px;
+}
+
+.avantage-totalenergies-controle{
+    display:block;
+}
+
+.avantage-totalenergies-option{
+    position:relative;
+    width:100%;
+    min-height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:13px 15px;
+    border:1px solid rgba(20,159,56,0.28);
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 4px 12px rgba(16,37,54,0.08);
+    color:var(--ink);
+    cursor:pointer;
+    user-select:none;
+    transition:border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.avantage-totalenergies-option:has(input:checked){
+    border-color:var(--green);
+    background:linear-gradient(135deg, #fff 0%, var(--green-soft) 100%);
+    box-shadow:0 0 0 2px rgba(20,159,56,0.12), 0 6px 16px rgba(16,37,54,0.10);
+}
+
+.avantage-totalenergies-option:has(input:focus-visible){
+    outline:3px solid rgba(20,159,56,0.26);
+    outline-offset:2px;
+}
+
+.avantage-totalenergies-option input{
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+}
+
+.avantage-totalenergies-texte{
+    min-width:0;
+    display:grid;
+    gap:4px;
+}
+
+.avantage-totalenergies-texte strong{
+    color:var(--ink);
+    font-size:14px;
+    font-weight:900;
+    line-height:1.2;
+}
+
+.avantage-totalenergies-texte small{
+    color:#526674;
+    font-size:12px;
+    font-weight:650;
+    line-height:1.3;
+}
+
+.avantage-totalenergies-interrupteur{
+    position:relative;
+    width:48px;
+    height:28px;
+    flex:0 0 48px;
+    border:1px solid #b7c4cc;
+    border-radius:999px;
+    background:#dbe3e7;
+    box-shadow:inset 0 1px 2px rgba(16,37,54,0.12);
+    transition:border-color 160ms ease, background 160ms ease;
+}
+
+.avantage-totalenergies-interrupteur::after{
+    content:"";
+    position:absolute;
+    top:3px;
+    left:3px;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 2px 5px rgba(16,37,54,0.28);
+    transition:transform 160ms ease;
+}
+
+.avantage-totalenergies-option input:checked + .avantage-totalenergies-texte + .avantage-totalenergies-interrupteur{
+    border-color:var(--green-dark);
+    background:var(--green);
+}
+
+.avantage-totalenergies-option input:checked + .avantage-totalenergies-texte + .avantage-totalenergies-interrupteur::after{
+    transform:translateX(20px);
 }
 
 .favoris-liste{
@@ -955,13 +1250,9 @@ body{
     overflow:hidden;
 }
 
-.maplibregl-popup-close-button{
-    width:24px;
-    height:24px;
-    color:#214053;
-    font-size:18px;
-    line-height:22px;
-    z-index:2;
+.maplibregl-popup-close-button,
+.leaflet-popup-close-button{
+    display:none;
 }
 
 .station-popup{
@@ -972,13 +1263,18 @@ body{
     overflow:hidden;
 }
 
+
 .station-popup .popup-identite-prix{
     justify-content:flex-start;
-    gap:8px;
+    gap:6px;
     margin-bottom:5px;
     padding-bottom:5px;
-    padding-right:16px;
+    padding-right:0;
     border-bottom:1px solid #edf2ef;
+}
+
+.station-popup .popup-identite-texte{
+    flex:1 1 auto;
 }
 
 .station-popup .popup-identite-prix .enseigne-logo{
@@ -1018,7 +1314,7 @@ body{
     display:flex;
     align-items:center;
     justify-content:flex-start;
-    gap:0;
+    gap:4px;
     margin:0;
     margin-left:-2px;
     flex:0 0 auto;
@@ -1034,6 +1330,43 @@ body{
     box-shadow:none;
 }
 
+.station-popup-icon-button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:24px;
+    height:24px;
+    flex:0 0 auto;
+    padding:0;
+    border:1px solid #dce6df;
+    border-radius:7px;
+    background:#f7faf8;
+    color:#214053;
+    cursor:pointer;
+}
+
+.station-popup-icon-button:hover,
+.station-popup-icon-button:focus-visible{
+    border-color:var(--green);
+    color:var(--green-dark);
+}
+
+.station-popup-icon-button.copied{
+    border-color:var(--green);
+    background:#eefaf1;
+    color:var(--green-dark);
+}
+
+.station-popup-icon-button svg{
+    width:14px;
+    height:14px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+}
+
 .station-popup-favori .favoris-info{
     display:none;
 }
@@ -1043,6 +1376,41 @@ body{
     color:var(--muted);
     font-size:11px;
     font-weight:800;
+}
+
+.tarif-provenance{
+    display:block;
+    margin-top:5px;
+    color:#40576a;
+    font-size:10px;
+    font-weight:700;
+    line-height:1.3;
+}
+
+.tarif-provenance.pending{
+    color:#9a5b08;
+}
+
+.tarif-contribution-link{
+    display:inline-flex;
+    margin-top:6px;
+    padding:0;
+    border:0;
+    background:transparent;
+    color:var(--green-dark);
+    font:inherit;
+    font-size:11px;
+    font-weight:900;
+    text-decoration:underline;
+    text-underline-offset:2px;
+    cursor:pointer;
+}
+
+.tarif-contribution-note{
+    margin:-4px 0 2px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.35;
 }
 
 .station-popup .popup-actions{
@@ -1731,13 +2099,108 @@ body{
     font-size:13px;
 }
 
+.prix-bulle.borne-irve.avec-remise{
+    min-width:174px;
+    align-items:stretch;
+    flex-direction:column;
+    gap:1px;
+    padding:4px 6px 3px;
+}
+
+.prix-bulle-ligne-prix{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    min-width:0;
+}
+
 .prix-bulle.borne-irve .enseigne-logo{
     width:22px;
     height:22px;
 }
 
-.prix-bulle.borne-irve > span:not(.enseigne-logo){
+.prix-bulle.borne-irve > span:not(.enseigne-logo),
+.prix-bulle.borne-irve .prix-bulle-ligne-prix > span:not(.enseigne-logo){
     letter-spacing:-0.2px;
+}
+
+.prix-bulle-remise{
+    display:block;
+    width:100%;
+    overflow:hidden;
+    color:#40576a;
+    font-size:9px;
+    font-weight:800;
+    line-height:1.15;
+    text-align:left;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.prix-bulle.avec-avantage-total{
+    min-width:108px;
+    align-items:stretch;
+    flex-direction:column;
+    gap:2px;
+    padding:4px 6px 3px;
+}
+
+.prix-bulle-ligne-principale{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    min-width:0;
+}
+
+.avantage-total-ligne{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    width:100%;
+    justify-content:center;
+    min-width:0;
+    overflow:hidden;
+    color:#40576a;
+    font-size:9px;
+    font-weight:800;
+    line-height:1.15;
+    text-align:left;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.avantage-total-carte{
+    position:relative;
+    flex:0 0 22px;
+    width:22px;
+    height:13px;
+    overflow:hidden;
+    border:1px solid #d8e0e7;
+    border-radius:3px;
+    background:#fff;
+    box-shadow:0 1px 2px rgba(16,37,54,0.18);
+}
+
+.avantage-total-carte::after{
+    content:"";
+    position:absolute;
+    right:2px;
+    bottom:2px;
+    width:5px;
+    height:2px;
+    border-radius:1px;
+    background:#e9eef2;
+}
+
+.avantage-total-carte img{
+    position:absolute;
+    top:2px;
+    left:2px;
+    width:10px;
+    height:9px;
+    object-fit:contain;
 }
 
 .borne-statut{
@@ -2158,11 +2621,22 @@ body{
     cursor:pointer;
 }
 
-.trip-planner-open{
+.trip-map-tools{
     position:absolute;
-    top:var(--map-tools-top);
+    top:12px;
     left:18px;
     z-index:860;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    max-width:calc(100% - 36px);
+}
+
+.trip-planner-open{
+    height:43px;
+    display:flex;
+    align-items:center;
+    gap:7px;
     padding:11px 14px;
     border:0;
     border-radius:9px;
@@ -2173,17 +2647,24 @@ body{
     cursor:pointer;
 }
 
+.trip-planner-open svg{
+    width:20px;
+    height:20px;
+    flex:0 0 auto;
+    stroke:currentColor;
+    fill:none;
+    stroke-width:2.2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+}
+
 .trip-quick-places{
-    position:absolute;
-    top:var(--map-tools-top);
-    left:186px;
-    z-index:860;
     display:flex;
     gap:8px;
 }
 
 .trip-quick-places.no-trip-button{
-    left:18px;
+    margin-left:0;
 }
 
 .trip-quick-places[hidden]{
@@ -2723,6 +3204,7 @@ body{
         height:82px;
         border-radius:0;
         padding:12px 14px;
+        overflow:visible;
     }
 
     .logo{
@@ -2732,6 +3214,15 @@ body{
     .vehicle-button{
         padding:12px 14px;
         font-size:14px;
+    }
+
+    .top-actions{
+        gap:7px;
+    }
+
+    .app-menu-toggle{
+        width:42px;
+        height:42px;
     }
 
     .vehicle-panel{
@@ -2775,18 +3266,22 @@ body{
     }
 
     .trip-planner-open{
-        left:12px;
         padding:10px 11px;
         font-size:13px;
     }
 
+    .trip-map-tools{
+        left:12px;
+        gap:6px;
+        max-width:calc(100% - 24px);
+    }
+
     .trip-quick-places{
-        left:164px;
         gap:6px;
     }
 
     .trip-quick-places.no-trip-button{
-        left:12px;
+        margin-left:0;
     }
 
     .stat-card{
@@ -2825,6 +3320,23 @@ body{
         gap:10px;
         margin:12px;
         padding:14px;
+    }
+
+    .filtres-bornes-electriques{
+        gap:8px;
+        margin:12px 12px 0;
+    }
+
+    .filtre-borne-electrique{
+        flex:1 1 0;
+        min-width:0;
+        padding:9px 8px;
+        font-size:12px;
+    }
+
+    .avantage-totalenergies-option{
+        min-height:68px;
+        padding:12px 13px;
     }
 
     .bottom-icon{
@@ -2866,10 +3378,6 @@ body{
 }
 
 @media (max-width: 360px){
-    .trip-quick-places{
-        top:calc(var(--map-tools-top) + 48px);
-        left:12px;
-    }
 
     .stat-label{
         font-size:16px;
@@ -2900,6 +3408,25 @@ body{
     >
 
     <div class="top-actions">
+        <div class="app-site-menu" id="app-site-menu">
+            <button
+                class="app-menu-toggle"
+                id="app-menu-toggle"
+                type="button"
+                aria-label="Ouvrir le menu"
+                aria-expanded="false"
+                aria-controls="app-main-nav"
+                onclick="basculerMenuPrincipal(event)"
+            >
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="app-main-nav" id="app-main-nav" aria-label="Navigation principale" hidden>
+                {% for identifiant, libelle, chemin in menu_pages %}
+                <a href="{{ chemin }}">{{ libelle }}</a>
+                {% endfor %}
+                <a href="/web" aria-current="page">Application</a>
+            </nav>
+        </div>
         <div class="vehicle-menu" id="vehicle-menu">
             <button
                 type="button"
@@ -2918,9 +3445,20 @@ body{
                 aria-labelledby="vehicle-button"
                 hidden
             >
-                <p class="vehicle-panel-title">
-                    Mon compte
-                </p>
+                <div class="vehicle-panel-heading">
+                    <p class="vehicle-panel-title">
+                        Mon compte
+                    </p>
+                    <button
+                        type="button"
+                        class="account-logout-link"
+                        id="account-logout-button"
+                        onclick="deconnecterCompteOptiPlein(event)"
+                        hidden
+                    >
+                        D&eacute;connexion
+                    </button>
+                </div>
 
                 <div class="account-sync">
                     <p class="account-sync-title">
@@ -2960,15 +3498,6 @@ body{
                             onclick="creerCompteOptiPlein(event)"
                         >
                             Cr&eacute;er mon compte
-                        </button>
-                        <button
-                            type="button"
-                            class="account-sync-button logout"
-                            id="account-logout-button"
-                            onclick="deconnecterCompteOptiPlein(event)"
-                            hidden
-                        >
-                            D&eacute;connexion
                         </button>
                     </div>
                     <p
@@ -3029,12 +3558,12 @@ body{
                     <div class="plan-comparison-row">
                         <div class="plan-comparison-cell plan-comparison-feature">Comparaison</div>
                         <div class="plan-comparison-cell plan-comparison-free">Prix moyen</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">2e station</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">Prix moyen local</div>
                     </div>
                     <div class="plan-comparison-row">
                         <div class="plan-comparison-cell plan-comparison-feature">&Eacute;conomie affich&eacute;e</div>
                         <div class="plan-comparison-cell plan-comparison-free">&Eacute;conomie estim&eacute;e</div>
-                        <div class="plan-comparison-cell plan-comparison-premium">&Eacute;conomie r&eacute;elle &agrave; destination</div>
+                        <div class="plan-comparison-cell plan-comparison-premium">&Eacute;conomie nette actualis&eacute;e</div>
                     </div>
                     <div class="plan-comparison-row">
                         <div class="plan-comparison-cell plan-comparison-feature">Arr&ecirc;ts rentables sur trajet</div>
@@ -3451,6 +3980,18 @@ body{
 
                 <input
                     type="radio"
+                    id="carburant-sp95"
+                    name="carburant"
+                    value="sp95"
+                    {% if carburant == "sp95" %}checked{% endif %}
+                >
+                <label for="carburant-sp95">
+                    <span class="fuel-dot sp95">95</span>
+                    SP95
+                </label>
+
+                <input
+                    type="radio"
                     id="carburant-e10"
                     name="carburant"
                     value="e10"
@@ -3506,22 +4047,9 @@ body{
                 >
                 <label for="carburant-electrique">
                     <span class="fuel-dot electric"></span>
-                    Elec
+                    &Eacute;lec
                 </label>
             </div>
-
-            {% if carburant == "electrique" %}
-            <label
-                class="filtre-bornes-disponibles"
-                for="bornes-disponibles-seulement"
-            >
-                <input
-                    type="checkbox"
-                    id="bornes-disponibles-seulement"
-                >
-                Bornes disponibles uniquement
-            </label>
-            {% endif %}
 
             <input
                 type="hidden"
@@ -3570,12 +4098,12 @@ body{
 
     <main class="map-column">
         <div class="map-stage">
+            {% if adsense_client and adsense_slot_map %}
             <div
                 id="ad-banner"
                 class="ad-banner"
                 role="complementary"
             >
-                {% if adsense_client and adsense_slot_map %}
                 <ins
                     class="adsbygoogle"
                     style="display:block;width:100%;height:100%;"
@@ -3587,58 +4115,62 @@ body{
                 <span class="ad-fallback" hidden>
                     Publicit&eacute; - D&eacute;couverte Premium gratuite avec compte.
                 </span>
-                {% else %}
-                <span class="ad-fallback">
-                    Publicit&eacute; discr&egrave;te - D&eacute;couverte Premium gratuite
-                    avec compte.
-                </span>
-                {% endif %}
             </div>
+            {% endif %}
             <div id="map"></div>
-            <button
-                type="button"
-                id="trip-planner-open"
-                class="trip-planner-open premium-only"
-                onclick="ouvrirPlanificateurTrajet()"
-                hidden
-            >
-                Pr&eacute;parer un trajet
-            </button>
             <div
-                id="trip-quick-places"
-                class="trip-quick-places"
-                hidden
+                class="trip-map-tools"
+                aria-label="Raccourcis de trajet"
             >
                 <button
                     type="button"
-                    id="trip-home-button"
-                    class="trip-place-button home"
-                    onclick="utiliserLieuTrajet('home')"
-                    aria-label="Domicile"
-                    title="Domicile"
+                    id="trip-planner-open"
+                    class="trip-planner-open"
+                    onclick="ouvrirPlanificateurTrajet()"
                 >
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M4 11.5 12 5l8 6.5"></path>
-                        <path d="M6.5 10.5V20h11v-9.5"></path>
-                        <path d="M10 20v-5h4v5"></path>
+                        <circle cx="6" cy="18" r="2"></circle>
+                        <circle cx="18" cy="6" r="2"></circle>
+                        <path d="M8 18h3a3 3 0 0 0 3-3V9a3 3 0 0 1 3-3"></path>
                     </svg>
+                    <span>Pr&eacute;parer un trajet</span>
                 </button>
-                <button
-                    type="button"
-                    id="trip-work-button"
-                    class="trip-place-button work"
-                    onclick="utiliserLieuTrajet('work')"
-                    aria-label="Travail"
-                    title="Travail"
+                <div
+                    id="trip-quick-places"
+                    class="trip-quick-places"
+                    hidden
                 >
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M4 20h16"></path>
-                        <path d="M5 20V9l5 3V9l5 3V7h4v13"></path>
-                        <path d="M8 16h1"></path>
-                        <path d="M12 16h1"></path>
-                        <path d="M16 16h1"></path>
-                    </svg>
-                </button>
+                    <button
+                        type="button"
+                        id="trip-home-button"
+                        class="trip-place-button home"
+                        onclick="utiliserLieuTrajet('home')"
+                        aria-label="Domicile"
+                        title="Domicile"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 11.5 12 5l8 6.5"></path>
+                            <path d="M6.5 10.5V20h11v-9.5"></path>
+                            <path d="M10 20v-5h4v5"></path>
+                        </svg>
+                    </button>
+                    <button
+                        type="button"
+                        id="trip-work-button"
+                        class="trip-place-button work"
+                        onclick="utiliserLieuTrajet('work')"
+                        aria-label="Travail"
+                        title="Travail"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 20h16"></path>
+                            <path d="M5 20V9l5 3V9l5 3V7h4v13"></path>
+                            <path d="M8 16h1"></path>
+                            <path d="M12 16h1"></path>
+                            <path d="M16 16h1"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div id="tendance-popup" class="tendance-popup" hidden>
@@ -3802,6 +4334,61 @@ body{
             </div>
         </div>
 
+        {% if carburant == "electrique" %}
+        <div
+            class="filtres-bornes-electriques"
+            aria-label="Filtres des bornes électriques"
+        >
+            <label
+                class="filtre-borne-electrique"
+                for="bornes-disponibles-seulement"
+            >
+                <input
+                    type="checkbox"
+                    id="bornes-disponibles-seulement"
+                >
+                <span>Disponibles seulement</span>
+            </label>
+            <label
+                class="filtre-borne-electrique"
+                for="bornes-tarifs-disponibles"
+            >
+                <input
+                    type="checkbox"
+                    id="bornes-tarifs-disponibles"
+                >
+                <span>Tarifs disponibles</span>
+            </label>
+        </div>
+        {% endif %}
+
+        <div
+            class="filtres-bornes-electriques avantage-totalenergies-controle"
+            id="avantage-totalenergies-controle"
+            aria-label="Avantage Carburant TotalEnergies"
+            hidden
+        >
+            <label
+                class="avantage-totalenergies-option"
+                for="carte-totalenergies-active"
+                title="Applique le plafond de 1,99 €/L aux stations participantes"
+            >
+                <input
+                    type="checkbox"
+                    id="carte-totalenergies-active"
+                    onchange="modifierCarteTotalenergies()"
+                >
+                <span class="avantage-totalenergies-texte">
+                    <strong>Avantage TotalEnergies</strong>
+                    <small>Plafond 1,99 € dans les stations participantes</small>
+                </span>
+                <span
+                    class="avantage-totalenergies-interrupteur"
+                    aria-hidden="true"
+                ></span>
+            </label>
+        </div>
+
         <div id="bottom-card" class="bottom-card">
             <div id="bottom-card-icon" class="bottom-icon">Eco</div>
             <div class="bottom-main">
@@ -3919,7 +4506,7 @@ body{
                 <select id="problem-category" name="categorie" required>
                     <option value="Prix ou station">Prix ou station</option>
                     <option value="Carte ou GPS">Carte ou GPS</option>
-                    <option value="Itineraire">Itin&eacute;raire</option>
+                    <option value="Itinéraire">Itin&eacute;raire</option>
                     <option value="Affichage">Affichage</option>
                     <option value="Autre">Autre</option>
                 </select>
@@ -3984,6 +4571,100 @@ body{
                     type="submit"
                     class="problem-action send"
                 >Envoyer</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<div
+    id="tarif-contribution-modal"
+    class="problem-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tarif-contribution-title"
+    onclick="fermerContributionTarifDepuisFond(event)"
+    hidden
+>
+    <section class="problem-dialog">
+        <button
+            type="button"
+            class="problem-close"
+            aria-label="Fermer"
+            onclick="fermerContributionTarif()"
+        >&times;</button>
+        <h2 id="tarif-contribution-title">D&eacute;clarer un tarif</h2>
+        <p class="tarif-contribution-note">
+            Le tarif sera affich&eacute; comme contribution en attente, puis contr&ocirc;l&eacute;
+            par OptiPlein. Votre adresse e-mail ne sera jamais affich&eacute;e.
+        </p>
+        <form
+            id="tarif-contribution-form"
+            class="problem-form"
+            onsubmit="envoyerContributionTarif(event)"
+        >
+            <input id="tarif-contribution-station-id" type="hidden">
+            <input id="tarif-contribution-station-name" type="hidden">
+            <div class="problem-field">
+                <label for="tarif-contribution-type">Type de tarif</label>
+                <select id="tarif-contribution-type" required>
+                    <option value="bank_card">Carte bancaire / paiement direct</option>
+                    <option value="operator_card">Carte de l'op&eacute;rateur ou fid&eacute;lit&eacute;</option>
+                    <option value="subscription">Abonnement</option>
+                    <option value="other">Autre</option>
+                </select>
+            </div>
+            <div class="problem-field">
+                <label for="tarif-contribution-prix">Prix (&euro;/kWh)</label>
+                <input
+                    id="tarif-contribution-prix"
+                    type="number"
+                    min="0.001"
+                    max="5"
+                    step="0.001"
+                    inputmode="decimal"
+                    required
+                >
+            </div>
+            <div class="problem-field">
+                <label for="tarif-contribution-session">Frais par session (&euro;, facultatif)</label>
+                <input
+                    id="tarif-contribution-session"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    inputmode="decimal"
+                >
+            </div>
+            <div class="problem-field">
+                <label for="tarif-contribution-details">Conditions ou pr&eacute;cisions</label>
+                <textarea
+                    id="tarif-contribution-details"
+                    maxlength="500"
+                    placeholder="Ex. tarif sans abonnement, badge requis, plage horaire..."
+                ></textarea>
+            </div>
+            <div class="problem-field">
+                <label for="tarif-contribution-source">Lien justificatif (facultatif)</label>
+                <input
+                    id="tarif-contribution-source"
+                    type="url"
+                    maxlength="500"
+                    placeholder="https://..."
+                >
+            </div>
+            <p id="tarif-contribution-status" class="problem-status" role="status"></p>
+            <div class="problem-actions">
+                <button
+                    type="button"
+                    class="problem-action cancel"
+                    onclick="fermerContributionTarif()"
+                >Annuler</button>
+                <button
+                    id="tarif-contribution-submit"
+                    type="submit"
+                    class="problem-action send"
+                >Publier le tarif</button>
             </div>
         </form>
     </section>
@@ -4178,7 +4859,7 @@ async function synchroniserDateMiseAJour() {
         var donnees = await reponse.json();
         if (donnees.update_pending) {
             afficherInfoItineraire(
-                "Mise a jour des prix en cours...",
+                "Mise \u00e0 jour des prix en cours...",
                 12000
             );
             programmerSynchronisationPrix(5000);
@@ -4208,7 +4889,7 @@ async function synchroniserDateMiseAJour() {
                     versionDonneesChargees = versionServeur;
                     rafraichissementPrixDiffere = false;
                     afficherInfoItineraire(
-                        "Prix actualises.",
+                        "Prix actualis\u00e9s.",
                         4500
                     );
                 } else if (!navigationActive && !trajetPrepare) {
@@ -4230,7 +4911,7 @@ async function synchroniserDateMiseAJour() {
             }
         }
     } catch (erreur) {
-        console.log("Synchronisation de la mise a jour indisponible");
+        console.log("Synchronisation de la mise \u00e0 jour indisponible");
     }
 
 }
@@ -4398,14 +5079,178 @@ window.envoyerSignalement = async function(event) {
 
 };
 
+window.ouvrirContributionTarif = function(station) {
+
+    if (!compteUtilisateurConnecte()) {
+        window.alert(
+            "Connectez-vous à votre compte OptiPlein pour déclarer un tarif."
+        );
+        basculerPanneauVehicule();
+        return;
+    }
+
+    if (!station || !station.id) {
+        return;
+    }
+    var fenetre = document.getElementById("tarif-contribution-modal");
+    var formulaire = document.getElementById("tarif-contribution-form");
+    var statut = document.getElementById("tarif-contribution-status");
+    formulaire.reset();
+    document.getElementById("tarif-contribution-station-id").value = station.id;
+    document.getElementById("tarif-contribution-station-name").value =
+        station.enseigne || "Borne de recharge";
+    if (prixStationDisponible(station.prix)) {
+        document.getElementById("tarif-contribution-prix").value =
+            Number(station.prix).toFixed(3);
+    }
+    statut.textContent = "";
+    statut.className = "problem-status";
+    fenetre.hidden = false;
+    document.getElementById("tarif-contribution-type").focus();
+
+};
+
+window.fermerContributionTarif = function() {
+
+    var fenetre = document.getElementById("tarif-contribution-modal");
+    if (fenetre) {
+        fenetre.hidden = true;
+    }
+
+};
+
+window.fermerContributionTarifDepuisFond = function(event) {
+
+    if (event.target === event.currentTarget) {
+        fermerContributionTarif();
+    }
+
+};
+
+window.envoyerContributionTarif = async function(event) {
+
+    event.preventDefault();
+    var bouton = document.getElementById("tarif-contribution-submit");
+    var statut = document.getElementById("tarif-contribution-status");
+    var fraisSession = document.getElementById(
+        "tarif-contribution-session"
+    ).value.trim();
+    bouton.disabled = true;
+    bouton.textContent = "Publication...";
+    statut.textContent = "";
+    statut.className = "problem-status";
+
+    try {
+        var reponse = await fetch("/api/bornes-irve/contribution-tarif", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + jetonCompte(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                station_id: document.getElementById(
+                    "tarif-contribution-station-id"
+                ).value,
+                station_name: document.getElementById(
+                    "tarif-contribution-station-name"
+                ).value,
+                price_eur_kwh: Number(document.getElementById(
+                    "tarif-contribution-prix"
+                ).value),
+                offer_type: document.getElementById(
+                    "tarif-contribution-type"
+                ).value,
+                session_fee_eur: fraisSession === ""
+                    ? null
+                    : Number(fraisSession),
+                details: document.getElementById(
+                    "tarif-contribution-details"
+                ).value,
+                source_url: document.getElementById(
+                    "tarif-contribution-source"
+                ).value
+            })
+        });
+        var resultat = await reponse.json().catch(function() { return {}; });
+        if (!reponse.ok) {
+            throw new Error(
+                resultat.detail || "Le tarif n’a pas pu être publié."
+            );
+        }
+        statut.textContent = "Tarif publié, en attente de validation par OptiPlein.";
+        statut.className = "problem-status success";
+        window.setTimeout(function() {
+            fermerContributionTarif();
+            actualiserStationsSelonPosition(true);
+        }, 1100);
+    } catch (erreur) {
+        statut.textContent = erreur.message;
+        statut.className = "problem-status error";
+    } finally {
+        bouton.disabled = false;
+        bouton.textContent = "Publier le tarif";
+    }
+
+};
+
 document.addEventListener(
     "keydown",
     function(event) {
         if (event.key === "Escape") {
             fermerSignalement();
+            fermerContributionTarif();
         }
     }
 );
+
+window.fermerMenuPrincipal = function(rendreFocus) {
+
+    var navigation = document.getElementById("app-main-nav");
+    var bouton = document.getElementById("app-menu-toggle");
+
+    if (navigation) {
+        navigation.hidden = true;
+    }
+    if (bouton) {
+        bouton.setAttribute("aria-expanded", "false");
+        bouton.setAttribute("aria-label", "Ouvrir le menu");
+        if (rendreFocus) {
+            bouton.focus();
+        }
+    }
+
+};
+
+window.basculerMenuPrincipal = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var navigation = document.getElementById("app-main-nav");
+    var bouton = document.getElementById("app-menu-toggle");
+
+    if (!navigation || !bouton) {
+        return;
+    }
+
+    var ouvrir = navigation.hidden;
+    navigation.hidden = !ouvrir;
+    bouton.setAttribute("aria-expanded", ouvrir ? "true" : "false");
+    bouton.setAttribute(
+        "aria-label",
+        ouvrir ? "Fermer le menu" : "Ouvrir le menu"
+    );
+    if (ouvrir) {
+        fermerPanneauVehicule();
+        var premierLien = navigation.querySelector("a");
+        if (premierLien) {
+            premierLien.focus();
+        }
+    }
+
+};
 
 window.fermerPanneauVehicule = function() {
 
@@ -4437,6 +5282,9 @@ window.basculerPanneauVehicule = function(event) {
     }
 
     var ouvrir = panneau.hidden;
+    if (ouvrir) {
+        fermerMenuPrincipal(false);
+    }
     panneau.hidden = !ouvrir;
     bouton.setAttribute(
         "aria-expanded",
@@ -4468,9 +5316,13 @@ window.addEventListener(
     function(event) {
 
         var menu = document.getElementById("vehicle-menu");
+        var menuPrincipal = document.getElementById("app-site-menu");
 
         if (menu && !menu.contains(event.target)) {
             fermerPanneauVehicule();
+        }
+        if (menuPrincipal && !menuPrincipal.contains(event.target)) {
+            fermerMenuPrincipal(false);
         }
 
     }
@@ -4482,6 +5334,7 @@ window.addEventListener(
 
         if (event.key === "Escape") {
             fermerPanneauVehicule();
+            fermerMenuPrincipal(true);
         }
 
     }
@@ -4613,14 +5466,49 @@ window.partagerPrixStation = async function(event, station) {
     var bouton = event && event.currentTarget;
 
     if (bouton) {
+        var boutonIcone = bouton.classList.contains(
+            "station-popup-icon-button"
+        );
         var libelleInitial = bouton.textContent;
-        bouton.textContent = "Copi\u00e9 !";
+        var titreInitial = bouton.getAttribute("title") || "Partager";
+        if (boutonIcone) {
+            bouton.classList.add("copied");
+            bouton.setAttribute("title", "Lien copié");
+            bouton.setAttribute("aria-label", "Lien copié");
+        } else {
+            bouton.textContent = "Copi\u00e9 !";
+        }
         window.setTimeout(
             function() {
-                bouton.textContent = libelleInitial;
+                if (boutonIcone) {
+                    bouton.classList.remove("copied");
+                    bouton.setAttribute("title", titreInitial);
+                    bouton.setAttribute("aria-label", titreInitial);
+                } else {
+                    bouton.textContent = libelleInitial;
+                }
             },
             1800
         );
+    }
+
+};
+
+window.fermerPopupStation = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    if (map && typeof map.closePopup === "function") {
+        map.closePopup();
+        return;
+    }
+    var fermetureNative = document.querySelector(
+        ".maplibregl-popup-close-button, .leaflet-popup-close-button"
+    );
+    if (fermetureNative) {
+        fermetureNative.click();
     }
 
 };
@@ -5596,6 +6484,7 @@ var stationsClassiquesMasquees = false;
 var minuteurAnnulationTrajetPrepare = null;
 var secondesAnnulationTrajetPrepare = 20;
 var stationsEconomie = [];
+var actualisationStationsEconomieEnCours = null;
 var stationsTrajetFrance = null;
 var chargementStationsTrajetFrance = null;
 var carburantSelectionne = {{ carburant|tojson }};
@@ -6133,6 +7022,22 @@ function creerLogoEnseigne(nom, contexte) {
         + '</span>';
 }
 
+function htmlAvantageCarburantTotal(avantage) {
+    if (!avantage || Number(avantage.prix_plafond) !== 1.99) {
+        return "";
+    }
+
+    return ''
+        + '<div class="avantage-total-ligne"'
+        + ' title="Avantage Carburant TotalEnergies : prix plafonné à 1,99 €/L"'
+        + ' aria-label="Carte Club TotalEnergies, prix plafonné à 1,99 euro par litre">'
+        + '<span class="avantage-total-carte" aria-hidden="true">'
+        + '<img src="/static/brand-logos/totalenergies.png" alt="">'
+        + '</span>'
+        + '<span>1,99 €</span>'
+        + '</div>';
+}
+
 var logoStationPrixMinimum = document.getElementById("stat-station-logo");
 if (logoStationPrixMinimum) {
     logoStationPrixMinimum.innerHTML = creerLogoEnseigne(
@@ -6177,6 +7082,10 @@ var logoEnseignePopup{{ loop.index }} = creerLogoEnseigne(
     nomEnseigne{{ loop.index }},
     "popup"
 );
+var avantageTotal{{ loop.index }} = {{ station.get("avantage_totalenergies")|tojson }};
+var avantageTotalHtml{{ loop.index }} = htmlAvantageCarburantTotal(
+    avantageTotal{{ loop.index }}
+);
 
 stationsEconomie.push({
     id: {{ station.id|tojson }},
@@ -6194,7 +7103,8 @@ var prixIcon = L.divIcon({
     className: "prix-marker",
 
     html: `
-        <div class="prix-bulle{% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %} indisponible{% endif %}">
+        <div class="prix-bulle{% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %} indisponible{% endif %}${avantageTotalHtml{{ loop.index }} ? " avec-avantage-total" : ""}">
+            ${avantageTotalHtml{{ loop.index }} ? '<div class="prix-bulle-ligne-principale">' : ''}
             ${logoEnseigneCarte{{ loop.index }}}
             <span>
             {% if station.carburant_selectionne|float == 0 or station.carburant_selectionne|float == 9.999 %}
@@ -6213,11 +7123,13 @@ var prixIcon = L.divIcon({
                 {% if station.tendance_selectionnee == "baisse" %}&#8595;{% elif station.tendance_selectionnee == "hausse" %}&#8593;{% else %}={% endif %}
             </button>
             {% endif %}
+            ${avantageTotalHtml{{ loop.index }} ? '</div>' : ''}
+            ${avantageTotalHtml{{ loop.index }}}
         </div>
     `,
 
-    iconSize: [132, 36],
-    iconAnchor: [66, 18]
+    iconSize: avantageTotalHtml{{ loop.index }} ? [124, 49] : [132, 36],
+    iconAnchor: avantageTotalHtml{{ loop.index }} ? [62, 25] : [66, 18]
 
 });
 
@@ -6266,6 +7178,33 @@ var marker = L.marker(
                     &#9734;
                 </button>
 
+                <button
+                    type="button"
+                    class="station-popup-icon-button"
+                    aria-label="Partager"
+                    title="Partager"
+                    onclick="partagerPrixStation(event, stationPartage{{ loop.index }})"
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="18" cy="5" r="2.5"></circle>
+                        <circle cx="6" cy="12" r="2.5"></circle>
+                        <circle cx="18" cy="19" r="2.5"></circle>
+                        <path d="m8.2 10.8 7.5-4.4M8.2 13.2l7.5 4.4"></path>
+                    </svg>
+                </button>
+
+                <button
+                    type="button"
+                    class="station-popup-icon-button"
+                    aria-label="Fermer"
+                    title="Fermer"
+                    onclick="fermerPopupStation(event)"
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 6l12 12M18 6 6 18"></path>
+                    </svg>
+                </button>
+
                 <p class="favoris-info">
                     0 / 3 favoris
                 </p>
@@ -6293,7 +7232,6 @@ var marker = L.marker(
             Distance : {{ station.distance }} km
         </p>
         {% endif %}
-
         <div class="popup-actions">
 
             <button
@@ -6328,14 +7266,6 @@ var marker = L.marker(
                 hidden
             >
                 Google Maps
-            </button>
-
-            <button
-                type="button"
-                class="popup-action share"
-                onclick="partagerPrixStation(event, stationPartage{{ loop.index }})"
-            >
-                Partager
             </button>
 
         </div>
@@ -6401,15 +7331,30 @@ function modeElectriqueActif() {
 
 }
 
+function carburantRentabiliteActuel() {
+
+    var vehicule = vehiculeActif();
+    return vehicule
+        ? carburantPourVehicule(vehicule)
+        : String(carburantSelectionne || "").toLowerCase();
+
+}
+
+function modeElectriqueRentabiliteActif() {
+
+    return carburantRentabiliteActuel() === "electrique";
+
+}
+
 function formaterPrixOuPuissanceStation(station) {
 
     if (stationElectrique(station)) {
         var prix = formaterPrixStation(station.prix);
         if (prix === "Indisponible") {
-            return prix;
+            return "Tarif N/C";
         }
 
-        return (station.prixEstime ? "~" : "") + prix + "/kWh";
+        return prix + "/kWh";
     }
 
     return formaterPrixStation(station.prix);
@@ -6422,10 +7367,27 @@ function formaterDetailPrixStation(station) {
         return formaterPrixStation(station.prix);
     }
 
-    var prix = formaterPrixStation(station.prix) + "/kWh";
-    return station.prixEstime
-        ? prix + " estim\u00e9"
-        : prix;
+    var prix = formaterPrixStation(station.prix);
+    if (prix === "Indisponible") {
+        return station.tarification
+            ? "Tarif variable ou non exploitable"
+            : "Tarif non communiqu\u00e9";
+    }
+
+    return prix + "/kWh";
+
+}
+
+function htmlTarifPreferentielMarqueur(station) {
+
+    if (!stationElectrique(station)) {
+        return "";
+    }
+
+    var texte = String(station.tarifRemiseCourte || "").trim();
+    return texte
+        ? '<div class="prix-bulle-remise">' + echapperHtml(texte) + '</div>'
+        : "";
 
 }
 
@@ -6474,6 +7436,47 @@ function htmlDetailsBorneIrve(station) {
     var points = Number(station.nbrePdc) || 0;
     var statut = statutDisponibiliteIrve(station);
 
+    var detailTarification = String(station.tarification || "").trim();
+    if (detailTarification.length > 900) {
+        detailTarification = detailTarification.slice(0, 897) + "...";
+    }
+    var sourceTarif = String(station.tarifSourceUrl || "").trim();
+    var tarifVerifieLe = String(station.tarifVerifieLe || "").trim();
+    var sourceTarifHtml = sourceTarif.startsWith("https://")
+        ? '<br><a href="' + echapperHtml(sourceTarif)
+            + '" target="_blank" rel="noopener noreferrer">'
+            + echapperHtml(station.tarifSourceLabel || "Source du tarif")
+            + '</a>'
+            + (tarifVerifieLe
+                ? ' · vérifié le ' + echapperHtml(tarifVerifieLe)
+                : '')
+        : '';
+    var dateDeclaree = formaterDateTarif(station.tarifDeclareLe);
+    var dateConfirmee = formaterDateTarif(station.tarifConfirmeLe);
+    var provenanceHtml = "";
+    if (station.tarifContributionStatut === "pending") {
+        provenanceHtml = '<span class="tarif-provenance pending">Déclaré par '
+            + echapperHtml(station.tarifContributeur || "Utilisateur OptiPlein")
+            + (dateDeclaree ? ' le ' + echapperHtml(dateDeclaree) : '')
+            + ' · En attente de validation par OptiPlein</span>';
+    } else if (station.tarifContributionStatut === "approved") {
+        provenanceHtml = '<span class="tarif-provenance">Déclaré par '
+            + echapperHtml(station.tarifContributeur || "Utilisateur OptiPlein")
+            + (dateDeclaree ? ' le ' + echapperHtml(dateDeclaree) : '')
+            + ' · Confirmé par OptiPlein'
+            + (dateConfirmee ? ' le ' + echapperHtml(dateConfirmee) : '')
+            + '</span>';
+    } else if (station.tarifProvenance === "optiplein"
+            && prixStationDisponible(station.prix)) {
+        provenanceHtml = '<span class="tarif-provenance">Déclaré et confirmé par OptiPlein'
+            + (dateConfirmee ? ' le ' + echapperHtml(dateConfirmee) : '')
+            + '</span>';
+    }
+    var contributionHtml = '<button type="button" class="tarif-contribution-link"'
+        + ' onclick="ouvrirContributionTarif(stationsCarteParId['
+        + JSON.stringify(station.id)
+        + '])">Déclarer ou corriger ce tarif</button>';
+
     return ''
         + '<p class="station-popup-distance">'
         + '<span class="borne-statut statut-borne-'
@@ -6486,7 +7489,27 @@ function htmlDetailsBorneIrve(station) {
         + echapperHtml(prises)
         + '<br>Prix : '
         + echapperHtml(formaterDetailPrixStation(station))
+        + (detailTarification
+            ? '<br>Conditions tarifaires : '
+                + echapperHtml(detailTarification)
+            : '')
+        + sourceTarifHtml
+        + provenanceHtml
+        + contributionHtml
         + '</p>';
+
+}
+
+function formaterDateTarif(valeur) {
+
+    if (!valeur) {
+        return "";
+    }
+    var date = new Date(valeur);
+    if (Number.isNaN(date.getTime())) {
+        return String(valeur).slice(0, 10);
+    }
+    return date.toLocaleDateString("fr-FR");
 
 }
 
@@ -6528,20 +7551,54 @@ function normaliserStationCarte(station) {
             : null,
         carburant: (station.carburant || carburantSelectionne).toUpperCase(),
         tendance: station.tendance || "",
-        tendanceDemain: station.tendance_demain || "stable",
-        confianceDemain: Number(station.confiance_demain) || 1,
+        tendanceDemain:
+            station.tendance_demain || station.tendanceDemain || "stable",
+        confianceDemain:
+            Number(station.confiance_demain ?? station.confianceDemain) || 1,
         energie: station.energie || "",
-        puissanceKw: Number(station.puissance_kw),
+        puissanceKw: Number(station.puissance_kw ?? station.puissanceKw),
         prises: Array.isArray(station.prises) ? station.prises : [],
         disponibilite: station.disponibilite || "",
         disponibles: Number(station.disponibles) || 0,
         occupes: Number(station.occupes) || 0,
-        horsService: Number(station.hors_service) || 0,
+        horsService: Number(station.hors_service ?? station.horsService) || 0,
         disponibiliteInconnue:
-            Number(station.disponibilite_inconnue) || 0,
-        nbrePdc: Number(station.nbre_pdc) || 0,
-        prixEstime: Boolean(station.prix_estime),
-        tarification: station.tarification || ""
+            Number(
+                station.disponibilite_inconnue
+                ?? station.disponibiliteInconnue
+            ) || 0,
+        nbrePdc: Number(station.nbre_pdc ?? station.nbrePdc) || 0,
+        prixEstime: Boolean(station.prix_estime ?? station.prixEstime),
+        tarification: station.tarification || "",
+        tarifsOptions: Array.isArray(
+            station.tarifs_options ?? station.tarifsOptions
+        )
+            ? (station.tarifs_options ?? station.tarifsOptions)
+            : [],
+        tarifSourceUrl:
+            station.tarif_source_url || station.tarifSourceUrl || "",
+        tarifSourceLabel:
+            station.tarif_source_label || station.tarifSourceLabel || "",
+        tarifVerifieLe:
+            station.tarif_verifie_le || station.tarifVerifieLe || "",
+        tarifRemiseCourte:
+            station.tarif_remise_courte || station.tarifRemiseCourte || "",
+        tarifProvenance:
+            station.tarif_provenance || station.tarifProvenance || "",
+        tarifContributeur:
+            station.tarif_contributeur || station.tarifContributeur || "",
+        tarifDeclareLe:
+            station.tarif_declare_le || station.tarifDeclareLe || "",
+        tarifConfirmeLe:
+            station.tarif_confirme_le || station.tarifConfirmeLe || "",
+        tarifContributionStatut:
+            station.tarif_contribution_statut
+            || station.tarifContributionStatut
+            || "",
+        avantageTotalenergies:
+            station.avantage_totalenergies
+            || station.avantageTotalenergies
+            || null
     };
 
 }
@@ -6571,19 +7628,40 @@ function creerMarqueurStationDynamique(stationBrute) {
     var classeStatutBorne = stationElectrique(station)
         ? " borne-irve statut-borne-" + statutDisponibiliteIrve(station)
         : "";
+    var tarifPreferentielHtml = htmlTarifPreferentielMarqueur(station);
+    var avantageTotalHtml = htmlAvantageCarburantTotal(
+        station.avantageTotalenergies
+    );
+    var classeTarifPreferentiel = tarifPreferentielHtml
+        ? " avec-remise"
+        : "";
     var prixIcon = L.divIcon({
         className: "prix-marker",
         html: ''
             + '<div class="prix-bulle'
             + indisponible
             + classeStatutBorne
+            + classeTarifPreferentiel
+            + (avantageTotalHtml ? " avec-avantage-total" : "")
             + '">'
+            + (tarifPreferentielHtml
+                ? '<div class="prix-bulle-ligne-prix">'
+                : avantageTotalHtml
+                    ? '<div class="prix-bulle-ligne-principale">'
+                    : '')
             + logoCarte
             + '<span>' + echapperHtml(prixHtml) + '</span>'
             + htmlIndicateurTendance(station.tendance, station.prix)
+            + (tarifPreferentielHtml || avantageTotalHtml ? '</div>' : '')
+            + tarifPreferentielHtml
+            + avantageTotalHtml
             + '</div>',
-        iconSize: stationElectrique(station) ? [146, 38] : [132, 36],
-        iconAnchor: stationElectrique(station) ? [73, 19] : [66, 18]
+        iconSize: stationElectrique(station)
+            ? (tarifPreferentielHtml ? [184, 49] : [146, 38])
+            : (avantageTotalHtml ? [124, 49] : [132, 36]),
+        iconAnchor: stationElectrique(station)
+            ? (tarifPreferentielHtml ? [92, 25] : [73, 19])
+            : (avantageTotalHtml ? [62, 25] : [66, 18])
     });
     var distanceHtml = station.distance !== null
         ? '<p class="station-popup-distance">Distance : '
@@ -6612,6 +7690,22 @@ function creerMarqueurStationDynamique(stationBrute) {
         + ' onclick="changerFavori(stationsCarteParId['
         + JSON.stringify(station.id)
         + '])">\u2606</button>'
+        + '<button type="button" class="station-popup-icon-button"'
+        + ' aria-label="Partager" title="Partager"'
+        + ' onclick="partagerPrixStation(event, stationsCarteParId['
+        + JSON.stringify(station.id)
+        + '])"><svg viewBox="0 0 24 24" aria-hidden="true">'
+        + '<circle cx="18" cy="5" r="2.5"></circle>'
+        + '<circle cx="6" cy="12" r="2.5"></circle>'
+        + '<circle cx="18" cy="19" r="2.5"></circle>'
+        + '<path d="m8.2 10.8 7.5-4.4M8.2 13.2l7.5 4.4"></path>'
+        + '</svg></button>'
+        + '<button type="button" class="station-popup-icon-button"'
+        + ' aria-label="Fermer" title="Fermer"'
+        + ' onclick="fermerPopupStation(event)">'
+        + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+        + '<path d="M6 6l12 12M18 6 6 18"></path>'
+        + '</svg></button>'
         + '<p class="favoris-info">Favoris</p>'
         + '</div>'
         + '</div>'
@@ -6651,10 +7745,6 @@ function creerMarqueurStationDynamique(stationBrute) {
         + ','
         + station.longitude
         + ')" hidden>Google Maps</button>'
-        + '<button type="button" class="popup-action share"'
-        + ' onclick="partagerPrixStation(event, stationsCarteParId['
-        + JSON.stringify(station.id)
-        + '])">Partager</button>'
         + '</div>'
         + '</div>';
     var markerStation = L.marker(
@@ -6684,6 +7774,15 @@ function bornesDisponiblesSeulementActives() {
 
     var filtre = document.getElementById(
         "bornes-disponibles-seulement"
+    );
+    return modeElectriqueActif() && filtre && filtre.checked;
+
+}
+
+function bornesAvecTarifsSeulementActives() {
+
+    var filtre = document.getElementById(
+        "bornes-tarifs-disponibles"
     );
     return modeElectriqueActif() && filtre && filtre.checked;
 
@@ -6757,11 +7856,29 @@ function remplacerStationsSurCarte(stations, mettreAJourSource) {
         stationsIrveNonFiltrees = stations.slice();
     }
 
-    var stationsAffichees = bornesDisponiblesSeulementActives()
-        ? stations.filter(function(station) {
-            return Number(station.disponibles) > 0;
-        })
-        : stations;
+    var stationsAffichees = stations.filter(function(station) {
+        var carburantCarte = String(carburantSelectionne || "").toLowerCase();
+
+        // Protection côté navigateur : même si une ancienne réponse API est
+        // encore en cache, une station sans tarif E85 ou GPLc ne doit jamais
+        // rester visible lorsque ce carburant est sélectionné.
+        if ((carburantCarte === "e85" || carburantCarte === "gplc")
+                && !prixStationDisponible(station.prix)) {
+            return false;
+        }
+
+        if (bornesDisponiblesSeulementActives()
+                && Number(station.disponibles) <= 0) {
+            return false;
+        }
+
+        if (bornesAvecTarifsSeulementActives()
+                && !prixStationDisponible(station.prix)) {
+            return false;
+        }
+
+        return true;
+    });
 
     markers.forEach(function(markerStation) {
         map.removeLayer(markerStation);
@@ -6770,7 +7887,6 @@ function remplacerStationsSurCarte(stations, mettreAJourSource) {
     markers = [];
     markersParStation = {};
     stationsCarteParId = {};
-    stationsEconomie = [];
 
     stationsAffichees.forEach(function(stationBrute) {
         var station = normaliserStationCarte(stationBrute);
@@ -6782,20 +7898,6 @@ function remplacerStationsSurCarte(stations, mettreAJourSource) {
 
         markers.push(markerStation);
         markersParStation[station.id] = markerStation;
-        stationsEconomie.push({
-            id: station.id,
-            enseigne: station.enseigne,
-            adresse: station.adresse,
-            ville: station.ville,
-            latitude: station.latitude,
-            longitude: station.longitude,
-            prix: station.prix,
-            distance: station.distance,
-            energie: station.energie,
-            puissanceKw: station.puissanceKw,
-            prixEstime: station.prixEstime,
-            disponibilite: station.disponibilite
-        });
     });
 
     actualiserPrixMinimumAutour(stationsAffichees);
@@ -6817,6 +7919,24 @@ if (filtreBornesDisponibles) {
         localStorage.setItem(
             "optiplein-bornes-disponibles",
             filtreBornesDisponibles.checked ? "true" : "false"
+        );
+        remplacerStationsSurCarte(stationsIrveNonFiltrees, false);
+        calculerMeilleureStation();
+    });
+}
+
+var filtreBornesAvecTarifs = document.getElementById(
+    "bornes-tarifs-disponibles"
+);
+
+if (filtreBornesAvecTarifs) {
+    filtreBornesAvecTarifs.checked =
+        localStorage.getItem("optiplein-bornes-tarifs") === "true";
+
+    filtreBornesAvecTarifs.addEventListener("change", function() {
+        localStorage.setItem(
+            "optiplein-bornes-tarifs",
+            filtreBornesAvecTarifs.checked ? "true" : "false"
         );
         remplacerStationsSurCarte(stationsIrveNonFiltrees, false);
         calculerMeilleureStation();
@@ -6868,7 +7988,7 @@ function afficherBoutonAnnulationTrajetPrepare(visible) {
             + "s)";
         bouton.setAttribute(
             "aria-label",
-            "Annuler la preparation du trajet, "
+            "Annuler la pr\u00e9paration du trajet, "
                 + secondesAnnulationTrajetPrepare
                 + " secondes restantes"
         );
@@ -6910,9 +8030,9 @@ function afficherBoutonAnnulationTrajetPrepare(visible) {
             bouton.textContent = "Annuler";
             bouton.setAttribute(
                 "aria-label",
-                "Annuler la preparation du trajet"
+                "Annuler la pr\u00e9paration du trajet"
             );
-            bouton.title = "Annuler la preparation du trajet";
+            bouton.title = "Annuler la pr\u00e9paration du trajet";
         }
     }
 
@@ -6955,6 +8075,7 @@ var alertesPrixCle = "optiplein-alertes-prix";
 var optimisationPremiumCle = "optiplein-optimisation-premium";
 var compteTokenCle = "optiplein-compte-token";
 var compteEmailCle = "optiplein-compte-email";
+var carteTotalenergiesCle = "optiplein-carte-totalenergies";
 var modeDecouvertePremiumActif = true;
 var choixFormuleMasquePendantTest = true;
 var publiciteAdsenseActive = {{ adsense_active|tojson }};
@@ -6963,6 +8084,7 @@ var nombreMaximumFavorisGratuit = 3;
 var nombreMaximumVehiculesGratuit = 1;
 var nombreMaximumVehiculesPremium = 5;
 var sauvegardeCompteTimer = null;
+var restaurationSessionCompteTimer = null;
 var applicationDonneesCompteEnCours = false;
 
 function planCompteActuel() {
@@ -7104,6 +8226,54 @@ function compteUtilisateurConnecte() {
     return Boolean(jetonCompte());
 
 }
+
+function carburantEligibleAvantageTotalenergies(carburant) {
+
+    return ["gazole", "sp95", "sp98", "e10", "e85", "gplc"].includes(
+        String(carburant || "").toLowerCase()
+    );
+
+}
+
+function carteTotalenergiesActive() {
+
+    return localStorage.getItem(carteTotalenergiesCle) === "true";
+
+}
+
+function actualiserControleCarteTotalenergies() {
+
+    var conteneur = document.getElementById(
+        "avantage-totalenergies-controle"
+    );
+    var caseCarte = document.getElementById("carte-totalenergies-active");
+    var vehicule = vehiculeActif();
+    var carburant = vehicule ? carburantPourVehicule(vehicule) : "";
+    var afficher = Boolean(
+        vehicule && carburantEligibleAvantageTotalenergies(carburant)
+    );
+
+    if (conteneur) {
+        conteneur.hidden = !afficher;
+    }
+    if (caseCarte) {
+        caseCarte.checked = carteTotalenergiesActive();
+        caseCarte.disabled = !afficher;
+    }
+
+}
+
+window.modifierCarteTotalenergies = function() {
+
+    var caseCarte = document.getElementById("carte-totalenergies-active");
+    localStorage.setItem(
+        carteTotalenergiesCle,
+        String(Boolean(caseCarte && caseCarte.checked))
+    );
+    programmerSauvegardeCompte();
+    calculerMeilleureStation();
+
+};
 
 function masquerPubliciteVide() {
 
@@ -7512,6 +8682,13 @@ function donneesCompteLocales() {
         favoris: lireFavoris(),
         vehicules: lireVehicules(),
         vehicule_actif: localStorage.getItem(vehiculeActifCle) || "",
+        preferences: {
+            carburant: carburantRentabiliteActuel(),
+            rayon_stations: rayonStationsCompteActuel(),
+            theme: "auto",
+            notifications: true,
+            carte_totalenergies: carteTotalenergiesActive()
+        },
         plan: compteUtilisateurConnecte() ? "premium" : planCompteActuel(),
         historique_economies: lireHistoriqueEconomies(),
         lieux_trajet: lireLieuxTrajet(),
@@ -7570,6 +8747,13 @@ function appliquerDonneesCompte(donnees) {
     localStorage.setItem(
         planCompteCle,
         donnees.plan === "premium" ? "premium" : "free"
+    );
+    localStorage.setItem(
+        carteTotalenergiesCle,
+        String(Boolean(
+            donnees.preferences
+            && donnees.preferences.carte_totalenergies
+        ))
     );
 
     if (donnees.vehicule_actif) {
@@ -7677,9 +8861,11 @@ async function requeteCompte(chemin, options) {
     );
 
     if (!reponse.ok) {
-        throw new Error(
+        var erreurRequete = new Error(
             resultat.detail || "Action impossible pour le moment."
         );
+        erreurRequete.status = reponse.status;
+        throw erreurRequete;
     }
 
     return resultat;
@@ -7798,6 +8984,8 @@ window.deconnecterCompteOptiPlein = function(event) {
 
     localStorage.removeItem(compteTokenCle);
     localStorage.removeItem(compteEmailCle);
+    window.clearTimeout(restaurationSessionCompteTimer);
+    restaurationSessionCompteTimer = null;
     actualiserInterfaceCompte();
     actualiserPlanCompte();
     calculerMeilleureStation();
@@ -7860,21 +9048,64 @@ async function restaurerSessionCompte() {
                 method: "GET"
             }
         );
+        if (resultat.token) {
+            localStorage.setItem(compteTokenCle, resultat.token);
+        }
+        if (resultat.email) {
+            localStorage.setItem(compteEmailCle, resultat.email);
+        }
         appliquerDonneesCompte(resultat.donnees || {});
-        definirStatutCompte(
-            "Donn\u00e9es du compte synchronis\u00e9es.",
-            "success"
-        );
+        window.clearTimeout(restaurationSessionCompteTimer);
+        restaurationSessionCompteTimer = null;
+        definirStatutCompte("", "");
     } catch (erreur) {
-        localStorage.removeItem(compteTokenCle);
-        actualiserInterfaceCompte();
-        definirStatutCompte(
-            erreur.message,
-            "error"
-        );
+        if (
+            erreur.status === 401
+            || erreur.status === 403
+            || erreur.status === 404
+        ) {
+            localStorage.removeItem(compteTokenCle);
+            actualiserInterfaceCompte();
+            definirStatutCompte(erreur.message, "error");
+        } else {
+            // Une coupure réseau ou un serveur momentanément indisponible ne
+            // doit jamais déconnecter l'utilisateur au démarrage de l'app.
+            definirStatutCompte(
+                "Connexion conservée. La synchronisation reprendra automatiquement.",
+                ""
+            );
+            programmerRestaurationSessionCompte();
+        }
     }
 
 }
+
+function programmerRestaurationSessionCompte() {
+
+    if (
+        restaurationSessionCompteTimer
+        || !compteUtilisateurConnecte()
+    ) {
+        return;
+    }
+
+    restaurationSessionCompteTimer = window.setTimeout(
+        function() {
+            restaurationSessionCompteTimer = null;
+            restaurerSessionCompte();
+        },
+        30000
+    );
+
+}
+
+window.addEventListener("online", function() {
+    if (compteUtilisateurConnecte()) {
+        window.clearTimeout(restaurationSessionCompteTimer);
+        restaurationSessionCompteTimer = null;
+        restaurerSessionCompte();
+    }
+});
 
 function afficherRetourValidationEmail() {
 
@@ -8129,7 +9360,7 @@ function actualiserListeFavoris(favoris) {
             var itineraire = document.createElement("button");
             itineraire.type = "button";
             itineraire.className = "favori-action";
-            itineraire.textContent = "Itineraire";
+            itineraire.textContent = "Itin\u00e9raire";
             itineraire.addEventListener(
                 "click",
                 function() {
@@ -8192,6 +9423,7 @@ let utilisateurMarker = null;
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
 var suiviGeolocalisationId = null;
+var accordGeolocalisationCle = "optiplein-geolocalisation-acceptee";
 var zoomNavigation = 16.8;
 var zoomGuidageActif = 18.2;
 var zoomGuidageLonguePortion = 15.7;
@@ -8365,7 +9597,7 @@ async function activerOrientationTelephone() {
             true
         );
     } catch (erreur) {
-        console.log("Orientation telephone indisponible");
+        console.log("Orientation du t\u00e9l\u00e9phone indisponible");
     }
 
 }
@@ -8962,6 +10194,75 @@ function distanceDeplacementKm(
 
 }
 
+function definirStationsEconomie(stations) {
+
+    stationsEconomie = stations.map(normaliserStationCarte)
+        .filter(function(station) {
+            return Number.isFinite(station.latitude)
+                && Number.isFinite(station.longitude);
+        });
+
+}
+
+async function actualiserStationsEconomieVehicule(
+    latitudeRecherche,
+    longitudeRecherche,
+    stationsCarte
+) {
+
+    var carburantRentabilite = carburantRentabiliteActuel();
+
+    if (
+        carburantRentabilite
+        === String(carburantSelectionne || "").toLowerCase()
+        && Array.isArray(stationsCarte)
+    ) {
+        definirStationsEconomie(stationsCarte);
+        return true;
+    }
+
+    if (actualisationStationsEconomieEnCours) {
+        return actualisationStationsEconomieEnCours;
+    }
+
+    actualisationStationsEconomieEnCours = (async function() {
+        var parametres = new URLSearchParams();
+        parametres.set("latitude", String(latitudeRecherche));
+        parametres.set("longitude", String(longitudeRecherche));
+        parametres.set("carburant", carburantRentabilite);
+        parametres.set("rayon", String(rayonCalculEconomieKm));
+        parametres.set("_", String(Date.now()));
+        var electrique = carburantRentabilite === "electrique";
+        var endpoint = electrique
+            ? "/api/bornes-irve?"
+            : "/api/stations-proches?";
+        var reponse = await fetchAvecDelai(
+            endpoint + parametres.toString(),
+            { cache: "no-store" },
+            electrique ? 45000 : 12000
+        );
+
+        if (!reponse.ok) {
+            return false;
+        }
+
+        var donnees = await reponse.json();
+        if (!Array.isArray(donnees.stations)) {
+            return false;
+        }
+
+        definirStationsEconomie(donnees.stations);
+        return true;
+    })().catch(function() {
+        return false;
+    }).finally(function() {
+        actualisationStationsEconomieEnCours = null;
+    });
+
+    return actualisationStationsEconomieEnCours;
+
+}
+
 async function actualiserStationsSelonPosition(force) {
 
     if (actualisationStationsEnCours) {
@@ -9074,6 +10375,11 @@ async function actualiserStationsSelonPosition(force) {
             versionDonneesChargees = donnees.data_version;
         }
         remplacerStationsSurCarte(donnees.stations);
+        await actualiserStationsEconomieVehicule(
+            latitudeRecherche,
+            longitudeRecherche,
+            donnees.stations
+        );
         calculerMeilleureStation();
         return true;
     } catch (erreur) {
@@ -9241,6 +10547,59 @@ map.on(
     }
 );
 
+function geolocalisationAccepteeSurAppareil() {
+
+    return localStorage.getItem(accordGeolocalisationCle) === "1";
+
+}
+
+function memoriserAccordGeolocalisation() {
+
+    localStorage.setItem(accordGeolocalisationCle, "1");
+
+}
+
+async function demarrerGeolocalisationAuChargement() {
+
+    if (!navigator.geolocation) {
+        return;
+    }
+
+    if (
+        navigator.permissions
+        && typeof navigator.permissions.query === "function"
+    ) {
+        try {
+            var permissionGeolocalisation =
+                await navigator.permissions.query({
+                    name: "geolocation"
+                });
+
+            if (permissionGeolocalisation.state === "denied") {
+                return;
+            }
+
+            if (permissionGeolocalisation.state === "granted") {
+                memoriserAccordGeolocalisation();
+            }
+
+            if (
+                permissionGeolocalisation.state === "granted"
+                || geolocalisationAccepteeSurAppareil()
+                || permissionGeolocalisation.state === "prompt"
+            ) {
+                demarrerGeolocalisation();
+            }
+            return;
+        } catch (erreur) {
+            console.log("Etat de la permission GPS indisponible");
+        }
+    }
+
+    demarrerGeolocalisation();
+
+}
+
 function demarrerGeolocalisation() {
 
     if (suiviGeolocalisationId !== null) {
@@ -9253,6 +10612,8 @@ function demarrerGeolocalisation() {
         navigator.geolocation.watchPosition(
 
         function(position) {
+
+            memoriserAccordGeolocalisation();
 
             var latitudePrecedente = latitudeUtilisateur;
             var longitudePrecedente = longitudeUtilisateur;
@@ -9473,7 +10834,7 @@ function demarrerGeolocalisation() {
                     )
                     .addTo(map)
                     .bindPopup(
-                        "Vous etes ici"
+                        "Vous \u00eates ici"
                     );
 
                 if (premierCentrageUtilisateur) {
@@ -9490,7 +10851,7 @@ function demarrerGeolocalisation() {
         function(error) {
 
             console.log(
-                "GPS refuse ou indisponible"
+                "GPS refus\u00e9 ou indisponible"
             );
 
         },
@@ -9507,9 +10868,9 @@ function demarrerGeolocalisation() {
 
 // Lancement automatique au chargement
 
- window.addEventListener(
+window.addEventListener(
     "load",
-    demarrerGeolocalisation
+    demarrerGeolocalisationAuChargement
 );
 
 window.addEventListener(
@@ -9525,6 +10886,42 @@ window.addEventListener(
 var controlesAutomatiques = document.querySelectorAll(
     'input[name="carburant"]'
 );
+var carburantCarteManuelCle = "optiplein-carburant-carte-manuel";
+
+function lireCarburantCarteManuel() {
+
+    try {
+        return JSON.parse(
+            localStorage.getItem(carburantCarteManuelCle) || "null"
+        );
+    } catch (erreur) {
+        return null;
+    }
+
+}
+
+function oublierCarburantCarteManuel() {
+
+    localStorage.removeItem(carburantCarteManuelCle);
+
+}
+
+function memoriserCarburantCarteManuel(carburant) {
+
+    var vehicule = vehiculeActif();
+    if (!vehicule) {
+        return;
+    }
+
+    localStorage.setItem(
+        carburantCarteManuelCle,
+        JSON.stringify({
+            vehiculeId: vehicule.id,
+            carburant: String(carburant || "").toLowerCase()
+        })
+    );
+
+}
 
 function soumettreSelectionCarburant(controleAutomatique) {
 
@@ -9568,6 +10965,7 @@ controlesAutomatiques.forEach(
         controleAutomatique.addEventListener(
             "change",
             function() {
+                memoriserCarburantCarteManuel(controleAutomatique.value);
                 soumettreSelectionCarburant(controleAutomatique);
 
             }
@@ -9811,7 +11209,12 @@ function lireVehicules() {
                         ancienneConso
                     ),
                     parametres: "",
-                    jauge: Number(localStorage.getItem("vehicule-jauge")) || 50
+                    jauge: (function() {
+                        var valeur = Number(localStorage.getItem("vehicule-jauge"));
+                        return Number.isFinite(valeur)
+                            ? Math.max(0, Math.min(100, valeur))
+                            : 50;
+                    })()
                 }
             ];
             enregistrerVehicules(vehicules);
@@ -9851,11 +11254,18 @@ function vehiculeActif() {
     var vehicules = lireVehicules();
     var actifId = localStorage.getItem(vehiculeActifCle);
 
-    return vehicules.find(
+    var actif = vehicules.find(
         function(vehicule) {
             return vehicule.id === actifId;
         }
-    ) || vehicules[0] || null;
+    ) || null;
+
+    if (!actif && vehicules[0]) {
+        actif = vehicules[0];
+        localStorage.setItem(vehiculeActifCle, actif.id);
+    }
+
+    return actif;
 
 }
 
@@ -9864,8 +11274,6 @@ function carburantPourVehicule(vehicule) {
     var profil = vehicule
         ? profilVehiculeValide(vehicule.profil)
         : "";
-    var carburantActuel = String(carburantSelectionne || "").toLowerCase();
-
     if (profil === "electrique") {
         return "electrique";
     }
@@ -9878,13 +11286,6 @@ function carburantPourVehicule(vehicule) {
     if (profil === "gpl") {
         return "gplc";
     }
-    if (
-        (profil === "essence" || profil === "hybride")
-        && ["sp98", "e10"].indexOf(carburantActuel) !== -1
-    ) {
-        return carburantActuel;
-    }
-
     return "e10";
 
 }
@@ -9896,10 +11297,24 @@ function synchroniserCarburantAvecVehicule(vehicule) {
     }
 
     var carburantVehicule = carburantPourVehicule(vehicule);
+    var choixManuel = lireCarburantCarteManuel();
+    var carburantCarte = String(carburantSelectionne || "").toLowerCase();
+
+    if (
+        choixManuel
+        && choixManuel.vehiculeId === vehicule.id
+        && choixManuel.carburant === carburantCarte
+    ) {
+        return false;
+    }
+
+    if (choixManuel && choixManuel.vehiculeId !== vehicule.id) {
+        oublierCarburantCarteManuel();
+    }
 
     if (
         carburantVehicule
-        === String(carburantSelectionne || "").toLowerCase()
+        === carburantCarte
     ) {
         return false;
     }
@@ -9913,7 +11328,22 @@ function synchroniserCarburantAvecVehicule(vehicule) {
     }
 
     controle.checked = true;
-    soumettreSelectionCarburant(controle);
+
+    // Sauvegarder le nouvel actif avant le rechargement. Sans cela, la
+    // restauration du compte pouvait remettre l'ancien véhicule avant la
+    // sauvegarde différée.
+    if (compteUtilisateurConnecte()) {
+        window.clearTimeout(sauvegardeCompteTimer);
+        sauvegarderCompteMaintenant()
+            .catch(function(erreur) {
+                definirStatutCompte(erreur.message, "error");
+            })
+            .finally(function() {
+                soumettreSelectionCarburant(controle);
+            });
+    } else {
+        soumettreSelectionCarburant(controle);
+    }
     return true;
 
 }
@@ -9930,7 +11360,11 @@ function synchroniserAnciennesClesVehicule(vehicule) {
     localStorage.setItem("vehicule-conso", vehicule.conso || "");
     localStorage.setItem("vehicule-autonomie", vehicule.autonomie || "");
     localStorage.setItem("vehicule-parametres", vehicule.parametres || "");
-    localStorage.setItem("vehicule-jauge", String(vehicule.jauge || 50));
+    var jauge = Number(vehicule.jauge);
+    localStorage.setItem(
+        "vehicule-jauge",
+        String(Number.isFinite(jauge) ? Math.max(0, Math.min(100, jauge)) : 50)
+    );
     programmerSauvegardeCompte();
 
 }
@@ -10479,7 +11913,7 @@ window.nouveauVehicule = function() {
         return;
     }
 
-    localStorage.removeItem(vehiculeActifCle);
+    // Le véhicule actif reste valide pendant la saisie du brouillon.
     champsVehicule.forEach(
         function(champId) {
             var champ = document.getElementById(champId);
@@ -10493,7 +11927,10 @@ window.nouveauVehicule = function() {
     if (jauge) {
         jauge.value = "50";
     }
-    actualiserJaugeReservoir();
+    var valeurJauge = document.getElementById("vehicule-jauge-valeur");
+    if (valeurJauge) {
+        valeurJauge.textContent = "50 %";
+    }
     actualiserProfilVehicule();
     afficherEditeurVehicule(false);
     actualiserListeVehicules();
@@ -10552,6 +11989,7 @@ function actualiserListeVehicules() {
             bouton.addEventListener(
                 "click",
                 function() {
+                    oublierCarburantCarteManuel();
                     localStorage.setItem(vehiculeActifCle, vehicule.id);
                     programmerSauvegardeCompte();
                     chargerVehicule();
@@ -10588,7 +12026,7 @@ function enregistrerEconomiePremium(station, economie) {
             economie: Math.max(0, economie),
             station: station.enseigne || "Station-service",
             ville: station.ville || "",
-            carburant: {{ carburant|upper|tojson }},
+            carburant: carburantRentabiliteActuel().toUpperCase(),
             vehicule: (vehiculeActif() || {}).nom || ""
         }
     );
@@ -10631,7 +12069,7 @@ function trouverStationParCoordonnees(latitude, longitude) {
 
 function convertirStationTrajetFrance(station) {
 
-    var prix = Number(station[carburantSelectionne]);
+    var prix = Number(station[carburantRentabiliteActuel()]);
 
     return {
         id: station.id,
@@ -10641,7 +12079,11 @@ function convertirStationTrajetFrance(station) {
         latitude: Number(station.latitude),
         longitude: Number(station.longitude),
         prix: prix,
-        distance: null
+        distance: null,
+        avantageTotalenergies:
+            station.avantage_totalenergies
+            || station.avantageTotalenergies
+            || null
     };
 
 }
@@ -10919,6 +12361,72 @@ function nombreVehiculeEnregistre(cle) {
 var vitesseDetourRentabiliteKmH = 42;
 var coutTempsRentabiliteEuroHeure = 9;
 
+function calculerEconomieMonetaireStation(
+    quantiteAchetee,
+    prixStation,
+    prixReference,
+    coutDetour
+) {
+
+    var quantite = Math.max(0, Number(quantiteAchetee || 0));
+    var ecartPrix = Math.max(
+        0,
+        Number(prixReference || 0) - Number(prixStation || 0)
+    );
+    var gainBrut = quantite * ecartPrix;
+
+    return Math.max(0, gainBrut - Math.max(0, Number(coutDetour || 0)));
+
+}
+
+function prixRentabiliteAvecCarteTotalenergies(
+    station,
+    carteActive,
+    carburant
+) {
+
+    var prixPublic = Number(station && station.prix);
+    var avantage = station && station.avantageTotalenergies;
+    var plafond = Number(avantage && avantage.prix_plafond);
+
+    if (
+        !carteActive
+        || !carburantEligibleAvantageTotalenergies(carburant)
+        || !Number.isFinite(prixPublic)
+        || !Number.isFinite(plafond)
+        || plafond <= 0
+    ) {
+        return prixPublic;
+    }
+
+    return Math.min(prixPublic, plafond);
+
+}
+
+function appliquerAvantageTotalenergiesStationsTrajet(
+    stations,
+    carteActive,
+    carburant
+) {
+
+    return (stations || []).map(function(station) {
+        var prixPublic = Number(station && station.prix);
+        var prixEffectif = prixRentabiliteAvecCarteTotalenergies(
+            station,
+            carteActive,
+            carburant
+        );
+
+        return Object.assign({}, station, {
+            prixPublic: prixPublic,
+            prix: prixEffectif,
+            avantageTotalenergiesApplique:
+                Number.isFinite(prixEffectif) && prixEffectif < prixPublic
+        });
+    });
+
+}
+
 function formaterEurosRentabilite(valeur) {
 
     return Number(valeur || 0).toLocaleString(
@@ -10945,7 +12453,7 @@ function formaterLitresRentabilite(valeur) {
 
 function formaterQuantiteRentabilite(valeur, station) {
 
-    var unite = stationElectrique(station) || modeElectriqueActif()
+    var unite = stationElectrique(station) || modeElectriqueRentabiliteActif()
         ? " kWh"
         : " L";
 
@@ -10993,7 +12501,7 @@ function calculerCoutOptimisationStation(options) {
 
     var station = options.station;
     var vehiculeElectrique = stationElectrique(station)
-        || modeElectriqueActif();
+        || modeElectriqueRentabiliteActif();
     var prixReference = Number.isFinite(options.prixReference)
         ? options.prixReference
         : station.prix;
@@ -11040,8 +12548,8 @@ function calculerCoutOptimisationStation(options) {
         (tempsPerduMinutes + tempsRechargeMinutes)
         / 60
         * coutTempsRentabiliteEuroHeure;
-    var coutTotal =
-        coutCarburantAchete + coutCarburantDetour + coutTempsPerdu;
+    var coutTotal = coutCarburantAchete + coutCarburantDetour;
+    var scoreDecision = coutTotal + coutTempsPerdu;
 
     return {
         quantiteAchetee: quantiteAchetee,
@@ -11054,7 +12562,8 @@ function calculerCoutOptimisationStation(options) {
         tempsRechargeMinutes: tempsRechargeMinutes,
         puissanceRechargeKw: puissanceRechargeKw,
         coutTempsPerdu: coutTempsPerdu,
-        coutTotal: coutTotal
+        coutTotal: coutTotal,
+        scoreDecision: scoreDecision
     };
 
 }
@@ -11080,6 +12589,11 @@ function ajouterExplicationRentabilite(
         )
         + " = "
         + formaterEurosRentabilite(station.coutCarburantAchete)
+        + (
+            station.avantageTotalenergiesApplique
+                ? " au plafond Avantage TotalEnergies de 1,99 €/L"
+                : ""
+        )
         + ", d\u00e9tour "
         + formaterKmRentabilite(station.distanceDetourKm)
         + " = "
@@ -11098,9 +12612,7 @@ function ajouterExplicationRentabilite(
                     + " kW"
                 : ""
         )
-        + " = "
-        + formaterEurosRentabilite(station.coutTempsPerdu)
-        + " (9 \u20ac/h)"
+        + " (information non convertie en euros)"
         + ". Gain net "
         + formaterEurosRentabilite(economie)
         + reference
@@ -11118,6 +12630,24 @@ function calculerRentabiliteStations(
     consommation,
     quantiteACompleter
 ) {
+
+    var carburantRentabilite = carburantRentabiliteActuel();
+    var carteActive = carteTotalenergiesActive();
+    stationsDisponibles = stationsDisponibles.map(function(station) {
+        var prixPublic = Number(station.prix);
+        var prixEffectif = prixRentabiliteAvecCarteTotalenergies(
+            station,
+            carteActive,
+            carburantRentabilite
+        );
+
+        return Object.assign({}, station, {
+            prixPublic: prixPublic,
+            prix: prixEffectif,
+            avantageTotalenergiesApplique:
+                Number.isFinite(prixEffectif) && prixEffectif < prixPublic
+        });
+    });
 
     var prixTrajetReference = stationsDisponibles.reduce(
         function(total, station) {
@@ -11258,68 +12788,32 @@ function calculerRentabiliteStations(
                 tempsRechargeMinutes: optimisation.tempsRechargeMinutes,
                 puissanceRechargeKw: optimisation.puissanceRechargeKw,
                 coutTempsPerdu: optimisation.coutTempsPerdu,
-                coutTotal: optimisation.coutTotal
+                coutTotal: optimisation.coutTotal,
+                scoreDecision: optimisation.scoreDecision,
+                economieMonetaire: calculerEconomieMonetaireStation(
+                    quantiteACompleter,
+                    station.prix,
+                    prixTrajetReference,
+                    optimisation.coutCarburantDetour
+                )
             });
 
         }
     );
 
-    if (!comptePremiumActif()) {
-        var coutPleinReference = quantiteACompleter * prixTrajetReference;
-
-        return {
-            stationsCalculees: stationsCalculees,
-            coutReference: coutPleinReference,
-            libelleReference:
-                " par rapport au prix moyen local"
-        };
-    }
-
-    var coutReferenceParStation = stationsCalculees.map(
-        function(stationReference) {
-            return {
-                station: stationReference,
-                cout: stationReference.coutTotal
-            };
-        }
-    );
-
     stationsCalculees.forEach(
         function(station) {
-
-            var meilleureReference = coutReferenceParStation
-                .filter(
-                    function(reference) {
-                        return reference.station.id !== station.id;
-                    }
-                )
-                .reduce(
-                    function(meilleure, reference) {
-                        return !meilleure || reference.cout < meilleure.cout
-                            ? reference
-                            : meilleure;
-                    },
-                    null
-                );
-
-            station.economieComparee = meilleureReference
-                ? Math.max(
-                    0,
-                    meilleureReference.cout - station.coutTotal
-                )
-                : 0;
-            station.stationReferenceRentable = meilleureReference
-                ? meilleureReference.station
-                : null;
+            station.economieComparee = station.economieMonetaire;
+            station.stationReferenceRentable = null;
 
         }
     );
 
     return {
         stationsCalculees: stationsCalculees,
-        coutReference: null,
+        coutReference: quantiteACompleter * prixTrajetReference,
         libelleReference:
-            " par rapport \u00e0 la 2e station la plus rentable"
+            " par rapport au prix moyen local"
     };
 
 }
@@ -11523,19 +13017,8 @@ function choisirMeilleureStationRentabilite(stations, electrique) {
 
     return stations.reduce(
         function(meilleure, station) {
-            var memePrixElectrique =
-                electrique
-                && Math.abs(station.prix - meilleure.prix) < 0.0005;
-
-            if (memePrixElectrique) {
-                return station.distanceCalculee
-                    < meilleure.distanceCalculee
-                    ? station
-                    : meilleure;
-            }
-
-            if (station.coutTotal !== meilleure.coutTotal) {
-                return station.coutTotal < meilleure.coutTotal
+            if (station.economieMonetaire !== meilleure.economieMonetaire) {
+                return station.economieMonetaire > meilleure.economieMonetaire
                     ? station
                     : meilleure;
             }
@@ -11601,7 +13084,9 @@ window.calculerMeilleureStation = function() {
         return;
     }
 
-    if (!modeElectriqueActif() && prixTropAnciensPourCalcul()) {
+    var rentabiliteElectrique = modeElectriqueRentabiliteActif();
+
+    if (!rentabiliteElectrique && prixTropAnciensPourCalcul()) {
         afficherCalculRentabiliteEnAttentePrix(
             titre,
             sousTitre,
@@ -11671,15 +13156,9 @@ window.calculerMeilleureStation = function() {
 
     var meilleureStation = choisirMeilleureStationRentabilite(
         stationsCalculees,
-        modeElectriqueActif()
+        rentabiliteElectrique
     );
-    var economie = comptePremiumActif()
-        ? meilleureStation.economieComparee
-        : Math.max(
-            0,
-            resultatRentabilite.coutReference
-                - meilleureStation.coutTotal
-        );
+    var economie = meilleureStation.economieMonetaire;
     var stationReferenceAffichee =
         meilleureStation.stationReferenceRentable || null;
     var cleStationRentable = [
@@ -11769,9 +13248,14 @@ window.calculerMeilleureStation = function() {
         + " \u00b7 "
         + prixFormate
         + (
-            modeElectriqueActif()
+            rentabiliteElectrique
                 ? " \u20ac/kWh \u00b7 "
                 : " \u20ac/L \u00b7 "
+        )
+        + (
+            meilleureStation.avantageTotalenergiesApplique
+                ? "plafond carte TotalEnergies appliqué \u00b7 "
+                : ""
         )
         + distanceFormatee
         + " km \u00b7 ";
@@ -11780,7 +13264,7 @@ window.calculerMeilleureStation = function() {
     var economieLibelle = document.createElement("span");
     economieLibelle.className = "economy-saving-label";
     economieLibelle.textContent = comptePremiumActif()
-        ? "\u00c9conomie r\u00e9elle \u00e0 destination "
+        ? "\u00c9conomie nette estim\u00e9e "
         : "\u00c9conomie estim\u00e9e ";
     var economieMontant = document.createElement("span");
     economieMontant.textContent = economieFormatee + " \u20ac";
@@ -11882,11 +13366,13 @@ window.enregistrerVehicule = function(event) {
 
     var vehicules = lireVehicules();
     var actifId = localStorage.getItem(vehiculeActifCle);
-    var indexActif = vehicules.findIndex(
-        function(vehicule) {
-            return vehicule.id === actifId;
-        }
-    );
+    var indexActif = editionVehiculeExistant
+        ? vehicules.findIndex(
+            function(vehicule) {
+                return vehicule.id === actifId;
+            }
+        )
+        : -1;
     var jauge = document.getElementById("vehicule-jauge");
     var profil = profilVehiculeValide(
         document.getElementById("vehicule-profil").value
@@ -11906,7 +13392,12 @@ window.enregistrerVehicule = function(event) {
         conso: document.getElementById("vehicule-conso").value.trim(),
         autonomie: autonomie,
         parametres: document.getElementById("vehicule-parametres").value.trim(),
-        jauge: Number(jauge ? jauge.value : 50) || 50
+        jauge: (function() {
+            var valeur = Number(jauge ? jauge.value : 50);
+            return Number.isFinite(valeur)
+                ? Math.max(0, Math.min(100, valeur))
+                : 50;
+        })()
     };
 
     if (
@@ -11931,18 +13422,23 @@ window.enregistrerVehicule = function(event) {
     localStorage.setItem(vehiculeActifCle, vehicule.id);
     synchroniserAnciennesClesVehicule(vehicule);
     programmerSauvegardeCompte();
+    oublierCarburantCarteManuel();
+
+    actualiserNomBoutonVehicule();
+    actualiserListeVehicules();
+    editeurVehiculeOuvert = false;
+    editionVehiculeExistant = false;
+    fermerPanneauVehicule();
 
     if (synchroniserCarburantAvecVehicule(vehicule)) {
         return;
     }
 
-    actualiserNomBoutonVehicule();
-    actualiserListeVehicules();
     calculerMeilleureStation();
-    editeurVehiculeOuvert = false;
-    editionVehiculeExistant = false;
-    fermerPanneauVehicule();
-    document.getElementById("vehicle-button").focus();
+    var boutonVehicule = document.getElementById("vehicle-button");
+    if (boutonVehicule) {
+        boutonVehicule.focus();
+    }
 
 };
 
@@ -12036,6 +13532,7 @@ function chargerVehicule() {
     );
 
     actualiserProfilVehicule();
+    actualiserControleCarteTotalenergies();
 
     var jauge = document.getElementById("vehicule-jauge");
     if (jauge) {
@@ -12609,17 +14106,13 @@ function coutDetourStation(position, consommation) {
     var kilometresDetour = position.ecartMetres * 2 / 1000;
     var coutCarburantDetour =
         kilometresDetour * consommation / 100 * position.station.prix;
-    var tempsPerduMinutes =
-        kilometresDetour / vitesseDetourRentabiliteKmH * 60;
-    var coutTempsPerdu =
-        tempsPerduMinutes / 60 * coutTempsRentabiliteEuroHeure;
     var penaliteSortieAutoroute = stationAutoroute || position.ecartMetres <= 800
         ? 0
         : position.ecartMetres <= 1300
             ? 1.50
             : 3.00;
 
-    return coutCarburantDetour + coutTempsPerdu + penaliteSortieAutoroute;
+    return coutCarburantDetour + penaliteSortieAutoroute;
 
 }
 
@@ -12678,7 +14171,11 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
     var stationsDisponiblesTrajet = stationsSource
         || stationsTrajetFrance
         || stationsEconomie;
-    var stationsValides = stationsDisponiblesTrajet.filter(function(station) {
+    var stationsValides = appliquerAvantageTotalenergiesStationsTrajet(
+        stationsDisponiblesTrajet,
+        carteTotalenergiesActive(),
+        carburantRentabiliteActuel()
+    ).filter(function(station) {
         return station.prix > 0 && station.prix !== 9.999;
     });
 
@@ -12978,6 +14475,11 @@ function afficherMarqueursRavitaillement(arrets) {
                             maximumFractionDigits: 3
                         }
                     ) + " €"
+                    : ""
+            )
+            + (
+                station.avantageTotalenergiesApplique
+                    ? " · plafond TotalEnergies appliqué"
                     : ""
             );
         var icon = L.divIcon({
@@ -13402,6 +14904,11 @@ function pointsTrajetPrepareDepuisArrets() {
 
 window.ouvrirPlanificateurTrajet = function() {
 
+    if (!comptePremiumActif()) {
+        alert("La pr\u00e9paration d'un trajet est incluse avec OptiPlein Premium.");
+        return;
+    }
+
     var panneau = document.getElementById("trip-planner");
     var jauge = document.getElementById("trip-gauge");
     var vehicule = vehiculeActif();
@@ -13490,11 +14997,11 @@ async function calculerRouteAvecCoordonnees(points) {
     });
 
     if (pointsValides.length < 2) {
-        throw new Error("coordonnees invalides");
+        throw new Error("Coordonn\u00e9es invalides");
     }
 
     if (pointsValides.length > 12) {
-        throw new Error("trop d'etapes pour calculer ce trajet");
+        throw new Error("Trop d'étapes pour calculer ce trajet");
     }
 
     var donnees = null;
@@ -13542,7 +15049,7 @@ async function demanderRouteItineraire(points, capDepart, moteur) {
     );
 
     if (!reponse.ok) {
-        var message = "route indisponible";
+        var message = "Itin\u00e9raire indisponible";
         try {
             var erreur = await reponse.json();
             message = erreur.detail || message;
@@ -13661,7 +15168,7 @@ window.calculerTrajetPrepare = async function() {
             "Impossible de calculer cette destination : "
             + (erreur && erreur.message
                 ? erreur.message
-                : "itineraire indisponible");
+                : "itin\u00e9raire indisponible");
     }
 
 };
@@ -14284,7 +15791,7 @@ async function tracerItineraire(
     ) {
 
         afficherInfoItineraire(
-            "Position GPS en attente pour calculer l'itineraire."
+            "Position GPS en attente pour calculer l'itin\u00e9raire."
         );
         demarrerGeolocalisation();
         return;
@@ -14293,8 +15800,8 @@ async function tracerItineraire(
 
     afficherInfoItineraire(
         maintenirNavigation
-            ? "Adaptation de l'itineraire..."
-            : "Calcul de l'itineraire..."
+            ? "Adaptation de l'itin\u00e9raire..."
+            : "Calcul de l'itin\u00e9raire..."
     );
 
     if (maintenirNavigation) {
@@ -14432,7 +15939,7 @@ async function tracerItineraire(
         afficherInfoItineraire(
             maintenirNavigation
                 ? "Guidage conserv\u00e9, nouveau calcul indisponible."
-                : "Impossible de calculer l'itineraire pour le moment."
+            : "Impossible de calculer l'itin\u00e9raire pour le moment."
         );
 
         if (maintenirNavigation) {
