@@ -227,6 +227,39 @@
             display:none;
         }
 
+        .admin-menu{
+            position:sticky;
+            top:0;
+            z-index:5;
+            display:flex;
+            gap:8px;
+            overflow-x:auto;
+            padding:10px;
+            border:1px solid var(--line);
+            border-radius:12px;
+            background:rgba(255,255,255,.94);
+            box-shadow:0 10px 24px rgba(16,37,54,.07);
+        }
+
+        .admin-menu button{
+            flex:0 0 auto;
+            min-height:40px;
+            border:1px solid var(--line);
+            background:#fff;
+            color:var(--ink);
+            white-space:nowrap;
+        }
+
+        .admin-menu button.active{
+            border-color:var(--green);
+            background:var(--green);
+            color:#fff;
+        }
+
+        .admin-section:not(.active){
+            display:none;
+        }
+
         .stats{
             display:grid;
             grid-template-columns:repeat(3, minmax(0, 1fr));
@@ -353,6 +386,11 @@
             .login-row button{
                 width:100%;
             }
+
+            .admin-menu{
+                margin-inline:-2px;
+                padding:8px;
+            }
         }
     </style>
 </head>
@@ -392,23 +430,78 @@
                 testeurs OptiPlein.
             </p>
 
-            <div class="stats">
-                <div class="stat">
-                    <strong id="stat-comptes">0</strong>
-                    <span>Comptes utilisateurs</span>
-                </div>
-                <div class="stat">
-                    <strong id="stat-premium">0</strong>
-                    <span>Comptes Premium</span>
-                </div>
-                <div class="stat">
-                    <strong id="stat-testeurs">0</strong>
-                    <span>Testeurs inscrits</span>
-                </div>
-            </div>
-            <p class="status" id="config-status"></p>
+            <nav class="admin-menu" aria-label="Catégories admin">
+                <button
+                    type="button"
+                    class="active"
+                    data-admin-target="overview"
+                    onclick="changerSectionAdmin('overview')"
+                >
+                    Vue d'ensemble
+                </button>
+                <button
+                    type="button"
+                    data-admin-target="updates"
+                    onclick="changerSectionAdmin('updates')"
+                >
+                    Mises à jour
+                </button>
+                <button
+                    type="button"
+                    data-admin-target="email"
+                    onclick="changerSectionAdmin('email')"
+                >
+                    E-mails
+                </button>
+                <button
+                    type="button"
+                    data-admin-target="accounts"
+                    onclick="changerSectionAdmin('accounts')"
+                >
+                    Comptes
+                </button>
+                <button
+                    type="button"
+                    data-admin-target="irve"
+                    onclick="changerSectionAdmin('irve')"
+                >
+                    Bornes IRVE
+                </button>
+                <button
+                    type="button"
+                    data-admin-target="stations"
+                    onclick="changerSectionAdmin('stations')"
+                >
+                    Stations
+                </button>
+                <button
+                    type="button"
+                    data-admin-target="testers"
+                    onclick="changerSectionAdmin('testers')"
+                >
+                    Testeurs
+                </button>
+            </nav>
 
-            <section class="panel">
+            <section class="admin-section active" data-admin-section="overview">
+                <div class="stats">
+                    <div class="stat">
+                        <strong id="stat-comptes">0</strong>
+                        <span>Comptes utilisateurs</span>
+                    </div>
+                    <div class="stat">
+                        <strong id="stat-premium">0</strong>
+                        <span>Comptes Premium</span>
+                    </div>
+                    <div class="stat">
+                        <strong id="stat-testeurs">0</strong>
+                        <span>Testeurs inscrits</span>
+                    </div>
+                </div>
+                <p class="status" id="config-status"></p>
+            </section>
+
+            <section class="panel admin-section" data-admin-section="updates">
                 <div class="panel-head">
                     <div>
                         <h2>Mise &agrave; jour des stations</h2>
@@ -428,7 +521,7 @@
                 <p class="status" id="force-update-status"></p>
             </section>
 
-            <section class="panel">
+            <section class="panel admin-section" data-admin-section="email">
                 <div class="panel-head">
                     <div>
                         <h2>Test e-mail</h2>
@@ -460,7 +553,7 @@
                 <p class="status" id="test-email-status"></p>
             </section>
 
-            <section class="panel">
+            <section class="panel admin-section" data-admin-section="accounts">
                 <div class="panel-head">
                     <h2>Comptes utilisateurs</h2>
                     <button type="button" onclick="chargerAdmin()">
@@ -470,7 +563,7 @@
                 <div class="table-wrap" id="comptes-wrap"></div>
             </section>
 
-            <section class="panel">
+            <section class="panel admin-section" data-admin-section="irve">
                 <div class="panel-head">
                     <div>
                         <h2>Prix des bornes de recharge</h2>
@@ -602,7 +695,7 @@
                 <div class="table-wrap" id="tarifs-irve-wrap"></div>
             </section>
 
-            <section class="panel">
+            <section class="panel admin-section" data-admin-section="stations">
                 <div class="panel-head">
                     <h2>Stations service</h2>
                     <button type="button" onclick="rechercherStationsAdmin()">
@@ -670,7 +763,7 @@
                 </div>
             </section>
 
-            <section class="panel">
+            <section class="panel admin-section" data-admin-section="testers">
                 <div class="panel-head">
                     <h2>Inscriptions testeurs</h2>
                 </div>
@@ -690,6 +783,7 @@
         var tarifsIrveAdmin = [];
         var bornesIrveAdmin = [];
         var contributionsTarifsIrveAdmin = [];
+        var sectionAdminActive = "overview";
 
         function texteDate(valeur) {
             if (!valeur) {
@@ -711,6 +805,31 @@
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
+        }
+
+        function changerSectionAdmin(section) {
+            sectionAdminActive = section || "overview";
+
+            document.querySelectorAll("[data-admin-section]").forEach(
+                function(bloc) {
+                    bloc.classList.toggle(
+                        "active",
+                        bloc.dataset.adminSection === sectionAdminActive
+                    );
+                }
+            );
+
+            document.querySelectorAll("[data-admin-target]").forEach(
+                function(bouton) {
+                    var actif = bouton.dataset.adminTarget === sectionAdminActive;
+                    bouton.classList.toggle("active", actif);
+                    if (actif) {
+                        bouton.setAttribute("aria-current", "page");
+                    } else {
+                        bouton.removeAttribute("aria-current");
+                    }
+                }
+            );
         }
 
         async function requeteAdmin(url, options) {
@@ -940,7 +1059,18 @@
             document.getElementById("station-longitude").value =
                 station.longitude || "";
             document.getElementById("station-status").textContent = "";
-            document.getElementById("station-form").hidden = false;
+            changerSectionAdmin("stations");
+            var formulaire = document.getElementById("station-form");
+            formulaire.hidden = false;
+            requestAnimationFrame(function() {
+                formulaire.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+                document.getElementById("station-enseigne").focus({
+                    preventScroll: true
+                });
+            });
         }
 
         function fermerFormStation() {
@@ -1324,6 +1454,7 @@
             await chargerStatutEmailAdmin();
             loginCard.hidden = true;
             dashboard.hidden = false;
+            changerSectionAdmin(sectionAdminActive);
         }
 
         async function forcerMiseAJourStations() {
