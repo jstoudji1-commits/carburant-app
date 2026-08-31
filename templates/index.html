@@ -3046,6 +3046,15 @@ body{
     font-size:15px;
 }
 
+.destination-next-refuel{
+    display:block;
+    margin-top:7px;
+    color:var(--green-dark);
+    font-size:14px;
+    font-weight:800;
+    line-height:1.35;
+}
+
 .economy-saving{
     display:inline-block;
     color:#159b31;
@@ -10772,6 +10781,7 @@ function demarrerGeolocalisation() {
             actualiserStationsSelonPosition();
             calculerMeilleureStation();
             actualiserGuidageNavigation();
+            actualiserEncadreDestinationNavigation();
             verifierEcartItineraire();
             verifierRavitaillementPlusRentablePendantNavigation();
 
@@ -12883,6 +12893,91 @@ function libelleDestinationNavigation() {
 
 }
 
+function prochainRavitaillementNavigation() {
+
+    if (
+        !navigationActive
+        || !trajetPrepare
+        || !Array.isArray(trajetPrepare.arrets)
+        || !trajetPrepare.arrets.length
+        || !routeNavigation
+        || !routeNavigation.geometry
+        || !Array.isArray(routeNavigation.geometry.coordinates)
+        || !Number.isFinite(latitudeUtilisateur)
+        || !Number.isFinite(longitudeUtilisateur)
+    ) {
+        return null;
+    }
+
+    var coordonnees = routeNavigation.geometry.coordinates;
+    var progressionUtilisateur = positionStationSurRoute(
+        {
+            latitude: latitudeUtilisateur,
+            longitude: longitudeUtilisateur
+        },
+        coordonnees
+    );
+
+    if (!progressionUtilisateur) {
+        return null;
+    }
+
+    return trajetPrepare.arrets.map(function(arret) {
+        if (!arret || !arret.station) {
+            return null;
+        }
+        var progressionStation = positionStationSurRoute(
+            arret.station,
+            coordonnees
+        );
+        if (!progressionStation) {
+            return null;
+        }
+        return {
+            arret: arret,
+            distanceRouteKm: progressionStation.distanceRouteKm,
+            distanceRestanteKm: Math.max(
+                0,
+                progressionStation.distanceRouteKm
+                    - progressionUtilisateur.distanceRouteKm
+            )
+        };
+    }).filter(function(candidat) {
+        return candidat
+            && candidat.distanceRouteKm
+                >= progressionUtilisateur.distanceRouteKm - 0.4;
+    }).sort(function(a, b) {
+        return a.distanceRouteKm - b.distanceRouteKm;
+    })[0] || null;
+
+}
+
+function ajouterProchainRavitaillementDestination(sousTitre) {
+
+    var prochain = prochainRavitaillementNavigation();
+    if (!prochain || !sousTitre) {
+        return;
+    }
+
+    var station = prochain.arret.station;
+    var ligne = document.createElement("span");
+    ligne.className = "destination-next-refuel";
+    ligne.textContent = "Prochain ravitaillement : "
+        + (station.enseigne || "Station-service")
+        + (station.ville ? ", " + station.ville : "")
+        + ", "
+        + prochain.distanceRestanteKm.toLocaleString(
+            "fr-FR",
+            {
+                maximumFractionDigits:
+                    prochain.distanceRestanteKm < 10 ? 1 : 0
+            }
+        )
+        + " km restants";
+    sousTitre.appendChild(ligne);
+
+}
+
 function afficherDestinationNavigationDansEncadre(
     titre,
     sousTitre,
@@ -12897,6 +12992,7 @@ function afficherDestinationNavigationDansEncadre(
     definirModeDestinationEncadre(true);
     titre.textContent = "Destination";
     sousTitre.textContent = libelleDestinationNavigation();
+    ajouterProchainRavitaillementDestination(sousTitre);
 
     if (boutonItineraire) {
         boutonItineraire.hidden = false;
@@ -15272,13 +15368,52 @@ function dessinerItineraire(coordonnees, afficherApercu) {
 
     retirerCoucheItineraire();
 
+    var coordonneesAffichees = (coordonnees || []).map(function(point) {
+        return [Number(point[0]), Number(point[1])];
+    }).filter(function(point) {
+        return Number.isFinite(point[0]) && Number.isFinite(point[1]);
+    });
+
+    if (
+        navigationActive
+        && Number.isFinite(latitudeUtilisateur)
+        && Number.isFinite(longitudeUtilisateur)
+        && coordonneesAffichees.length
+    ) {
+        var premierPointRoute = coordonneesAffichees[0];
+        var ecartDepartKm = distanceDeplacementKm(
+            latitudeUtilisateur,
+            longitudeUtilisateur,
+            premierPointRoute[1],
+            premierPointRoute[0]
+        );
+        if (ecartDepartKm >= 0.003) {
+            coordonneesAffichees.unshift([
+                longitudeUtilisateur,
+                latitudeUtilisateur
+            ]);
+        }
+    }
+
+    if (coordonneesAffichees.length < 2) {
+        return;
+    }
+
     var donneesItineraire = {
         type: "Feature",
         geometry: {
             type: "LineString",
-            coordinates: coordonnees
+            coordinates: coordonneesAffichees
         }
     };
+    var coucheMapLibre = creerCoucheItineraireMapLibre(
+        donneesItineraire,
+        coordonneesAffichees
+    );
+
+    if (coucheMapLibre) {
+        itineraireLayer = coucheMapLibre;
+    } else {
     var contourItineraire = L.geoJSON(
         donneesItineraire,
         {
@@ -15309,6 +15444,7 @@ function dessinerItineraire(coordonnees, afficherApercu) {
             return ligneItineraire.getBounds();
         }
     };
+    }
 
     if (afficherApercu) {
         suiviCarteActif = false;
@@ -15325,6 +15461,96 @@ function dessinerItineraire(coordonnees, afficherApercu) {
             }
         );
     }
+
+}
+
+function creerCoucheItineraireMapLibre(donnees, coordonnees) {
+
+    var carteInterne = map && map._map;
+    if (
+        !carteInterne
+        || typeof carteInterne.addSource !== "function"
+        || typeof carteInterne.addLayer !== "function"
+    ) {
+        return null;
+    }
+
+    var sourceId = "optiplein-guidage-source";
+    var contourId = "optiplein-guidage-contour";
+    var ligneId = "optiplein-guidage-ligne";
+    var coucheActive = true;
+
+    function retirerElements() {
+        if (carteInterne.getLayer(ligneId)) {
+            carteInterne.removeLayer(ligneId);
+        }
+        if (carteInterne.getLayer(contourId)) {
+            carteInterne.removeLayer(contourId);
+        }
+        if (carteInterne.getSource(sourceId)) {
+            carteInterne.removeSource(sourceId);
+        }
+    }
+
+    function ajouterElements() {
+        if (!coucheActive) {
+            return;
+        }
+
+        retirerElements();
+        carteInterne.addSource(sourceId, {
+            type: "geojson",
+            data: donnees
+        });
+        carteInterne.addLayer({
+            id: contourId,
+            type: "line",
+            source: sourceId,
+            layout: {
+                "line-cap": "round",
+                "line-join": "round"
+            },
+            paint: {
+                "line-color": "#075c2b",
+                "line-width": navigationActive ? 14 : 11,
+                "line-opacity": 0.96
+            }
+        });
+        carteInterne.addLayer({
+            id: ligneId,
+            type: "line",
+            source: sourceId,
+            layout: {
+                "line-cap": "round",
+                "line-join": "round"
+            },
+            paint: {
+                "line-color": "#22e85c",
+                "line-width": navigationActive ? 8 : 6,
+                "line-opacity": 1
+            }
+        });
+    }
+
+    if (carteInterne.isStyleLoaded()) {
+        ajouterElements();
+    } else {
+        carteInterne.once("load", ajouterElements);
+    }
+
+    return {
+        remove: function() {
+            coucheActive = false;
+            retirerElements();
+        },
+        getBounds: function() {
+            var limites = new maplibregl.LngLatBounds();
+            coordonnees.forEach(function(point) {
+                limites.extend(point);
+            });
+            return limites;
+        }
+    };
 
 }
 
