@@ -3234,6 +3234,16 @@ body{
         height:42px;
     }
 
+    .app-main-nav{
+        position:fixed;
+        top:90px;
+        left:12px;
+        right:12px;
+        width:auto;
+        max-height:calc(100vh - 110px - var(--ad-banner-height));
+        max-height:calc(100dvh - 110px - var(--ad-banner-height));
+    }
+
     .vehicle-panel{
         width:min(340px, calc(100vw - 28px));
     }
@@ -6249,6 +6259,7 @@ function creerAdaptateurMapLibre() {
         compteurGeoJson += 1;
         var identifiant = "route-" + Date.now() + "-" + compteurGeoJson;
         var carteCible = null;
+        var coucheActive = true;
         var couche = {
             addTo: function(carte) {
                 carteCible = carte;
@@ -6263,6 +6274,9 @@ function creerAdaptateurMapLibre() {
                     : 0.92;
 
                 function ajouter() {
+                    if (!coucheActive) {
+                        return;
+                    }
                     if (carte._map.getLayer(identifiant)) {
                         carte._map.removeLayer(identifiant);
                     }
@@ -6289,11 +6303,22 @@ function creerAdaptateurMapLibre() {
                     });
                 }
 
-                if (carte._map.isStyleLoaded()) {
-                    ajouter();
-                } else {
-                    carte._map.once("load", ajouter);
+                function ajouterQuandPret(tentatives) {
+                    if (!coucheActive) {
+                        return;
+                    }
+                    try {
+                        ajouter();
+                    } catch (erreur) {
+                        if (tentatives < 40) {
+                            window.setTimeout(function() {
+                                ajouterQuandPret(tentatives + 1);
+                            }, 100);
+                        }
+                    }
                 }
+
+                ajouterQuandPret(0);
 
                 return couche;
             },
@@ -6305,6 +6330,7 @@ function creerAdaptateurMapLibre() {
                 return limites;
             },
             remove: function() {
+                coucheActive = false;
                 if (!carteCible) {
                     return;
                 }
@@ -15532,11 +15558,19 @@ function creerCoucheItineraireMapLibre(donnees, coordonnees) {
         });
     }
 
-    if (carteInterne.isStyleLoaded()) {
-        ajouterElements();
-    } else {
-        carteInterne.once("load", ajouterElements);
+    function ajouterElementsQuandPret(tentatives) {
+        try {
+            ajouterElements();
+        } catch (erreur) {
+            if (tentatives < 40) {
+                window.setTimeout(function() {
+                    ajouterElementsQuandPret(tentatives + 1);
+                }, 100);
+            }
+        }
     }
+
+    ajouterElementsQuandPret(0);
 
     return {
         remove: function() {
@@ -15876,6 +15910,7 @@ function verifierEcartItineraire() {
 
         if (!debutEcartItineraire) {
             debutEcartItineraire = Date.now();
+            capRecalculItineraireStabilise();
             programmerVerificationEcartItineraire(
                 delaiRecalculItineraireMs
             );
