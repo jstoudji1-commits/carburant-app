@@ -98,6 +98,7 @@ def lire_variable_adsense_slot():
 
 ADSENSE_SLOT_MAP = lire_variable_adsense_slot()
 signalements_recents = {}
+contacts_recents = {}
 contributions_tarifs_recentes = {}
 mise_a_jour_admin_lock = threading.Lock()
 ATTENTE_VERROU_ADMIN_SECONDES = 45
@@ -232,6 +233,18 @@ class SignalementProbleme(BaseModel):
     description: str = Field(min_length=10, max_length=2000)
     station: str = Field(default="", max_length=160)
     email: str = Field(default="", max_length=160)
+    page: str = Field(default="", max_length=300)
+    site_web: str = Field(default="", max_length=120)
+
+
+class MessageContact(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    nom: str = Field(default="", max_length=120)
+    email: str = Field(min_length=5, max_length=160)
+    sujet: str = Field(min_length=3, max_length=160)
+    message: str = Field(min_length=10, max_length=2500)
     page: str = Field(default="", max_length=300)
     site_web: str = Field(default="", max_length=120)
 
@@ -2213,6 +2226,31 @@ def envoyer_signalement_email(signalement):
         f"Date : {datetime.now().astimezone():%d/%m/%Y %H:%M:%S %Z}\n\n"
         "Description :\n"
         f"{signalement.description.strip()}\n"
+    )
+
+    envoyer_email(message)
+
+
+def envoyer_contact_email(contact):
+
+    message = EmailMessage()
+    sujet = contact.sujet.strip()
+    nom = contact.nom.strip() or "Non renseigné"
+    email_contact = contact.email.strip()
+
+    message["Subject"] = "[OptiPlein] Contact - " + sujet
+    message["To"] = EMAIL_SIGNALEMENT
+    message["Reply-To"] = email_contact
+
+    message.set_content(
+        "Nouveau message depuis la page Contact OptiPlein\n\n"
+        f"Nom : {nom}\n"
+        f"E-mail : {email_contact}\n"
+        f"Sujet : {sujet}\n"
+        f"Page : {contact.page or '/contact'}\n"
+        f"Date : {datetime.now().astimezone():%d/%m/%Y %H:%M:%S %Z}\n\n"
+        "Message :\n"
+        f"{contact.message.strip()}\n"
     )
 
     envoyer_email(message)
@@ -4341,8 +4379,8 @@ PAGES_EDITORIALES = {
         "eyebrow": "Nous contacter",
         "hero_title": "Contact",
         "lead": (
-            "Une question, un retour ou un probl\u00e8me \u00e0 signaler ? Le contact "
-            "principal d'OptiPlein est disponible par e-mail."
+            "Une question, un retour ou un probl\u00e8me \u00e0 signaler ? Envoyez "
+            "votre demande depuis le formulaire de contact OptiPlein."
         ),
         "contact": True,
         "sections": [
@@ -6784,6 +6822,74 @@ async def signaler_probleme(
         )
 
     signalements_recents[adresse_client] = maintenant
+
+    return {"ok": True}
+
+
+@app.post("/api/contact")
+async def envoyer_message_contact(
+    contact: MessageContact,
+    request: Request,
+):
+
+    if contact.site_web:
+        return {"ok": True}
+
+    contact.nom = contact.nom.strip()
+    contact.email = contact.email.strip()
+    contact.sujet = contact.sujet.strip()
+    contact.message = contact.message.strip()
+
+    if not email_valide(contact.email):
+        raise HTTPException(
+            status_code=422,
+            detail="L'adresse e-mail n'est pas valide.",
+        )
+
+    if len(contact.sujet) < 3:
+        raise HTTPException(
+            status_code=422,
+            detail="Le sujet doit contenir au moins 3 caractères.",
+        )
+
+    if len(contact.message) < 10:
+        raise HTTPException(
+            status_code=422,
+            detail="Le message doit contenir au moins 10 caractères.",
+        )
+
+    adresse_client = (
+        request.client.host
+        if request.client
+        else "inconnue"
+    )
+    maintenant = time.monotonic()
+    dernier_envoi = contacts_recents.get(adresse_client, 0)
+
+    if maintenant - dernier_envoi < 60:
+        raise HTTPException(
+            status_code=429,
+            detail="Veuillez patienter une minute avant un nouvel envoi.",
+        )
+
+    try:
+        await asyncio.to_thread(
+            envoyer_contact_email,
+            contact,
+        )
+    except RuntimeError:
+        raise HTTPException(
+            status_code=503,
+            detail="L'envoi du formulaire n'est pas encore configuré.",
+        )
+    except Exception:
+        logger.exception("L'envoi du formulaire de contact a échoué.")
+        raise HTTPException(
+            status_code=502,
+            detail="Le message n'a pas pu être envoyé. Réessayez plus tard.",
+        )
+
+    contacts_recents[adresse_client] = maintenant
 
     return {"ok": True}
 
