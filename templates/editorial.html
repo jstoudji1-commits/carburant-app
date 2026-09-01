@@ -882,24 +882,82 @@
 
         .contact-card{
             display:grid;
-            grid-template-columns:minmax(0, 1fr) auto;
+            grid-template-columns:minmax(0, .9fr) minmax(280px, 1.1fr);
             gap:18px;
-            align-items:center;
+            align-items:start;
             margin-bottom:16px;
         }
 
-        .contact-mail{
-            display:inline-flex;
+        .contact-form{
+            display:grid;
+            gap:12px;
+        }
+
+        .contact-form label{
+            display:grid;
+            gap:6px;
+            color:var(--ink);
+            font-size:14px;
+            font-weight:900;
+        }
+
+        .contact-form input,
+        .contact-form textarea{
+            width:100%;
+            min-height:44px;
+            border:1px solid #cfdbe1;
+            border-radius:8px;
+            padding:10px 12px;
+            color:var(--ink);
+            background:#fff;
+            font:inherit;
+            font-weight:700;
+        }
+
+        .contact-form textarea{
+            min-height:132px;
+            resize:vertical;
+        }
+
+        .contact-form input:focus,
+        .contact-form textarea:focus{
+            outline:3px solid rgba(42,178,61,.18);
+            border-color:var(--green);
+        }
+
+        .contact-hidden{
+            display:none;
+        }
+
+        .contact-submit{
             min-height:46px;
-            align-items:center;
-            justify-content:center;
-            padding:0 15px;
+            border:0;
             border-radius:8px;
             color:#fff;
             background:var(--green-dark);
+            font:inherit;
             font-weight:900;
-            text-decoration:none;
-            white-space:nowrap;
+            cursor:pointer;
+        }
+
+        .contact-submit:disabled{
+            cursor:wait;
+            opacity:.7;
+        }
+
+        .contact-status{
+            min-height:20px;
+            color:var(--muted);
+            font-size:14px;
+            font-weight:800;
+        }
+
+        .contact-status.success{
+            color:var(--green-dark);
+        }
+
+        .contact-status.error{
+            color:#b42318;
         }
 
         .site-footer{
@@ -1134,11 +1192,32 @@
             <section class="contact-card">
                 <div>
                 <h2>&Eacute;crire &agrave; OptiPlein</h2>
-                    <p>Pour toute demande, utilisez l'adresse officielle du projet.</p>
+                    <p>Remplissez ce formulaire pour une question, un retour testeur, un probl&egrave;me de carte ou une demande li&eacute;e &agrave; votre compte.</p>
                 </div>
-                <a class="contact-mail" href="mailto:optiplein5@gmail.com">
-                    optiplein5@gmail.com
-                </a>
+                <form class="contact-form" id="contact-form">
+                    <label>
+                        Nom
+                        <input name="nom" type="text" autocomplete="name" maxlength="120">
+                    </label>
+                    <label>
+                        E-mail
+                        <input name="email" type="email" autocomplete="email" maxlength="160" required>
+                    </label>
+                    <label>
+                        Sujet
+                        <input name="sujet" type="text" maxlength="160" required>
+                    </label>
+                    <label>
+                        Message
+                        <textarea name="message" maxlength="2500" required></textarea>
+                    </label>
+                    <label class="contact-hidden" aria-hidden="true">
+                        Site web
+                        <input name="site_web" type="text" tabindex="-1" autocomplete="off">
+                    </label>
+                    <button class="contact-submit" type="submit">Envoyer</button>
+                    <p class="contact-status" id="contact-status" role="status" aria-live="polite"></p>
+                </form>
             </section>
             {% endif %}
 
@@ -1287,6 +1366,55 @@
             });
         })();
     </script>
+    {% if page.contact %}
+    <script>
+        (() => {
+            const formulaire = document.getElementById("contact-form");
+            const statut = document.getElementById("contact-status");
+            if (!formulaire || !statut) return;
+
+            formulaire.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const bouton = formulaire.querySelector("button[type='submit']");
+                const donnees = new FormData(formulaire);
+                const payload = {
+                    nom: String(donnees.get("nom") || "").trim(),
+                    email: String(donnees.get("email") || "").trim(),
+                    sujet: String(donnees.get("sujet") || "").trim(),
+                    message: String(donnees.get("message") || "").trim(),
+                    page: window.location.pathname,
+                    site_web: String(donnees.get("site_web") || "").trim()
+                };
+
+                statut.className = "contact-status";
+                statut.textContent = "Envoi en cours...";
+                if (bouton) bouton.disabled = true;
+
+                try {
+                    const reponse = await fetch("/api/contact", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify(payload)
+                    });
+                    const resultat = await reponse.json().catch(() => ({}));
+
+                    if (!reponse.ok) {
+                        throw new Error(resultat.detail || "Le message n'a pas pu être envoyé.");
+                    }
+
+                    formulaire.reset();
+                    statut.className = "contact-status success";
+                    statut.textContent = "Message envoyé. Merci, nous vous répondrons rapidement.";
+                } catch (erreur) {
+                    statut.className = "contact-status error";
+                    statut.textContent = erreur.message || "Le message n'a pas pu être envoyé.";
+                } finally {
+                    if (bouton) bouton.disabled = false;
+                }
+            });
+        })();
+    </script>
+    {% endif %}
     {% if page.faq_items %}
     <script>
         (() => {
