@@ -8323,6 +8323,7 @@ window.modifierCarteTotalenergies = function() {
     );
     programmerSauvegardeCompte();
     calculerMeilleureStation();
+    recalculerTrajetPrepareApresChangementAvantageTotalenergies();
 
 };
 
@@ -13075,7 +13076,8 @@ function afficherTrajetPrepareDansEncadre() {
     sousTitre.innerHTML = htmlArretsRavitaillement({
         arrets: trajetPrepare.arrets || [],
         autonomieKm: trajetPrepare.autonomieKm || 0,
-        distanceTrajetKm: trajetPrepare.distanceTrajetKm || 0
+        distanceTrajetKm: trajetPrepare.distanceTrajetKm || 0,
+        economieTotale: trajetPrepare.economieTotale || 0
     });
 
     if (infoItineraire) {
@@ -13091,6 +13093,98 @@ function afficherTrajetPrepareDansEncadre() {
     afficherBoutonAnnulationTrajetPrepare(true);
 
     return true;
+
+}
+
+async function recalculerTrajetPrepareApresChangementAvantageTotalenergies() {
+
+    if (
+        recalculTrajetPrepareAvantageEnCours
+        || validationTrajetPrepareEnCours
+        || !trajetPrepare
+        || !trajetPrepare.destination
+    ) {
+        return;
+    }
+
+    if (navigationActive) {
+        verifierRavitaillementPlusRentablePendantNavigation();
+        return;
+    }
+
+    if (
+        latitudeUtilisateur === null
+        || longitudeUtilisateur === null
+    ) {
+        return;
+    }
+
+    recalculTrajetPrepareAvantageEnCours = true;
+
+    var resultat = document.getElementById("trip-planner-result");
+    var panneau = document.getElementById("trip-planner");
+
+    if (resultat && panneau && !panneau.hidden) {
+        resultat.textContent =
+            "Recalcul avec votre option TotalEnergies...";
+    }
+
+    try {
+        var routeDirecte = trajetPrepare.routeDirecte;
+
+        if (
+            !routeDirecte
+            || !routeDirecte.geometry
+            || !Array.isArray(routeDirecte.geometry.coordinates)
+        ) {
+            routeDirecte = await calculerRouteAvecCoordonnees([
+                {
+                    latitude: latitudeUtilisateur,
+                    longitude: longitudeUtilisateur
+                },
+                trajetPrepare.destination
+            ]);
+        }
+
+        var stationsFrance = await chargerStationsTrajetFrance();
+        var jaugeTrajet = Number(trajetPrepare.jauge);
+        var ravitaillement = calculerArretsRavitaillementRoute(
+            routeDirecte,
+            Number.isFinite(jaugeTrajet) ? jaugeTrajet : null,
+            stationsFrance
+        );
+
+        trajetPrepare.arrets = ravitaillement.arrets;
+        trajetPrepare.routeDirecte = routeDirecte;
+        trajetPrepare.autonomieKm = ravitaillement.autonomieKm;
+        trajetPrepare.distanceTrajetKm = ravitaillement.distanceTrajetKm;
+        trajetPrepare.economieTotale = ravitaillement.economieTotale || 0;
+        trajetPrepare.carburant = carburantRentabiliteActuel();
+        trajetPrepare.carteTotalenergies = carteTotalenergiesActive();
+
+        var pointsApercu = pointsTrajetPrepareDepuisArrets();
+        var routeApercu = await calculerRouteAvecCoordonnees(pointsApercu);
+        trajetPrepare.route = routeApercu;
+
+        afficherMarqueursRavitaillement(trajetPrepare.arrets);
+        dessinerItineraire(routeApercu.geometry.coordinates, true);
+        masquerStationsClassiquesSurCarte();
+
+        if (resultat) {
+            resultat.innerHTML = htmlArretsRavitaillement(ravitaillement);
+        }
+
+        configurerBoutonsNavigationExterneTrajetPrepare();
+        afficherEtatPlanificateurCalcule(true);
+        afficherTrajetPrepareDansEncadre();
+    } catch (erreur) {
+        if (resultat && panneau && !panneau.hidden) {
+            resultat.textContent =
+                "Recalcul TotalEnergies impossible pour le moment.";
+        }
+    } finally {
+        recalculTrajetPrepareAvantageEnCours = false;
+    }
 
 }
 
@@ -13753,6 +13847,7 @@ var dernierControleRavitaillementRentable = 0;
 var trajetPrepare = null;
 var jaugeTrajetTemporaire = null;
 var validationTrajetPrepareEnCours = false;
+var recalculTrajetPrepareAvantageEnCours = false;
 var coordonneesRouteNavigation = [];
 var positionsHorsItineraire = 0;
 var derniereRelanceItineraire = 0;
@@ -14273,6 +14368,177 @@ function filtrerArretsEspaces(arrets, distanceMinimumKm) {
 
 }
 
+function positionsComparablesAutourRavitaillement(positions, arret, rayonKm) {
+
+    return (positions || []).filter(function(position) {
+        return position
+            && position.station
+            && arret
+            && arret.station
+            && !memeStation(position.station, arret.station)
+            && Number.isFinite(Number(position.station.prix))
+            && position.station.prix > 0
+            && position.station.prix !== 9.999
+            && Math.abs(
+                Number(position.distanceRouteKm)
+                - Number(arret.distanceRouteKm)
+            ) <= rayonKm;
+    });
+
+}
+
+function prixReferenceLocalRavitaillement(positions, arret, prixSecours) {
+
+    var rayonKm = 25;
+    var comparables = positionsComparablesAutourRavitaillement(
+        positions,
+        arret,
+        rayonKm
+    );
+
+    if (comparables.length < 3) {
+        rayonKm = 50;
+        comparables = positionsComparablesAutourRavitaillement(
+            positions,
+            arret,
+            rayonKm
+        );
+    }
+
+    if (!comparables.length) {
+        return {
+            prixReference: prixSecours,
+            nombreStations: 0,
+            rayonKm: 0
+        };
+    }
+
+    return {
+        prixReference: comparables.reduce(function(total, position) {
+            return total + position.station.prix;
+        }, 0) / comparables.length,
+        nombreStations: comparables.length,
+        rayonKm: rayonKm
+    };
+
+}
+
+function litresAchetesPourRavitaillement(
+    arret,
+    index,
+    arrets,
+    reservoir,
+    consommation,
+    jauge,
+    litresSecours
+) {
+
+    var carburantDepart = reservoir * jauge / 100;
+    var distanceDepuisPleinKm = index === 0
+        ? Number(arret.distanceRouteKm || 0)
+        : Math.max(
+            0,
+            Number(arret.distanceRouteKm || 0)
+                - Number(arrets[index - 1].distanceRouteKm || 0)
+        );
+    var carburantAvantArret = index === 0
+        ? carburantDepart - distanceDepuisPleinKm * consommation / 100
+        : reservoir - distanceDepuisPleinKm * consommation / 100;
+    var litres = reservoir - Math.max(
+        0,
+        Math.min(reservoir, carburantAvantArret)
+    );
+
+    if (!Number.isFinite(litres) || litres < 1) {
+        return Math.max(0, Math.min(reservoir, litresSecours || 0));
+    }
+
+    return Math.max(0, Math.min(reservoir, litres));
+
+}
+
+function enrichirArretsAvecComparaisonLocale(
+    arrets,
+    positions,
+    reservoir,
+    consommation,
+    jauge,
+    prixReferenceSecours,
+    litresSecours
+) {
+
+    return (arrets || []).map(function(arret, index, liste) {
+        var referenceLocale = prixReferenceLocalRavitaillement(
+            positions,
+            arret,
+            prixReferenceSecours
+        );
+        var litres = litresAchetesPourRavitaillement(
+            arret,
+            index,
+            liste,
+            reservoir,
+            consommation,
+            jauge,
+            litresSecours
+        );
+        var arretEnrichi = enrichirRentabiliteArret(
+            arret,
+            referenceLocale.prixReference,
+            litres,
+            consommation
+        );
+
+        return Object.assign({}, arretEnrichi, {
+            litresComparaison: litres,
+            prixReferenceLocale: referenceLocale.prixReference,
+            nombreStationsComparaisonLocale: referenceLocale.nombreStations,
+            rayonComparaisonLocaleKm: referenceLocale.rayonKm
+        });
+    });
+
+}
+
+function totalEconomieRavitaillements(arrets) {
+
+    return (arrets || []).reduce(function(total, arret) {
+        return total + Math.max(0, Number(arret.economieNette) || 0);
+    }, 0);
+
+}
+
+function resultatRavitaillementTrajet(
+    arrets,
+    positions,
+    autonomieDepartKm,
+    distanceTrajetKm,
+    reservoir,
+    consommation,
+    jauge,
+    prixReferenceSecours,
+    litresSecours
+) {
+
+    var arretsEnrichis = enrichirArretsAvecComparaisonLocale(
+        arrets,
+        positions,
+        reservoir,
+        consommation,
+        jauge,
+        prixReferenceSecours,
+        litresSecours
+    );
+
+    return {
+        arrets: arretsEnrichis,
+        autonomieKm: autonomieDepartKm,
+        distanceTrajetKm: distanceTrajetKm,
+        economieTotale: totalEconomieRavitaillements(arretsEnrichis),
+        comparaisonLocale: true
+    };
+
+}
+
 function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
 
     var vehicule = vehiculeActif();
@@ -14287,7 +14553,9 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
             arrets: [],
             html: "Renseignez votre v\u00e9hicule pour calculer les ravitaillements du trajet.",
             autonomieKm: 0,
-            distanceTrajetKm: route && route.distance ? route.distance / 1000 : 0
+            distanceTrajetKm: route && route.distance ? route.distance / 1000 : 0,
+            economieTotale: 0,
+            comparaisonLocale: false
         };
     }
 
@@ -14312,7 +14580,9 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
         return {
             arrets: [],
             autonomieKm: autonomieDepartKm,
-            distanceTrajetKm: distanceTrajetKm
+            distanceTrajetKm: distanceTrajetKm,
+            economieTotale: 0,
+            comparaisonLocale: false
         };
     }
 
@@ -14330,7 +14600,7 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
             litresACompleter || litresComparaisonReelle
         )
     );
-    var positionsStations = stationsValides
+    var positionsStationsBrutes = stationsValides
         .map(function(station) {
             return positionStationSurRoute(
                 station,
@@ -14342,11 +14612,17 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
                 && position.ecartMetres <= 1200
                 && position.distanceRouteKm > 5
                 && position.distanceRouteKm < distanceTrajetKm - 1;
-        })
+        });
+    var positionsStations = positionsStationsBrutes
         .map(function(position) {
+            var referenceLocale = prixReferenceLocalRavitaillement(
+                positionsStationsBrutes,
+                position,
+                prixReference
+            );
             return enrichirRentabiliteArret(
                 position,
-                prixReference,
+                referenceLocale.prixReference,
                 Math.max(0, litresRentabilite),
                 consommation
             );
@@ -14373,11 +14649,17 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
             80
         )[0];
 
-        return {
-            arrets: arretOpportuniste ? [arretOpportuniste] : [],
-            autonomieKm: autonomieDepartKm,
-            distanceTrajetKm: distanceTrajetKm
-        };
+        return resultatRavitaillementTrajet(
+            arretOpportuniste ? [arretOpportuniste] : [],
+            positionsStations,
+            autonomieDepartKm,
+            distanceTrajetKm,
+            reservoir,
+            consommation,
+            jauge,
+            prixReference,
+            litresRentabilite
+        );
     }
 
     var arrets = [];
@@ -14467,18 +14749,26 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
     }
 
     if (arrets.length) {
-        return {
-            arrets: arrets,
-            autonomieKm: autonomieDepartKm,
-            distanceTrajetKm: distanceTrajetKm
-        };
+        return resultatRavitaillementTrajet(
+            arrets,
+            positionsStations,
+            autonomieDepartKm,
+            distanceTrajetKm,
+            reservoir,
+            consommation,
+            jauge,
+            prixReference,
+            litresRentabilite
+        );
     }
 
     if (distanceTrajetKm > autonomieDepartKm * 0.90) {
         return {
             arrets: [],
             autonomieKm: autonomieDepartKm,
-            distanceTrajetKm: distanceTrajetKm
+            distanceTrajetKm: distanceTrajetKm,
+            economieTotale: 0,
+            comparaisonLocale: false
         };
     }
 
@@ -14501,11 +14791,17 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
         80
     )[0];
 
-    return {
-        arrets: meilleurArretRentable ? [meilleurArretRentable] : [],
-        autonomieKm: autonomieDepartKm,
-        distanceTrajetKm: distanceTrajetKm
-    };
+    return resultatRavitaillementTrajet(
+        meilleurArretRentable ? [meilleurArretRentable] : [],
+        positionsStations,
+        autonomieDepartKm,
+        distanceTrajetKm,
+        reservoir,
+        consommation,
+        jauge,
+        prixReference,
+        litresRentabilite
+    );
 
 }
 
@@ -14517,8 +14813,34 @@ function htmlArretsRavitaillement(resultat) {
             : "<strong>Ravitaillement :</strong> aucune station pertinente charg\u00e9e sur ce trajet.";
     }
 
-    return "<strong>Ravitaillement conseill\u00e9 :</strong> "
+    var economieTotale = Number.isFinite(Number(resultat.economieTotale))
+        ? Number(resultat.economieTotale)
+        : totalEconomieRavitaillements(resultat.arrets);
+    var prefixe =
+        "<strong>\u00c9conomie totale estim\u00e9e : "
+        + echapperHtml(formaterEurosRentabilite(economieTotale))
+        + "</strong><br>"
+        + "<span>Compar\u00e9e aux stations autour des ravitaillements pr\u00e9vus.</span><br>"
+        + "<strong>Ravitaillement conseill\u00e9 :</strong> ";
+
+    return prefixe
         + resultat.arrets.map(function(arret) {
+            var detailsComparaison = [];
+
+            if (Number.isFinite(Number(arret.litresComparaison))) {
+                detailsComparaison.push(
+                    formaterLitresRentabilite(arret.litresComparaison)
+                );
+            }
+
+            if (Number.isFinite(Number(arret.nombreStationsComparaisonLocale))
+                && arret.nombreStationsComparaisonLocale > 0) {
+                detailsComparaison.push(
+                    arret.nombreStationsComparaisonLocale
+                    + " stations autour"
+                );
+            }
+
             return echapperHtml(
                 (arret.station.enseigne || "Station")
                 + (arret.station.ville ? " \u00e0 " + arret.station.ville : "")
@@ -14541,6 +14863,16 @@ function htmlArretsRavitaillement(resultat) {
                                 }
                             )
                             + " \u20ac)"
+                        : ""
+                )
+                + (
+                    detailsComparaison.length
+                        ? " [" + detailsComparaison.join(", ") + "]"
+                        : ""
+                )
+                + (
+                    arret.station.avantageTotalenergiesApplique
+                        ? " - plafond TotalEnergies inclus"
                         : ""
                 )
             );
@@ -15275,8 +15607,12 @@ window.calculerTrajetPrepare = async function() {
             jauge: jaugeTrajet,
             arrets: ravitaillement.arrets,
             route: routeDirecte,
+            routeDirecte: routeDirecte,
             autonomieKm: ravitaillement.autonomieKm,
-            distanceTrajetKm: ravitaillement.distanceTrajetKm
+            distanceTrajetKm: ravitaillement.distanceTrajetKm,
+            economieTotale: ravitaillement.economieTotale || 0,
+            carburant: carburantRentabiliteActuel(),
+            carteTotalenergies: carteTotalenergiesActive()
         };
         var pointsApercu = pointsTrajetPrepareDepuisArrets();
         var routeApercu = await calculerRouteAvecCoordonnees(pointsApercu);
