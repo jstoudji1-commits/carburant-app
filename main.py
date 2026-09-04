@@ -3770,6 +3770,7 @@ def preparer_bornes_irve(
 MENU_PAGES_EDITORIALES = [
     ("accueil", "Accueil", "/"),
     ("guides", "Guides", "/guides"),
+    ("methode", "Méthode", "/methode-transparence"),
     ("observatoire", "Observatoire", "/observatoire-donnees"),
     ("fonctionnement", "Fonctionnement", "/comment-fonctionne-optiplein"),
     ("pourquoi", "Pourquoi OptiPlein", "/pourquoi-optiplein"),
@@ -3795,14 +3796,18 @@ PAGES_EDITORIALES = {
             "itin\u00e9raire pour aider chaque conducteur \u00e0 prendre une d\u00e9cision "
             "simple : o\u00f9 faire le plein sans perdre son temps ni son argent."
         ),
-        "cta_label": "Ouvrir l'application",
-        "cta_url": "/web",
-        "secondary_cta_label": "Consulter les guides",
-        "secondary_cta_url": "/guides",
+        "cta_label": "Créer mon compte testeur",
+        "cta_url": "/landing#devenir-testeur",
+        "secondary_cta_label": "Ouvrir l'application",
+        "secondary_cta_url": "/web",
         "highlights": [
             {
                 "title": "Prix actualis\u00e9s",
                 "text": "Les donn\u00e9es carburants sont mises \u00e0 jour r\u00e9guli\u00e8rement \u00e0 partir des sources publiques disponibles.",
+            },
+            {
+                "title": "Premium gratuit tout l'\u00e9t\u00e9",
+                "text": "Un compte suffit pendant la phase de test pour d\u00e9bloquer les fonctions avanc\u00e9es.",
             },
             {
                 "title": "Calcul utile",
@@ -3819,10 +3824,6 @@ PAGES_EDITORIALES = {
             {
                 "title": "Donn\u00e9es expliqu\u00e9es",
                 "text": "Sources, dates, tarifs estim\u00e9s et limites sont document\u00e9s pour distinguer une information certaine d'une valeur \u00e0 v\u00e9rifier.",
-            },
-            {
-                "title": "Signalements utiles",
-                "text": "Une anomalie de prix, de position ou de disponibilit\u00e9 peut \u00eatre signal\u00e9e avec les \u00e9l\u00e9ments n\u00e9cessaires \u00e0 sa v\u00e9rification.",
             },
         ],
         "sections": [
@@ -3920,6 +3921,189 @@ PAGES_EDITORIALES = {
                     {"label": "D\u00e9couvrir l'\u00e9diteur et sa m\u00e9thode", "url": "/auteur/jerome-stoudji"},
                 ],
             },
+        ],
+    },
+    "methode": {
+        "slug": "methode-transparence",
+        "title": "Méthode, sources et transparence | OptiPlein",
+        "nav_title": "Méthode",
+        "description": (
+            "Méthode OptiPlein : sources publiques, contrôles des prix, "
+            "corrections de stations, calcul de rentabilité, publicité et "
+            "limites du service."
+        ),
+        "eyebrow": "Méthode éditoriale et données",
+        "hero_title": "Comment OptiPlein transforme un prix en décision utile",
+        "lead": (
+            "Cette page rassemble la méthode de travail d'OptiPlein : origine "
+            "des données, règles de contrôle, calculs, corrections manuelles "
+            "et séparation stricte entre publicité et recommandation."
+        ),
+        "updated": "4 septembre 2026",
+        "updated_iso": "2026-09-04",
+        "sections": [
+            {
+                "title": "Pourquoi publier une méthode ?",
+                "paragraphs": [
+                    (
+                        "Un comparateur de carburants peut vite donner une impression "
+                        "de certitude : un prix, une distance et une station semblent "
+                        "suffire. Dans la réalité, une donnée peut être déclarée avec "
+                        "retard, une entrée de station peut être décalée sur la carte "
+                        "et un détour peut annuler l'économie affichée au litre."
+                    ),
+                    (
+                        "OptiPlein publie donc sa méthode pour que l'utilisateur sache "
+                        "ce qui est calculé, ce qui est seulement affiché et ce qui doit "
+                        "rester vérifié sur place. Cette transparence fait partie du "
+                        "service : elle évite de présenter une recommandation comme une "
+                        "garantie commerciale."
+                    ),
+                ],
+            },
+            {
+                "title": "Sources utilisées",
+                "paragraphs": [
+                    (
+                        "Les prix des carburants proviennent du flux public français "
+                        "des prix à la pompe. L'application importe les produits "
+                        "déclarés par les points de vente : Gazole, SP95, SP98, E10, "
+                        "E85 et GPLc. Lorsqu'un produit n'est pas déclaré pour une "
+                        "station, OptiPlein conserve l'absence d'information au lieu "
+                        "de fabriquer un montant moyen."
+                    ),
+                    (
+                        "Les bornes électriques s'appuient sur des jeux de données "
+                        "publics et sur des compléments tarifaires clairement séparés "
+                        "lorsque le prix au kWh n'est pas fourni par une source "
+                        "nationale. Un tarif peut donc être officiel, indisponible, "
+                        "estimé ou issu d'une contribution identifiée."
+                    ),
+                ],
+                "links": [
+                    {"label": "Lire le guide des sources", "url": "/guides/sources-prix-carburants"},
+                    {"label": "Voir l'observatoire des données", "url": "/observatoire-donnees"},
+                ],
+            },
+            {
+                "title": "Contrôles avant affichage",
+                "paragraphs": [
+                    (
+                        "Avant d'être utilisée dans un classement, une valeur de prix "
+                        "doit être numérique, positive et exploitable. Les valeurs "
+                        "techniques comme 0,000 ou 9,999 ne sont pas transformées en "
+                        "bons plans : elles sont traitées comme indisponibles pour "
+                        "éviter une comparaison trompeuse."
+                    ),
+                    (
+                        "Les coordonnées sont également vérifiées. Une latitude ou une "
+                        "longitude impossible est écartée, mais une coordonnée valide "
+                        "peut encore représenter le centre d'une parcelle, une aire "
+                        "d'autoroute ou un accès secondaire. C'est pour cela que les "
+                        "signalements de position sont utiles."
+                    ),
+                ],
+                "links": [
+                    {"label": "Signaler une erreur de station", "url": "/guides/signaler-erreur-station"},
+                    {"label": "Comprendre les coordonnées GPS", "url": "/guides/gps-rayon-coordonnees"},
+                ],
+            },
+            {
+                "title": "Calcul de rentabilité",
+                "paragraphs": [
+                    (
+                        "Le prix le plus bas n'est pas automatiquement le choix le "
+                        "plus rentable. OptiPlein compare le montant à payer avec le "
+                        "coût du détour, la consommation du véhicule, la quantité "
+                        "achetée et, lorsque le trajet est préparé, la cohérence du "
+                        "ravitaillement avec l'autonomie restante."
+                    ),
+                    (
+                        "Pour expliquer le résultat, l'application sépare le gain brut "
+                        "lié à l'écart de prix et le coût estimé pour rejoindre la "
+                        "station. L'économie affichée doit donc être comprise comme "
+                        "une aide à la décision personnalisée, pas comme une moyenne "
+                        "nationale ni comme une promesse figée."
+                    ),
+                ],
+                "links": [
+                    {"label": "Voir la formule détaillée", "url": "/guides/calcul-station-rentable"},
+                    {"label": "Préparer un trajet avec ravitaillement", "url": "/guides/preparer-trajet-ravitaillement"},
+                ],
+            },
+            {
+                "title": "Corrections manuelles et traçabilité",
+                "paragraphs": [
+                    (
+                        "Certaines informations peuvent être corrigées lorsqu'une "
+                        "enseigne change, lorsqu'une adresse est incomplète ou lorsque "
+                        "la coordonnée publiée place le marqueur au mauvais endroit. "
+                        "Ces corrections ne doivent pas masquer les prix officiels : "
+                        "elles servent à améliorer l'identification et la position de "
+                        "la station."
+                    ),
+                    (
+                        "Une correction utile doit être vérifiable : adresse précise, "
+                        "nom affiché sur place, photo non sensible, lien officiel ou "
+                        "coordonnée contrôlée. Cette exigence protège l'utilisateur "
+                        "contre les modifications approximatives et protège le service "
+                        "contre les données inventées."
+                    ),
+                ],
+            },
+            {
+                "title": "Indépendance de la publicité",
+                "paragraphs": [
+                    (
+                        "La publicité, lorsqu'elle est active, est séparée du contenu "
+                        "et des recommandations. Une station ne peut pas être mieux "
+                        "classée parce qu'une annonce est affichée sur la page, et un "
+                        "emplacement publicitaire ne doit jamais se confondre avec un "
+                        "bouton de navigation ou une recommandation de ravitaillement."
+                    ),
+                    (
+                        "Cette séparation est importante pour la confiance. OptiPlein "
+                        "cherche à monétiser un service utile sans transformer le choix "
+                        "de la station en résultat sponsorisé. Les calculs restent "
+                        "fondés sur les prix, le trajet, le véhicule et les paramètres "
+                        "de l'utilisateur."
+                    ),
+                ],
+            },
+            {
+                "title": "Limites connues",
+                "paragraphs": [
+                    (
+                        "Un prix peut changer entre deux mises à jour, une station peut "
+                        "modifier ses horaires, une borne peut devenir occupée après "
+                        "l'affichage et le GPS d'un téléphone peut perdre en précision "
+                        "près d'immeubles, de tunnels ou d'échangeurs. Le service doit "
+                        "donc rester prudent dans ses formulations."
+                    ),
+                    (
+                        "Le conducteur garde toujours la priorité sur l'application : "
+                        "sécurité, signalisation, carburant compatible et prix affiché "
+                        "sur place priment sur la recommandation. Les pages publiques "
+                        "sont là pour expliquer ces limites avant même l'utilisation "
+                        "de la carte."
+                    ),
+                ],
+            },
+        ],
+        "sources": [
+            {
+                "label": "Flux instantané officiel des prix des carburants",
+                "url": "https://donnees.roulez-eco.fr/opendata/instantane",
+            },
+            {
+                "label": "Licence Ouverte Etalab 2.0",
+                "url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
+            },
+        ],
+        "related": [
+            {"label": "FAQ OptiPlein", "url": "/faq"},
+            {"label": "Mentions légales", "url": "/mentions-legales"},
+            {"label": "Politique de confidentialité", "url": "/confidentialite"},
         ],
     },
     "fonctionnement": {
@@ -5122,6 +5306,7 @@ def contexte_page_editoriale(request, identifiant):
         "menu_pages": MENU_PAGES_EDITORIALES,
         "footer_pages": [
             ("guides", "Guides", "/guides"),
+            ("methode", "Méthode", "/methode-transparence"),
             ("observatoire", "Observatoire", "/observatoire-donnees"),
             ("a-propos", "\u00c0 propos", "/a-propos"),
             ("auteur", "L'\u00e9diteur", "/auteur/jerome-stoudji"),
@@ -5197,6 +5382,12 @@ def page_guide(request: Request, article_slug: str):
     return rendre_page_editoriale(request, identifiant)
 
 
+@app.get("/methode-transparence")
+def page_methode_transparence(request: Request):
+
+    return rendre_page_editoriale(request, "methode")
+
+
 @app.get("/a-propos")
 def page_a_propos(request: Request):
 
@@ -5268,6 +5459,12 @@ def landing_page(request: Request):
             "adsense_active": False,
         }
     )
+
+
+@app.get("/devenir-testeur")
+def devenir_testeur():
+
+    return RedirectResponse(url="/landing#devenir-testeur", status_code=308)
 
 
 @app.get("/admin")
@@ -7323,8 +7520,8 @@ def sitemap_xml(request: Request):
                 )
             )
 
-    if not any(entree[0] == "/web" for entree in pages_sitemap):
-        pages_sitemap.append(("/web", "2026-08-28"))
+    if not any(entree[0] == "/landing" for entree in pages_sitemap):
+        pages_sitemap.append(("/landing", "2026-09-04"))
 
     entrees = "\n".join(
         "    <url>\n"
