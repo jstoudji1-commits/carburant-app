@@ -2281,9 +2281,14 @@ def creer_jeton_recuperation_mot_de_passe():
 def url_base_application(request):
 
     if APP_BASE_URL:
-        return APP_BASE_URL
+        base_url = APP_BASE_URL
+    else:
+        base_url = str(request.base_url).rstrip("/")
 
-    return str(request.base_url).rstrip("/")
+    if re.fullmatch(r"https?://(www\.)?optiplein\.fr/?", base_url):
+        return "https://www.optiplein.fr"
+
+    return base_url.rstrip("/")
 
 
 def html_logo_email(base_url):
@@ -4628,6 +4633,244 @@ PAGES_EDITORIALES = {
 PAGES_EDITORIALES.update(GUIDES_EDITORIAUX)
 
 
+def renforcer_pages_pour_adsense():
+
+    ajouts = {
+        "fonctionnement": [
+            {
+                "title": "Pourquoi le calcul commence par le véhicule",
+                "paragraphs": [
+                    "Deux conducteurs qui regardent la même station ne prennent pas forcément la même bonne décision. Un véhicule qui consomme 4,8 L/100 km peut accepter un détour plus long qu'un véhicule qui consomme 8 L/100 km, car le coût du déplacement vers la station n'est pas identique. La taille du réservoir change aussi le résultat : économiser trois centimes par litre n'a pas le même poids sur un appoint de dix litres que sur un plein presque complet.",
+                    "OptiPlein demande donc des informations simples : carburant ou énergie, capacité du réservoir, consommation moyenne et niveau disponible lorsqu'un trajet est préparé. Ces valeurs ne servent pas à juger la conduite, mais à transformer un prix affiché en coût utile. L'utilisateur comprend ainsi pourquoi la station recommandée peut être différente de celle qui affiche le prix le plus bas sur la carte.",
+                ],
+            },
+            {
+                "title": "Comment les stations sont filtrées",
+                "paragraphs": [
+                    "Les stations dont le prix est absent, égal à zéro ou manifestement inutilisable sont écartées du calcul de rentabilité. Une valeur vide ne doit pas être remplacée par une moyenne inventée, car cela créerait une comparaison trompeuse. Lorsqu'une donnée manque, l'application préfère l'indiquer clairement plutôt que de fabriquer un résultat artificiel.",
+                    "Pour un trajet, OptiPlein étudie les stations situées autour de l'itinéraire, puis compare les arrêts possibles avec les autres stations proches du même segment. Cette méthode donne plus de sens qu'une moyenne nationale : un prix très bas à 300 kilomètres du ravitaillement prévu ne doit pas servir de référence pour une décision locale.",
+                ],
+            },
+            {
+                "title": "Ce que signifie un recalcul",
+                "paragraphs": [
+                    "Un recalcul peut être déclenché lorsque le conducteur s'éloigne du trajet prévu, lorsqu'une station devient moins intéressante, ou lorsque de nouveaux prix sont disponibles. Le but n'est pas de changer de destination à chaque variation minime, mais de proposer une alternative lorsque l'écart devient suffisamment utile pour mériter l'attention.",
+                    "L'application conserve une marge de prudence : autonomie restante, distance avant le prochain arrêt, détour probable et coût du carburant consommé pour rejoindre la station. Cette prudence évite de recommander un ravitaillement trop tardif ou une station qui ferait perdre davantage qu'elle ne ferait économiser.",
+                ],
+            },
+        ],
+        "pourquoi": [
+            {
+                "title": "Le problème que rencontrent les conducteurs",
+                "paragraphs": [
+                    "Les prix des carburants changent régulièrement et les stations ne sont pas toujours faciles à comparer. Certaines sont proches mais plus chères, d'autres affichent un tarif intéressant mais demandent un détour, un demi-tour ou une sortie d'autoroute. Dans la pratique, le conducteur finit souvent par choisir au plus visible, pas forcément au plus rentable.",
+                    "OptiPlein répond à ce problème en ramenant la comparaison à une question concrète : combien coûte réellement ce choix avec mon véhicule et mon trajet ? Cette approche est plus utile qu'une simple liste de prix, car elle tient compte du temps, de la distance et de la quantité de carburant qui sera effectivement achetée.",
+                ],
+            },
+            {
+                "title": "Un service utile même quand les prix sont proches",
+                "paragraphs": [
+                    "Lorsque deux stations affichent des prix presque identiques, le meilleur choix dépend souvent du contexte. Une station légèrement plus chère peut devenir préférable si elle est sur la route, si elle évite une sortie inutile ou si elle permet de faire un plein au bon moment du trajet. À l'inverse, un prix spectaculaire peut être moins intéressant si le détour consomme l'économie attendue.",
+                    "L'application aide aussi à repérer les cas où aucune économie sérieuse n'est possible. C'est une information utile : elle évite de perdre du temps pour quelques centimes et permet de rester sur un trajet plus simple. Le service ne cherche donc pas à forcer une recommandation, mais à rendre la décision lisible.",
+                ],
+            },
+            {
+                "title": "Une valeur ajoutée au-delà de la carte",
+                "paragraphs": [
+                    "La carte donne une première vision des prix, mais la valeur d'OptiPlein vient de la combinaison entre données, véhicule, itinéraire et explication du calcul. L'utilisateur peut comprendre pourquoi une station est proposée, quels éléments influencent l'économie, et dans quelles limites le résultat doit être interprété.",
+                    "Cette transparence est importante pour un service lié aux déplacements. Un prix peut être déclaré avec retard, une coordonnée peut pointer l'entrée d'une aire plutôt que la pompe, et la consommation réelle varie selon la conduite. OptiPlein présente ces limites au lieu de les masquer.",
+                ],
+            },
+        ],
+        "a-propos": [
+            {
+                "title": "Une méthode construite à partir des usages réels",
+                "paragraphs": [
+                    "Le projet avance à partir de problèmes rencontrés par les conducteurs : station affichée au mauvais endroit, prix manquant, itinéraire qui ne tient pas compte du détour, ou ravitaillement proposé trop tard sur un long trajet. Chaque retour sert à améliorer une règle de calcul, une vérification de données ou une explication visible dans l'application.",
+                    "Cette approche donne à OptiPlein une orientation pratique. Le service n'a pas vocation à recopier une carte de prix existante ; il cherche à aider l'utilisateur à décider dans un moment précis, avec ses contraintes de véhicule, de route et d'autonomie.",
+                ],
+            },
+            {
+                "title": "Indépendance des résultats",
+                "paragraphs": [
+                    "Les stations ne sont pas classées parce qu'une enseigne serait mise en avant commercialement. Le classement repose sur les prix disponibles, la distance, le coût du détour, le carburant ou l'énergie du véhicule et les préférences utiles au calcul. Une publicité éventuelle doit rester séparée des résultats et ne pas influencer la recommandation.",
+                    "Les corrections manuelles de stations sont conservées pour améliorer la qualité lorsque les données sources sont incomplètes ou imprécises. Elles doivent rester vérifiables : adresse, enseigne, position ou justification claire. L'objectif est d'améliorer la fiabilité sans inventer de données.",
+                ],
+            },
+            {
+                "title": "Ce que la phase de test apporte",
+                "paragraphs": [
+                    "La phase de test permet de confronter l'application à des trajets réels, à des zones rurales, à des autoroutes, à des stations de grande distribution et à des bornes de recharge. Ces situations révèlent des détails que l'on ne voit pas toujours depuis un ordinateur : lisibilité en conduite, stabilité GPS, pertinence du zoom ou compréhension des messages.",
+                    "Les testeurs aident aussi à vérifier la clarté des contenus publics. Les pages du site expliquent les sources, les limites et les méthodes afin que l'utilisateur sache ce que l'application peut faire, ce qu'elle ne garantit pas et comment signaler une erreur utilement.",
+                ],
+            },
+        ],
+        "contact": [
+            {
+                "title": "Quand utiliser le formulaire",
+                "paragraphs": [
+                    "Le formulaire de contact sert aux questions générales, aux retours de test, aux demandes liées au compte et aux remarques sur le fonctionnement du site. Pour une anomalie de station ou de borne, il est utile d'indiquer le nom de l'enseigne, la ville, l'adresse affichée, le carburant concerné et ce que vous constatez sur place.",
+                    "Plus le message est précis, plus la vérification est rapide. Une phrase comme « le prix semble faux » aide moins qu'un message indiquant la station, le prix vu à la pompe, l'heure approximative et le carburant concerné. L'objectif est de distinguer une erreur locale d'un retard de déclaration dans la source publique.",
+                ],
+            },
+            {
+                "title": "Traitement des demandes",
+                "paragraphs": [
+                    "Les messages reçus sont utilisés pour répondre à la demande et améliorer le service lorsque le retour concerne une fonctionnalité. Une demande liée aux données personnelles peut porter sur l'accès, la rectification ou la suppression d'informations associées à un compte OptiPlein.",
+                    "Il ne faut jamais envoyer de mot de passe, de copie de document d'identité non demandée ou d'information bancaire dans le formulaire. Si une vérification complémentaire est nécessaire, OptiPlein demandera uniquement les éléments utiles au traitement de la demande.",
+                ],
+            },
+            {
+                "title": "Retours utiles pendant les tests",
+                "paragraphs": [
+                    "Pendant la période de test, les retours les plus utiles concernent la lisibilité de la carte, les stations mal positionnées, les écarts entre l'économie annoncée et le comportement réel, les difficultés de connexion et les messages qui ne sont pas assez clairs.",
+                    "Un bon retour indique le téléphone utilisé, le navigateur ou l'application, la ville ou le trajet concerné, et les étapes qui ont mené au problème. Ces détails permettent de reproduire l'erreur et de vérifier si elle vient de la donnée, du calcul ou de l'affichage.",
+                ],
+            },
+            {
+                "title": "Pourquoi le formulaire remplace l'adresse e-mail seule",
+                "paragraphs": [
+                    "Le formulaire structure les demandes et évite les messages incomplets. Il permet de recevoir un sujet, une adresse de réponse et une description exploitable sans obliger l'utilisateur à ouvrir une application de messagerie. Cette présentation est aussi plus claire pour les testeurs qui découvrent le service depuis un téléphone.",
+                    "Les informations transmises servent uniquement à traiter la demande. Pour une question générale, quelques lignes suffisent. Pour un problème de données, il est préférable d'ajouter le lieu, le carburant ou la borne concernée et la différence observée sur place.",
+                ],
+            },
+        ],
+        "mentions": [
+            {
+                "title": "Nature du service",
+                "paragraphs": [
+                    "OptiPlein est un service numérique d'information et d'aide à la décision autour des prix des carburants, des stations-service, des bornes de recharge et de la préparation de trajets. Les informations affichées sont destinées à faciliter la comparaison, mais elles ne constituent pas une garantie commerciale sur le prix final payé par l'utilisateur.",
+                    "Les prix carburants proviennent de sources publiques ou de données traitées à partir de ces sources. Les informations relatives aux bornes de recharge peuvent provenir de jeux de données nationaux, de réseaux d'opérateurs ou de contributions identifiées lorsque le tarif public n'est pas disponible dans une source centralisée.",
+                ],
+            },
+            {
+                "title": "Limites de responsabilité",
+                "paragraphs": [
+                    "Les données peuvent évoluer entre deux mises à jour, être déclarées avec retard par un point de vente ou être temporairement indisponibles. Une station peut aussi modifier ses horaires, son accès ou ses carburants sans que l'information soit immédiatement visible dans l'application.",
+                    "Le conducteur doit toujours respecter le code de la route, les consignes de sécurité et les panneaux affichés sur place. OptiPlein ne doit pas être manipulé dangereusement pendant la conduite ; la préparation d'un trajet doit être effectuée à l'arrêt ou par un passager lorsque cela est autorisé.",
+                ],
+            },
+            {
+                "title": "Propriété intellectuelle et contenus",
+                "paragraphs": [
+                    "Les textes, interfaces, méthodes de présentation et éléments graphiques propres à OptiPlein sont protégés par le droit applicable. Les marques de stations ou de réseaux citées restent la propriété de leurs titulaires respectifs et sont utilisées uniquement pour identifier les points de vente ou services concernés.",
+                    "Les liens vers les sources publiques, les guides et les pages d'explication sont fournis pour aider l'utilisateur à comprendre la méthode. Toute reproduction massive du site, de ses contenus ou de ses données retraitées doit respecter les droits et licences applicables.",
+                ],
+            },
+            {
+                "title": "Contact légal et correction des informations",
+                "paragraphs": [
+                    "Toute demande concernant l'identification du service, la correction d'une information publiée ou l'exercice d'un droit peut être transmise depuis la page Contact. Le message doit indiquer l'objet de la demande et les éléments permettant de retrouver la page ou la station concernée.",
+                    "Lorsqu'une correction touche une station, une enseigne ou une borne, OptiPlein privilégie les éléments vérifiables : source publique, constat sur place, adresse complète, photographie non sensible ou lien officiel de l'opérateur. Cette méthode limite les corrections approximatives.",
+                ],
+            },
+        ],
+        "confidentialite": [
+            {
+                "title": "Données utilisées pour le calcul",
+                "paragraphs": [
+                    "La position de l'appareil, lorsqu'elle est autorisée, permet d'afficher les stations proches, d'estimer le coût d'un détour et de suivre un itinéraire. Cette position est utilisée pour fournir le service demandé par l'utilisateur. Elle n'a pas vocation à être publiée ni affichée sous forme de coordonnées visibles dans l'interface principale.",
+                    "Les caractéristiques du véhicule servent à personnaliser le calcul : énergie, consommation, capacité du réservoir ou de la batterie, autonomie et préférences de trajet. Sans ces informations, l'application peut afficher des prix, mais elle ne peut pas expliquer finement le coût réel d'un choix de station.",
+                ],
+            },
+            {
+                "title": "Compte, sauvegarde et changement d'appareil",
+                "paragraphs": [
+                    "La création d'un compte permet de retrouver les informations utiles en cas de changement de téléphone ou de navigateur. Les véhicules enregistrés, favoris, préférences, lieux de trajet et historique d'économies peuvent être associés au compte afin de maintenir une expérience cohérente.",
+                    "L'adresse e-mail sert à identifier le compte, envoyer un lien de validation, permettre la récupération du mot de passe et répondre aux demandes transmises via les formulaires. Elle ne doit pas être utilisée pour envoyer des informations sans rapport avec le service OptiPlein.",
+                ],
+            },
+            {
+                "title": "Publicité et mesure",
+                "paragraphs": [
+                    "Lorsque des annonces sont diffusées, des partenaires techniques comme Google peuvent utiliser des cookies ou identifiants similaires selon leurs propres règles. OptiPlein doit garder la publicité distincte du contenu et des résultats de calcul afin d'éviter toute confusion avec les stations recommandées.",
+                    "Les données techniques nécessaires au fonctionnement, comme l'adresse IP, le navigateur ou les erreurs serveur, peuvent être traitées par l'hébergeur et les outils utilisés pour maintenir le service. Ces informations servent à la sécurité, au diagnostic et à l'amélioration de l'application.",
+                ],
+            },
+            {
+                "title": "Durée, droits et suppression",
+                "paragraphs": [
+                    "Les informations du compte sont conservées tant que le compte reste actif ou jusqu'à une demande de suppression compatible avec les obligations techniques et légales applicables. Les données locales du navigateur peuvent aussi être supprimées directement depuis les paramètres du navigateur ou du téléphone.",
+                    "L'utilisateur peut demander l'accès, la rectification ou la suppression des données le concernant depuis la page Contact ou la page de suppression de compte. Une demande précise facilite le traitement : adresse e-mail du compte, objet de la demande et information à corriger ou supprimer.",
+                ],
+            },
+        ],
+        "conditions": [
+            {
+                "title": "Accès au service et phase de test",
+                "paragraphs": [
+                    "OptiPlein peut proposer certaines fonctions gratuitement pendant une phase de test afin de recueillir des retours et d'améliorer l'application avant une diffusion plus large. Les fonctionnalités disponibles peuvent évoluer selon les corrections techniques, les sources de données et les contraintes de publication.",
+                    "La création d'un compte peut être nécessaire pour sauvegarder les véhicules, favoris, préférences, historique et réglages avancés. L'utilisateur doit fournir une adresse e-mail valide et conserver la confidentialité de ses identifiants.",
+                ],
+            },
+            {
+                "title": "Exactitude des informations renseignées",
+                "paragraphs": [
+                    "Les calculs de rentabilité dépendent fortement des informations saisies par l'utilisateur. Une consommation trop basse, un réservoir mal renseigné ou un niveau de carburant approximatif peuvent modifier la recommandation. L'application fournit une aide, pas une certitude absolue.",
+                    "L'utilisateur doit vérifier les informations essentielles avant de décider d'un arrêt : prix affiché sur place, carburant compatible, accès à la station, autonomie réelle et conditions de circulation. En cas de doute, la sécurité prime toujours sur l'économie potentielle.",
+                ],
+            },
+            {
+                "title": "Disponibilité et évolution technique",
+                "paragraphs": [
+                    "Le service dépend de l'hébergement, du réseau, du navigateur, du GPS de l'appareil, des sources publiques et des services d'itinéraire. Une interruption, une lenteur ou une donnée temporairement indisponible peut donc se produire malgré les contrôles mis en place.",
+                    "OptiPlein peut modifier l'interface, les calculs, les pages publiques ou les sources utilisées afin d'améliorer la fiabilité, la sécurité ou la conformité du service. Les pages d'aide et les guides sont mis à jour pour expliquer les changements importants.",
+                ],
+            },
+            {
+                "title": "Publicité et indépendance du classement",
+                "paragraphs": [
+                    "La présence éventuelle d'une annonce sur le site ou dans l'application ne modifie pas la station conseillée. Le classement reste fondé sur les prix disponibles, la distance, le détour, le véhicule, la quantité d'énergie à acheter et les paramètres choisis par l'utilisateur.",
+                    "L'utilisateur ne doit pas cliquer sur une publicité pour accéder aux fonctions essentielles du service. Les emplacements publicitaires doivent rester séparés de la navigation, des boutons d'action et des recommandations afin d'éviter toute confusion.",
+                    "Les pages éditoriales peuvent contenir des informations générales, des guides ou des explications méthodologiques. L'application cartographique reste un outil interactif : ses résultats doivent être lus comme une aide instantanée et non comme un engagement permanent sur un prix, une disponibilité ou un temps de trajet.",
+                ],
+            },
+        ],
+        "cookies": [
+            {
+                "title": "Différence entre cookies et stockage local",
+                "paragraphs": [
+                    "Le stockage local du navigateur permet de conserver des préférences utiles à l'application, comme le carburant sélectionné, certains réglages de carte, les véhicules ou des informations de session. Il reste attaché au navigateur utilisé et peut disparaître si l'utilisateur efface les données du site.",
+                    "Les cookies sont de petits fichiers ou identifiants utilisés par le navigateur et certains services tiers. Ils peuvent servir à maintenir une session, mesurer le fonctionnement technique ou permettre la diffusion d'annonces lorsque le service publicitaire est activé.",
+                ],
+            },
+            {
+                "title": "Cookies publicitaires",
+                "paragraphs": [
+                    "Lorsque Google AdSense est activé, Google peut utiliser des cookies pour diffuser, limiter ou mesurer les annonces. Ces traitements sont encadrés par les règles de Google et par les choix de consentement ou de personnalisation disponibles pour l'utilisateur selon son navigateur et sa région.",
+                    "La publicité ne doit pas influencer le classement des stations, le calcul de rentabilité ou les ravitaillements proposés. Les annonces doivent rester identifiables et séparées de l'interface de décision afin de préserver la confiance de l'utilisateur.",
+                ],
+            },
+            {
+                "title": "Gérer ou supprimer les données",
+                "paragraphs": [
+                    "L'utilisateur peut supprimer les cookies, le cache et les données locales depuis les paramètres de son navigateur. Sur mobile, certaines autorisations comme la géolocalisation ou les notifications se règlent aussi depuis les paramètres du téléphone.",
+                    "La suppression locale peut déconnecter le compte, retirer des préférences enregistrées sur l'appareil ou obliger l'utilisateur à renseigner de nouveau certains réglages. Les informations synchronisées avec un compte peuvent toutefois être retrouvées après reconnexion lorsqu'elles sont conservées côté serveur.",
+                ],
+            },
+            {
+                "title": "Consentement et transparence",
+                "paragraphs": [
+                    "OptiPlein doit expliquer clairement pourquoi une technologie de stockage est utilisée. Un réglage indispensable au fonctionnement de la carte ou du compte n'a pas le même rôle qu'un cookie publicitaire ou qu'un outil de mesure. Cette distinction aide l'utilisateur à comprendre ce qu'il accepte.",
+                    "Lorsque le navigateur permet de limiter le suivi, de bloquer les cookies tiers ou d'effacer les données d'un site, OptiPlein continue de fournir les pages éditoriales publiques. Certaines fonctions personnalisées peuvent toutefois être moins pratiques sans stockage local ou sans connexion au compte.",
+                    "Le paramétrage dépend du navigateur, du système d'exploitation et des outils tiers éventuellement utilisés. L'utilisateur peut donc combiner les réglages proposés par OptiPlein, les préférences du navigateur et les paramètres de son téléphone pour adapter le niveau de personnalisation accepté.",
+                ],
+            },
+        ],
+    }
+
+    for identifiant, sections in ajouts.items():
+        page = PAGES_EDITORIALES.get(identifiant)
+        if not page:
+            continue
+        page.setdefault("sections", []).extend(sections)
+        page["updated"] = "4 septembre 2026"
+        page["updated_iso"] = "2026-09-04"
+
+
+renforcer_pages_pour_adsense()
+
+
 def chemin_page_editoriale(identifiant):
 
     page = PAGES_EDITORIALES[identifiant]
@@ -4866,14 +5109,6 @@ def contexte_page_editoriale(request, identifiant):
     elif identifiant == "faq":
         breadcrumbs.append({"label": "FAQ", "url": "/faq"})
 
-    pages_adsense_autorisees = {
-        "accueil",
-        "guides",
-        "faq",
-        "observatoire",
-        *GUIDES_EDITORIAUX.keys(),
-    }
-
     return {
         "page": page,
         "breadcrumbs": breadcrumbs if len(breadcrumbs) > 1 else [],
@@ -4899,11 +5134,7 @@ def contexte_page_editoriale(request, identifiant):
         "canonical_url": base_url + chemin,
         "base_url": base_url,
         "og_image": base_url + "/static/logo.png",
-        "adsense_client": (
-            ADSENSE_CLIENT
-            if identifiant in pages_adsense_autorisees
-            else ""
-        ),
+        "adsense_client": ADSENSE_CLIENT,
     }
 
 
