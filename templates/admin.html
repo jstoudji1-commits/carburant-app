@@ -262,7 +262,7 @@
 
         .stats{
             display:grid;
-            grid-template-columns:repeat(3, minmax(0, 1fr));
+            grid-template-columns:repeat(4, minmax(0, 1fr));
             gap:12px;
         }
 
@@ -357,6 +357,34 @@
             color:var(--muted);
         }
 
+        .admin-subgrid{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:12px;
+            padding:18px;
+            border-bottom:1px solid var(--line);
+            background:#fbfdfb;
+        }
+
+        .profile-card{
+            padding:14px;
+            border:1px solid var(--line);
+            border-radius:10px;
+            background:#fff;
+        }
+
+        .profile-card strong{
+            display:block;
+            font-size:26px;
+            line-height:1;
+        }
+
+        .profile-card span{
+            color:var(--muted);
+            font-size:13px;
+            font-weight:800;
+        }
+
         @media (max-width: 760px){
             .topbar,
             .panel-head{
@@ -366,6 +394,7 @@
 
             .login-row,
             .stats,
+            .admin-subgrid,
             .station-tools,
             .station-tools.irve-search-tools,
             .station-form,
@@ -462,6 +491,13 @@
                 </button>
                 <button
                     type="button"
+                    data-admin-target="vehicles"
+                    onclick="changerSectionAdmin('vehicles')"
+                >
+                    Profils véhicules
+                </button>
+                <button
+                    type="button"
                     data-admin-target="irve"
                     onclick="changerSectionAdmin('irve')"
                 >
@@ -496,6 +532,10 @@
                     <div class="stat">
                         <strong id="stat-testeurs">0</strong>
                         <span>Testeurs inscrits</span>
+                    </div>
+                    <div class="stat">
+                        <strong id="stat-vehicules">0</strong>
+                        <span>Véhicules enregistrés</span>
                     </div>
                 </div>
                 <p class="status" id="config-status"></p>
@@ -561,6 +601,38 @@
                     </button>
                 </div>
                 <div class="table-wrap" id="comptes-wrap"></div>
+            </section>
+
+            <section class="panel admin-section" data-admin-section="vehicles">
+                <div class="panel-head">
+                    <div>
+                        <h2>Profils véhicules</h2>
+                        <p class="muted">
+                            Suivi des profils essence, diesel, E85, GPL,
+                            hybride et électrique enregistrés par les
+                            utilisateurs.
+                        </p>
+                    </div>
+                    <button type="button" onclick="chargerAdmin()">
+                        Actualiser
+                    </button>
+                </div>
+                <div class="admin-subgrid">
+                    <div class="profile-card">
+                        <strong id="vehicle-stat-total">0</strong>
+                        <span>Véhicules enregistrés</span>
+                    </div>
+                    <div class="profile-card">
+                        <strong id="vehicle-stat-profils">0</strong>
+                        <span>Profils utilisés</span>
+                    </div>
+                    <div class="profile-card">
+                        <strong id="vehicle-stat-principaux">0</strong>
+                        <span>Véhicules principaux</span>
+                    </div>
+                </div>
+                <div class="table-wrap" id="profils-vehicules-wrap"></div>
+                <div class="table-wrap" id="vehicules-wrap"></div>
             </section>
 
             <section class="panel admin-section" data-admin-section="irve">
@@ -862,6 +934,8 @@
                 stats.premium || 0;
             document.getElementById("stat-testeurs").textContent =
                 stats.testeurs || 0;
+            document.getElementById("stat-vehicules").textContent =
+                stats.vehicules || 0;
         }
 
         function afficherConfigurationServeur(stockage, adsense) {
@@ -945,6 +1019,139 @@
                         + '<td>' + echapperHtml(texteDate(compte.created_at)) + '</td>'
                         + '<td>' + echapperHtml(texteDate(compte.updated_at)) + '</td>'
                         + '<td><div class="actions">' + action + '</div></td>'
+                        + '</tr>';
+                }).join("")
+                + '</tbody></table>';
+        }
+
+        function formatValeurUnite(valeur, unite) {
+            if (!valeur) {
+                return "-";
+            }
+
+            return echapperHtml(valeur + (unite ? " " + unite : ""));
+        }
+
+        function afficherVehiculesAdmin(donnees) {
+            donnees = donnees || {};
+
+            var stats = donnees.stats || {};
+            var profils = donnees.profils || [];
+            var vehicules = donnees.vehicules || [];
+            var profilsWrap = document.getElementById("profils-vehicules-wrap");
+            var vehiculesWrap = document.getElementById("vehicules-wrap");
+
+            document.getElementById("vehicle-stat-total").textContent =
+                stats.vehicules || 0;
+            document.getElementById("vehicle-stat-profils").textContent =
+                stats.profils_utilises || 0;
+            document.getElementById("vehicle-stat-principaux").textContent =
+                stats.vehicules_principaux || 0;
+
+            if (!profils.length) {
+                profilsWrap.innerHTML =
+                    '<p class="empty">Aucun profil véhicule configuré.</p>';
+            } else {
+                profilsWrap.innerHTML =
+                    '<table>'
+                    + '<thead><tr>'
+                    + '<th>Profil</th>'
+                    + '<th>Véhicules</th>'
+                    + '<th>Comptes</th>'
+                    + '<th>Réservoir moyen</th>'
+                    + '<th>Consommation moyenne</th>'
+                    + '<th>Autonomie moyenne</th>'
+                    + '</tr></thead>'
+                    + '<tbody>'
+                    + profils.map(function(profil) {
+                        return '<tr>'
+                            + '<td><strong>'
+                            + echapperHtml(profil.libelle || profil.cle)
+                            + '</strong><br><span class="muted">'
+                            + echapperHtml(profil.cle || "-")
+                            + '</span></td>'
+                            + '<td>' + Number(profil.vehicules || 0) + '</td>'
+                            + '<td>' + Number(profil.comptes || 0) + '</td>'
+                            + '<td>'
+                            + formatValeurUnite(
+                                profil.reservoir_moyen,
+                                profil.capacite_unite
+                            )
+                            + '</td>'
+                            + '<td>'
+                            + formatValeurUnite(
+                                profil.consommation_moyenne,
+                                profil.consommation_unite
+                            )
+                            + '</td>'
+                            + '<td>'
+                            + formatValeurUnite(
+                                profil.autonomie_moyenne,
+                                "km"
+                            )
+                            + '</td>'
+                            + '</tr>';
+                    }).join("")
+                    + '</tbody></table>';
+            }
+
+            if (!vehicules.length) {
+                vehiculesWrap.innerHTML =
+                    '<p class="empty">Aucun véhicule enregistré pour le moment.</p>';
+                return;
+            }
+
+            vehiculesWrap.innerHTML =
+                '<table>'
+                + '<thead><tr>'
+                + '<th>Compte</th>'
+                + '<th>Véhicule</th>'
+                + '<th>Profil</th>'
+                + '<th>Réservoir</th>'
+                + '<th>Consommation</th>'
+                + '<th>Autonomie</th>'
+                + '<th>Jauge</th>'
+                + '<th>Statut</th>'
+                + '</tr></thead>'
+                + '<tbody>'
+                + vehicules.map(function(vehicule) {
+                    var badges = [];
+                    if (vehicule.principal) {
+                        badges.push('<span class="badge premium">Principal</span>');
+                    }
+                    if (vehicule.actif) {
+                        badges.push('<span class="badge">Actif</span>');
+                    }
+
+                    return '<tr>'
+                        + '<td><strong>'
+                        + echapperHtml(vehicule.email)
+                        + '</strong></td>'
+                        + '<td><strong>'
+                        + echapperHtml(vehicule.nom || "Mon véhicule")
+                        + '</strong>'
+                        + (
+                            vehicule.parametres
+                                ? '<br><span class="muted">'
+                                    + echapperHtml(vehicule.parametres)
+                                    + '</span>'
+                                : ''
+                        )
+                        + '</td>'
+                        + '<td>' + echapperHtml(vehicule.profil_libelle || "-") + '</td>'
+                        + '<td>' + echapperHtml(vehicule.reservoir || "-") + '</td>'
+                        + '<td>' + echapperHtml(vehicule.conso || "-") + '</td>'
+                        + '<td>' + echapperHtml(vehicule.autonomie || "-") + '</td>'
+                        + '<td>'
+                        + (
+                            vehicule.jauge === "" || vehicule.jauge === null
+                                ? "-"
+                                : echapperHtml(vehicule.jauge) + "%"
+                        )
+                        + '</td>'
+                        + '<td><div class="actions">'
+                        + (badges.join(" ") || '<span class="muted">-</span>')
+                        + '</div></td>'
                         + '</tr>';
                 }).join("")
                 + '</tbody></table>';
@@ -1448,6 +1655,7 @@
                 donnees.adsense || {}
             );
             afficherComptes(donnees.comptes || []);
+            afficherVehiculesAdmin(donnees.vehicules || {});
             afficherTesteurs(donnees.testeurs || []);
             await chargerTarifsIrve();
             await chargerContributionsTarifsIrve();

@@ -29,6 +29,7 @@ import smtplib
 import ssl
 import threading
 import time
+from urllib.parse import quote
 from zoneinfo import ZoneInfo
 import requests as http_requests
 from editorial_guides import GUIDES_EDITORIAUX
@@ -1060,11 +1061,148 @@ def verifier_admin(request):
         )
 
 
+def nombre_admin(valeur):
+
+    try:
+        return float(str(valeur or "").replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+
+
+def moyenne_admin(valeurs):
+
+    valeurs_valides = [
+        valeur
+        for valeur in valeurs
+        if isinstance(valeur, (int, float)) and valeur > 0
+    ]
+
+    if not valeurs_valides:
+        return ""
+
+    moyenne = sum(valeurs_valides) / len(valeurs_valides)
+
+    if moyenne.is_integer():
+        return str(int(moyenne))
+
+    return str(round(moyenne, 1)).replace(".", ",")
+
+
+def construire_resume_vehicules_admin(utilisateurs):
+
+    profils = {
+        cle: {
+            "cle": cle,
+            "libelle": donnees.get("libelle", cle.title()),
+            "capacite_unite": donnees.get("capacite_unite", ""),
+            "consommation_unite": donnees.get("consommation_unite", ""),
+            "vehicules": 0,
+            "comptes": set(),
+            "reservoirs": [],
+            "consommations": [],
+            "autonomies": [],
+        }
+        for cle, donnees in PROFILS_VEHICULES.items()
+    }
+    vehicules = []
+
+    for email, utilisateur in sorted(utilisateurs.items()):
+        donnees = utilisateur.get("data", {})
+        vehicule_actif = donnees.get("vehicule_actif", "")
+        vehicule_principal = donnees.get("vehicule_principal", "")
+
+        for vehicule in donnees.get("vehicules", []):
+            if not isinstance(vehicule, dict):
+                continue
+
+            profil = profil_vehicule_valide(
+                vehicule.get("profil") or vehicule.get("motorisation")
+            )
+            configuration = profils.setdefault(
+                profil,
+                {
+                    "cle": profil,
+                    "libelle": profil.title(),
+                    "capacite_unite": "",
+                    "consommation_unite": "",
+                    "vehicules": 0,
+                    "comptes": set(),
+                    "reservoirs": [],
+                    "consommations": [],
+                    "autonomies": [],
+                },
+            )
+            reservoir = nombre_admin(vehicule.get("reservoir"))
+            consommation = nombre_admin(vehicule.get("conso"))
+            autonomie = nombre_admin(vehicule.get("autonomie"))
+            vehicule_id = str(vehicule.get("id") or "")
+
+            configuration["vehicules"] += 1
+            configuration["comptes"].add(email)
+            configuration["reservoirs"].append(reservoir)
+            configuration["consommations"].append(consommation)
+            configuration["autonomies"].append(autonomie)
+
+            vehicules.append(
+                {
+                    "email": email,
+                    "id": vehicule_id,
+                    "nom": vehicule.get("nom", "Mon v\u00e9hicule"),
+                    "profil": profil,
+                    "profil_libelle": configuration["libelle"],
+                    "reservoir": vehicule.get("reservoir", ""),
+                    "conso": vehicule.get("conso", ""),
+                    "autonomie": vehicule.get("autonomie", ""),
+                    "parametres": vehicule.get("parametres", ""),
+                    "jauge": vehicule.get("jauge", ""),
+                    "actif": vehicule_id and vehicule_id == vehicule_actif,
+                    "principal": (
+                        vehicule_id
+                        and vehicule_id == vehicule_principal
+                    ),
+                }
+            )
+
+    resume_profils = []
+    for cle in PROFILS_VEHICULES:
+        profil = profils[cle]
+        resume_profils.append(
+            {
+                "cle": cle,
+                "libelle": profil["libelle"],
+                "capacite_unite": profil["capacite_unite"],
+                "consommation_unite": profil["consommation_unite"],
+                "vehicules": profil["vehicules"],
+                "comptes": len(profil["comptes"]),
+                "reservoir_moyen": moyenne_admin(profil["reservoirs"]),
+                "consommation_moyenne": moyenne_admin(
+                    profil["consommations"]
+                ),
+                "autonomie_moyenne": moyenne_admin(profil["autonomies"]),
+            }
+        )
+
+    return {
+        "profils": resume_profils,
+        "vehicules": vehicules,
+        "stats": {
+            "vehicules": len(vehicules),
+            "profils_utilises": sum(
+                1 for profil in resume_profils if profil["vehicules"]
+            ),
+            "vehicules_principaux": sum(
+                1 for vehicule in vehicules if vehicule["principal"]
+            ),
+        },
+    }
+
+
 def construire_resume_admin():
 
     comptes = charger_comptes_utilisateurs()
     utilisateurs = comptes.get("users", {})
     lignes_comptes = []
+    resume_vehicules = construire_resume_vehicules_admin(utilisateurs)
 
     for email, utilisateur in sorted(utilisateurs.items()):
         donnees = utilisateur.get("data", {})
@@ -1093,6 +1231,7 @@ def construire_resume_admin():
     return {
         "comptes": lignes_comptes,
         "testeurs": testeurs,
+        "vehicules": resume_vehicules,
         "stats": {
             "comptes": len(lignes_comptes),
             "premium": sum(
@@ -1101,6 +1240,7 @@ def construire_resume_admin():
                 if ligne.get("plan") == "premium"
             ),
             "testeurs": len(testeurs),
+            "vehicules": resume_vehicules["stats"]["vehicules"],
         },
         "stockage": {
             "type": libelle_stockage(),
@@ -3770,6 +3910,7 @@ def preparer_bornes_irve(
 MENU_PAGES_EDITORIALES = [
     ("accueil", "Accueil", "/"),
     ("guides", "Guides", "/guides"),
+    ("prix-locaux", "Prix locaux", "/prix-carburants-villes"),
     ("methode", "Méthode", "/methode-transparence"),
     ("observatoire", "Observatoire", "/observatoire-donnees"),
     ("fonctionnement", "Fonctionnement", "/comment-fonctionne-optiplein"),
@@ -3777,6 +3918,569 @@ MENU_PAGES_EDITORIALES = [
     ("faq", "FAQ", "/faq"),
     ("contact", "Contact", "/contact"),
 ]
+
+
+VILLES_SEO_LOCALES = [
+    {
+        "slug": "marseille",
+        "nom": "Marseille",
+        "zone": "Bouches-du-Rhône",
+        "description": "ports, axes autoroutiers A7, A50 et quartiers urbains",
+    },
+    {
+        "slug": "aix-en-provence",
+        "nom": "Aix-en-Provence",
+        "zone": "Pays d'Aix",
+        "description": "axes A8, A51, zones commerciales et déplacements pendulaires",
+    },
+    {
+        "slug": "salon-de-provence",
+        "nom": "Salon-de-Provence",
+        "zone": "Bouches-du-Rhône",
+        "description": "trajets vers la Crau, Miramas, Sénas et l'A7",
+    },
+    {
+        "slug": "miramas",
+        "nom": "Miramas",
+        "zone": "Étang de Berre",
+        "description": "zones commerciales, gare, logistique et routes vers Istres",
+    },
+    {
+        "slug": "rognac",
+        "nom": "Rognac",
+        "zone": "Étang de Berre",
+        "description": "A7, D113 et accès vers Vitrolles, Berre et Marignane",
+    },
+    {
+        "slug": "vitrolles",
+        "nom": "Vitrolles",
+        "zone": "Métropole Aix-Marseille",
+        "description": "A7, aéroport Marseille-Provence et zones d'activité",
+    },
+    {
+        "slug": "martigues",
+        "nom": "Martigues",
+        "zone": "Côte Bleue",
+        "description": "trajets littoraux, zones industrielles et accès vers Fos",
+    },
+    {
+        "slug": "aubagne",
+        "nom": "Aubagne",
+        "zone": "Est marseillais",
+        "description": "A50, A52, zones commerciales et trajets vers Marseille",
+    },
+    {
+        "slug": "toulon",
+        "nom": "Toulon",
+        "zone": "Var",
+        "description": "A50, centre urbain, littoral et déplacements quotidiens",
+    },
+    {
+        "slug": "nice",
+        "nom": "Nice",
+        "zone": "Alpes-Maritimes",
+        "description": "Promenade, A8, collines et circulation urbaine dense",
+    },
+    {
+        "slug": "lyon",
+        "nom": "Lyon",
+        "zone": "Rhône",
+        "description": "rocades, tunnels, périphérique et grands axes régionaux",
+    },
+    {
+        "slug": "toulouse",
+        "nom": "Toulouse",
+        "zone": "Haute-Garonne",
+        "description": "périphérique, zones commerciales et trajets domicile-travail",
+    },
+    {
+        "slug": "bordeaux",
+        "nom": "Bordeaux",
+        "zone": "Gironde",
+        "description": "rocade, quais, zones commerciales et départs vers l'A10",
+    },
+    {
+        "slug": "lille",
+        "nom": "Lille",
+        "zone": "Nord",
+        "description": "métropole, axes A1, A25, A22 et trajets transfrontaliers",
+    },
+    {
+        "slug": "paris",
+        "nom": "Paris",
+        "zone": "Île-de-France",
+        "description": "périphérique, portes de Paris et contraintes urbaines",
+    },
+]
+
+VILLES_SEO_PAR_SLUG = {
+    ville["slug"]: ville
+    for ville in VILLES_SEO_LOCALES
+}
+
+CARBURANTS_SEO_LOCAUX = [
+    ("gazole", "Gazole"),
+    ("e10", "SP95-E10"),
+    ("sp95", "SP95"),
+    ("sp98", "SP98"),
+    ("e85", "E85"),
+    ("gplc", "GPLc"),
+]
+
+
+def prix_station_valide(valeur):
+
+    try:
+        prix = float(str(valeur or "").replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+
+    if not math.isfinite(prix) or prix <= 0 or prix == 9.999:
+        return None
+
+    return prix
+
+
+def formater_prix_seo(prix):
+
+    if prix is None:
+        return "indisponible"
+
+    return f"{prix:.3f}".replace(".", ",") + " €/L"
+
+
+def libelle_carburant_seo(carburant):
+
+    return dict(CARBURANTS_SEO_LOCAUX).get(
+        str(carburant or "").lower(),
+        str(carburant or "carburant").upper(),
+    )
+
+
+def formater_nombre_seo(nombre):
+
+    return f"{nombre:,}".replace(",", "\u202f")
+
+
+def stations_pour_ville_seo(ville):
+
+    nom = ville["nom"].casefold()
+
+    return [
+        station
+        for station in charger_stations()
+        if str(station.get("ville", "")).strip().casefold() == nom
+    ]
+
+
+def statistiques_prix_ville(ville):
+
+    stations = stations_pour_ville_seo(ville)
+    carburants = []
+
+    for cle, libelle in CARBURANTS_SEO_LOCAUX:
+        prix_stations = []
+        for station in stations:
+            prix = prix_station_valide(station.get(cle))
+            if prix is None:
+                continue
+            prix_stations.append((prix, station))
+
+        prix_stations.sort(key=lambda element: element[0])
+        meilleur = prix_stations[0] if prix_stations else None
+        carburants.append(
+            {
+                "cle": cle,
+                "libelle": libelle,
+                "nombre": len(prix_stations),
+                "prix": meilleur[0] if meilleur else None,
+                "station": meilleur[1] if meilleur else None,
+            }
+        )
+
+    carburants_disponibles = [
+        carburant
+        for carburant in carburants
+        if carburant["prix"] is not None
+    ]
+    carburant_reference = (
+        min(carburants_disponibles, key=lambda carburant: carburant["prix"])
+        if carburants_disponibles
+        else None
+    )
+    enseignes = sorted(
+        {
+            str(station.get("enseigne", "")).strip()
+            for station in stations
+            if str(station.get("enseigne", "")).strip()
+        },
+        key=lambda valeur: valeur.casefold(),
+    )
+
+    return {
+        "stations": stations,
+        "carburants": carburants,
+        "carburant_reference": carburant_reference,
+        "enseignes": enseignes,
+    }
+
+
+def construire_carte_ville_seo(ville):
+
+    stats = statistiques_prix_ville(ville)
+    reference = stats["carburant_reference"]
+    resume = (
+        f"{reference['libelle']} dès {formater_prix_seo(reference['prix'])}"
+        if reference
+        else "Prix à vérifier dans l'application"
+    )
+
+    return {
+        "title": f"Prix carburants à {ville['nom']}",
+        "description": (
+            f"{formater_nombre_seo(len(stats['stations']))} stations suivies. "
+            + resume
+            + "."
+        ),
+        "url": f"/prix-carburant/{ville['slug']}",
+        "category": ville["zone"],
+        "reading_time": 3,
+        "updated": "données actualisées automatiquement",
+    }
+
+
+def construire_page_prix_locaux():
+
+    cartes = [
+        construire_carte_ville_seo(ville)
+        for ville in VILLES_SEO_LOCALES
+    ]
+
+    return {
+        "slug": "prix-carburants-villes",
+        "title": "Prix carburants par ville | OptiPlein",
+        "nav_title": "Prix locaux",
+        "description": (
+            "Consultez les pages locales OptiPlein pour comparer les prix "
+            "carburants par ville et comprendre quand une station vaut le détour."
+        ),
+        "eyebrow": "Prix carburants locaux",
+        "hero_title": "Comparer les prix près de chez vous, avec du contexte",
+        "lead": (
+            "Ces pages locales ne se limitent pas à une liste de montants. "
+            "Elles résument les carburants disponibles, les stations suivies "
+            "et les bons réflexes pour éviter un détour qui coûterait plus "
+            "cher que l'économie annoncée."
+        ),
+        "updated": "4 septembre 2026",
+        "updated_iso": "2026-09-04",
+        "local_cards": cartes,
+        "sections": [
+            {
+                "title": "Pourquoi une page par ville ?",
+                "paragraphs": [
+                    (
+                        "La comparaison carburant est d'abord locale. Le meilleur "
+                        "choix dépend des stations réellement accessibles autour de "
+                        "la ville, des axes utilisés et du carburant compatible avec "
+                        "le véhicule."
+                    ),
+                    (
+                        "OptiPlein relie chaque page à la carte interactive afin de "
+                        "passer d'une lecture globale à une vérification en temps "
+                        "réel. Les pages restent utiles même sans géolocalisation : "
+                        "elles expliquent la méthode et les limites des prix affichés."
+                    ),
+                ],
+            },
+            {
+                "title": "Les villes ajoutées en priorité",
+                "paragraphs": [
+                    (
+                        "La première sélection couvre les zones déjà pertinentes pour "
+                        "les essais terrain et plusieurs grandes métropoles françaises. "
+                        "Elle pourra être élargie progressivement aux villes où les "
+                        "utilisateurs recherchent le plus souvent un carburant."
+                    )
+                ],
+            },
+        ],
+        "related": [
+            {"label": "Comprendre le calcul de rentabilité", "url": "/guides/calcul-station-rentable"},
+            {"label": "Lire la méthode de données", "url": "/methode-transparence"},
+            {"label": "Créer un compte testeur", "url": "/landing#devenir-testeur"},
+        ],
+    }
+
+
+def construire_page_ville_seo(ville):
+
+    stats = statistiques_prix_ville(ville)
+    stations = stats["stations"]
+    carburants = stats["carburants"]
+    reference = stats["carburant_reference"]
+    date_donnees = date_mise_a_jour_stations()
+    if date_donnees:
+        date_texte = date_donnees.astimezone(
+            ZoneInfo("Europe/Paris")
+        ).strftime("%d/%m/%Y à %H:%M")
+        date_iso = date_donnees.date().isoformat()
+    else:
+        date_texte = "date non disponible"
+        date_iso = datetime.now().date().isoformat()
+
+    lignes_prix = []
+    for carburant in carburants:
+        station = carburant["station"]
+        if not station:
+            lignes_prix.append(
+                f"{carburant['libelle']} : aucun prix exploitable dans les stations suivies de {ville['nom']}."
+            )
+            continue
+        enseigne = str(station.get("enseigne", "")).strip() or "station-service"
+        adresse = str(station.get("adresse", "")).strip()
+        detail_adresse = f", {adresse}" if adresse else ""
+        lignes_prix.append(
+            f"{carburant['libelle']} : {formater_prix_seo(carburant['prix'])} chez {enseigne}{detail_adresse} ({carburant['nombre']} prix disponibles)."
+        )
+
+    carburant_defaut = reference["cle"] if reference else "gazole"
+    app_url = (
+        "/web?ville="
+        + quote(ville["nom"])
+        + "&carburant="
+        + quote(carburant_defaut)
+    )
+    titre_reference = (
+        f"{reference['libelle']} dès {formater_prix_seo(reference['prix'])}"
+        if reference
+        else "prix à vérifier"
+    )
+    enseignes_texte = ", ".join(stats["enseignes"][:8])
+
+    return {
+        "slug": "prix-carburant/" + ville["slug"],
+        "title": f"Prix carburant à {ville['nom']} : stations et meilleur prix | OptiPlein",
+        "nav_title": ville["nom"],
+        "description": (
+            f"Prix carburant à {ville['nom']} : stations suivies, meilleurs "
+            "prix par carburant, méthode de comparaison et lien vers la carte OptiPlein."
+        ),
+        "eyebrow": "Prix carburants locaux",
+        "hero_title": f"Prix carburant à {ville['nom']}",
+        "lead": (
+            f"À {ville['nom']}, OptiPlein suit "
+            f"{formater_nombre_seo(len(stations))} stations-service et compare "
+            f"les prix déclarés pour repérer un plein utile, pas seulement un "
+            f"prix isolé. Repère actuel : {titre_reference}."
+        ),
+        "updated": date_texte,
+        "updated_iso": date_iso,
+        "highlights": [
+            {
+                "title": formater_nombre_seo(len(stations)) + " stations suivies",
+                "text": f"Stations dont la ville déclarée correspond à {ville['nom']}.",
+            },
+            {
+                "title": titre_reference,
+                "text": "Meilleur prix valide observé parmi les carburants disponibles localement.",
+            },
+            {
+                "title": "Carte en temps réel",
+                "text": "Le lien vers l'application permet de vérifier les prix autour de la ville.",
+            },
+        ],
+        "sections": [
+            {
+                "title": f"Meilleurs prix par carburant à {ville['nom']}",
+                "paragraphs": [
+                    (
+                        f"Les montants ci-dessous proviennent du fichier chargé par "
+                        f"OptiPlein le {date_texte}. Une station est retenue seulement "
+                        f"si le prix du carburant est numérique, positif et différent "
+                        f"des valeurs techniques traitées comme indisponibles."
+                    )
+                ],
+                "bullets": lignes_prix,
+                "links": [
+                    {"label": f"Ouvrir la carte de {ville['nom']}", "url": app_url},
+                ],
+            },
+            {
+                "title": f"Comment lire ces prix à {ville['nom']}",
+                "paragraphs": [
+                    (
+                        f"La zone de {ville['nom']} combine {ville['description']}. "
+                        f"Deux stations proches peuvent donc être très différentes "
+                        f"en pratique : accès plus simple, détour plus long, sortie "
+                        f"d'autoroute, circulation ou horaires."
+                    ),
+                    (
+                        "Avant de choisir, il faut comparer le prix au litre avec la "
+                        "distance réelle à parcourir. Une économie de quelques centimes "
+                        "peut disparaître si le détour consomme trop de carburant ou "
+                        "fait perdre trop de temps."
+                    ),
+                ],
+            },
+            {
+                "title": "Enseignes et stations observées",
+                "paragraphs": [
+                    (
+                        f"Les enseignes renseignées dans cette zone incluent notamment "
+                        f"{enseignes_texte or 'des stations indépendantes ou non renseignées'}. "
+                        "Une enseigne absente ou imprécise peut être corrigée lorsqu'un "
+                        "élément vérifiable est transmis."
+                    ),
+                    (
+                        "OptiPlein distingue l'identification de la station et le prix "
+                        "officiel déclaré. Une correction d'enseigne ou de coordonnées "
+                        "ne doit pas modifier arbitrairement le prix transmis par la source."
+                    ),
+                ],
+                "links": [
+                    {"label": "Signaler une information incorrecte", "url": "/guides/signaler-erreur-station"},
+                ],
+            },
+            {
+                "title": "Station la moins chère ou station rentable ?",
+                "paragraphs": [
+                    (
+                        "La meilleure décision dépend du véhicule. Avec un petit "
+                        "appoint, le gain potentiel est faible ; avec un grand plein, "
+                        "l'écart de prix peut devenir intéressant. La consommation "
+                        "moyenne et le détour changent aussi le résultat."
+                    ),
+                    (
+                        "C'est pour cela que l'application OptiPlein propose un calcul "
+                        "personnalisé après création de compte testeur : véhicules "
+                        "sauvegardés, favoris, historique et préparation de trajet "
+                        "pendant la phase gratuite."
+                    ),
+                ],
+                "links": [
+                    {"label": "Créer un compte testeur", "url": "/landing#devenir-testeur"},
+                    {"label": "Comprendre le calcul", "url": "/guides/calcul-station-rentable"},
+                ],
+            },
+        ],
+        "sources": [
+            {
+                "label": "Flux instantané officiel des prix des carburants",
+                "url": "https://donnees.roulez-eco.fr/opendata/instantane",
+            }
+        ],
+        "related": [
+            {"label": "Toutes les villes suivies", "url": "/prix-carburants-villes"},
+            {"label": "Méthode et transparence", "url": "/methode-transparence"},
+            {"label": "FAQ OptiPlein", "url": "/faq"},
+        ],
+    }
+
+
+def trouver_station_partage(station_id):
+
+    station_id = str(station_id or "").strip()
+    if not station_id:
+        return None
+
+    for station in charger_stations():
+        if str(station.get("id", "")).strip() == station_id:
+            return station
+
+    return None
+
+
+def url_station_partage(station_id, carburant):
+
+    return (
+        "/station/"
+        + quote(str(station_id or "").strip(), safe="")
+        + "/"
+        + quote(str(carburant or "").strip().lower(), safe="")
+    )
+
+
+def construire_contexte_partage_station(request, station_id, carburant):
+
+    carburant = str(carburant or "").lower()
+    carburants_valides = {cle for cle, _libelle in CARBURANTS_SEO_LOCAUX}
+    if carburant not in carburants_valides:
+        raise HTTPException(status_code=404, detail="Carburant introuvable.")
+
+    station = trouver_station_partage(station_id)
+    if not station:
+        raise HTTPException(status_code=404, detail="Station introuvable.")
+
+    prix = prix_station_valide(station.get(carburant))
+    prix_texte = formater_prix_seo(prix)
+    libelle_carburant = libelle_carburant_seo(carburant)
+    enseigne = str(station.get("enseigne", "")).strip() or "Station-service"
+    ville = str(station.get("ville", "")).strip()
+    cp = str(station.get("cp", "")).strip()
+    adresse = str(station.get("adresse", "")).strip()
+    base_url = url_base_application(request)
+    chemin_partage = url_station_partage(station_id, carburant)
+    canonical_url = base_url + chemin_partage
+    app_url = (
+        base_url
+        + "/web?ville="
+        + quote(ville)
+        + "&carburant="
+        + quote(carburant)
+    )
+    date_donnees = date_mise_a_jour_stations()
+    if date_donnees:
+        date_locale = date_donnees.astimezone(ZoneInfo("Europe/Paris"))
+        date_texte = date_locale.strftime("%d/%m/%Y à %H:%M")
+        date_iso = date_locale.isoformat()
+    else:
+        date_texte = "date non disponible"
+        date_iso = ""
+
+    titre_prix = (
+        f"{libelle_carburant} à {prix_texte}"
+        if prix is not None
+        else f"{libelle_carburant} indisponible"
+    )
+    titre = f"{enseigne} {ville} : {titre_prix} | OptiPlein"
+    description = (
+        f"Prix partagé sur OptiPlein : {enseigne} à {ville}, "
+        f"{libelle_carburant} {prix_texte}, vérifié le {date_texte}."
+    )
+    tendance = str(station.get(f"tendance_{carburant}", "")).strip()
+    libelles_tendance = {
+        "baisse": "prix en baisse par rapport au contrôle précédent",
+        "hausse": "prix en hausse par rapport au contrôle précédent",
+        "egal": "prix stable par rapport au contrôle précédent",
+    }
+
+    return {
+        "station": {
+            "id": str(station.get("id", "")).strip(),
+            "enseigne": enseigne,
+            "adresse": adresse,
+            "cp": cp,
+            "ville": ville,
+            "carburant": libelle_carburant,
+            "carburant_code": carburant,
+            "prix": prix_texte,
+            "prix_schema": f"{prix:.3f}" if prix is not None else "",
+            "prix_disponible": prix is not None,
+            "date_verification": date_texte,
+            "date_verification_iso": date_iso,
+            "tendance": libelles_tendance.get(tendance, ""),
+            "app_url": app_url,
+            "share_url": canonical_url,
+        },
+        "page_title": titre,
+        "page_description": description,
+        "canonical_url": canonical_url,
+        "base_url": base_url,
+        "og_image": base_url + "/static/logo.png",
+        "menu_pages": MENU_PAGES_EDITORIALES,
+        "adsense_client": ADSENSE_CLIENT,
+    }
 
 
 PAGES_EDITORIALES = {
@@ -3922,6 +4626,23 @@ PAGES_EDITORIALES = {
                 ],
             },
         ],
+    },
+    "prix-locaux": {
+        "slug": "prix-carburants-villes",
+        "title": "Prix carburants par ville | OptiPlein",
+        "nav_title": "Prix locaux",
+        "description": (
+            "Pages locales OptiPlein pour comparer les prix carburants par "
+            "ville, vérifier les stations suivies et ouvrir la carte associée."
+        ),
+        "eyebrow": "Prix carburants locaux",
+        "hero_title": "Prix carburants par ville",
+        "lead": (
+            "Retrouvez les pages locales OptiPlein avec les meilleurs prix "
+            "valides, les stations suivies et les liens vers la carte."
+        ),
+        "updated": "4 septembre 2026",
+        "updated_iso": "2026-09-04",
     },
     "methode": {
         "slug": "methode-transparence",
@@ -4529,7 +5250,7 @@ PAGES_EDITORIALES = {
             },
             {
                 "question": "Puis-je partager une station pr\u00e9cise ?",
-                "answer": "Oui. L'ic\u00f4ne de partage plac\u00e9e pr\u00e8s de l'\u00e9toile dans la fiche permet d'utiliser les options de partage du t\u00e9l\u00e9phone lorsque le navigateur les prend en charge.",
+                "answer": "Oui. L'ic\u00f4ne de partage plac\u00e9e pr\u00e8s de l'\u00e9toile cr\u00e9e un lien OptiPlein propre avec l'enseigne, la ville, le carburant, le prix et la date de v\u00e9rification. Le destinataire peut ouvrir la page puis comparer les stations autour de la m\u00eame ville.",
             },
             {
                 "question": "Comment fermer rapidement une fiche sur la carte ?",
@@ -5211,11 +5932,14 @@ def construire_page_observatoire(page):
     return page
 
 
-def contexte_page_editoriale(request, identifiant):
+def contexte_page_editoriale(request, identifiant, page_override=None):
 
     base_url = url_base_application(request)
-    chemin = chemin_page_editoriale(identifiant)
-    page = dict(PAGES_EDITORIALES[identifiant])
+    page = dict(page_override or PAGES_EDITORIALES[identifiant])
+    chemin = "/" + page.get("slug", "") if page.get("slug") else "/"
+    if identifiant == "prix-locaux":
+        page = construire_page_prix_locaux()
+        chemin = "/" + page.get("slug", "")
     if identifiant == "observatoire":
         page = construire_page_observatoire(page)
     page["path"] = chemin
@@ -5283,6 +6007,15 @@ def contexte_page_editoriale(request, identifiant):
     breadcrumbs = [{"label": "Accueil", "url": "/"}]
     if identifiant == "guides":
         breadcrumbs.append({"label": "Guides", "url": "/guides"})
+    elif identifiant == "prix-locaux":
+        breadcrumbs.append({"label": "Prix locaux", "url": "/prix-carburants-villes"})
+    elif identifiant == "prix-ville":
+        breadcrumbs.extend(
+            [
+                {"label": "Prix locaux", "url": "/prix-carburants-villes"},
+                {"label": page.get("hero_title", "Prix carburants"), "url": chemin},
+            ]
+        )
     elif page.get("article"):
         breadcrumbs.extend(
             [
@@ -5297,15 +6030,21 @@ def contexte_page_editoriale(request, identifiant):
         "page": page,
         "breadcrumbs": breadcrumbs if len(breadcrumbs) > 1 else [],
         "guide_cards": cartes_guides if identifiant == "guides" else [],
+        "local_cards": page.get("local_cards", []),
         "featured_guides": (
             cartes_guides[:6]
             if identifiant in {"accueil", "faq"}
             else []
         ),
-        "active_page": identifiant,
+        "active_page": (
+            "prix-locaux"
+            if identifiant in {"prix-locaux", "prix-ville"}
+            else identifiant
+        ),
         "menu_pages": MENU_PAGES_EDITORIALES,
         "footer_pages": [
             ("guides", "Guides", "/guides"),
+            ("prix-locaux", "Prix locaux", "/prix-carburants-villes"),
             ("methode", "Méthode", "/methode-transparence"),
             ("observatoire", "Observatoire", "/observatoire-donnees"),
             ("a-propos", "\u00c0 propos", "/a-propos"),
@@ -5380,6 +6119,48 @@ def page_guide(request: Request, article_slug: str):
         raise HTTPException(status_code=404, detail="Guide introuvable.")
 
     return rendre_page_editoriale(request, identifiant)
+
+
+@app.get("/prix-carburants-villes")
+def page_prix_carburants_villes(request: Request):
+
+    return rendre_page_editoriale(request, "prix-locaux")
+
+
+@app.get("/prix-carburant/{ville_slug}")
+def page_prix_carburant_ville(request: Request, ville_slug: str):
+
+    ville = VILLES_SEO_PAR_SLUG.get(ville_slug)
+    if not ville:
+        raise HTTPException(status_code=404, detail="Ville introuvable.")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="editorial.html",
+        context=contexte_page_editoriale(
+            request,
+            "prix-ville",
+            construire_page_ville_seo(ville),
+        ),
+    )
+
+
+@app.get("/station/{station_id}/{carburant}")
+def page_partage_station(
+    request: Request,
+    station_id: str,
+    carburant: str,
+):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="station_share.html",
+        context=construire_contexte_partage_station(
+            request,
+            station_id,
+            carburant,
+        ),
+    )
 
 
 @app.get("/methode-transparence")
@@ -7522,6 +8303,11 @@ def sitemap_xml(request: Request):
 
     if not any(entree[0] == "/landing" for entree in pages_sitemap):
         pages_sitemap.append(("/landing", "2026-09-04"))
+
+    for ville in VILLES_SEO_LOCALES:
+        chemin_ville = "/prix-carburant/" + ville["slug"]
+        if not any(entree[0] == chemin_ville for entree in pages_sitemap):
+            pages_sitemap.append((chemin_ville, "2026-09-04"))
 
     entrees = "\n".join(
         "    <url>\n"
