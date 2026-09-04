@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="noindex, follow">
     <meta
         name="description"
         content="OptiPlein compare les prix des carburants, les stations-service et les bornes de recharge pour préparer un trajet automobile rentable."
@@ -8229,7 +8229,7 @@ function compteUtilisateurConnecte() {
 
 function carburantEligibleAvantageTotalenergies(carburant) {
 
-    return ["gazole", "sp95", "sp98", "e10", "e85", "gplc"].includes(
+    return ["gazole", "sp95", "sp98", "e10"].includes(
         String(carburant || "").toLowerCase()
     );
 
@@ -8249,8 +8249,11 @@ function actualiserControleCarteTotalenergies() {
     var caseCarte = document.getElementById("carte-totalenergies-active");
     var vehicule = vehiculeActif();
     var carburant = vehicule ? carburantPourVehicule(vehicule) : "";
+    var carburantCarte = String(carburantSelectionne || "").toLowerCase();
     var afficher = Boolean(
-        vehicule && carburantEligibleAvantageTotalenergies(carburant)
+        vehicule
+        && carburantEligibleAvantageTotalenergies(carburant)
+        && carburantEligibleAvantageTotalenergies(carburantCarte)
     );
 
     if (conteneur) {
@@ -9106,6 +9109,58 @@ window.addEventListener("online", function() {
         restaurerSessionCompte();
     }
 });
+
+function ouvrirCreationCompteDepuisLanding() {
+
+    window.setTimeout(
+        function() {
+            var parametres = new URLSearchParams(window.location.search);
+
+            if (
+                parametres.get("inscription") !== "1"
+                || compteUtilisateurConnecte()
+            ) {
+                return;
+            }
+
+            var emailParametre = (parametres.get("email") || "").trim();
+            var champEmail = document.getElementById("account-email");
+            var champMotDePasse = document.getElementById("account-password");
+            var panneau = document.getElementById("vehicle-panel");
+            var bouton = document.getElementById("vehicle-button");
+
+            if (champEmail && emailParametre) {
+                champEmail.value = emailParametre;
+            }
+
+            if (panneau) {
+                panneau.hidden = false;
+            }
+            if (bouton) {
+                bouton.setAttribute("aria-expanded", "true");
+            }
+
+            actualiserInterfaceCompte();
+            definirStatutCompte(
+                "Cr\u00e9ez votre mot de passe pour activer l'acc\u00e8s Premium gratuit.",
+                "success"
+            );
+
+            if (champMotDePasse) {
+                champMotDePasse.focus();
+            } else if (champEmail) {
+                champEmail.focus();
+            }
+        },
+        250
+    );
+
+}
+
+window.addEventListener(
+    "load",
+    ouvrirCreationCompteDepuisLanding
+);
 
 function afficherRetourValidationEmail() {
 

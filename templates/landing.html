@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, follow">
-    <title>OptiPlein - Devenir testeur</title>
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.optiplein.fr/landing">
+    <title>Créer un compte testeur OptiPlein - Premium gratuit</title>
     <meta
         name="description"
-        content="Rejoignez les testeurs OptiPlein, l'application qui aide les conducteurs à choisir la station carburant la plus rentable."
+        content="Créez un compte testeur OptiPlein et accédez gratuitement aux fonctions Premium pendant la phase de lancement."
     >
     <link rel="icon" href="/static/favicon.png">
     {% if adsense_client %}
@@ -239,6 +240,61 @@
             font-weight:800;
         }
 
+        .account-cta-group{
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            align-items:center;
+            margin:16px 0 0;
+        }
+
+        .account-cta{
+            display:inline-flex;
+            min-height:48px;
+            align-items:center;
+            justify-content:center;
+            padding:0 18px;
+            border:1px solid var(--green);
+            border-radius:8px;
+            background:#fff;
+            color:var(--green-dark);
+            font-size:15px;
+            font-weight:900;
+            text-decoration:none;
+        }
+
+        .account-cta.primary{
+            background:linear-gradient(180deg, #27b33e, #087a2c);
+            color:#fff;
+        }
+
+        .tester-steps{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:12px;
+            margin:18px 0 0;
+        }
+
+        .tester-step{
+            padding:14px;
+            border:1px solid #cfe6d4;
+            border-radius:8px;
+            background:#f8fcf9;
+        }
+
+        .tester-step strong{
+            display:block;
+            margin-bottom:5px;
+            color:var(--green-dark);
+            font-size:15px;
+        }
+
+        .tester-step span{
+            display:block;
+            color:var(--muted);
+            font-size:13px;
+        }
+
         .privacy-note{
             margin:4px 0 0;
             color:var(--muted);
@@ -420,7 +476,8 @@
             .features,
             .tester-grid,
             .premium-strip,
-            .comparison-row{
+            .comparison-row,
+            .tester-steps{
                 grid-template-columns:1fr;
             }
 
@@ -443,6 +500,7 @@
     <header class="topbar">
         <img class="logo" src="/static/logo.png" alt="OptiPlein">
         <nav class="nav-actions" aria-label="Navigation principale">
+            <a class="nav-link" href="/web?inscription=1">Créer mon compte</a>
             <a class="nav-button" href="#devenir-testeur">Devenir testeur</a>
         </nav>
     </header>
@@ -450,17 +508,18 @@
     <main>
         <section class="hero">
             <div>
-                <p class="eyebrow">Programme testeurs OptiPlein</p>
-                <h1>Essayez le plein malin avant tout le monde.</h1>
+                <p class="eyebrow">Accès testeur Premium gratuit</p>
+                <h1>Créez votre compte et testez OptiPlein Premium gratuitement.</h1>
                 <p class="hero-offer">
-                    1 an d'abonnement offert pour vous et la personne de votre
-                    choix au lancement de l'application.
+                    Gratuit tout l'été, puis 1 an d'abonnement offert pour
+                    vous et la personne de votre choix au lancement de
+                    l'application.
                 </p>
                 <p class="lead">
-                    OptiPlein aide les conducteurs à trouver la station la plus
-                    rentable, pas seulement le prix le plus bas. L'application
-                    tient compte du trajet, de la consommation du véhicule et du
-                    carburant disponible.
+                    La création de compte débloque les fonctions Premium de la
+                    phase de test : véhicules sauvegardés, favoris, historique
+                    des économies et préparation de trajets avec ravitaillements
+                    conseillés.
                 </p>
 
                 <div class="hero-points" aria-label="Points clés">
@@ -484,7 +543,7 @@
 
                 <form class="signup" id="tester-form">
                     <p class="signup-title" id="devenir-testeur">
-                        Recevoir l'accès testeur
+                        Réserver mon accès et créer mon compte
                     </p>
                     <div class="signup-row">
                         <input
@@ -495,12 +554,34 @@
                             placeholder="Votre adresse e-mail"
                             required
                         >
-                        <button type="submit">Je veux tester</button>
+                        <button type="submit">Continuer</button>
                     </div>
                     <p id="tester-status" class="signup-status"></p>
+                    <div class="tester-steps" aria-label="Étapes d'accès testeur">
+                        <div class="tester-step">
+                            <strong>1. E-mail enregistré</strong>
+                            <span>Vous rejoignez la liste des testeurs OptiPlein.</span>
+                        </div>
+                        <div class="tester-step">
+                            <strong>2. Compte créé</strong>
+                            <span>Votre accès Premium gratuit est activé pendant la phase de test.</span>
+                        </div>
+                        <div class="tester-step">
+                            <strong>3. Retours utiles</strong>
+                            <span>Vos essais servent à améliorer les prix, la carte et les trajets.</span>
+                        </div>
+                    </div>
+                    <div class="account-cta-group">
+                        <a class="account-cta primary" href="/web?inscription=1">
+                            Créer mon compte maintenant
+                        </a>
+                        <a class="account-cta" href="/guides">
+                            Comprendre le calcul
+                        </a>
+                    </div>
                     <p class="tester-gift">
-                        Les premiers testeurs recevront 1 an d'OptiPlein
-                        Premium offert.
+                        Tous les comptes créés pendant la phase de test
+                        accèdent aux fonctions Premium gratuitement.
                     </p>
                     <p class="privacy-note">
                         Votre e-mail sert uniquement à vous contacter pour le
@@ -560,19 +641,19 @@
             </div>
 
             <div>
-                <h2 class="section-title">Gratuit ou Premium</h2>
+                <h2 class="section-title">Ce que le compte testeur débloque</h2>
                 <p class="section-lead">
-                    La version gratuite garde les fonctions essentielles. Le
-                    Premium est pensé pour les conducteurs qui veulent optimiser
-                    leurs trajets et suivre leurs économies dans le temps.
+                    Pendant la phase de lancement, le compte testeur donne
+                    accès aux fonctions Premium sans paiement. L'objectif est de
+                    valider l'utilité réelle d'OptiPlein avant la sortie mobile.
                 </p>
             </div>
 
             <div class="comparison" aria-label="Comparatif des formules">
                 <div class="comparison-row">
                     <div class="comparison-cell">Fonction</div>
-                    <div class="comparison-cell">Gratuit</div>
-                    <div class="comparison-cell">Premium</div>
+                    <div class="comparison-cell">Sans compte</div>
+                    <div class="comparison-cell">Compte testeur</div>
                 </div>
                 <div class="comparison-row">
                     <div class="comparison-cell">Prix carburants autour de vous</div>
@@ -581,7 +662,7 @@
                 </div>
                 <div class="comparison-row">
                     <div class="comparison-cell">Véhicules enregistrables</div>
-                    <div class="comparison-cell">1</div>
+                    <div class="comparison-cell">Non sauvegardé</div>
                     <div class="comparison-cell">5</div>
                 </div>
                 <div class="comparison-row">
@@ -591,12 +672,12 @@
                 </div>
                 <div class="comparison-row">
                     <div class="comparison-cell">Favoris</div>
-                    <div class="comparison-cell">3 stations</div>
+                    <div class="comparison-cell">Local seulement</div>
                     <div class="comparison-cell">Illimités</div>
                 </div>
                 <div class="comparison-row">
                     <div class="comparison-cell">Recalcul de la station la plus rentable</div>
-                    <div class="comparison-cell">Toutes les 3 minutes</div>
+                    <div class="comparison-cell">Standard</div>
                     <div class="comparison-cell">Toutes les 15 secondes</div>
                 </div>
                 <div class="comparison-row">
@@ -606,7 +687,7 @@
                 </div>
                 <div class="comparison-row">
                     <div class="comparison-cell">Publicité</div>
-                    <div class="comparison-cell">Oui</div>
+                    <div class="comparison-cell">Bandeau discret</div>
                     <div class="comparison-cell">Supprimée</div>
                 </div>
                 <div class="comparison-row">
@@ -618,15 +699,16 @@
 
             <aside class="premium-strip">
                 <div>
-                    <h2>OptiPlein Premium</h2>
+                    <h2>Compte testeur OptiPlein</h2>
                     <p>
                         Suppression de la publicit&eacute;, favoris illimit&eacute;s,
-                        plusieurs v&eacute;hicules, historique des &eacute;conomies et
-                        calculs de rentabilit&eacute; plus fr&eacute;quents. Les testeurs
-                        s&eacute;lectionn&eacute;s profiteront d'une ann&eacute;e Premium offerte.
+                        plusieurs v&eacute;hicules, historique des &eacute;conomies,
+                        pr&eacute;paration de trajets et recalcul plus fr&eacute;quent.
+                        Tous les comptes cr&eacute;&eacute;s pendant la phase de test
+                        profitent des fonctions Premium.
                     </p>
                 </div>
-                <div class="price">3,99 &euro; / an</div>
+                <div class="price">0 &euro; pendant le test</div>
             </aside>
         </section>
     </main>
@@ -650,13 +732,31 @@
         privacyLink.href = baseUrl + "/confidentialite";
         deleteLink.href = baseUrl + "/suppression-compte";
 
+        function urlCreationCompte(emailValue) {
+            var url = baseUrl + "/web?inscription=1";
+            var emailNettoye = (emailValue || "").trim();
+            if (emailNettoye) {
+                url += "&email=" + encodeURIComponent(emailNettoye);
+            }
+            return url;
+        }
+
         var form = document.getElementById("tester-form");
         var email = document.getElementById("tester-email");
         var status = document.getElementById("tester-status");
+        document.querySelectorAll('a[href="/web?inscription=1"]').forEach(
+            function(lien) {
+                lien.addEventListener("click", function(event) {
+                    event.preventDefault();
+                    window.location.href = urlCreationCompte(email ? email.value : "");
+                });
+            }
+        );
 
         form.addEventListener("submit", async function(event) {
             event.preventDefault();
             status.textContent = "Inscription en cours...";
+            var emailSaisi = email.value;
 
             try {
                 var response = await fetch(baseUrl + "/api/testeurs", {
@@ -665,7 +765,7 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        email: email.value,
+                        email: emailSaisi,
                         source: "optiplein.fr"
                     })
                 });
@@ -675,7 +775,10 @@
                 }
 
                 status.textContent =
-                    "Merci, vous êtes inscrit pour tester OptiPlein.";
+                    "E-mail enregistré. Ouverture de la création de compte...";
+                window.setTimeout(function() {
+                    window.location.href = urlCreationCompte(emailSaisi);
+                }, 700);
                 form.reset();
             } catch (erreur) {
                 status.textContent =
