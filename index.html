@@ -5412,8 +5412,11 @@ window.partagerPrixStation = async function(event, station) {
                 maximumFractionDigits: 3
             }
         ) + " \u20ac";
+    var carburantPartage = String(
+        station.carburant || carburantSelectionne || "gazole"
+    ).toLowerCase();
     var texte =
-        station.carburant
+        carburantPartage.toUpperCase()
         + " \u00e0 "
         + prixPartage
         + " - "
@@ -5422,15 +5425,26 @@ window.partagerPrixStation = async function(event, station) {
         + station.cp
         + " "
         + station.ville;
-    var url =
-        window.location.origin
-        + window.location.pathname
-        + "?carburant="
-        + encodeURIComponent(
-            station.carburant.toLowerCase()
-        );
+    var originePartage = "https://www.optiplein.fr";
+    var stationClassiquePartageable = Boolean(
+        station.id
+        && carburantPartage !== "electrique"
+        && station.energie !== "electric"
+    );
+    var url = stationClassiquePartageable
+        ? originePartage
+            + "/station/"
+            + encodeURIComponent(station.id)
+            + "/"
+            + encodeURIComponent(carburantPartage)
+        : originePartage
+            + "/web?carburant="
+            + encodeURIComponent(carburantPartage);
     var donnees = {
-        title: "Prix carburant OptiPlein",
+        title: stationClassiquePartageable
+            ? "Prix " + carburantPartage.toUpperCase() + " chez "
+                + (station.enseigne || "Station-service")
+            : "Prix carburant OptiPlein",
         text: texte,
         url: url
     };

@@ -1158,6 +1158,26 @@
             </section>
             {% endif %}
 
+            {% if local_cards %}
+            <section class="guide-directory" aria-labelledby="local-directory-title">
+                <div class="guide-directory-head">
+                    <h2 id="local-directory-title">Prix carburants par ville</h2>
+                    <p>Chaque page locale reprend les stations suivies, les meilleurs prix valides et un lien direct vers la carte OptiPlein.</p>
+                </div>
+                <div class="guide-grid">
+                    {% for ville in local_cards %}
+                    <a class="guide-card" href="{{ ville.url }}">
+                        <span class="guide-card-category">{{ ville.category }}</span>
+                        <h3>{{ ville.title }}</h3>
+                        <p>{{ ville.description }}</p>
+                        <span class="guide-card-meta">{{ ville.updated }}</span>
+                        <span class="guide-card-cta">Voir les prix locaux</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
             {% if featured_guides %}
             <section class="guide-directory" aria-labelledby="featured-guides-title">
                 <div class="guide-directory-head">
