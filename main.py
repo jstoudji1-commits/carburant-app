@@ -101,6 +101,7 @@ ADSENSE_SLOT_MAP = lire_variable_adsense_slot()
 signalements_recents = {}
 contacts_recents = {}
 contributions_tarifs_recentes = {}
+tentatives_limitees = {}
 mise_a_jour_admin_lock = threading.Lock()
 ATTENTE_VERROU_ADMIN_SECONDES = 45
 
@@ -1055,10 +1056,34 @@ def verifier_admin(request):
         )
 
     if not hmac.compare_digest(mot_de_passe, mot_de_passe_attendu):
+        verifier_limite_action(
+            "admin",
+            adresse_client or "inconnue",
+            20,
+            10 * 60,
+            "Trop de tentatives administrateur. Réessayez plus tard.",
+        )
         raise HTTPException(
             status_code=401,
             detail="Mot de passe admin incorrect.",
         )
+
+
+def verifier_limite_action(action, cle, maximum, fenetre_secondes, message):
+
+    maintenant = time.monotonic()
+    cle_limite = f"{action}:{cle}"
+    tentatives = [
+        instant
+        for instant in tentatives_limitees.get(cle_limite, [])
+        if maintenant - instant < fenetre_secondes
+    ]
+
+    if len(tentatives) >= maximum:
+        raise HTTPException(status_code=429, detail=message)
+
+    tentatives.append(maintenant)
+    tentatives_limitees[cle_limite] = tentatives
 
 
 def nombre_admin(valeur):
@@ -2766,7 +2791,43 @@ async def rediriger_vers_domaine_canonique(request: Request, call_next):
             destination += "?" + request.url.query
         return RedirectResponse(url=destination, status_code=308)
 
-    return await call_next(request)
+    response = await call_next(request)
+    chemin = request.url.path
+    protocole = (
+        request.headers.get("x-forwarded-proto")
+        or request.url.scheme
+        or ""
+    ).split(",", 1)[0].strip().lower()
+
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault(
+        "Referrer-Policy",
+        "strict-origin-when-cross-origin",
+    )
+    response.headers.setdefault(
+        "Permissions-Policy",
+        "camera=(), microphone=(), payment=(), usb=(), geolocation=(self)",
+    )
+
+    if protocole == "https":
+        response.headers.setdefault(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains",
+        )
+
+    if chemin == "/admin" or chemin.startswith(
+        (
+            "/api/admin",
+            "/api/compte",
+            "/api/contact",
+            "/api/signaler-probleme",
+        )
+    ):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Pragma"] = "no-cache"
+
+    return response
 
 app.mount(
     "/static",
@@ -7267,12 +7328,21 @@ def creer_compte(
 ):
 
     email = normaliser_email(identifiants.email)
+    adresse_client = request.client.host if request.client else "inconnue"
 
     if not email_valide(email):
         raise HTTPException(
             status_code=422,
             detail="L'adresse e-mail n'est pas valide.",
         )
+
+    verifier_limite_action(
+        "inscription",
+        adresse_client,
+        8,
+        60 * 60,
+        "Trop de créations de compte depuis cette connexion. Réessayez plus tard.",
+    )
 
     comptes = charger_comptes_utilisateurs()
     utilisateurs = comptes.setdefault("users", {})
@@ -7356,9 +7426,17 @@ def creer_compte(
 
 
 @app.post("/api/compte/connexion")
-def connecter_compte(identifiants: CompteIdentifiants):
+def connecter_compte(identifiants: CompteIdentifiants, request: Request):
 
     email = normaliser_email(identifiants.email)
+    adresse_client = request.client.host if request.client else "inconnue"
+    verifier_limite_action(
+        "connexion",
+        f"{adresse_client}:{email}",
+        10,
+        10 * 60,
+        "Trop de tentatives de connexion. Réessayez dans quelques minutes.",
+    )
     comptes = charger_comptes_utilisateurs()
     utilisateur = comptes.get("users", {}).get(email)
 
@@ -7857,6 +7935,14 @@ def demander_recuperation_mot_de_passe(
 ):
 
     email = normaliser_email(demande.email)
+    adresse_client = request.client.host if request.client else "inconnue"
+    verifier_limite_action(
+        "mot-de-passe-oublie",
+        f"{adresse_client}:{email}",
+        4,
+        30 * 60,
+        "Trop de demandes de récupération. Réessayez plus tard.",
+    )
     comptes = charger_comptes_utilisateurs()
     utilisateur = comptes.get("users", {}).get(email)
 
@@ -7893,8 +7979,17 @@ def demander_recuperation_mot_de_passe(
 @app.post("/api/compte/mot-de-passe/reinitialisation")
 def reinitialiser_mot_de_passe(
     reinitialisation: ReinitialisationMotDePasse,
+    request: Request,
 ):
 
+    adresse_client = request.client.host if request.client else "inconnue"
+    verifier_limite_action(
+        "reinitialisation-mot-de-passe",
+        adresse_client,
+        12,
+        30 * 60,
+        "Trop de tentatives de réinitialisation. Réessayez plus tard.",
+    )
     empreinte = hashlib.sha256(
         reinitialisation.token.encode("utf-8")
     ).hexdigest()
@@ -7941,6 +8036,14 @@ def renvoyer_validation_email_compte(
 ):
 
     email = normaliser_email(demande.email)
+    adresse_client = request.client.host if request.client else "inconnue"
+    verifier_limite_action(
+        "renvoi-validation-email",
+        f"{adresse_client}:{email}",
+        4,
+        30 * 60,
+        "Trop de demandes de validation. Réessayez plus tard.",
+    )
     comptes = charger_comptes_utilisateurs()
     utilisateur = comptes.get("users", {}).get(email)
 

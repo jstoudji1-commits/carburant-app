@@ -20,6 +20,13 @@ stations_admin_overrides.json
 irve_*.csv
 irve_*.csv.tmp
 
+# Profils de navigateurs générés pour les captures/tests
+play-store/chrome-shot-profile*/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
 # Cles privees de signature Android
 *.jks
 *.keystore

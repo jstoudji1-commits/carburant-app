@@ -10,9 +10,8 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 import statistics
 import zipfile
-import xml.etree.ElementTree as ET
-from urllib.error import URLError
-from urllib.request import Request, urlopen
+import requests as http_requests
+from defusedxml import ElementTree as ET
 from zoneinfo import ZoneInfo
 
 
@@ -366,32 +365,26 @@ def _extraire_lignes(contenu):
 
 def _telecharger_url_officielle(url):
 
-    requete = Request(
-        url,
-        headers={
-            "User-Agent": "OptiPlein/1.0"
-        }
-    )
-
     for tentative in range(3):
 
         try:
 
-            with urlopen(
-                requete,
-                timeout=90
-            ) as response:
+            response = http_requests.get(
+                url,
+                headers={"User-Agent": "OptiPlein/1.0"},
+                timeout=90,
+            )
+            response.raise_for_status()
+            contenu = response.content
 
-                contenu = response.read()
+            if not contenu:
+                raise RuntimeError(
+                    f"Source officielle vide: {url}"
+                )
 
-                if not contenu:
-                    raise RuntimeError(
-                        f"Source officielle vide: {url}"
-                    )
+            return contenu
 
-                return contenu
-
-        except (URLError, TimeoutError, OSError):
+        except (http_requests.RequestException, TimeoutError, OSError):
 
             if tentative == 2:
                 raise
@@ -749,13 +742,14 @@ def _extraire_derniere_valeur_csv(texte, index_valeur=4):
 
 def _telecharger_texte(url, timeout=12):
 
-    requete = Request(
+    response = http_requests.get(
         url,
-        headers={"User-Agent": "OptiPlein/1.0"}
+        headers={"User-Agent": "OptiPlein/1.0"},
+        timeout=timeout,
     )
+    response.raise_for_status()
 
-    with urlopen(requete, timeout=timeout) as response:
-        return response.read().decode("utf-8", errors="ignore")
+    return response.text
 
 
 def recuperer_signaux_marche():
@@ -794,7 +788,7 @@ def recuperer_signaux_marche():
                 else signaux.get("brent_usd")
             )
             signaux["brent_usd"] = valeurs[-1]
-    except (OSError, URLError, TimeoutError, ValueError):
+    except (OSError, http_requests.RequestException, TimeoutError, ValueError):
         pass
 
     try:
@@ -816,7 +810,13 @@ def recuperer_signaux_marche():
                 else signaux.get("eur_usd")
             )
             signaux["eur_usd"] = valeurs[0]
-    except (OSError, URLError, TimeoutError, ET.ParseError, ValueError):
+    except (
+        OSError,
+        http_requests.RequestException,
+        TimeoutError,
+        ET.ParseError,
+        ValueError,
+    ):
         pass
 
     signaux["updated_at"] = datetime.now(timezone.utc).isoformat()
