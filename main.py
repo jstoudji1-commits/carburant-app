@@ -220,6 +220,69 @@ DELAI_RECUPERATION_MOT_DE_PASSE_SECONDES = 60 * 60
 DUREE_SESSION_COMPTE_SECONDES = 365 * 24 * 60 * 60
 
 
+def construire_csp_report_only():
+
+    directives = {
+        "default-src": ["'self'"],
+        "base-uri": ["'self'"],
+        "object-src": ["'none'"],
+        "frame-ancestors": ["'none'"],
+        "form-action": ["'self'"],
+        "script-src": [
+            "'self'",
+            "'unsafe-inline'",
+            "https://unpkg.com",
+            "https://pagead2.googlesyndication.com",
+            "https://googleads.g.doubleclick.net",
+            "https://tpc.googlesyndication.com",
+            "https://www.googletagservices.com",
+        ],
+        "style-src": [
+            "'self'",
+            "'unsafe-inline'",
+            "https://unpkg.com",
+        ],
+        "img-src": [
+            "'self'",
+            "data:",
+            "blob:",
+            "https:",
+        ],
+        "font-src": [
+            "'self'",
+            "data:",
+            "https://unpkg.com",
+        ],
+        "connect-src": [
+            "'self'",
+            "https://nominatim.openstreetmap.org",
+            "https://router.project-osrm.org",
+            "https://graphhopper.com",
+            "https://api.maptiler.com",
+            "https://pagead2.googlesyndication.com",
+            "https://googleads.g.doubleclick.net",
+        ],
+        "frame-src": [
+            "'self'",
+            "https://googleads.g.doubleclick.net",
+            "https://tpc.googlesyndication.com",
+        ],
+        "worker-src": [
+            "'self'",
+            "blob:",
+        ],
+        "upgrade-insecure-requests": [],
+    }
+
+    return "; ".join(
+        " ".join([directive, *sources]).strip()
+        for directive, sources in directives.items()
+    )
+
+
+CSP_REPORT_ONLY = construire_csp_report_only()
+
+
 class SignalementProbleme(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
@@ -2808,6 +2871,10 @@ async def rediriger_vers_domaine_canonique(request: Request, call_next):
     response.headers.setdefault(
         "Permissions-Policy",
         "camera=(), microphone=(), payment=(), usb=(), geolocation=(self)",
+    )
+    response.headers.setdefault(
+        "Content-Security-Policy-Report-Only",
+        CSP_REPORT_ONLY,
     )
 
     if protocole == "https":
