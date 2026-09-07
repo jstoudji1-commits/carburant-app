@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.optiplein.fr/landing">
-    <title>Créer un compte testeur OptiPlein - Premium gratuit</title>
+    <title>Devenir testeur Android OptiPlein - Premium gratuit</title>
     <meta
         name="description"
-        content="Créez un compte testeur OptiPlein et accédez gratuitement aux fonctions Premium pendant la phase de lancement."
+        content="Inscrivez-vous comme testeur Android OptiPlein et recevez le lien Google Play de l'application de test."
     >
     <link rel="icon" href="/static/favicon.png">
     {% if adsense_client %}
@@ -157,6 +157,18 @@
             font-weight:900;
         }
 
+        .android-note{
+            display:inline-flex;
+            margin:12px 0 0;
+            padding:9px 12px;
+            border:1px solid #cfe6d4;
+            border-radius:8px;
+            background:#ffffff;
+            color:var(--ink);
+            font-size:14px;
+            font-weight:800;
+        }
+
         .hero-points{
             display:grid;
             grid-template-columns:repeat(4, minmax(0, 1fr));
@@ -238,6 +250,53 @@
             color:var(--green-dark);
             font-size:13px;
             font-weight:800;
+        }
+
+        .tester-confirmation{
+            position:fixed;
+            inset:0;
+            z-index:20;
+            display:grid;
+            place-items:center;
+            padding:18px;
+            background:rgba(16,37,54,.48);
+        }
+
+        .tester-confirmation[hidden]{
+            display:none;
+        }
+
+        .confirmation-card{
+            width:min(460px, 100%);
+            padding:22px;
+            border-radius:12px;
+            background:#fff;
+            box-shadow:0 24px 60px rgba(16,37,54,.28);
+        }
+
+        .confirmation-card h2{
+            margin:0 0 8px;
+            font-size:24px;
+            line-height:1.12;
+        }
+
+        .confirmation-card p{
+            margin:0 0 12px;
+            color:var(--muted);
+            font-size:15px;
+        }
+
+        .confirmation-card button{
+            width:100%;
+            min-height:48px;
+            margin-top:6px;
+            border:0;
+            border-radius:8px;
+            background:linear-gradient(180deg, #27b33e, #087a2c);
+            color:#fff;
+            font-size:15px;
+            font-weight:900;
+            cursor:pointer;
         }
 
         .account-cta-group{
@@ -501,25 +560,29 @@
         <img class="logo" src="/static/logo.png" alt="OptiPlein">
         <nav class="nav-actions" aria-label="Navigation principale">
             <a class="nav-link" href="/web?inscription=1">Créer mon compte</a>
-            <a class="nav-button" href="#devenir-testeur">Devenir testeur</a>
+            <a class="nav-button" href="#devenir-testeur">Devenir testeur Android</a>
         </nav>
     </header>
 
     <main>
         <section class="hero">
             <div>
-                <p class="eyebrow">Accès testeur Premium gratuit</p>
-                <h1>Créez votre compte et testez OptiPlein Premium gratuitement.</h1>
+                <p class="eyebrow">Testeurs Android uniquement</p>
+                <h1>Réservez votre accès testeur Android OptiPlein.</h1>
                 <p class="hero-offer">
                     Gratuit tout l'été, puis 1 an d'abonnement offert pour
                     vous et la personne de votre choix au lancement de
                     l'application.
                 </p>
+                <p class="android-note">
+                    Vous recevrez le lien officiel Google Play dès la fin de
+                    la période de recrutement.
+                </p>
                 <p class="lead">
-                    La création de compte débloque les fonctions Premium de la
-                    phase de test : véhicules sauvegardés, favoris, historique
-                    des économies et préparation de trajets avec ravitaillements
-                    conseillés.
+                    Inscrivez-vous à la liste de test Android pour découvrir
+                    les fonctions Premium de la phase de test : véhicules
+                    sauvegardés, favoris, historique des économies et
+                    préparation de trajets avec ravitaillements conseillés.
                 </p>
 
                 <div class="hero-points" aria-label="Points clés">
@@ -543,7 +606,7 @@
 
                 <form class="signup" id="tester-form">
                     <p class="signup-title" id="devenir-testeur">
-                        Réserver mon accès et créer mon compte
+                        Réserver mon accès testeur Android
                     </p>
                     <div class="signup-row">
                         <input
@@ -554,7 +617,7 @@
                             placeholder="Votre adresse e-mail"
                             required
                         >
-                        <button type="submit">Continuer</button>
+                        <button type="submit">M'inscrire</button>
                     </div>
                     <p id="tester-status" class="signup-status"></p>
                     <div class="tester-steps" aria-label="Étapes d'accès testeur">
@@ -563,11 +626,11 @@
                             <span>Vous rejoignez la liste des testeurs OptiPlein.</span>
                         </div>
                         <div class="tester-step">
-                            <strong>2. Compte créé</strong>
-                            <span>Votre accès Premium gratuit est activé pendant la phase de test.</span>
+                            <strong>2. Lien Google Play</strong>
+                            <span>Vous recevez le lien de téléchargement à la fin du recrutement.</span>
                         </div>
                         <div class="tester-step">
-                            <strong>3. Retours utiles</strong>
+                            <strong>3. Test Premium</strong>
                             <span>Vos essais servent à améliorer les prix, la carte et les trajets.</span>
                         </div>
                     </div>
@@ -653,7 +716,7 @@
                 <div class="comparison-row">
                     <div class="comparison-cell">Fonction</div>
                     <div class="comparison-cell">Sans compte</div>
-                    <div class="comparison-cell">Compte testeur</div>
+                    <div class="comparison-cell">Compte testeur Android</div>
                 </div>
                 <div class="comparison-row">
                     <div class="comparison-cell">Prix carburants autour de vous</div>
@@ -714,13 +777,32 @@
     </main>
 
     <footer>
-        OptiPlein - Application en préparation pour Google Play.
+        OptiPlein - Application Android en préparation pour Google Play.
         <a id="privacy-link" href="/confidentialite">Confidentialité</a>
         &middot;
         <a id="delete-link" href="/suppression-compte">Suppression de compte</a>
         &middot;
         <a href="mailto:optiplein5@gmail.com">Contact</a>
     </footer>
+
+    <div
+        class="tester-confirmation"
+        id="tester-confirmation"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tester-confirmation-title"
+        hidden
+    >
+        <div class="confirmation-card">
+            <h2 id="tester-confirmation-title">Inscription bien prise en compte</h2>
+            <p id="tester-confirmation-message">
+                Vous êtes inscrit sur la liste des testeurs Android OptiPlein.
+                Vous recevrez le lien officiel Google Play dès la fin de la
+                période de recrutement.
+            </p>
+            <button type="button" id="tester-confirmation-close">Compris</button>
+        </div>
+    </div>
 
     <script>
         var privacyLink = document.getElementById("privacy-link");
@@ -744,6 +826,34 @@
         var form = document.getElementById("tester-form");
         var email = document.getElementById("tester-email");
         var status = document.getElementById("tester-status");
+        var confirmation = document.getElementById("tester-confirmation");
+        var confirmationMessage = document.getElementById("tester-confirmation-message");
+        var confirmationClose = document.getElementById("tester-confirmation-close");
+
+        function afficherConfirmationTesteur(emailEnvoye) {
+            confirmationMessage.textContent = emailEnvoye
+                ? "Vous êtes inscrit sur la liste des testeurs Android OptiPlein. Un e-mail de confirmation vient de vous être envoyé. Vous recevrez le lien officiel Google Play dès la fin de la période de recrutement."
+                : "Vous êtes inscrit sur la liste des testeurs Android OptiPlein. L'e-mail de confirmation n'a pas pu partir automatiquement, mais votre inscription est bien enregistrée.";
+            confirmation.hidden = false;
+            confirmationClose.focus();
+        }
+
+        function fermerConfirmationTesteur() {
+            confirmation.hidden = true;
+        }
+
+        confirmationClose.addEventListener("click", fermerConfirmationTesteur);
+        confirmation.addEventListener("click", function(event) {
+            if (event.target === confirmation) {
+                fermerConfirmationTesteur();
+            }
+        });
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Escape" && !confirmation.hidden) {
+                fermerConfirmationTesteur();
+            }
+        });
+
         document.querySelectorAll('a[href="/web?inscription=1"]').forEach(
             function(lien) {
                 lien.addEventListener("click", function(event) {
@@ -774,11 +884,10 @@
                     throw new Error("inscription impossible");
                 }
 
+                var resultat = await response.json();
                 status.textContent =
-                    "E-mail enregistré. Ouverture de la création de compte...";
-                window.setTimeout(function() {
-                    window.location.href = urlCreationCompte(emailSaisi);
-                }, 700);
+                    "Inscription prise en compte. Vérifiez votre boîte mail.";
+                afficherConfirmationTesteur(resultat.email_sent !== false);
                 form.reset();
             } catch (erreur) {
                 status.textContent =

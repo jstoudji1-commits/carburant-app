@@ -2529,6 +2529,53 @@ def html_logo_email(base_url):
     )
 
 
+def envoyer_email_confirmation_testeur(email, base_url):
+
+    message = EmailMessage()
+    message["Subject"] = "Inscription testeur Android OptiPlein confirmée"
+    message["To"] = email
+    message.set_content(
+        "Bonjour,\n\n"
+        "Votre inscription comme testeur Android OptiPlein est bien prise "
+        "en compte.\n\n"
+        "Le test concerne Android uniquement pour le moment. Une fois la "
+        "période de recrutement terminée, vous recevrez le lien officiel "
+        "Google Play permettant de télécharger l'application de test.\n\n"
+        "Les testeurs retenus bénéficieront d'un accès Premium offert au "
+        "lancement de l'application.\n\n"
+        "Merci de participer à l'amélioration d'OptiPlein.\n\n"
+        f"En savoir plus : {base_url}/landing\n"
+    )
+    message.add_alternative(
+        '<div style="font-family:Arial,sans-serif;color:#102536;'
+        'line-height:1.55;font-size:16px;">'
+        + html_logo_email(base_url)
+        + "<h1 style=\"font-size:22px;margin:0 0 12px 0;\">"
+        "Inscription testeur Android confirm&eacute;e"
+        "</h1>"
+        "<p>Bonjour,</p>"
+        "<p>Votre inscription comme testeur Android OptiPlein est bien "
+        "prise en compte.</p>"
+        "<p>Le test concerne Android uniquement pour le moment. Une fois "
+        "la p&eacute;riode de recrutement termin&eacute;e, vous recevrez "
+        "le lien officiel Google Play permettant de t&eacute;l&eacute;charger "
+        "l'application de test.</p>"
+        "<p>Les testeurs retenus b&eacute;n&eacute;ficieront d'un acc&egrave;s "
+        "Premium offert au lancement de l'application.</p>"
+        "<p>Merci de participer &agrave; l'am&eacute;lioration d'OptiPlein.</p>"
+        '<p style="margin:24px 0;">'
+        f'<a href="{base_url}/landing" '
+        'style="display:inline-block;background:#149f38;color:#ffffff;'
+        'text-decoration:none;font-weight:700;padding:12px 18px;'
+        'border-radius:8px;">Revoir la page testeur</a>'
+        "</p>"
+        "</div>",
+        subtype="html",
+    )
+
+    envoyer_email(message)
+
+
 def envoyer_email_validation_compte(email, lien_validation, base_url):
 
     message = EmailMessage()
@@ -6811,7 +6858,25 @@ def inscrire_testeur(inscription: InscriptionTesteur, request: Request):
 
     enregistrer_testeurs_landing(donnees)
 
-    return {"ok": True}
+    email_envoye = True
+    base_url = url_base_application(request)
+
+    try:
+        envoyer_email_confirmation_testeur(email, base_url)
+    except Exception as erreur:
+        email_envoye = False
+        logger.exception(
+            "Impossible d'envoyer l'e-mail de confirmation testeur : %s",
+            erreur,
+        )
+
+    return {
+        "ok": True,
+        "email_sent": email_envoye,
+        "message": (
+            "Inscription testeur Android prise en compte."
+        ),
+    }
 
 
 @app.get("/confidentialite")
