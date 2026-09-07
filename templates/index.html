@@ -9543,6 +9543,10 @@ let utilisateurMarker = null;
 
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
+var cibleAnimationPositionUtilisateur = null;
+var instantDerniereTramePositionUtilisateur = 0;
+var capAnimationPositionUtilisateur = Number.NaN;
+var dureeAnticipationPositionMs = 1350;
 var suiviGeolocalisationId = null;
 var accordGeolocalisationCle = "optiplein-geolocalisation-acceptee";
 var zoomNavigation = 16.8;
@@ -9855,6 +9859,17 @@ function appliquerMouvementCarteAutomatique(action) {
 }
 
 function lisserPositionAffichee(latitude, longitude) {
+
+    // En guidage, le moteur d'animation continu assure seul le lissage.
+    // Conserver ici un second filtre ferait prendre du retard a la fleche.
+    if (navigationActive) {
+        latitudeAffichageUtilisateur = latitude;
+        longitudeAffichageUtilisateur = longitude;
+        return {
+            latitude: latitude,
+            longitude: longitude
+        };
+    }
 
     if (
         !Number.isFinite(latitudeAffichageUtilisateur)
@@ -10186,6 +10201,259 @@ function suspendreZoomAutomatique() {
 
 }
 
+function creerAncreRouteAnimation(latitude, longitude, capReference) {
+
+    if (!navigationActive || coordonneesRouteNavigation.length < 2) {
+        return null;
+    }
+
+    var projection = trouverPointRouteLePlusProche(
+        latitude,
+        longitude,
+        capReference
+    );
+
+    if (!projection || projection.distanceMetres > 45) {
+        return null;
+    }
+
+    return {
+        coordonnees: coordonneesRouteNavigation,
+        index: projection.index,
+        latitude: projection.latitude,
+        longitude: projection.longitude,
+        cap: projection.capSegment
+    };
+
+}
+
+function avancerDepuisAncreRoute(ancre, distanceMetres) {
+
+    if (
+        !ancre
+        || !Array.isArray(ancre.coordonnees)
+        || ancre.coordonnees.length < 2
+    ) {
+        return null;
+    }
+
+    var coordonnees = ancre.coordonnees;
+    var index = Math.max(
+        0,
+        Math.min(ancre.index, coordonnees.length - 2)
+    );
+    var latitudeCourante = ancre.latitude;
+    var longitudeCourante = ancre.longitude;
+    var distanceRestante = Math.max(0, distanceMetres);
+    var capSegment = ancre.cap;
+
+    while (index < coordonnees.length - 1) {
+        var finSegment = coordonnees[index + 1];
+        var longueurSegment = distanceDeplacementKm(
+            latitudeCourante,
+            longitudeCourante,
+            finSegment[1],
+            finSegment[0]
+        ) * 1000;
+
+        capSegment = calculerCapDeplacement(
+            latitudeCourante,
+            longitudeCourante,
+            finSegment[1],
+            finSegment[0]
+        );
+
+        if (longueurSegment > 0 && distanceRestante <= longueurSegment) {
+            var ratio = distanceRestante / longueurSegment;
+            return {
+                latitude: latitudeCourante
+                    + (finSegment[1] - latitudeCourante) * ratio,
+                longitude: longitudeCourante
+                    + (finSegment[0] - longitudeCourante) * ratio,
+                cap: capSegment
+            };
+        }
+
+        distanceRestante -= longueurSegment;
+        latitudeCourante = finSegment[1];
+        longitudeCourante = finSegment[0];
+        index += 1;
+    }
+
+    return {
+        latitude: latitudeCourante,
+        longitude: longitudeCourante,
+        cap: capSegment
+    };
+
+}
+
+function positionPrediteAnimationUtilisateur(instantActuel) {
+
+    var cible = cibleAnimationPositionUtilisateur;
+
+    if (!cible) {
+        return null;
+    }
+
+    var resultat = {
+        latitude: cible.latitude,
+        longitude: cible.longitude,
+        cap: cible.capFleche
+    };
+
+    if (
+        !navigationActive
+        || !cible.enMouvement
+        || cible.vitesse < 0.7
+    ) {
+        return resultat;
+    }
+
+    var ageMesureMs = Math.max(0, instantActuel - cible.instant);
+    var horizonSecondes = Math.min(
+        dureeAnticipationPositionMs / 1000,
+        ageMesureMs / 1000 + 0.22
+    );
+    var distanceAnticipee = Math.min(
+        45,
+        cible.vitesse * horizonSecondes
+    );
+    var positionRoute = avancerDepuisAncreRoute(
+        cible.ancreRoute,
+        distanceAnticipee
+    );
+
+    if (positionRoute) {
+        return positionRoute;
+    }
+
+    if (Number.isFinite(cible.capFleche)) {
+        var positionDevant = calculerPointDevant(
+            cible.latitude,
+            cible.longitude,
+            cible.capFleche,
+            distanceAnticipee
+        );
+        return {
+            latitude: positionDevant.latitude,
+            longitude: positionDevant.longitude,
+            cap: cible.capFleche
+        };
+    }
+
+    return resultat;
+
+}
+
+function animerPositionUtilisateurContinue(instantActuel) {
+
+    animationPositionUtilisateur = null;
+
+    if (!marqueurUtilisateur || !cibleAnimationPositionUtilisateur) {
+        instantDerniereTramePositionUtilisateur = 0;
+        return;
+    }
+
+    var ciblePredite = positionPrediteAnimationUtilisateur(instantActuel);
+
+    if (!ciblePredite) {
+        instantDerniereTramePositionUtilisateur = 0;
+        return;
+    }
+
+    var deltaSecondes = instantDerniereTramePositionUtilisateur > 0
+        ? Math.max(
+            1 / 120,
+            Math.min(
+                0.10,
+                (instantActuel - instantDerniereTramePositionUtilisateur)
+                    / 1000
+            )
+        )
+        : 1 / 60;
+    instantDerniereTramePositionUtilisateur = instantActuel;
+
+    var positionActuelle = marqueurUtilisateur.getLatLng();
+    var distanceCorrection = distanceDeplacementKm(
+        positionActuelle.lat,
+        positionActuelle.lng,
+        ciblePredite.latitude,
+        ciblePredite.longitude
+    ) * 1000;
+    var constanteLissage = navigationActive
+        ? cibleAnimationPositionUtilisateur.vitesse >= 10
+            ? 0.16
+            : 0.21
+        : 0.24;
+    var facteurCorrection = 1 - Math.exp(
+        -deltaSecondes / constanteLissage
+    );
+
+    if (distanceCorrection > 120) {
+        facteurCorrection = 1;
+    } else if (distanceCorrection > 45) {
+        facteurCorrection = Math.max(facteurCorrection, 0.34);
+    }
+
+    var latitudeAffichee = positionActuelle.lat
+        + (ciblePredite.latitude - positionActuelle.lat)
+        * facteurCorrection;
+    var longitudeAffichee = positionActuelle.lng
+        + (ciblePredite.longitude - positionActuelle.lng)
+        * facteurCorrection;
+
+    if (distanceCorrection >= 0.04) {
+        marqueurUtilisateur.setLatLng([
+            latitudeAffichee,
+            longitudeAffichee
+        ]);
+    }
+
+    if (Number.isFinite(ciblePredite.cap)) {
+        var facteurCap = 1 - Math.exp(-deltaSecondes / 0.14);
+        capAnimationPositionUtilisateur = lisserCap(
+            capAnimationPositionUtilisateur,
+            ciblePredite.cap,
+            facteurCap
+        );
+        actualiserOrientationFlecheUtilisateur(
+            capAnimationPositionUtilisateur
+        );
+    }
+
+    var ageCibleMs = instantActuel
+        - cibleAnimationPositionUtilisateur.instant;
+    var animationNecessaire = distanceCorrection >= 0.04
+        || (
+            navigationActive
+            && cibleAnimationPositionUtilisateur.enMouvement
+            && ageCibleMs < dureeAnticipationPositionMs + 300
+        );
+
+    if (animationNecessaire) {
+        animationPositionUtilisateur = requestAnimationFrame(
+            animerPositionUtilisateurContinue
+        );
+    } else {
+        instantDerniereTramePositionUtilisateur = 0;
+    }
+
+}
+
+function demarrerAnimationPositionUtilisateur() {
+
+    if (animationPositionUtilisateur !== null) {
+        return;
+    }
+
+    instantDerniereTramePositionUtilisateur = 0;
+    animationPositionUtilisateur = requestAnimationFrame(
+        animerPositionUtilisateurContinue
+    );
+
+}
+
 function deplacerMarqueurUtilisateur(
     nouvelleLatitude,
     nouvelleLongitude,
@@ -10193,84 +10461,28 @@ function deplacerMarqueurUtilisateur(
     capAffichageFleche
 ) {
 
-    if (animationPositionUtilisateur) {
-
-        cancelAnimationFrame(
-            animationPositionUtilisateur
-        );
-
-    }
-
-    var depart = marqueurUtilisateur.getLatLng();
-    var latitudeDepart = depart.lat;
-    var longitudeDepart = depart.lng;
-    var distanceAnimationMetres = distanceDeplacementKm(
-        latitudeDepart,
-        longitudeDepart,
-        nouvelleLatitude,
-        nouvelleLongitude
-    ) * 1000;
-
-    if (distanceAnimationMetres < 0.6) {
-        suivrePositionGpsSurCarte(
+    cibleAnimationPositionUtilisateur = {
+        latitude: nouvelleLatitude,
+        longitude: nouvelleLongitude,
+        capCarte: capAffichageCarte,
+        capFleche: capAffichageFleche,
+        vitesse: Number.isFinite(vitesseUtilisateurMps)
+            ? Math.max(0, vitesseUtilisateurMps)
+            : 0,
+        enMouvement: utilisateurEnMouvement,
+        instant: performance.now(),
+        ancreRoute: creerAncreRouteAnimation(
             nouvelleLatitude,
             nouvelleLongitude,
-            capAffichageCarte,
             capAffichageFleche
-        );
-        return;
+        )
+    };
+
+    if (!Number.isFinite(capAnimationPositionUtilisateur)) {
+        capAnimationPositionUtilisateur = capAffichageFleche;
     }
 
-    var debutAnimation = performance.now();
-    var dureeAnimation = navigationActive
-        ? vitesseUtilisateurMps >= 19
-            ? 1250
-            : vitesseUtilisateurMps >= 10
-                ? 1080
-                : 880
-        : 650;
-
-    function animerPosition(tempsActuel) {
-
-        var progression = Math.min(
-            (tempsActuel - debutAnimation) / dureeAnimation,
-            1
-        );
-
-        var progressionAdoucie =
-            progression * (2 - progression);
-
-        var latitudeActuelle =
-            latitudeDepart
-            + (nouvelleLatitude - latitudeDepart)
-            * progressionAdoucie;
-
-        var longitudeActuelle =
-            longitudeDepart
-            + (nouvelleLongitude - longitudeDepart)
-            * progressionAdoucie;
-
-        marqueurUtilisateur.setLatLng([
-            latitudeActuelle,
-            longitudeActuelle
-        ]);
-
-        if (progression < 1) {
-
-            animationPositionUtilisateur =
-                requestAnimationFrame(
-                    animerPosition
-                );
-
-        }
-
-    }
-
-    animationPositionUtilisateur =
-        requestAnimationFrame(
-            animerPosition
-    );
-
+    demarrerAnimationPositionUtilisateur();
     suivrePositionGpsSurCarte(
         nouvelleLatitude,
         nouvelleLongitude,
@@ -10859,7 +11071,11 @@ function demarrerGeolocalisation() {
                 capCarteStabilise = capAffichageStabilise;
             }
 
-            actualiserOrientationFlecheUtilisateur(capFlecheStabilise);
+            if (!navigationActive || !marqueurUtilisateur) {
+                actualiserOrientationFlecheUtilisateur(
+                    capFlecheStabilise
+                );
+            }
 
             document.getElementById(
                 "latitude"
@@ -10955,6 +11171,11 @@ function demarrerGeolocalisation() {
                     .bindPopup(
                         "Vous \u00eates ici"
                     );
+
+                capAnimationPositionUtilisateur = capFlecheAffiche;
+                actualiserOrientationFlecheUtilisateur(
+                    capFlecheAffiche
+                );
 
                 if (premierCentrageUtilisateur) {
 
