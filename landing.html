@@ -605,7 +605,7 @@
                     </div>
                 </div>
 
-                <form class="signup" id="tester-form">
+                <form class="signup" id="tester-form" novalidate>
                     <p class="signup-title" id="devenir-testeur">
                         Réserver mon accès testeur Android
                     </p>
@@ -830,6 +830,7 @@
         var email = document.getElementById("tester-email");
         var status = document.getElementById("tester-status");
         var confirmation = document.getElementById("tester-confirmation");
+        var confirmationTitle = document.getElementById("tester-confirmation-title");
         var confirmationMessage = document.getElementById("tester-confirmation-message");
         var confirmationClose = document.getElementById("tester-confirmation-close");
 
@@ -837,12 +838,22 @@
             return /^[^\s@]+@gmail\.com$/i.test((emailValue || "").trim());
         }
 
-        function afficherConfirmationTesteur(resultat) {
-            confirmationMessage.textContent = resultat.already_validated
-                ? "Votre adresse Gmail est déjà validée pour le test Android. Vous recevrez le lien officiel Google Play dès la fin de la période de recrutement."
-                : "Un lien de validation vient d'être envoyé sur votre adresse Gmail. Cliquez dessus pour confirmer votre inscription comme testeur Android. Vous recevrez ensuite le lien officiel Google Play dès la fin de la période de recrutement.";
+        function afficherPopupTesteur(titre, message) {
+            confirmationTitle.textContent = titre;
+            confirmationMessage.textContent = message;
             confirmation.hidden = false;
             confirmationClose.focus();
+        }
+
+        function afficherConfirmationTesteur(resultat) {
+            afficherPopupTesteur(
+                resultat.already_validated
+                    ? "Adresse Gmail déjà validée"
+                    : "Lien de validation envoyé",
+                resultat.already_validated
+                    ? "Votre adresse Gmail est déjà validée pour le test Android. Vous recevrez le lien officiel Google Play dès la fin de la période de recrutement."
+                    : "Un lien de validation vient d'être envoyé sur votre adresse Gmail. Cliquez dessus pour confirmer votre inscription comme testeur Android. Vous recevrez ensuite le lien officiel Google Play dès la fin de la période de recrutement."
+            );
         }
 
         function fermerConfirmationTesteur() {
@@ -850,10 +861,10 @@
         }
 
         function afficherValidationConfirmee() {
-            confirmationMessage.textContent =
-                "Votre adresse Gmail est validée. Votre inscription comme testeur Android OptiPlein est confirmée. Vous recevrez le lien officiel Google Play dès la fin de la période de recrutement.";
-            confirmation.hidden = false;
-            confirmationClose.focus();
+            afficherPopupTesteur(
+                "Adresse Gmail validée",
+                "Votre adresse Gmail est validée. Votre inscription comme testeur Android OptiPlein est confirmée. Vous recevrez le lien officiel Google Play dès la fin de la période de recrutement."
+            );
             if (status) {
                 status.textContent =
                     "Adresse Gmail validée. Inscription testeur confirmée.";
@@ -892,8 +903,13 @@
 
             try {
                 if (!emailGmailValide(emailSaisi)) {
-                    status.textContent =
+                    var messageGmail =
                         "Utilisez obligatoirement une adresse Gmail en @gmail.com pour devenir testeur Android.";
+                    status.textContent = messageGmail;
+                    afficherPopupTesteur(
+                        "Adresse Gmail obligatoire",
+                        messageGmail
+                    );
                     email.focus();
                     return;
                 }
@@ -924,8 +940,13 @@
                 afficherConfirmationTesteur(resultat);
                 form.reset();
             } catch (erreur) {
-                status.textContent = erreur.message ||
+                var messageErreur = erreur.message ||
                     "Impossible d'enregistrer votre e-mail pour le moment.";
+                status.textContent = messageErreur;
+                afficherPopupTesteur(
+                    "Inscription non finalisée",
+                    messageErreur
+                );
             }
         });
     </script>

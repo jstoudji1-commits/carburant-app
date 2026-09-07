@@ -792,6 +792,8 @@ def enregistrer_validations_testeurs_landing(donnees):
         "email_verified",
         "email_verification_hash",
         "email_verification_expires_at",
+        "validation_email_sent_at",
+        "validation_email_error_at",
         "validated_at",
     }
 
@@ -6938,7 +6940,11 @@ def inscrire_testeur(inscription: InscriptionTesteur, request: Request):
         ),
         None
     )
-    deja_valide = bool(existe and existe.get("email_verified"))
+    deja_valide = bool(
+        existe
+        and existe.get("email_verified") is True
+        and existe.get("validated_at")
+    )
     jeton_validation = None
     lien_validation = None
 
@@ -6989,7 +6995,16 @@ def inscrire_testeur(inscription: InscriptionTesteur, request: Request):
             lien_validation,
             base_url,
         )
+        cible["validation_email_sent_at"] = (
+            datetime.utcnow().isoformat() + "Z"
+        )
+        cible.pop("validation_email_error_at", None)
+        enregistrer_testeurs_landing(donnees)
     except Exception as erreur:
+        cible["validation_email_error_at"] = (
+            datetime.utcnow().isoformat() + "Z"
+        )
+        enregistrer_testeurs_landing(donnees)
         logger.exception(
             "Impossible d'envoyer l'e-mail de validation testeur : %s",
             erreur,

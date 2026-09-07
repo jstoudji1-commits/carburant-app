@@ -1173,15 +1173,27 @@
                 + '<th>Source</th>'
                 + '<th>Inscrit le</th>'
                 + '<th>Dernière activité</th>'
+                + '<th>Statut</th>'
                 + '<th>IP</th>'
                 + '</tr></thead>'
                 + '<tbody>'
                 + testeurs.map(function(testeur) {
+                    var valide = testeur.email_verified === true
+                        && Boolean(testeur.validated_at);
+                    var statut = '<span class="badge">À valider</span>';
+                    if (testeur.validation_email_error_at) {
+                        statut = '<span class="badge danger">Mail non envoyé</span>';
+                    } else if (valide) {
+                        statut = '<span class="badge premium">Gmail validé</span>';
+                    } else if (testeur.validation_email_sent_at) {
+                        statut = '<span class="badge">Lien envoyé</span>';
+                    }
                     return '<tr>'
                         + '<td><strong>' + echapperHtml(testeur.email) + '</strong></td>'
                         + '<td>' + echapperHtml(testeur.source || "-") + '</td>'
                         + '<td>' + echapperHtml(texteDate(testeur.created_at)) + '</td>'
                         + '<td>' + echapperHtml(texteDate(testeur.updated_at)) + '</td>'
+                        + '<td>' + statut + '</td>'
                         + '<td>' + echapperHtml(testeur.ip || "-") + '</td>'
                         + '</tr>';
                 }).join("")
