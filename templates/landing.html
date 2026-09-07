@@ -575,8 +575,9 @@
                     l'application.
                 </p>
                 <p class="android-note">
-                    Vous recevrez le lien officiel Google Play dès la fin de
-                    la période de recrutement.
+                    Inscription réservée aux adresses Gmail. Vous recevrez le
+                    lien officiel Google Play dès la fin de la période de
+                    recrutement.
                 </p>
                 <p class="lead">
                     Inscrivez-vous à la liste de test Android pour découvrir
@@ -614,6 +615,8 @@
                             name="email"
                             type="email"
                             autocomplete="email"
+                            pattern="^[^\s@]+@gmail\.com$"
+                            title="Utilisez une adresse Gmail en @gmail.com"
                             placeholder="Votre adresse e-mail"
                             required
                         >
@@ -623,15 +626,15 @@
                     <div class="tester-steps" aria-label="Étapes d'accès testeur">
                         <div class="tester-step">
                             <strong>1. E-mail enregistré</strong>
-                            <span>Vous rejoignez la liste des testeurs OptiPlein.</span>
+                            <span>Vous recevez un lien pour valider votre adresse Gmail.</span>
                         </div>
                         <div class="tester-step">
-                            <strong>2. Lien Google Play</strong>
+                            <strong>2. Inscription validée</strong>
+                            <span>Votre place de testeur Android est confirmée après validation.</span>
+                        </div>
+                        <div class="tester-step">
+                            <strong>3. Lien Google Play</strong>
                             <span>Vous recevez le lien de téléchargement à la fin du recrutement.</span>
-                        </div>
-                        <div class="tester-step">
-                            <strong>3. Test Premium</strong>
-                            <span>Vos essais servent à améliorer les prix, la carte et les trajets.</span>
                         </div>
                     </div>
                     <div class="account-cta-group">
@@ -796,9 +799,9 @@
         <div class="confirmation-card">
             <h2 id="tester-confirmation-title">Inscription bien prise en compte</h2>
             <p id="tester-confirmation-message">
-                Vous êtes inscrit sur la liste des testeurs Android OptiPlein.
-                Vous recevrez le lien officiel Google Play dès la fin de la
-                période de recrutement.
+                Un lien de validation vient d'être envoyé sur votre adresse
+                Gmail. Cliquez dessus pour confirmer votre inscription comme
+                testeur Android.
             </p>
             <button type="button" id="tester-confirmation-close">Compris</button>
         </div>
@@ -830,16 +833,31 @@
         var confirmationMessage = document.getElementById("tester-confirmation-message");
         var confirmationClose = document.getElementById("tester-confirmation-close");
 
-        function afficherConfirmationTesteur(emailEnvoye) {
-            confirmationMessage.textContent = emailEnvoye
-                ? "Vous êtes inscrit sur la liste des testeurs Android OptiPlein. Un e-mail de confirmation vient de vous être envoyé. Vous recevrez le lien officiel Google Play dès la fin de la période de recrutement."
-                : "Vous êtes inscrit sur la liste des testeurs Android OptiPlein. L'e-mail de confirmation n'a pas pu partir automatiquement, mais votre inscription est bien enregistrée.";
+        function emailGmailValide(emailValue) {
+            return /^[^\s@]+@gmail\.com$/i.test((emailValue || "").trim());
+        }
+
+        function afficherConfirmationTesteur(resultat) {
+            confirmationMessage.textContent = resultat.already_validated
+                ? "Votre adresse Gmail est déjà validée pour le test Android. Vous recevrez le lien officiel Google Play dès la fin de la période de recrutement."
+                : "Un lien de validation vient d'être envoyé sur votre adresse Gmail. Cliquez dessus pour confirmer votre inscription comme testeur Android. Vous recevrez ensuite le lien officiel Google Play dès la fin de la période de recrutement.";
             confirmation.hidden = false;
             confirmationClose.focus();
         }
 
         function fermerConfirmationTesteur() {
             confirmation.hidden = true;
+        }
+
+        function afficherValidationConfirmee() {
+            confirmationMessage.textContent =
+                "Votre adresse Gmail est validée. Votre inscription comme testeur Android OptiPlein est confirmée. Vous recevrez le lien officiel Google Play dès la fin de la période de recrutement.";
+            confirmation.hidden = false;
+            confirmationClose.focus();
+            if (status) {
+                status.textContent =
+                    "Adresse Gmail validée. Inscription testeur confirmée.";
+            }
         }
 
         confirmationClose.addEventListener("click", fermerConfirmationTesteur);
@@ -853,6 +871,10 @@
                 fermerConfirmationTesteur();
             }
         });
+
+        if (new URLSearchParams(window.location.search).get("testeur_valide") === "1") {
+            afficherValidationConfirmee();
+        }
 
         document.querySelectorAll('a[href="/web?inscription=1"]').forEach(
             function(lien) {
@@ -869,6 +891,13 @@
             var emailSaisi = email.value;
 
             try {
+                if (!emailGmailValide(emailSaisi)) {
+                    status.textContent =
+                        "Utilisez obligatoirement une adresse Gmail en @gmail.com pour devenir testeur Android.";
+                    email.focus();
+                    return;
+                }
+
                 var response = await fetch(baseUrl + "/api/testeurs", {
                     method: "POST",
                     headers: {
@@ -881,16 +910,21 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error("inscription impossible");
+                    var erreurApi = await response.json().catch(function() {
+                        return {};
+                    });
+                    throw new Error(
+                        erreurApi.detail || "Inscription impossible."
+                    );
                 }
 
                 var resultat = await response.json();
                 status.textContent =
-                    "Inscription prise en compte. Vérifiez votre boîte mail.";
-                afficherConfirmationTesteur(resultat.email_sent !== false);
+                    resultat.message || "Lien de validation envoyé sur votre adresse Gmail.";
+                afficherConfirmationTesteur(resultat);
                 form.reset();
             } catch (erreur) {
-                status.textContent =
+                status.textContent = erreur.message ||
                     "Impossible d'enregistrer votre e-mail pour le moment.";
             }
         });

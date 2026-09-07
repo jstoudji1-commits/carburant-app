@@ -132,6 +132,10 @@ TESTEURS_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "testeurs_landing.json"
 )
+TESTEURS_VALIDATION_FICHIER = (
+    DOSSIER_DONNEES_UTILISATEURS
+    / "testeurs_validation.json"
+)
 STATIONS_REPO_CSV = Path(__file__).resolve().parent / "stations.csv"
 STATIONS_RUNTIME_CSV = DOSSIER_DONNEES_UTILISATEURS / "stations.csv"
 TOTALENERGIES_AVANTAGE_FICHIER = (
@@ -743,6 +747,82 @@ def email_valide(email):
     )
 
 
+def email_gmail_valide(email):
+
+    return email_valide(email) and email.endswith("@gmail.com")
+
+
+def charger_validations_testeurs_landing():
+
+    if not TESTEURS_VALIDATION_FICHIER.exists():
+        return {}
+
+    try:
+        with TESTEURS_VALIDATION_FICHIER.open(
+            encoding="utf-8"
+        ) as fichier:
+            donnees = json.load(fichier)
+            if isinstance(donnees, dict):
+                return donnees
+    except (OSError, ValueError, TypeError):
+        logger.exception(
+            "Impossible de lire les validations testeurs landing."
+        )
+
+    return {}
+
+
+def appliquer_validations_testeurs_landing(donnees):
+
+    validations = charger_validations_testeurs_landing()
+
+    for testeur in donnees.get("testeurs", []):
+        email = testeur.get("email", "")
+        validation = validations.get(email)
+        if isinstance(validation, dict):
+            testeur.update(validation)
+
+    return donnees
+
+
+def enregistrer_validations_testeurs_landing(donnees):
+
+    validations = {}
+    champs_validation = {
+        "email_verified",
+        "email_verification_hash",
+        "email_verification_expires_at",
+        "validated_at",
+    }
+
+    for testeur in donnees.get("testeurs", []):
+        email = testeur.get("email", "")
+        if not email:
+            continue
+
+        validation = {
+            champ: testeur.get(champ)
+            for champ in champs_validation
+            if champ in testeur
+        }
+
+        if validation:
+            validations[email] = validation
+
+    TESTEURS_VALIDATION_FICHIER.parent.mkdir(parents=True, exist_ok=True)
+    temporaire = TESTEURS_VALIDATION_FICHIER.with_suffix(".tmp")
+
+    with temporaire.open("w", encoding="utf-8") as fichier:
+        json.dump(
+            validations,
+            fichier,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    temporaire.replace(TESTEURS_VALIDATION_FICHIER)
+
+
 def lire_comptes_utilisateurs_depuis_fichier(fichier):
 
     if not fichier.exists():
@@ -835,7 +915,7 @@ def charger_testeurs_landing():
 
     testeurs_postgres = charger_testeurs_postgres()
     if testeurs_postgres is not None:
-        return testeurs_postgres
+        return appliquer_validations_testeurs_landing(testeurs_postgres)
 
     if not TESTEURS_FICHIER.exists():
         return {"testeurs": []}
@@ -844,7 +924,7 @@ def charger_testeurs_landing():
         with TESTEURS_FICHIER.open(encoding="utf-8") as fichier:
             donnees = json.load(fichier)
             if isinstance(donnees, dict) and "testeurs" in donnees:
-                return donnees
+                return appliquer_validations_testeurs_landing(donnees)
     except (OSError, ValueError, TypeError):
         logger.exception("Impossible de lire les testeurs landing.")
 
@@ -854,6 +934,7 @@ def charger_testeurs_landing():
 def enregistrer_testeurs_landing(donnees):
 
     if enregistrer_testeurs_postgres(donnees):
+        enregistrer_validations_testeurs_landing(donnees)
         return
 
     TESTEURS_FICHIER.parent.mkdir(parents=True, exist_ok=True)
@@ -868,6 +949,7 @@ def enregistrer_testeurs_landing(donnees):
         )
 
     temporaire.replace(TESTEURS_FICHIER)
+    enregistrer_validations_testeurs_landing(donnees)
 
 
 def hasher_mot_de_passe(mot_de_passe, sel=None):
@@ -2529,20 +2611,24 @@ def html_logo_email(base_url):
     )
 
 
-def envoyer_email_confirmation_testeur(email, base_url):
+def envoyer_email_confirmation_testeur(email, lien_validation, base_url):
 
     message = EmailMessage()
-    message["Subject"] = "Inscription testeur Android OptiPlein confirmée"
+    message["Subject"] = "Validez votre inscription testeur Android OptiPlein"
     message["To"] = email
     message.set_content(
         "Bonjour,\n\n"
-        "Votre inscription comme testeur Android OptiPlein est bien prise "
-        "en compte.\n\n"
-        "Le test concerne Android uniquement pour le moment. Une fois la "
-        "période de recrutement terminée, vous recevrez le lien officiel "
-        "Google Play permettant de télécharger l'application de test.\n\n"
+        "Pour confirmer votre inscription comme testeur Android OptiPlein, "
+        "validez votre adresse Gmail avec ce lien :\n"
+        f"{lien_validation}\n\n"
+        "Le test concerne Android uniquement pour le moment. Après validation, "
+        "votre inscription sera bien prise en compte. Vous recevrez ensuite "
+        "le lien officiel Google Play permettant de télécharger l'application "
+        "de test une fois la période de recrutement terminée.\n\n"
         "Les testeurs retenus bénéficieront d'un accès Premium offert au "
         "lancement de l'application.\n\n"
+        "Ce lien est valable 24 heures. Si vous n'êtes pas à l'origine "
+        "de cette demande, ignorez simplement cet e-mail.\n\n"
         "Merci de participer à l'amélioration d'OptiPlein.\n\n"
         f"En savoir plus : {base_url}/landing\n"
     )
@@ -2551,24 +2637,27 @@ def envoyer_email_confirmation_testeur(email, base_url):
         'line-height:1.55;font-size:16px;">'
         + html_logo_email(base_url)
         + "<h1 style=\"font-size:22px;margin:0 0 12px 0;\">"
-        "Inscription testeur Android confirm&eacute;e"
+        "Validez votre inscription testeur Android"
         "</h1>"
         "<p>Bonjour,</p>"
-        "<p>Votre inscription comme testeur Android OptiPlein est bien "
-        "prise en compte.</p>"
-        "<p>Le test concerne Android uniquement pour le moment. Une fois "
-        "la p&eacute;riode de recrutement termin&eacute;e, vous recevrez "
-        "le lien officiel Google Play permettant de t&eacute;l&eacute;charger "
-        "l'application de test.</p>"
+        "<p>Pour confirmer votre inscription comme testeur Android OptiPlein, "
+        "validez votre adresse Gmail avec le bouton ci-dessous.</p>"
+        "<p>Le test concerne Android uniquement pour le moment. Apr&egrave;s "
+        "validation, votre inscription sera bien prise en compte. Vous "
+        "recevrez ensuite le lien officiel Google Play permettant de "
+        "t&eacute;l&eacute;charger l'application de test une fois la p&eacute;riode "
+        "de recrutement termin&eacute;e.</p>"
         "<p>Les testeurs retenus b&eacute;n&eacute;ficieront d'un acc&egrave;s "
         "Premium offert au lancement de l'application.</p>"
-        "<p>Merci de participer &agrave; l'am&eacute;lioration d'OptiPlein.</p>"
         '<p style="margin:24px 0;">'
-        f'<a href="{base_url}/landing" '
+        f'<a href="{lien_validation}" '
         'style="display:inline-block;background:#149f38;color:#ffffff;'
         'text-decoration:none;font-weight:700;padding:12px 18px;'
-        'border-radius:8px;">Revoir la page testeur</a>'
+        'border-radius:8px;">Valider mon adresse Gmail</a>'
         "</p>"
+        "<p>Ce lien est valable 24 heures. Si vous n'&ecirc;tes pas &agrave; "
+        "l'origine de cette demande, ignorez simplement cet e-mail.</p>"
+        "<p>Merci de participer &agrave; l'am&eacute;lioration d'OptiPlein.</p>"
         "</div>",
         subtype="html",
     )
@@ -6829,6 +6918,14 @@ def inscrire_testeur(inscription: InscriptionTesteur, request: Request):
             detail="Adresse e-mail invalide.",
         )
 
+    if not email_gmail_valide(email):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Adresse Gmail obligatoire pour devenir testeur Android."
+            ),
+        )
+
     donnees = charger_testeurs_landing()
     testeurs = donnees.setdefault("testeurs", [])
     maintenant = datetime.utcnow().isoformat() + "Z"
@@ -6841,42 +6938,122 @@ def inscrire_testeur(inscription: InscriptionTesteur, request: Request):
         ),
         None
     )
+    deja_valide = bool(existe and existe.get("email_verified"))
+    jeton_validation = None
+    lien_validation = None
 
     if existe:
         existe["updated_at"] = maintenant
         existe["source"] = inscription.source or "landing"
+        cible = existe
     else:
-        testeurs.append(
-            {
-                "email": email,
-                "source": inscription.source or "landing",
-                "created_at": maintenant,
-                "updated_at": maintenant,
-                "ip": adresse_ip,
-            }
+        cible = {
+            "email": email,
+            "source": inscription.source or "landing",
+            "created_at": maintenant,
+            "updated_at": maintenant,
+            "ip": adresse_ip,
+        }
+        testeurs.append(cible)
+
+    base_url = url_base_application(request)
+
+    if not deja_valide:
+        (
+            jeton_validation,
+            empreinte_validation,
+            expiration_validation,
+        ) = creer_jeton_validation_email()
+        cible["email_verified"] = False
+        cible["email_verification_hash"] = empreinte_validation
+        cible["email_verification_expires_at"] = expiration_validation
+        lien_validation = (
+            f"{base_url}/api/testeurs/validation-email"
+            f"?token={jeton_validation}"
         )
 
     enregistrer_testeurs_landing(donnees)
 
-    email_envoye = True
-    base_url = url_base_application(request)
+    if deja_valide:
+        return {
+            "ok": True,
+            "already_validated": True,
+            "message": (
+                "Votre adresse Gmail est déjà validée pour le test Android."
+            ),
+        }
 
     try:
-        envoyer_email_confirmation_testeur(email, base_url)
+        envoyer_email_confirmation_testeur(
+            email,
+            lien_validation,
+            base_url,
+        )
     except Exception as erreur:
-        email_envoye = False
         logger.exception(
-            "Impossible d'envoyer l'e-mail de confirmation testeur : %s",
+            "Impossible d'envoyer l'e-mail de validation testeur : %s",
             erreur,
         )
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Le lien de validation n'a pas pu être envoyé. "
+                "Réessayez dans quelques minutes."
+            ),
+        ) from erreur
 
     return {
         "ok": True,
-        "email_sent": email_envoye,
+        "validation_required": True,
         "message": (
-            "Inscription testeur Android prise en compte."
+            "Lien de validation envoyé sur votre adresse Gmail."
         ),
     }
+
+
+@app.get("/api/testeurs/validation-email")
+def valider_email_testeur(token: str, request: Request):
+
+    empreinte = hashlib.sha256(
+        token.encode("utf-8")
+    ).hexdigest()
+    donnees = charger_testeurs_landing()
+    testeurs = donnees.setdefault("testeurs", [])
+
+    for testeur in testeurs:
+        if not hmac.compare_digest(
+            str(testeur.get("email_verification_hash") or ""),
+            empreinte,
+        ):
+            continue
+
+        if time.time() > float(
+            testeur.get("email_verification_expires_at", 0)
+        ):
+            raise HTTPException(
+                status_code=410,
+                detail=(
+                    "Le lien de validation a expiré. "
+                    "Inscrivez-vous à nouveau pour recevoir un nouveau lien."
+                ),
+            )
+
+        testeur["email_verified"] = True
+        testeur["validated_at"] = datetime.utcnow().isoformat() + "Z"
+        testeur["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        testeur.pop("email_verification_hash", None)
+        testeur.pop("email_verification_expires_at", None)
+        enregistrer_testeurs_landing(donnees)
+
+        return RedirectResponse(
+            url="/landing?testeur_valide=1#devenir-testeur",
+            status_code=303,
+        )
+
+    raise HTTPException(
+        status_code=400,
+        detail="Lien de validation invalide.",
+    )
 
 
 @app.get("/confidentialite")
