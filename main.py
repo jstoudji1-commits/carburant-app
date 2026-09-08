@@ -7134,6 +7134,11 @@ def signe_graphhopper_vers_maneuvre(signe):
 
 def ajuster_maneuvre_graphhopper(instruction, type_maneuvre, modificateur):
 
+    # Une instruction de rond-point contient elle aussi le mot "sortie".
+    # Elle ne doit pas etre requalifiee en bretelle d'autoroute.
+    if type_maneuvre in {"roundabout", "rotary"}:
+        return type_maneuvre, modificateur
+
     texte = " ".join(
         str(instruction.get(cle, "") or "").lower()
         for cle in ("text", "street_name", "heading")
@@ -7181,14 +7186,14 @@ def convertir_route_graphhopper(donnees):
             {
                 "distance": instruction.get("distance", 0),
                 "duration": (instruction.get("time", 0) or 0) / 1000,
-                "name": instruction.get("street_name", "")
-                    or instruction.get("text", "")
-                    or "",
+                "name": instruction.get("street_name", "") or "",
                 "instruction": instruction.get("text", "") or "",
                 "maneuver": {
                     "type": type_maneuvre,
                     "modifier": modificateur,
                     "location": coordonnee,
+                    "exit": instruction.get("exit_number")
+                        or instruction.get("exit"),
                 },
             }
         )
