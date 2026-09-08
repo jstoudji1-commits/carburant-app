@@ -2171,6 +2171,12 @@ body{
     white-space:nowrap;
 }
 
+.avantage-total-ligne > span:last-child{
+    font-size:11px;
+    font-weight:900;
+    line-height:1;
+}
+
 .avantage-total-carte{
     position:relative;
     flex:0 0 22px;
@@ -9547,6 +9553,7 @@ var cibleAnimationPositionUtilisateur = null;
 var instantDerniereTramePositionUtilisateur = 0;
 var capAnimationPositionUtilisateur = Number.NaN;
 var dureeAnticipationPositionMs = 1350;
+var dureeAnticipationPositionHorsGuidageMs = 900;
 var suiviGeolocalisationId = null;
 var accordGeolocalisationCle = "optiplein-geolocalisation-acceptee";
 var zoomNavigation = 16.8;
@@ -9860,9 +9867,9 @@ function appliquerMouvementCarteAutomatique(action) {
 
 function lisserPositionAffichee(latitude, longitude) {
 
-    // En guidage, le moteur d'animation continu assure seul le lissage.
-    // Conserver ici un second filtre ferait prendre du retard a la fleche.
-    if (navigationActive) {
+    // Une fois le marqueur cree, le moteur d'animation continu assure seul
+    // le lissage, en guidage comme sur la carte classique.
+    if (navigationActive || marqueurUtilisateur) {
         latitudeAffichageUtilisateur = latitude;
         longitudeAffichageUtilisateur = longitude;
         return {
@@ -10158,6 +10165,7 @@ function suivrePositionGpsSurCarte(
                             ],
                             duration: dureeSuivi,
                             easing: navigationActive
+                                || utilisateurEnMouvement
                                 ? function(t) {
                                     return t;
                                 }
@@ -10303,20 +10311,22 @@ function positionPrediteAnimationUtilisateur(instantActuel) {
     };
 
     if (
-        !navigationActive
-        || !cible.enMouvement
+        !cible.enMouvement
         || cible.vitesse < 0.7
     ) {
         return resultat;
     }
 
     var ageMesureMs = Math.max(0, instantActuel - cible.instant);
+    var dureeAnticipationActuelleMs = navigationActive
+        ? dureeAnticipationPositionMs
+        : dureeAnticipationPositionHorsGuidageMs;
     var horizonSecondes = Math.min(
-        dureeAnticipationPositionMs / 1000,
-        ageMesureMs / 1000 + 0.22
+        dureeAnticipationActuelleMs / 1000,
+        ageMesureMs / 1000 + (navigationActive ? 0.22 : 0.12)
     );
     var distanceAnticipee = Math.min(
-        45,
+        navigationActive ? 45 : 25,
         cible.vitesse * horizonSecondes
     );
     var positionRoute = avancerDepuisAncreRoute(
@@ -10424,11 +10434,13 @@ function animerPositionUtilisateurContinue(instantActuel) {
 
     var ageCibleMs = instantActuel
         - cibleAnimationPositionUtilisateur.instant;
+    var dureeAnticipationActuelleMs = navigationActive
+        ? dureeAnticipationPositionMs
+        : dureeAnticipationPositionHorsGuidageMs;
     var animationNecessaire = distanceCorrection >= 0.04
         || (
-            navigationActive
-            && cibleAnimationPositionUtilisateur.enMouvement
-            && ageCibleMs < dureeAnticipationPositionMs + 300
+            cibleAnimationPositionUtilisateur.enMouvement
+            && ageCibleMs < dureeAnticipationActuelleMs + 300
         );
 
     if (animationNecessaire) {
@@ -11071,7 +11083,7 @@ function demarrerGeolocalisation() {
                 capCarteStabilise = capAffichageStabilise;
             }
 
-            if (!navigationActive || !marqueurUtilisateur) {
+            if (!marqueurUtilisateur) {
                 actualiserOrientationFlecheUtilisateur(
                     capFlecheStabilise
                 );
@@ -11091,7 +11103,7 @@ function demarrerGeolocalisation() {
 
             actualiserModeNuitCarte();
             actualiserStationsSelonPosition();
-            calculerMeilleureStation();
+            actualiserRentabiliteDepuisGps();
             actualiserGuidageNavigation();
             actualiserEncadreDestinationNavigation();
             verifierEcartItineraire();
@@ -14073,7 +14085,9 @@ window.addEventListener(
 
 var intervalleCalculRentabiliteGratuitMs = 3 * 60 * 1000;
 var intervalleCalculRentabilitePremiumMs = 15 * 1000;
+var intervalleCalculRentabiliteGpsMs = 15 * 1000;
 var dernierCalculPeriodiqueRentabilite = Date.now();
+var dernierCalculGpsRentabilite = 0;
 
 function intervalleCalculRentabiliteActuel() {
 
@@ -14098,6 +14112,23 @@ function actualiserRentabilitePeriodiquement() {
 
     calculerMeilleureStation();
     dernierCalculPeriodiqueRentabilite = Date.now();
+
+}
+
+function actualiserRentabiliteDepuisGps() {
+
+    var maintenant = Date.now();
+
+    if (
+        maintenant - dernierCalculGpsRentabilite
+        < intervalleCalculRentabiliteGpsMs
+    ) {
+        return;
+    }
+
+    calculerMeilleureStation();
+    dernierCalculGpsRentabilite = maintenant;
+    dernierCalculPeriodiqueRentabilite = maintenant;
 
 }
 
@@ -16326,21 +16357,22 @@ function symboleManeuvre(maneuvre) {
 function texteManeuvre(etape) {
 
     var maneuvre = etape.maneuver || {};
-    var voie = etape.name ? " sur " + etape.name : "";
+    var nomVoie = String(etape.name || "")
+        .replace(/\btoward\b/gi, "direction")
+        .replace(/\bonto\b/gi, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    var voie = nomVoie
+        ? /^direction\b/i.test(nomVoie)
+            ? " " + nomVoie
+            : " sur " + nomVoie
+        : "";
     var modificateur = maneuvre.modifier || "straight";
     var type = maneuvre.type || "";
     var sortie = etape.exits || maneuvre.exit || "";
-    var instruction = (etape.instruction || "").trim();
 
     if (maneuvre.type === "arrive") {
         return "Vous \u00eates arriv\u00e9";
-    }
-    if (
-        instruction
-        && type === "continue"
-        && instruction.toLowerCase() !== "continue"
-    ) {
-        return instruction;
     }
     if (type === "off ramp") {
         return "Prenez la sortie" + (sortie ? " " + sortie : "") + voie;
@@ -16357,8 +16389,15 @@ function texteManeuvre(etape) {
             : "Restez \u00e0 droite" + voie;
     }
     if (type === "roundabout" || type === "rotary") {
-        return "Au rond-point, prenez la sortie "
-            + (maneuvre.exit || "indiqu\u00e9e")
+        var numeroSortie = Number(maneuvre.exit || sortie);
+        var libelleSortie = Number.isFinite(numeroSortie)
+            && numeroSortie > 0
+                ? numeroSortie === 1
+                    ? "1re sortie"
+                    : Math.round(numeroSortie) + "e sortie"
+                : "sortie indiqu\u00e9e";
+        return "Au rond-point, prenez la "
+            + libelleSortie
             + voie;
     }
     if (modificateur.includes("left")) {
