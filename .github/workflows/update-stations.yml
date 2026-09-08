@@ -34,6 +34,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Installer les dependances de mise a jour
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install requests defusedxml
+
       - name: Mettre a jour les donnees officielles
         run: |
           for tentative in 1 2 3; do
