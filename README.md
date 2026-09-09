@@ -1,4 +1,11 @@
 # carburant-app
+
+## Application iOS sans Mac
+
+La cible Capacitor se trouve dans `ios/` et sa compilation distante dans
+`codemagic.yaml`. La configuration Apple, la signature et TestFlight sont
+documentes dans `IOS_CODEMAGIC.md`.
+
 ## Stockage PostgreSQL
 
 L'application utilise PostgreSQL quand la variable `DATABASE_URL` est configuree. Sans cette variable, elle conserve le stockage JSON historique.

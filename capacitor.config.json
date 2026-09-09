@@ -1,9 +1,16 @@
-﻿{
+{
   "appId": "com.optiplein.app",
   "appName": "OptiPlein",
   "webDir": "www",
   "server": {
-    "url": "https://carburant-app-v1kt.onrender.com/web",
-    "cleartext": false
+    "url": "https://www.optiplein.fr/web",
+    "cleartext": false,
+    "allowNavigation": ["www.optiplein.fr", "optiplein.fr"]
+  },
+  "ios": {
+    "contentInset": "always",
+    "preferredContentMode": "mobile",
+    "allowsLinkPreview": false,
+    "scrollEnabled": true
   }
 }
