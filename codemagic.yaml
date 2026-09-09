@@ -1,0 +1,60 @@
+workflows:
+  optiplein-ios-testflight:
+    name: OptiPlein iOS - TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+      cancel_previous_builds: true
+    integrations:
+      app_store_connect: optiplein_app_store
+    environment:
+      node: 22
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.optiplein.app
+      vars:
+        XCODE_PROJECT: ios/App/App.xcodeproj
+        XCODE_SCHEME: App
+    cache:
+      cache_paths:
+        - $CM_BUILD_DIR/node_modules
+        - $HOME/Library/Caches/org.swift.swiftpm
+    scripts:
+      - name: Installer les dépendances JavaScript
+        script: npm ci
+      - name: Synchroniser Capacitor avec iOS
+        script: ./node_modules/.bin/cap sync ios
+      - name: Vérifier la configuration iOS
+        script: |
+          test -f "$XCODE_PROJECT/project.pbxproj"
+          test -f "ios/App/App/Info.plist"
+          test -f "ios/App/App/PrivacyInfo.xcprivacy"
+          plutil -lint ios/App/App/Info.plist
+          plutil -lint ios/App/App/PrivacyInfo.xcprivacy
+      - name: Numéroter la version
+        script: |
+          cd ios/App
+          xcrun agvtool new-version -all "$BUILD_NUMBER"
+      - name: Configurer la signature Apple
+        script: xcode-project use-profiles
+      - name: Construire le fichier IPA
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false

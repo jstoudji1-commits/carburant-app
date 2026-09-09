@@ -5,7 +5,7 @@
     <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>fr</string>
 	<key>CFBundleDisplayName</key>
         <string>OptiPlein</string>
 	<key>CFBundleExecutable</key>
@@ -22,12 +22,14 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>OptiPlein utilise votre position pendant l'utilisation pour afficher les stations autour de vous et guider votre itineraire.</string>
+	<string>OptiPlein utilise votre position pendant l’utilisation pour afficher les stations proches, calculer les détours et assurer le guidage vers votre destination.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>OptiPlein utilise l'orientation du telephone pour stabiliser l'affichage GPS pendant la navigation.</string>
+	<string>OptiPlein utilise l’orientation de l’iPhone pour orienter et stabiliser la flèche sur la carte pendant le guidage.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
