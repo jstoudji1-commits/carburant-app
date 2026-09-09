@@ -404,6 +404,52 @@ body{
     color:#b42318;
 }
 
+.account-profile{
+    display:grid;
+    gap:10px;
+}
+
+.account-profile-email{
+    margin:0;
+    color:var(--muted);
+    font-size:12px;
+    font-weight:800;
+    line-height:1.35;
+}
+
+.account-profile-fields{
+    display:grid;
+    gap:8px;
+}
+
+.account-profile-fields input{
+    width:100%;
+    padding:10px 11px;
+    border:1px solid #cbd5dd;
+    border-radius:8px;
+    color:var(--ink);
+    font-size:14px;
+}
+
+.account-delete-link{
+    display:block;
+    margin-top:8px;
+    padding-top:11px;
+    border-top:1px solid #edf1f3;
+    color:#b42318;
+    font-size:13px;
+    font-weight:800;
+    text-align:center;
+    text-decoration:none;
+}
+
+.account-delete-link:hover,
+.account-delete-link:focus-visible{
+    color:#8f1b13;
+    text-decoration:underline;
+    text-underline-offset:3px;
+}
+
 .vehicle-list{
     display:grid;
     gap:8px;
@@ -3646,6 +3692,14 @@ body{
                     <button
                         type="button"
                         class="premium-menu-button active"
+                        data-premium-page="account"
+                        onclick="changerPagePremium('account')"
+                    >
+                        Mon compte
+                    </button>
+                    <button
+                        type="button"
+                        class="premium-menu-button"
                         data-premium-page="vehicles"
                         onclick="changerPagePremium('vehicles')"
                     >
@@ -3685,8 +3739,92 @@ body{
                     </button>
                 </nav>
 
+                <section
+                    class="premium-page premium-only active"
+                    id="premium-page-account"
+                    hidden
+                >
+                    <div class="premium-panel-card">
+                        <p class="premium-panel-title">
+                            Mes informations
+                        </p>
+                        <p class="account-profile-email">
+                            Compte : <span id="account-profile-email">-</span>
+                        </p>
+                        <div class="account-profile">
+                            <div class="account-profile-fields">
+                                <input
+                                    id="account-profile-name"
+                                    type="text"
+                                    maxlength="80"
+                                    autocomplete="name"
+                                    placeholder="Nom"
+                                >
+                                <input
+                                    id="account-profile-phone"
+                                    type="tel"
+                                    maxlength="30"
+                                    autocomplete="tel"
+                                    placeholder="T&eacute;l&eacute;phone"
+                                >
+                                <input
+                                    id="account-profile-city"
+                                    type="text"
+                                    maxlength="90"
+                                    autocomplete="address-level2"
+                                    placeholder="Ville"
+                                >
+                            </div>
+                            <button
+                                type="button"
+                                class="premium-option-button"
+                                onclick="enregistrerProfilCompte(event)"
+                            >
+                                Enregistrer mes informations
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="premium-panel-card">
+                        <p class="premium-panel-title">
+                            S&eacute;curit&eacute;
+                        </p>
+                        <div class="account-profile">
+                            <div class="account-profile-fields">
+                                <input
+                                    id="account-current-password"
+                                    type="password"
+                                    minlength="8"
+                                    autocomplete="current-password"
+                                    placeholder="Mot de passe actuel"
+                                >
+                                <input
+                                    id="account-new-password"
+                                    type="password"
+                                    minlength="8"
+                                    autocomplete="new-password"
+                                    placeholder="Nouveau mot de passe"
+                                >
+                            </div>
+                            <button
+                                type="button"
+                                class="premium-option-button"
+                                onclick="changerMotDePasseCompte(event)"
+                            >
+                                Modifier mon mot de passe
+                            </button>
+                        </div>
+                        <a
+                            class="account-delete-link"
+                            href="/suppression-compte"
+                        >
+                            Demander la suppression de mon compte
+                        </a>
+                    </div>
+                </section>
+
                 <div
-                    class="premium-page active"
+                    class="premium-page"
                     id="premium-page-vehicles"
                 >
                     <div
@@ -8140,6 +8278,7 @@ var favorisStationsCle = "optiplein-favoris";
 var planCompteCle = "optiplein-plan";
 var vehiculesCle = "optiplein-vehicules";
 var vehiculeActifCle = "optiplein-vehicule-actif";
+var profilCompteCle = "optiplein-profil";
 var historiqueEconomiesCle = "optiplein-historique-economies";
 var lieuxTrajetCle = "optiplein-lieux-trajet";
 var alertesPrixCle = "optiplein-alertes-prix";
@@ -8751,9 +8890,193 @@ function initialiserBoutonsLieuxTrajet() {
 
 window.addEventListener("load", initialiserBoutonsLieuxTrajet);
 
+function lireProfilCompteLocal() {
+
+    try {
+        var profil = JSON.parse(
+            localStorage.getItem(profilCompteCle)
+        ) || {};
+
+        return {
+            nom: String(profil.nom || "").trim(),
+            telephone: String(profil.telephone || "").trim(),
+            ville: String(profil.ville || "").trim()
+        };
+    } catch (erreur) {
+        return {
+            nom: "",
+            telephone: "",
+            ville: ""
+        };
+    }
+
+}
+
+function enregistrerProfilCompteLocal(profil) {
+
+    localStorage.setItem(
+        profilCompteCle,
+        JSON.stringify({
+            nom: String(profil && profil.nom || "").trim(),
+            telephone: String(profil && profil.telephone || "").trim(),
+            ville: String(profil && profil.ville || "").trim()
+        })
+    );
+
+}
+
+function champsProfilCompteDepuisFormulaire() {
+
+    return {
+        nom: (
+            document.getElementById("account-profile-name").value || ""
+        ).trim(),
+        telephone: (
+            document.getElementById("account-profile-phone").value || ""
+        ).trim(),
+        ville: (
+            document.getElementById("account-profile-city").value || ""
+        ).trim()
+    };
+
+}
+
+function remplirFormulaireMonCompte(force) {
+
+    var email = localStorage.getItem(compteEmailCle) || "";
+    var profil = lireProfilCompteLocal();
+    var emailAffiche = document.getElementById("account-profile-email");
+    var champNom = document.getElementById("account-profile-name");
+    var champTelephone = document.getElementById("account-profile-phone");
+    var champVille = document.getElementById("account-profile-city");
+    var elementActif = document.activeElement;
+
+    if (emailAffiche) {
+        emailAffiche.textContent = email || "-";
+    }
+
+    [
+        [champNom, profil.nom],
+        [champTelephone, profil.telephone],
+        [champVille, profil.ville]
+    ].forEach(function(definition) {
+        var champ = definition[0];
+        var valeur = definition[1];
+
+        if (!champ) {
+            return;
+        }
+
+        if (force || (champ !== elementActif && !champ.value)) {
+            champ.value = valeur || "";
+        }
+    });
+
+}
+
+async function chargerProfilCompteDepuisServeur() {
+
+    if (!compteUtilisateurConnecte()) {
+        return;
+    }
+
+    var resultat = await requeteCompte(
+        "/api/compte/profil",
+        {
+            method: "GET"
+        }
+    );
+
+    enregistrerProfilCompteLocal(resultat.profil || {});
+    remplirFormulaireMonCompte(true);
+
+}
+
+window.enregistrerProfilCompte = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte("Connectez-vous pour modifier votre compte.", "error");
+        return;
+    }
+
+    try {
+        var profil = champsProfilCompteDepuisFormulaire();
+        definirStatutCompte("Enregistrement du compte...", "");
+        var resultat = await requeteCompte(
+            "/api/compte/profil",
+            {
+                method: "PATCH",
+                body: JSON.stringify(profil)
+            }
+        );
+        enregistrerProfilCompteLocal(resultat.profil || profil);
+        remplirFormulaireMonCompte(true);
+        definirStatutCompte("Informations du compte enregistr\u00e9es.", "success");
+    } catch (erreur) {
+        definirStatutCompte(erreur.message, "error");
+    }
+
+};
+
+window.changerMotDePasseCompte = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var ancienChamp = document.getElementById("account-current-password");
+    var nouveauChamp = document.getElementById("account-new-password");
+    var ancienMotDePasse = ancienChamp ? ancienChamp.value : "";
+    var nouveauMotDePasse = nouveauChamp ? nouveauChamp.value : "";
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte("Connectez-vous pour modifier votre mot de passe.", "error");
+        return;
+    }
+
+    if (ancienMotDePasse.length < 8 || nouveauMotDePasse.length < 8) {
+        definirStatutCompte(
+            "Le mot de passe doit contenir au moins 8 caract\u00e8res.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        definirStatutCompte("Modification du mot de passe...", "");
+        await requeteCompte(
+            "/api/compte/mot-de-passe",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    ancien_mot_de_passe: ancienMotDePasse,
+                    nouveau_mot_de_passe: nouveauMotDePasse
+                })
+            }
+        );
+        if (ancienChamp) {
+            ancienChamp.value = "";
+        }
+        if (nouveauChamp) {
+            nouveauChamp.value = "";
+        }
+        definirStatutCompte("Mot de passe modifi\u00e9.", "success");
+    } catch (erreur) {
+        definirStatutCompte(erreur.message, "error");
+    }
+
+};
+
 function donneesCompteLocales() {
 
     return {
+        profil: lireProfilCompteLocal(),
         favoris: lireFavoris(),
         vehicules: lireVehicules(),
         vehicule_actif: localStorage.getItem(vehiculeActifCle) || "",
@@ -8791,6 +9114,10 @@ function appliquerDonneesCompte(donnees) {
 
     applicationDonneesCompteEnCours = true;
 
+    localStorage.setItem(
+        profilCompteCle,
+        JSON.stringify(donnees.profil || {})
+    );
     localStorage.setItem(
         favorisStationsCle,
         JSON.stringify(donnees.favoris || [])
@@ -8845,6 +9172,7 @@ function appliquerDonneesCompte(donnees) {
     actualiserLieuxTrajet();
     actualiserRayonPremium(false);
     actualiserPlanCompte();
+    remplirFormulaireMonCompte(true);
     actualiserAlertesPrixPremium();
     actualiserStatistiquesPremium();
     calculerMeilleureStation();
@@ -8899,6 +9227,8 @@ function actualiserInterfaceCompte() {
     if (boutonDeconnexion) {
         boutonDeconnexion.hidden = !connecte;
     }
+
+    remplirFormulaireMonCompte(false);
 
     definirStatutCompte(
         connecte
@@ -8973,6 +9303,9 @@ async function finaliserConnexionCompte(resultat, sauvegarderLocal) {
 
     localStorage.setItem(compteTokenCle, resultat.token);
     localStorage.setItem(compteEmailCle, resultat.email);
+    if (resultat.donnees && resultat.donnees.profil) {
+        enregistrerProfilCompteLocal(resultat.donnees.profil);
+    }
 
     if (sauvegarderLocal) {
         await sauvegarderCompteMaintenant();
@@ -8980,6 +9313,7 @@ async function finaliserConnexionCompte(resultat, sauvegarderLocal) {
         appliquerDonneesCompte(resultat.donnees || {});
     }
 
+    await chargerProfilCompteDepuisServeur().catch(function() {});
     actualiserInterfaceCompte();
 
 }
@@ -9130,6 +9464,7 @@ async function restaurerSessionCompte() {
             localStorage.setItem(compteEmailCle, resultat.email);
         }
         appliquerDonneesCompte(resultat.donnees || {});
+        await chargerProfilCompteDepuisServeur().catch(function() {});
         window.clearTimeout(restaurationSessionCompteTimer);
         restaurationSessionCompteTimer = null;
         definirStatutCompte("", "");
@@ -11751,7 +12086,7 @@ function actualiserJaugeReservoir() {
 
 window.actualiserJaugeReservoir = actualiserJaugeReservoir;
 
-var pagePremiumActive = "vehicles";
+var pagePremiumActive = "account";
 
 function actualiserHistoriqueEconomiesPremium() {
 
@@ -12028,7 +12363,7 @@ function actualiserPagesPremium() {
     var premium = comptePremiumActif();
 
     if (!premium) {
-        pagePremiumActive = "vehicles";
+        pagePremiumActive = "account";
     }
 
     document.querySelectorAll(".premium-menu-button").forEach(
@@ -12071,6 +12406,7 @@ function actualiserPagesPremium() {
 window.changerPagePremium = function(page) {
 
     pagePremiumActive = [
+        "account",
         "vehicles",
         "history",
         "alerts",
@@ -12078,7 +12414,7 @@ window.changerPagePremium = function(page) {
         "options"
     ].indexOf(page) >= 0
         ? page
-        : "vehicles";
+        : "account";
     actualiserPagesPremium();
 
 };
