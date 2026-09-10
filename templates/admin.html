@@ -600,6 +600,44 @@
                         Actualiser
                     </button>
                 </div>
+                <form
+                    class="station-tools"
+                    onsubmit="creerCompteAdmin(event)"
+                    style="padding:0 18px 12px"
+                >
+                    <input
+                        id="admin-account-email"
+                        type="email"
+                        autocomplete="off"
+                        placeholder="E-mail du compte"
+                        value="apple-review@optiplein.fr"
+                        required
+                    >
+                    <input
+                        id="admin-account-password"
+                        type="password"
+                        autocomplete="new-password"
+                        placeholder="Mot de passe temporaire"
+                    >
+                    <input
+                        id="admin-account-name"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Nom"
+                        value="Apple Review"
+                    >
+                    <input
+                        id="admin-account-city"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Ville"
+                        value="Paris"
+                    >
+                    <button type="submit">
+                        Cr&eacute;er / valider
+                    </button>
+                </form>
+                <p class="status" id="admin-account-status" style="padding:0 18px 12px"></p>
                 <div class="table-wrap" id="comptes-wrap"></div>
             </section>
 
@@ -1840,6 +1878,54 @@
                 }
             );
             await chargerAdmin();
+        }
+
+        async function creerCompteAdmin(event) {
+            event.preventDefault();
+
+            var statut = document.getElementById("admin-account-status");
+            var champEmail = document.getElementById("admin-account-email");
+            var champMotDePasse = document.getElementById("admin-account-password");
+            var champNom = document.getElementById("admin-account-name");
+            var champVille = document.getElementById("admin-account-city");
+            var email = champEmail.value.trim();
+            var motDePasse = champMotDePasse.value;
+
+            if (!email) {
+                statut.textContent = "Renseignez l'e-mail du compte.";
+                return;
+            }
+
+            statut.textContent = "Création ou validation du compte...";
+
+            try {
+                var resultat = await requeteAdmin(
+                    "/api/admin/compte",
+                    {
+                        method: "POST",
+                        body: JSON.stringify({
+                            email: email,
+                            mot_de_passe: motDePasse,
+                            plan: "premium",
+                            email_verified: true,
+                            nom: champNom.value.trim(),
+                            ville: champVille.value.trim(),
+                            vehicule_demo: true
+                        })
+                    }
+                );
+                champMotDePasse.value = "";
+                statut.textContent =
+                    "Compte prêt : "
+                    + resultat.email
+                    + " / "
+                    + (resultat.plan === "premium" ? "Premium" : "Gratuit")
+                    + " / e-mail vérifié.";
+                await chargerAdmin();
+            } catch (erreur) {
+                statut.textContent = erreur.message
+                    || "Impossible de créer le compte.";
+            }
         }
 
         function deconnexionAdmin() {

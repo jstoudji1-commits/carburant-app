@@ -650,6 +650,19 @@ class AdminChangementPlan(BaseModel):
     plan: Literal["free", "premium"]
 
 
+class AdminCompteUtilisateur(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(min_length=5, max_length=160)
+    mot_de_passe: str = Field(default="", max_length=120)
+    plan: Literal["free", "premium"] = "premium"
+    email_verified: bool = True
+    nom: str = Field(default="", max_length=80)
+    ville: str = Field(default="", max_length=90)
+    vehicule_demo: bool = True
+
+
 class AdminCorrectionStation(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
@@ -6557,6 +6570,111 @@ def changer_plan_admin(
         "ok": True,
         "email": email,
         "plan": changement.plan,
+        "updated_at": utilisateur["updated_at"],
+    }
+
+
+@app.post("/api/admin/compte")
+def creer_ou_modifier_compte_admin(
+    compte_admin: AdminCompteUtilisateur,
+    request: Request,
+):
+
+    verifier_admin(request)
+    email = normaliser_email(compte_admin.email)
+
+    if not email_valide(email):
+        raise HTTPException(
+            status_code=422,
+            detail="L'adresse e-mail n'est pas valide.",
+        )
+
+    mot_de_passe = compte_admin.mot_de_passe.strip()
+    comptes = charger_comptes_utilisateurs()
+    utilisateurs = comptes.setdefault("users", {})
+    utilisateur = utilisateurs.get(email)
+    maintenant = date_iso_maintenant()
+
+    if not utilisateur and len(mot_de_passe) < 8:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Un mot de passe d'au moins 8 caractères est obligatoire "
+                "pour créer un compte."
+            ),
+        )
+
+    if utilisateur:
+        donnees = dict(utilisateur.get("data", {}) or {})
+    else:
+        donnees = limiter_donnees_compte(DonneesCompte())
+        utilisateur = {
+            "email": email,
+            "password": {},
+            "created_at": maintenant,
+            "updated_at": maintenant,
+            "email_verified": compte_admin.email_verified,
+            "data": donnees,
+        }
+
+    if mot_de_passe:
+        if len(mot_de_passe) < 8:
+            raise HTTPException(
+                status_code=422,
+                detail="Le mot de passe doit contenir au moins 8 caractères.",
+            )
+        utilisateur["password"] = hasher_mot_de_passe(mot_de_passe)
+
+    donnees["plan"] = compte_admin.plan
+    profil = dict(donnees.get("profil", {}) or {})
+    if compte_admin.nom:
+        profil["nom"] = compte_admin.nom
+    if compte_admin.ville:
+        profil["ville"] = compte_admin.ville
+    donnees["profil"] = profil_compte_nettoye(profil, email)
+
+    if compte_admin.vehicule_demo and not donnees.get("vehicules"):
+        donnees["vehicules"] = [
+            {
+                "id": "apple-review-vehicle",
+                "nom": "Véhicule Apple",
+                "profil": "essence",
+                "motorisation": "essence",
+                "reservoir": "50",
+                "conso": "6.5",
+                "autonomie": "769",
+                "parametres": "Compte de validation Apple",
+                "jauge": 60,
+            }
+        ]
+        donnees["vehicule_actif"] = "apple-review-vehicle"
+        donnees["vehicule_principal"] = "apple-review-vehicle"
+
+    utilisateur["email_verified"] = bool(compte_admin.email_verified)
+    if utilisateur["email_verified"]:
+        utilisateur.pop("email_verification_hash", None)
+        utilisateur.pop("email_verification_expires_at", None)
+
+    utilisateur["data"] = limiter_donnees_compte(
+        DonneesCompte.model_validate(donnees)
+    )
+    utilisateur["data"]["profil"] = profil_compte_nettoye(
+        utilisateur["data"].get("profil", {}),
+        email,
+    )
+    utilisateur["data"]["securite"] = securite_compte_nettoyee(
+        utilisateur["data"].get("securite", {}),
+        utilisateur,
+    )
+    utilisateur["updated_at"] = maintenant
+    utilisateurs[email] = utilisateur
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "email": email,
+        "plan": utilisateur["data"].get("plan", "free"),
+        "email_verified": utilisateur.get("email_verified", False),
         "updated_at": utilisateur["updated_at"],
     }
 
