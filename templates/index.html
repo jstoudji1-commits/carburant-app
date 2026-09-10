@@ -339,6 +339,10 @@ body{
     background:#ffffff;
 }
 
+.account-sync[hidden]{
+    display:none;
+}
+
 .account-sync-title{
     margin:0;
     color:var(--ink);
@@ -8459,11 +8463,9 @@ function actualiserControleCarteTotalenergies() {
     var caseCarte = document.getElementById("carte-totalenergies-active");
     var vehicule = vehiculeActif();
     var carburant = vehicule ? carburantPourVehicule(vehicule) : "";
-    var carburantCarte = String(carburantSelectionne || "").toLowerCase();
     var afficher = Boolean(
         vehicule
         && carburantEligibleAvantageTotalenergies(carburant)
-        && carburantEligibleAvantageTotalenergies(carburantCarte)
     );
 
     if (conteneur) {
@@ -8484,8 +8486,29 @@ window.modifierCarteTotalenergies = function() {
         String(Boolean(caseCarte && caseCarte.checked))
     );
     programmerSauvegardeCompte();
-    calculerMeilleureStation();
-    recalculerTrajetPrepareApresChangementAvantageTotalenergies();
+
+    var latitudeRecherche = Number.isFinite(latitudeUtilisateur)
+        ? latitudeUtilisateur
+        : latitudeDerniereRecherche;
+    var longitudeRecherche = Number.isFinite(longitudeUtilisateur)
+        ? longitudeUtilisateur
+        : longitudeDerniereRecherche;
+    var actualisationRentabilite = (
+        Number.isFinite(latitudeRecherche)
+        && Number.isFinite(longitudeRecherche)
+    )
+        ? actualiserStationsEconomieVehicule(
+            latitudeRecherche,
+            longitudeRecherche,
+            null
+        )
+        : Promise.resolve(false);
+
+    actualisationRentabilite.finally(function() {
+        dernierCalculPeriodiqueRentabilite = 0;
+        calculerMeilleureStation();
+        recalculerTrajetPrepareApresChangementAvantageTotalenergies();
+    });
 
 };
 
@@ -9183,6 +9206,7 @@ function appliquerDonneesCompte(donnees) {
 function actualiserInterfaceCompte() {
 
     var email = localStorage.getItem(compteEmailCle) || "";
+    var blocCompte = document.querySelector(".account-sync");
     var titreCompte = document.querySelector(".account-sync-title");
     var texteCompte = document.querySelector(".account-sync-copy");
     var champEmail = document.getElementById("account-email");
@@ -9194,6 +9218,10 @@ function actualiserInterfaceCompte() {
 
     if (champEmail && email) {
         champEmail.value = email;
+    }
+
+    if (blocCompte) {
+        blocCompte.hidden = connecte;
     }
 
     if (titreCompte) {
@@ -9984,6 +10012,153 @@ function lisserCap(capPrecedent, nouveauCap, facteur) {
     return (
         capPrecedent + difference * facteur + 360
     ) % 360;
+
+}
+
+function differenceCapAbsolue(capReference, capCible) {
+
+    if (
+        !Number.isFinite(capReference)
+        || !Number.isFinite(capCible)
+    ) {
+        return Number.NaN;
+    }
+
+    return Math.abs(((capCible - capReference + 540) % 360) - 180);
+
+}
+
+function capRentabiliteUtilisateur() {
+
+    if (!utilisateurEnMouvement) {
+        return Number.NaN;
+    }
+
+    var capNavigation = capNavigationFiable(3500);
+
+    if (Number.isFinite(capNavigation)) {
+        return capNavigation;
+    }
+
+    return Number.isFinite(capFlecheStabilise)
+        ? capFlecheStabilise
+        : Number.NaN;
+
+}
+
+function vitesseUtilisateurKmh() {
+
+    return Number.isFinite(vitesseUtilisateurMps)
+        ? Math.max(0, vitesseUtilisateurMps) * 3.6
+        : 0;
+
+}
+
+function distanceActualisationStationsActuelleKm() {
+
+    var vitesseKmh = vitesseUtilisateurKmh();
+
+    if (!utilisateurEnMouvement || vitesseKmh < 8) {
+        return distanceActualisationKm;
+    }
+
+    if (vitesseKmh >= 110) {
+        return 0.65;
+    }
+
+    if (vitesseKmh >= 70) {
+        return 0.45;
+    }
+
+    return 0.3;
+
+}
+
+function delaiActualisationStationsActuelMs() {
+
+    var vitesseKmh = vitesseUtilisateurKmh();
+
+    if (!utilisateurEnMouvement || vitesseKmh < 8) {
+        return delaiActualisationMs;
+    }
+
+    if (vitesseKmh >= 110) {
+        return 12000;
+    }
+
+    if (vitesseKmh >= 70) {
+        return 15000;
+    }
+
+    return 20000;
+
+}
+
+function intervalleCalculRentabiliteGpsActuel() {
+
+    var vitesseKmh = vitesseUtilisateurKmh();
+
+    if (!utilisateurEnMouvement || vitesseKmh < 8) {
+        return intervalleCalculRentabiliteGpsMs;
+    }
+
+    if (vitesseKmh >= 110) {
+        return 5000;
+    }
+
+    if (vitesseKmh >= 70) {
+        return 7000;
+    }
+
+    return 10000;
+
+}
+
+function calculerPenaliteRetourStationSansItineraire(
+    latitudeCalcul,
+    longitudeCalcul,
+    station,
+    distanceStationKm
+) {
+
+    if (
+        navigationActive
+        || !utilisateurEnMouvement
+        || vitesseUtilisateurKmh() < 12
+        || distanceStationKm < 0.12
+    ) {
+        return 0;
+    }
+
+    var capUtilisateur = capRentabiliteUtilisateur();
+
+    if (!Number.isFinite(capUtilisateur)) {
+        return 0;
+    }
+
+    var capVersStation = calculerCapDeplacement(
+        latitudeCalcul,
+        longitudeCalcul,
+        station.latitude,
+        station.longitude
+    );
+    var ecartCap = differenceCapAbsolue(
+        capUtilisateur,
+        capVersStation
+    );
+
+    if (!Number.isFinite(ecartCap) || ecartCap <= 95) {
+        return 0;
+    }
+
+    var facteurRetour = Math.min(1, Math.max(0, (ecartCap - 95) / 75));
+    var margeAccesKm = vitesseUtilisateurKmh() >= 90
+        ? 1.2
+        : vitesseUtilisateurKmh() >= 50
+            ? 0.6
+            : 0.25;
+
+    return (distanceStationKm * 2 + margeAccesKm) * facteurRetour;
 
 }
 
@@ -10983,8 +11158,13 @@ async function actualiserStationsSelonPosition(force) {
         || Number.isNaN(longitudeDerniereRecherche)
         || relanceElectriqueNecessaire;
 
+    var distanceActualisationCibleKm =
+        distanceActualisationStationsActuelleKm();
+    var delaiActualisationCibleMs =
+        delaiActualisationStationsActuelMs();
+
     var distanceParcourue = positionInitialeManquante
-        ? distanceActualisationKm
+        ? distanceActualisationCibleKm
         : distanceDeplacementKm(
             latitudeDerniereRecherche,
             longitudeDerniereRecherche,
@@ -10995,12 +11175,12 @@ async function actualiserStationsSelonPosition(force) {
     var delaiRespecte =
         positionInitialeManquante
         || maintenant - derniereActualisationStations
-            >= delaiActualisationMs;
+            >= delaiActualisationCibleMs;
 
     if (
         !force
         && (
-            distanceParcourue < distanceActualisationKm
+            distanceParcourue < distanceActualisationCibleKm
             || !delaiRespecte
         )
     ) {
@@ -12199,7 +12379,7 @@ function actualiserHistoriqueEconomiesPremium() {
 }
 
 var capacitesPremiumArchitecture = {
-    optimisation_avancee: "Optimisation avanc\u00e9e : prix, d\u00e9tour, consommation, temps perdu et volume achet\u00e9.",
+    optimisation_avancee: "Optimisation avanc\u00e9e : prix, d\u00e9tour, consommation, temps du trajet et volume achet\u00e9.",
     alertes_prix: "Alertes de prix : seuils par carburant, borne, station ou zone.",
     favoris_illimites: "Favoris illimit\u00e9s : stations, bornes et lieux utiles.",
     historique_avance: "Historique avanc\u00e9 : \u00e9conomies d\u00e9taill\u00e9es et sauvegard\u00e9es.",
@@ -13283,7 +13463,7 @@ function ajouterExplicationRentabilite(
         + formaterKmRentabilite(station.distanceDetourKm)
         + " = "
         + formaterEurosRentabilite(station.coutCarburantDetour)
-        + ", temps perdu "
+        + ", temps du trajet "
         + formaterMinutesRentabilite(station.tempsPerduMinutes)
         + (
             stationElectrique(station)
@@ -13297,7 +13477,6 @@ function ajouterExplicationRentabilite(
                     + " kW"
                 : ""
         )
-        + " (information non convertie en euros)"
         + ". Gain net "
         + formaterEurosRentabilite(economie)
         + reference
@@ -13417,14 +13596,25 @@ function calculerRentabiliteStations(
                     routePourProgression
                 )
                 : null;
-            var stationDepassee = Boolean(
+            var stationDepasseeNavigation = Boolean(
                 navigationActive
                 && progressionUtilisateur
                 && positionRouteStation
                 && positionRouteStation.distanceRouteKm
                     < progressionUtilisateur.distanceRouteKm - 0.4
             );
-            var penaliteDemiTourKm = stationDepassee
+            var penaliteRetourSansItineraireKm =
+                stationDepasseeNavigation
+                    ? 0
+                    : calculerPenaliteRetourStationSansItineraire(
+                        latitudeCalcul,
+                        longitudeCalcul,
+                        station,
+                        distance
+                    );
+            var stationDepassee = stationDepasseeNavigation
+                || penaliteRetourSansItineraireKm > 0;
+            var penaliteDemiTourKm = stationDepasseeNavigation
                 ? Math.max(
                     distance * 2,
                     (
@@ -13432,7 +13622,7 @@ function calculerRentabiliteStations(
                         - positionRouteStation.distanceRouteKm
                     ) * 2
                 )
-                : 0;
+                : penaliteRetourSansItineraireKm;
             var coutDemiTour = penaliteDemiTourKm
                 * consommation / 100
                 * prixTrajetReference;
@@ -14457,7 +14647,7 @@ function actualiserRentabiliteDepuisGps() {
 
     if (
         maintenant - dernierCalculGpsRentabilite
-        < intervalleCalculRentabiliteGpsMs
+        < intervalleCalculRentabiliteGpsActuel()
     ) {
         return;
     }

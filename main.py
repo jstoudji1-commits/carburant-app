@@ -1985,7 +1985,7 @@ CAPACITES_PREMIUM = {
         "libelle": "Optimisation avancée",
         "description": (
             "Compare les stations une à une avec détour, consommation, "
-            "temps perdu, puissance de charge et trajet réel."
+            "temps du trajet, puissance de charge et trajet réel."
         ),
     },
     "alertes_prix": {
