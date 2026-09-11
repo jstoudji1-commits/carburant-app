@@ -2846,6 +2846,106 @@ body{
     outline:none;
 }
 
+.trip-place-editor-backdrop{
+    position:fixed;
+    inset:0;
+    z-index:1600;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    background:rgba(8,20,30,.28);
+}
+
+.trip-place-editor-backdrop[hidden]{
+    display:none;
+}
+
+.trip-place-editor-panel{
+    width:min(420px, 100%);
+    padding:16px;
+    border:1px solid #dce7df;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 18px 45px rgba(5,20,32,.22);
+}
+
+.trip-place-editor-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+}
+
+.trip-place-editor-title{
+    margin:0;
+    color:var(--ink);
+    font-size:18px;
+    font-weight:850;
+}
+
+.trip-place-editor-close{
+    width:34px;
+    height:34px;
+    border:1px solid #dce4ea;
+    border-radius:8px;
+    background:#fff;
+    color:var(--ink);
+    font-size:22px;
+    line-height:1;
+    cursor:pointer;
+}
+
+.trip-place-editor-field label{
+    display:block;
+    margin-bottom:6px;
+    color:var(--ink);
+    font-size:13px;
+    font-weight:800;
+}
+
+.trip-place-editor-field input{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid #cbd5dd;
+    border-radius:8px;
+    color:var(--ink);
+    font-size:14px;
+}
+
+.trip-place-editor-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:12px;
+}
+
+.trip-place-editor-action{
+    min-height:42px;
+    border:1px solid #d8e2e8;
+    border-radius:8px;
+    background:#fff;
+    color:var(--ink);
+    font-size:14px;
+    font-weight:850;
+    cursor:pointer;
+}
+
+.trip-place-editor-action.primary{
+    border-color:var(--green);
+    background:var(--green);
+    color:#fff;
+}
+
+.trip-place-editor-status{
+    min-height:18px;
+    margin:9px 0 0 0;
+    color:#5b6a75;
+    font-size:12px;
+    line-height:1.3;
+}
+
 .trip-favorites{
     display:flex;
     flex-wrap:wrap;
@@ -8565,35 +8665,274 @@ function libelleTypeLieuTrajet(type) {
 
 }
 
-async function enregistrerLieuTrajetDepuisAdresse(type) {
+var lieuTrajetEditionType = "";
+var destinationLieuTrajetSelectionnee = null;
+var minuteurSuggestionsLieuTrajet = null;
+
+function obtenirEditeurLieuTrajet() {
+
+    var editeur = document.getElementById("trip-place-editor");
+
+    if (editeur) {
+        return editeur;
+    }
+
+    editeur = document.createElement("div");
+    editeur.id = "trip-place-editor";
+    editeur.className = "trip-place-editor-backdrop";
+    editeur.hidden = true;
+    editeur.innerHTML = ''
+        + '<section class="trip-place-editor-panel" role="dialog" aria-modal="true">'
+        + '<div class="trip-place-editor-header">'
+        + '<p id="trip-place-editor-title" class="trip-place-editor-title">Adresse</p>'
+        + '<button type="button" id="trip-place-editor-close" class="trip-place-editor-close" aria-label="Fermer">&times;</button>'
+        + '</div>'
+        + '<div class="trip-place-editor-field">'
+        + '<label id="trip-place-editor-label" for="trip-place-editor-input">Adresse</label>'
+        + '<input id="trip-place-editor-input" type="text" autocomplete="street-address" placeholder="Ville, adresse ou lieu">'
+        + '<div id="trip-place-editor-suggestions" class="trip-suggestions" hidden></div>'
+        + '</div>'
+        + '<p id="trip-place-editor-status" class="trip-place-editor-status"></p>'
+        + '<div class="trip-place-editor-actions">'
+        + '<button type="button" id="trip-place-editor-cancel" class="trip-place-editor-action">Annuler</button>'
+        + '<button type="button" id="trip-place-editor-save" class="trip-place-editor-action primary">Enregistrer</button>'
+        + '</div>'
+        + '</section>';
+
+    document.body.appendChild(editeur);
+
+    document.getElementById("trip-place-editor-input")
+        .addEventListener("input", demanderSuggestionsLieuTrajet);
+    document.getElementById("trip-place-editor-save")
+        .addEventListener("click", validerEditionLieuTrajet);
+    document.getElementById("trip-place-editor-cancel")
+        .addEventListener("click", fermerEditeurLieuTrajet);
+    document.getElementById("trip-place-editor-close")
+        .addEventListener("click", fermerEditeurLieuTrajet);
+    editeur.addEventListener("click", function(evenement) {
+        if (evenement.target === editeur) {
+            fermerEditeurLieuTrajet();
+        }
+    });
+
+    return editeur;
+
+}
+
+function fermerEditeurLieuTrajet() {
+
+    var editeur = document.getElementById("trip-place-editor");
+
+    window.clearTimeout(minuteurSuggestionsLieuTrajet);
+    minuteurSuggestionsLieuTrajet = null;
+    destinationLieuTrajetSelectionnee = null;
+
+    if (editeur) {
+        editeur.hidden = true;
+    }
+
+}
+
+function masquerSuggestionsLieuTrajet() {
+
+    var conteneur = document.getElementById("trip-place-editor-suggestions");
+
+    if (!conteneur) {
+        return;
+    }
+
+    conteneur.hidden = true;
+    conteneur.innerHTML = "";
+
+}
+
+function enregistrerLieuTrajetDepuisDestination(type, destination, adresseSaisie) {
 
     var libelle = libelleTypeLieuTrajet(type);
-    var adresse = window.prompt(
-        "Adresse " + libelle.toLowerCase(),
-        ""
-    );
 
-    if (!adresse || !adresse.trim()) {
+    if (
+        !destination
+        || !Number.isFinite(Number(destination.latitude))
+        || !Number.isFinite(Number(destination.longitude))
+    ) {
+        return false;
+    }
+
+    var adresse = (
+        adresseSaisie
+        || destination.libelle
+        || ""
+    ).trim();
+    var lieux = lireLieuxTrajet();
+
+    lieux[type] = {
+        type: type,
+        libelle: libelle + " - " + adresse,
+        adresse: adresse,
+        latitude: Number(destination.latitude),
+        longitude: Number(destination.longitude),
+        date: new Date().toISOString()
+    };
+    enregistrerLieuxTrajet(lieux);
+
+    return true;
+
+}
+
+function afficherSuggestionsLieuTrajet(suggestions) {
+
+    var conteneur = document.getElementById("trip-place-editor-suggestions");
+    var champ = document.getElementById("trip-place-editor-input");
+
+    if (!conteneur || !champ) {
+        return;
+    }
+
+    conteneur.innerHTML = "";
+
+    if (!suggestions.length) {
+        conteneur.hidden = true;
+        return;
+    }
+
+    suggestions.forEach(function(suggestion) {
+        var bouton = document.createElement("button");
+
+        bouton.type = "button";
+        bouton.className = "trip-suggestion";
+        bouton.textContent = suggestion.libelle;
+        bouton.addEventListener("click", function() {
+            destinationLieuTrajetSelectionnee = suggestion;
+            champ.value = suggestion.libelle;
+            enregistrerLieuTrajetDepuisDestination(
+                lieuTrajetEditionType,
+                suggestion,
+                suggestion.libelle
+            );
+            fermerEditeurLieuTrajet();
+        });
+        conteneur.appendChild(bouton);
+    });
+
+    conteneur.hidden = false;
+
+}
+
+function demanderSuggestionsLieuTrajet() {
+
+    var champ = document.getElementById("trip-place-editor-input");
+    var statut = document.getElementById("trip-place-editor-status");
+
+    if (!champ) {
+        return;
+    }
+
+    var recherche = champ.value.trim();
+    destinationLieuTrajetSelectionnee = null;
+    window.clearTimeout(minuteurSuggestionsLieuTrajet);
+
+    if (statut) {
+        statut.textContent = "";
+    }
+
+    if (recherche.length < 3) {
+        masquerSuggestionsLieuTrajet();
+        return;
+    }
+
+    minuteurSuggestionsLieuTrajet = window.setTimeout(function() {
+        chargerSuggestionsDestinationTrajet(recherche).then(
+            function(suggestions) {
+                if (champ.value.trim() !== recherche) {
+                    return;
+                }
+                afficherSuggestionsLieuTrajet(suggestions);
+            }
+        ).catch(function() {
+            masquerSuggestionsLieuTrajet();
+        });
+    }, 260);
+
+}
+
+function ouvrirEditeurLieuTrajet(type) {
+
+    var editeur = obtenirEditeurLieuTrajet();
+    var libelle = libelleTypeLieuTrajet(type);
+    var lieux = lireLieuxTrajet();
+    var lieu = lieux[type] || {};
+    var titre = document.getElementById("trip-place-editor-title");
+    var label = document.getElementById("trip-place-editor-label");
+    var champ = document.getElementById("trip-place-editor-input");
+    var statut = document.getElementById("trip-place-editor-status");
+
+    lieuTrajetEditionType = type;
+    destinationLieuTrajetSelectionnee = null;
+    masquerSuggestionsLieuTrajet();
+
+    if (titre) {
+        titre.textContent = "Adresse " + libelle.toLowerCase();
+    }
+    if (label) {
+        label.textContent = "Adresse " + libelle.toLowerCase();
+    }
+    if (champ) {
+        champ.value = lieu.adresse || "";
+    }
+    if (statut) {
+        statut.textContent =
+            "Choisissez une suggestion pour enregistrer l'adresse exacte.";
+    }
+
+    editeur.hidden = false;
+    window.setTimeout(function() {
+        if (champ) {
+            champ.focus();
+            if (champ.value.length >= 3) {
+                demanderSuggestionsLieuTrajet();
+            }
+        }
+    }, 50);
+
+}
+
+async function validerEditionLieuTrajet() {
+
+    var champ = document.getElementById("trip-place-editor-input");
+    var statut = document.getElementById("trip-place-editor-status");
+    var adresse = champ ? champ.value.trim() : "";
+
+    if (!adresse) {
+        if (statut) {
+            statut.textContent = "Entrez une adresse.";
+        }
         return false;
     }
 
     try {
-        var destination = await geocoderDestinationTrajet(adresse.trim());
-        var lieux = lireLieuxTrajet();
-        lieux[type] = {
-            type: type,
-            libelle: libelle + " - " + adresse.trim(),
-            adresse: adresse.trim(),
-            latitude: destination.latitude,
-            longitude: destination.longitude,
-            date: new Date().toISOString()
-        };
-        enregistrerLieuxTrajet(lieux);
+        var destination = destinationLieuTrajetSelectionnee
+            || await geocoderDestinationTrajet(adresse);
+        enregistrerLieuTrajetDepuisDestination(
+            lieuTrajetEditionType,
+            destination,
+            destination.libelle || adresse
+        );
+        fermerEditeurLieuTrajet();
         return true;
     } catch (erreur) {
-        alert("Adresse introuvable. Essayez avec une adresse plus pr\u00e9cise.");
+        if (statut) {
+            statut.textContent =
+                "Adresse introuvable. Essayez avec une adresse plus pr\u00e9cise.";
+        }
         return false;
     }
+
+}
+
+async function enregistrerLieuTrajetDepuisAdresse(type) {
+
+    ouvrirEditeurLieuTrajet(type);
+    return false;
 
 }
 
