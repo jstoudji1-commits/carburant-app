@@ -2986,6 +2986,11 @@ body{
     color:var(--green-dark);
 }
 
+.trip-total-savings{
+    color:var(--green);
+    font-weight:900;
+}
+
 .trip-planner-actions{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -7759,6 +7764,11 @@ function normaliserStationCarte(station) {
         latitude: Number(station.latitude),
         longitude: Number(station.longitude),
         prix: Number(station.prix),
+        prixPublic: Number(
+            station.prix_public
+            ?? station.prixPublic
+            ?? station.prix
+        ),
         distance: Number.isFinite(Number(station.distance))
             ? Number(station.distance)
             : null,
@@ -13250,7 +13260,7 @@ function prixRentabiliteAvecCarteTotalenergies(
     carburant
 ) {
 
-    var prixPublic = Number(station && station.prix);
+    var prixPublic = prixPublicStationRentabilite(station);
     var avantage = station && station.avantageTotalenergies;
     var plafond = Number(avantage && avantage.prix_plafond);
 
@@ -13268,6 +13278,18 @@ function prixRentabiliteAvecCarteTotalenergies(
 
 }
 
+function prixPublicStationRentabilite(station) {
+
+    var prixPublic = Number(station && station.prixPublic);
+
+    if (Number.isFinite(prixPublic) && prixPublic > 0) {
+        return prixPublic;
+    }
+
+    return Number(station && station.prix);
+
+}
+
 function appliquerAvantageTotalenergiesStationsTrajet(
     stations,
     carteActive,
@@ -13275,7 +13297,7 @@ function appliquerAvantageTotalenergiesStationsTrajet(
 ) {
 
     return (stations || []).map(function(station) {
-        var prixPublic = Number(station && station.prix);
+        var prixPublic = prixPublicStationRentabilite(station);
         var prixEffectif = prixRentabiliteAvecCarteTotalenergies(
             station,
             carteActive,
@@ -13498,7 +13520,7 @@ function calculerRentabiliteStations(
     var carburantRentabilite = carburantRentabiliteActuel();
     var carteActive = carteTotalenergiesActive();
     stationsDisponibles = stationsDisponibles.map(function(station) {
-        var prixPublic = Number(station.prix);
+        var prixPublic = prixPublicStationRentabilite(station);
         var prixEffectif = prixRentabiliteAvecCarteTotalenergies(
             station,
             carteActive,
@@ -13515,7 +13537,7 @@ function calculerRentabiliteStations(
 
     var prixTrajetReference = stationsDisponibles.reduce(
         function(total, station) {
-            return total + station.prix;
+            return total + station.prixPublic;
         },
         0
     ) / stationsDisponibles.length;
@@ -15223,9 +15245,9 @@ function positionsComparablesAutourRavitaillement(positions, arret, rayonKm) {
             && arret
             && arret.station
             && !memeStation(position.station, arret.station)
-            && Number.isFinite(Number(position.station.prix))
-            && position.station.prix > 0
-            && position.station.prix !== 9.999
+            && Number.isFinite(prixPublicStationRentabilite(position.station))
+            && prixPublicStationRentabilite(position.station) > 0
+            && prixPublicStationRentabilite(position.station) !== 9.999
             && Math.abs(
                 Number(position.distanceRouteKm)
                 - Number(arret.distanceRouteKm)
@@ -15262,7 +15284,7 @@ function prixReferenceLocalRavitaillement(positions, arret, prixSecours) {
 
     return {
         prixReference: comparables.reduce(function(total, position) {
-            return total + position.station.prix;
+            return total + prixPublicStationRentabilite(position.station);
         }, 0) / comparables.length,
         nombreStations: comparables.length,
         rayonKm: rayonKm
@@ -15434,7 +15456,7 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
     }
 
     var prixReference = stationsValides.reduce(function(total, station, index, liste) {
-        return total + station.prix / liste.length;
+        return total + prixPublicStationRentabilite(station) / liste.length;
     }, 0);
     var litresComparaisonReelle = Math.min(
         reservoir,
@@ -15664,7 +15686,7 @@ function htmlArretsRavitaillement(resultat) {
         ? Number(resultat.economieTotale)
         : totalEconomieRavitaillements(resultat.arrets);
     var prefixe =
-        "<strong>\u00c9conomie totale estim\u00e9e : "
+        '<strong class="trip-total-savings">\u00c9conomie totale estim\u00e9e : '
         + echapperHtml(formaterEurosRentabilite(economieTotale))
         + "</strong><br>"
         + "<span>Compar\u00e9e aux stations autour des ravitaillements pr\u00e9vus.</span><br>"
