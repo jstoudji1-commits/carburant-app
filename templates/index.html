@@ -454,6 +454,10 @@ body{
     text-underline-offset:3px;
 }
 
+.account-delete-link + .premium-option-button{
+    margin-top:10px;
+}
+
 .vehicle-list{
     display:grid;
     gap:8px;
@@ -3927,8 +3931,15 @@ body{
                             class="account-delete-link"
                             href="/suppression-compte"
                         >
-                            Demander la suppression de mon compte
+                            Formulaire de suppression et droits RGPD
                         </a>
+                        <button
+                            type="button"
+                            class="premium-option-button danger"
+                            onclick="supprimerCompteUtilisateur(event)"
+                        >
+                            Supprimer définitivement mon compte
+                        </button>
                     </div>
                 </section>
 
@@ -9775,6 +9786,79 @@ window.deconnecterCompteOptiPlein = function(event) {
     actualiserInterfaceCompte();
     actualiserPlanCompte();
     calculerMeilleureStation();
+
+};
+
+function effacerDonneesCompteLocales() {
+
+    [
+        compteTokenCle,
+        compteEmailCle,
+        profilCompteCle,
+        favorisStationsCle,
+        vehiculesCle,
+        vehiculeActifCle,
+        historiqueEconomiesCle,
+        lieuxTrajetCle,
+        alertesPrixCle,
+        optimisationPremiumCle,
+        planCompteCle,
+        carteTotalenergiesCle
+    ].forEach(function(cle) {
+        localStorage.removeItem(cle);
+    });
+
+    chargerVehicule();
+    actualiserBoutonsFavoris();
+    actualiserLieuxTrajet();
+    actualiserRayonPremium(false);
+    actualiserPlanCompte();
+    actualiserInterfaceCompte();
+    actualiserAlertesPrixPremium();
+    actualiserStatistiquesPremium();
+    calculerMeilleureStation();
+
+}
+
+window.supprimerCompteUtilisateur = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte("Connectez-vous pour supprimer votre compte.", "error");
+        return;
+    }
+
+    var confirmation = window.confirm(
+        "Supprimer définitivement votre compte OptiPlein ? "
+        + "Vos informations sauvegardées seront effacées et vous serez déconnecté."
+    );
+
+    if (!confirmation) {
+        return;
+    }
+
+    try {
+        definirStatutCompte("Suppression du compte...", "");
+        await requeteCompte(
+            "/api/compte",
+            {
+                method: "DELETE"
+            }
+        );
+        window.clearTimeout(restaurationSessionCompteTimer);
+        restaurationSessionCompteTimer = null;
+        effacerDonneesCompteLocales();
+        definirStatutCompte(
+            "Compte supprimé. Vos données sauvegardées ont été effacées.",
+            "success"
+        );
+    } catch (erreur) {
+        definirStatutCompte(erreur.message, "error");
+    }
 
 };
 

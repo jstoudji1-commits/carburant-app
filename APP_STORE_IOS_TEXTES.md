@@ -70,8 +70,8 @@ OptiPlein est une app d'aide au ravitaillement carburant et à la préparation d
 
 Un compte peut être créé afin de synchroniser les véhicules, favoris, préférences, historique d'économies et accès Premium gratuit pendant la phase de lancement.
 
-La suppression de compte est accessible depuis l'app :
-Mon véhicule / Mon compte / Demander la suppression de mon compte.
+La suppression directe de compte est accessible depuis l'app :
+Mon véhicule / Mon compte / Supprimer définitivement mon compte.
 
 La politique de confidentialité est disponible ici :
 https://www.optiplein.fr/confidentialite

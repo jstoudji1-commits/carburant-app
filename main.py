@@ -8343,6 +8343,23 @@ def lire_securite_compte(request: Request):
     }
 
 
+@app.delete("/api/compte")
+def supprimer_compte_utilisateur(request: Request):
+
+    email, comptes, _utilisateur = compte_depuis_requete_ou_404(request)
+    utilisateurs = comptes.setdefault("users", {})
+    utilisateurs.pop(email, None)
+    for jeton, session_email in list(SESSIONS_UTILISATEURS.items()):
+        if session_email == email:
+            SESSIONS_UTILISATEURS.pop(jeton, None)
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "email": email,
+    }
+
+
 @app.post("/api/compte/mot-de-passe")
 def changer_mot_de_passe_compte(
     changement: ChangementMotDePasseCompte,
