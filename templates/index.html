@@ -3620,7 +3620,7 @@ body{
                 aria-controls="vehicle-panel"
                 onclick="basculerPanneauVehicule(event)"
             >
-                Mon v&eacute;hicule
+                Mon compte
             </button>
 
             <section
@@ -9783,6 +9783,7 @@ window.deconnecterCompteOptiPlein = function(event) {
     localStorage.removeItem(compteEmailCle);
     window.clearTimeout(restaurationSessionCompteTimer);
     restaurationSessionCompteTimer = null;
+    actualiserNomBoutonVehicule();
     actualiserInterfaceCompte();
     actualiserPlanCompte();
     calculerMeilleureStation();
@@ -13633,14 +13634,21 @@ async function accepterRavitaillementPlusRentable(station, arret, economie) {
 function actualiserNomBoutonVehicule() {
 
     var bouton = document.getElementById("vehicle-button");
-    var vehicule = vehiculeActif();
-    var nom = vehicule ? (vehicule.nom || "").trim() : "";
 
     if (!bouton) {
         return;
     }
 
-    bouton.textContent = nom || "Mon v\u00e9hicule";
+    if (!compteUtilisateurConnecte()) {
+        bouton.textContent = "Mon compte";
+        bouton.title = "Mon compte";
+        return;
+    }
+
+    var vehicule = vehiculeActif();
+    var nom = vehicule ? (vehicule.nom || "").trim() : "";
+
+    bouton.textContent = nom || "Mon compte";
     bouton.title = nom
         ? "Modifier " + nom
         : "Mon compte";
