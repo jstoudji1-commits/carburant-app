@@ -8421,6 +8421,7 @@ var nombreMaximumVehiculesPremium = 5;
 var sauvegardeCompteTimer = null;
 var restaurationSessionCompteTimer = null;
 var applicationDonneesCompteEnCours = false;
+var generationSessionCompte = 0;
 
 function planCompteActuel() {
 
@@ -9633,6 +9634,7 @@ async function requeteCompte(chemin, options) {
         "Content-Type": "application/json"
     };
     var jeton = jetonCompte();
+    var generationRequete = generationSessionCompte;
 
     if (jeton) {
         entetes.Authorization = "Bearer " + jeton;
@@ -9652,6 +9654,12 @@ async function requeteCompte(chemin, options) {
             return {};
         }
     );
+
+    if (generationRequete !== generationSessionCompte) {
+        // La session a été fermée pendant la requête : ne jamais réappliquer
+        // son jeton, son profil ou ses véhicules dans le nouvel état invité.
+        return new Promise(function() {});
+    }
 
     if (!reponse.ok) {
         var erreurRequete = new Error(
@@ -9779,45 +9787,41 @@ window.deconnecterCompteOptiPlein = function(event) {
         event.stopPropagation();
     }
 
-    localStorage.removeItem(compteTokenCle);
-    localStorage.removeItem(compteEmailCle);
-    window.clearTimeout(restaurationSessionCompteTimer);
-    restaurationSessionCompteTimer = null;
-    actualiserNomBoutonVehicule();
-    actualiserInterfaceCompte();
-    actualiserPlanCompte();
-    calculerMeilleureStation();
+    effacerDonneesCompteLocales();
 
 };
 
 function effacerDonneesCompteLocales() {
 
-    [
-        compteTokenCle,
-        compteEmailCle,
-        profilCompteCle,
-        favorisStationsCle,
-        vehiculesCle,
-        vehiculeActifCle,
-        historiqueEconomiesCle,
-        lieuxTrajetCle,
-        alertesPrixCle,
-        optimisationPremiumCle,
-        planCompteCle,
-        carteTotalenergiesCle
-    ].forEach(function(cle) {
-        localStorage.removeItem(cle);
+    generationSessionCompte += 1;
+    applicationDonneesCompteEnCours = true;
+    window.clearTimeout(sauvegardeCompteTimer);
+    window.clearTimeout(restaurationSessionCompteTimer);
+    sauvegardeCompteTimer = null;
+    restaurationSessionCompteTimer = null;
+
+    // Inclut les anciennes clés : sinon lireVehicules recrée le véhicule.
+    [localStorage, sessionStorage].forEach(function(stockage) {
+        var cles = [];
+        for (var i = 0; i < stockage.length; i += 1) {
+            cles.push(stockage.key(i));
+        }
+        cles.forEach(function(cle) {
+            if (cle && (cle.indexOf("optiplein-") === 0
+                || cle.indexOf("vehicule-") === 0)
+                && cle !== "optiplein-geolocalisation-acceptee") {
+                stockage.removeItem(cle);
+            }
+        });
     });
 
-    chargerVehicule();
-    actualiserBoutonsFavoris();
-    actualiserLieuxTrajet();
-    actualiserRayonPremium(false);
-    actualiserPlanCompte();
-    actualiserInterfaceCompte();
-    actualiserAlertesPrixPremium();
-    actualiserStatistiquesPremium();
-    calculerMeilleureStation();
+    // Retire immédiatement les données visibles, puis recrée un état invité
+    // sans trajet, formulaires, marqueurs ou paramètres personnels en mémoire.
+    document.querySelectorAll("input, textarea").forEach(function(champ) {
+        champ.value = "";
+    });
+    document.body.replaceChildren();
+    window.location.replace("/web");
 
 }
 
