@@ -118,3 +118,15 @@ ou un démarrage lent du serveur conserve la connexion et déclenche une nouvell
 tentative ; seuls un jeton invalide ou expiré, un compte absent ou une
 déconnexion volontaire effacent la session locale. La variable Render
 `ACCOUNT_TOKEN_SECRET` doit rester stable entre les déploiements.
+# Envoi des e-mails de compte
+
+Lorsque `BREVO_API_KEY` est configurée, OptiPlein tente d'abord l'envoi avec
+Brevo. Si Brevo refuse explicitement la requête (par exemple avec une erreur
+401 liée à une adresse IP Render non autorisée), l'application utilise
+automatiquement le serveur SMTP configuré par `SMTP_HOST`, `SMTP_PORT`,
+`SMTP_USER`, `SMTP_PASSWORD` et `SMTP_FROM`.
+
+Pour OVH Email Pro, la configuration attendue est généralement
+`SMTP_HOST=pro2.mail.ovh.net` et `SMTP_PORT=587` (STARTTLS). `SMTP_FROM` doit
+être l'adresse de la boîte ou un alias autorisé. Aucun mot de passe ne doit
+être ajouté au dépôt Git.

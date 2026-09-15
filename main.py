@@ -2326,12 +2326,33 @@ def resume_configuration_smtp():
     }
 
 
+class ErreurEnvoiBrevo(RuntimeError):
+
+    def __init__(self, status_code, detail):
+
+        self.status_code = int(status_code)
+        self.detail = str(detail or "")
+        super().__init__(
+            "Brevo a refusé l'envoi e-mail "
+            f"({self.status_code}) : {self.detail}"
+        )
+
+
 def message_erreur_smtp(erreur):
 
     configuration = lire_configuration_smtp()
     hote = configuration["host"]
     port = configuration["port"]
     hote_minuscule = hote.lower()
+
+    if isinstance(erreur, ErreurEnvoiBrevo):
+        if erreur.status_code == 401 and "unrecognised IP" in erreur.detail:
+            return (
+                "Brevo a refusé l'adresse IP sortante du serveur. "
+                "Autorisez-la dans Brevo ou utilisez la configuration SMTP "
+                "de secours."
+            )
+        return str(erreur)
 
     if isinstance(erreur, smtplib.SMTPAuthenticationError):
         detail = ""
@@ -2465,19 +2486,22 @@ def envoyer_email_brevo(message, api_key):
 
     if reponse.status_code >= 400:
         detail = reponse.text[:500]
-        raise RuntimeError(
-            "Brevo a refusé l'envoi e-mail "
-            f"({reponse.status_code}) : {detail}"
-        )
+        raise ErreurEnvoiBrevo(reponse.status_code, detail)
 
 
-def envoyer_email(message):
+def configuration_smtp_complete(configuration=None):
 
-    configuration_api = lire_configuration_email_api()
+    configuration = configuration or lire_configuration_smtp()
+    return bool(
+        configuration["host"]
+        and configuration["port"] > 0
+        and configuration["user"]
+        and configuration["password"]
+        and configuration["from"]
+    )
 
-    if configuration_api["brevo_api_key"]:
-        envoyer_email_brevo(message, configuration_api["brevo_api_key"])
-        return
+
+def envoyer_email_smtp(message):
 
     configuration = lire_configuration_smtp()
     hote = configuration["host"]
@@ -2523,6 +2547,39 @@ def envoyer_email(message):
             serveur.ehlo()
             serveur.login(utilisateur, mot_de_passe)
             serveur.send_message(message)
+
+
+def envoyer_email(message):
+
+    configuration_api = lire_configuration_email_api()
+    erreur_brevo = None
+
+    if configuration_api["brevo_api_key"]:
+        try:
+            envoyer_email_brevo(
+                message,
+                configuration_api["brevo_api_key"],
+            )
+            return
+        except ErreurEnvoiBrevo as erreur:
+            erreur_brevo = erreur
+            if not configuration_smtp_complete():
+                raise
+            logger.warning(
+                "Brevo a refusé l'envoi (%s). Bascule vers le SMTP de "
+                "secours.",
+                erreur.status_code,
+            )
+
+    try:
+        envoyer_email_smtp(message)
+    except Exception as erreur_smtp:
+        if erreur_brevo is not None:
+            raise RuntimeError(
+                "Échec des deux fournisseurs e-mail : "
+                f"{erreur_brevo}; SMTP : {erreur_smtp}"
+            ) from erreur_smtp
+        raise
 
 
 def envoyer_signalement_email(signalement):
