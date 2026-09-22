@@ -49,8 +49,7 @@ Fonctions principales :
 - calcul de la station la plus rentable ;
 - préparation de trajet avec ravitaillements conseillés ;
 - historique des économies ;
-- tendances de prix avec indice de confiance ;
-- prise en charge des bornes électriques lorsque les données sont disponibles.
+- tendances de prix avec indice de confiance.
 
 OptiPlein est conçu pour les trajets du quotidien comme pour les longs déplacements. L'objectif est simple : éviter les choix trompeurs, les détours inutiles et les pleins moins rentables qu'ils n'en ont l'air.
 
@@ -60,7 +59,7 @@ Pendant la phase de test et de lancement, les fonctionnalités Premium sont offe
 
 ## Mots-clés
 
-carburant, essence, gazole, station, prix essence, plein, gps, trajet, economie, autoroute, e85, gpl, borne recharge
+carburant, essence, gazole, station, prix essence, plein, gps, trajet, economie, autoroute, e85, gpl
 
 ## Note pour l'équipe de validation Apple
 

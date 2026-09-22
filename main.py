@@ -66,6 +66,10 @@ MISE_A_JOUR_IRVE_DYNAMIQUE_ACTIVE = os.getenv(
     "OPTIPLEIN_IRVE_DYNAMIC_UPDATE",
     "true",
 ).strip().lower() in {"1", "true", "yes", "on"}
+FONCTIONNALITE_ELECTRIQUE_ACTIVE = os.getenv(
+    "OPTIPLEIN_ENABLE_ELECTRIC",
+    "false",
+).strip().lower() in {"1", "true", "yes", "on"}
 IRVE_FUSEAU_HORAIRE = ZoneInfo("Europe/Paris")
 IRVE_HEURE_MISE_A_JOUR = 6
 EMAIL_SIGNALEMENT = os.getenv(
@@ -1985,7 +1989,7 @@ CAPACITES_PREMIUM = {
         "libelle": "Optimisation avancée",
         "description": (
             "Compare les stations une à une avec détour, consommation, "
-            "temps du trajet, puissance de charge et trajet réel."
+            "temps du trajet et trajet réel."
         ),
     },
     "alertes_prix": {
@@ -2015,7 +2019,7 @@ CAPACITES_PREMIUM = {
     "optimisation_longs_trajets": {
         "libelle": "Optimisation des longs trajets",
         "description": (
-            "Prépare plusieurs ravitaillements ou recharges selon autonomie, "
+            "Prépare plusieurs ravitaillements selon autonomie, "
             "jauge et rentabilité réelle."
         ),
     },
@@ -5873,6 +5877,157 @@ PAGES_EDITORIALES = {
 
 PAGES_EDITORIALES.update(GUIDES_EDITORIAUX)
 
+GUIDES_ELECTRIQUES_MASQUES = {
+    "guide_tarifs_irve",
+    "guide_disponibilite",
+    "guide_recharge_rapide",
+    "guide_batterie",
+    "guide_contribution_tarif",
+}
+
+
+def guide_electrique_masque(identifiant):
+
+    return (
+        not FONCTIONNALITE_ELECTRIQUE_ACTIVE
+        and identifiant in GUIDES_ELECTRIQUES_MASQUES
+    )
+
+
+TERMES_CONTENU_ELECTRIQUE = (
+    "borne",
+    "bornes",
+    "irve",
+    "recharge",
+    "électrique",
+    "electrique",
+    "électricité",
+    "electricite",
+    "kwh",
+    "batterie",
+)
+
+REMPLACEMENTS_CONTENU_ELECTRIQUE = (
+    (
+        "Guides carburant et recharge électrique | OptiPlein",
+        "Guides carburant | OptiPlein",
+    ),
+    (
+        "Guides pratiques OptiPlein pour comprendre les prix des carburants, "
+        "les tarifs de recharge, les données officielles et le calcul de rentabilité.",
+        "Guides pratiques OptiPlein pour comprendre les prix des carburants, "
+        "les données officielles et le calcul de rentabilité.",
+    ),
+    ("Guides carburant et recharge", "Guides carburant"),
+    (
+        "Procédure OptiPlein pour signaler un prix, une enseigne, une adresse, "
+        "une coordonnée ou un état de borne incorrect.",
+        "Procédure OptiPlein pour signaler un prix, une enseigne, une adresse "
+        "ou une coordonnée incorrecte.",
+    ),
+    (" et les données nationales des bornes électriques", ""),
+    (" et la recharge", " et les trajets"),
+)
+
+
+def texte_contient_contenu_electrique(valeur):
+
+    if valeur is None:
+        return False
+    if isinstance(valeur, str):
+        texte = valeur.casefold()
+        return any(terme in texte for terme in TERMES_CONTENU_ELECTRIQUE)
+    if isinstance(valeur, dict):
+        return any(texte_contient_contenu_electrique(v) for v in valeur.values())
+    if isinstance(valeur, (list, tuple)):
+        return any(texte_contient_contenu_electrique(v) for v in valeur)
+    return False
+
+
+def nettoyer_texte_contenu_electrique(texte):
+
+    if not isinstance(texte, str):
+        return texte
+
+    for ancien, nouveau in REMPLACEMENTS_CONTENU_ELECTRIQUE:
+        texte = texte.replace(ancien, nouveau)
+    return texte
+
+
+def filtrer_section_contenu_electrique(section):
+
+    if texte_contient_contenu_electrique(section.get("title", "")):
+        return None
+
+    section_filtre = dict(section)
+    for cle in ("paragraphs", "bullets"):
+        if cle in section_filtre:
+            section_filtre[cle] = [
+                nettoyer_texte_contenu_electrique(texte)
+                for texte in section_filtre.get(cle, [])
+                if not texte_contient_contenu_electrique(texte)
+            ]
+
+    for cle in ("links", "sources", "related"):
+        if cle in section_filtre:
+            section_filtre[cle] = [
+                element
+                for element in section_filtre.get(cle, [])
+                if not texte_contient_contenu_electrique(element)
+            ]
+
+    conserve = any(
+        section_filtre.get(cle)
+        for cle in ("paragraphs", "bullets", "links")
+    )
+    return section_filtre if conserve else None
+
+
+def masquer_contenu_electrique_page(page):
+
+    if FONCTIONNALITE_ELECTRIQUE_ACTIVE:
+        return page
+
+    page_filtre = dict(page)
+
+    for cle in (
+        "title",
+        "nav_title",
+        "description",
+        "eyebrow",
+        "hero_title",
+        "lead",
+    ):
+        if cle in page_filtre:
+            page_filtre[cle] = nettoyer_texte_contenu_electrique(
+                page_filtre[cle]
+            )
+
+    if "highlights" in page_filtre:
+        page_filtre["highlights"] = [
+            highlight
+            for highlight in page_filtre.get("highlights", [])
+            if not texte_contient_contenu_electrique(highlight)
+        ]
+
+    if "sections" in page_filtre:
+        sections = []
+        for section in page_filtre.get("sections", []):
+            section_filtre = filtrer_section_contenu_electrique(section)
+            if section_filtre:
+                sections.append(section_filtre)
+        page_filtre["sections"] = sections
+
+    for cle in ("faq_items", "related", "sources", "links"):
+        if cle in page_filtre:
+            page_filtre[cle] = [
+                element
+                for element in page_filtre.get(cle, [])
+                if not texte_contient_contenu_electrique(element)
+            ]
+
+    return page_filtre
+
 
 def renforcer_pages_pour_adsense():
 
@@ -6271,7 +6426,9 @@ def construire_page_observatoire(page):
 def contexte_page_editoriale(request, identifiant, page_override=None):
 
     base_url = url_base_application(request)
-    page = dict(page_override or PAGES_EDITORIALES[identifiant])
+    page = masquer_contenu_electrique_page(
+        dict(page_override or PAGES_EDITORIALES[identifiant])
+    )
     chemin = "/" + page.get("slug", "") if page.get("slug") else "/"
     if identifiant == "prix-locaux":
         page = construire_page_prix_locaux()
@@ -6284,37 +6441,37 @@ def contexte_page_editoriale(request, identifiant, page_override=None):
         "guide_carburants": "Carburants",
         "guide_sources": "Données et prix",
         "guide_rentabilite": "Calcul et économies",
-        "guide_tarifs_irve": "Recharge électrique",
-        "guide_disponibilite": "Recharge électrique",
         "guide_signalement": "Qualité des données",
         "guide_ecoconduite": "Écoconduite",
         "guide_trajet": "Trajets",
-        "guide_recharge_rapide": "Recharge électrique",
-        "guide_batterie": "Recharge électrique",
         "guide_gps": "Carte et GPS",
-        "guide_contribution_tarif": "Données et prix",
     }
 
     def carte_guide(identifiant_guide, guide):
+        guide_visible = masquer_contenu_electrique_page(dict(guide))
         nombre_mots = sum(
             len(str(paragraphe).split())
-            for section in guide.get("sections", [])
+            for section in guide_visible.get("sections", [])
             for paragraphe in section.get("paragraphs", [])
         )
         return {
             "identifiant": identifiant_guide,
-            "title": guide.get("hero_title", guide.get("nav_title", "Guide")),
-            "description": guide.get("description", ""),
+            "title": guide_visible.get(
+                "hero_title",
+                guide_visible.get("nav_title", "Guide"),
+            ),
+            "description": guide_visible.get("description", ""),
             "url": chemin_page_editoriale(identifiant_guide),
             "category": categories_guides.get(identifiant_guide, "Guide pratique"),
             "reading_time": max(2, round(nombre_mots / 210)),
-            "updated": guide.get("updated", ""),
+            "updated": guide_visible.get("updated", ""),
         }
 
     cartes_guides = [
         carte_guide(identifiant_guide, guide)
         for identifiant_guide, guide in GUIDES_EDITORIAUX.items()
         if identifiant_guide != "guides"
+        and not guide_electrique_masque(identifiant_guide)
     ]
 
     if page.get("article") and identifiant != "guides":
@@ -6452,6 +6609,8 @@ def page_guide(request: Request, article_slug: str):
         None,
     )
     if not identifiant:
+        raise HTTPException(status_code=404, detail="Guide introuvable.")
+    if guide_electrique_masque(identifiant):
         raise HTTPException(status_code=404, detail="Guide introuvable.")
 
     return rendre_page_editoriale(request, identifiant)
@@ -8758,6 +8917,8 @@ def page_web(
         "electrique",
     }:
         carburant = "gazole"
+    if carburant == "electrique" and not FONCTIONNALITE_ELECTRIQUE_ACTIVE:
+        carburant = "gazole"
 
     stations = charger_stations()
 
@@ -8867,6 +9028,8 @@ def page_web(
 
             "base_url": url_base_application(request),
 
+            "electric_enabled": FONCTIONNALITE_ELECTRIQUE_ACTIVE,
+
         }
 
     )    
@@ -8916,6 +9079,8 @@ def sitemap_xml(request: Request):
     pages_sitemap = []
 
     for identifiant, page in PAGES_EDITORIALES.items():
+        if guide_electrique_masque(identifiant):
+            continue
         chemin = chemin_page_editoriale(identifiant)
         if not any(entree[0] == chemin for entree in pages_sitemap):
             pages_sitemap.append(

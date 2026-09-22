@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, follow">
     <meta
         name="description"
-        content="OptiPlein compare les prix des carburants, les stations-service et les bornes de recharge pour préparer un trajet automobile rentable."
+        content="OptiPlein compare les prix des carburants et les stations-service pour préparer un trajet automobile rentable."
     >
     <link rel="canonical" href="{{ base_url }}/web">
     <title>OptiPlein - Optimisateur de carburant</title>
@@ -18,7 +18,7 @@
         "@id": {{ (base_url ~ "/web#application")|tojson }},
         "name": "OptiPlein",
         "url": {{ (base_url ~ "/web")|tojson }},
-        "description": "Comparateur français de prix des carburants, de stations-service et de bornes de recharge avec calcul de rentabilité et préparation d'itinéraire.",
+        "description": "Comparateur français de prix des carburants et de stations-service avec calcul de rentabilité et préparation d'itinéraire.",
         "applicationCategory": "TravelApplication",
         "applicationSubCategory": "Comparateur de prix des carburants et assistant de trajet automobile",
         "operatingSystem": "Web, Android, iOS",
@@ -4088,7 +4088,9 @@ body{
                                 <option value="e85">E85</option>
                                 <option value="gpl">GPL</option>
                                 <option value="hybride">Hybride</option>
+                                {% if electric_enabled %}
                                 <option value="electrique">&Eacute;lectrique</option>
+                                {% endif %}
                             </select>
 
                             <input
@@ -4242,7 +4244,7 @@ body{
                             Alertes de prix
                         </p>
                         <p class="premium-option-copy">
-                            Pr&eacute;parez des alertes par carburant, borne ou zone.
+                            Pr&eacute;parez des alertes par carburant, station ou zone.
                             Elles sont sauvegard&eacute;es avec votre compte.
                         </p>
                         <div
@@ -4420,6 +4422,7 @@ body{
                     GPL
                 </label>
 
+                {% if electric_enabled %}
                 <input
                     type="radio"
                     id="carburant-electrique"
@@ -4431,6 +4434,7 @@ body{
                     <span class="fuel-dot electric"></span>
                     &Eacute;lec
                 </label>
+                {% endif %}
             </div>
 
             <input
@@ -6916,6 +6920,7 @@ var actualisationStationsEconomieEnCours = null;
 var stationsTrajetFrance = null;
 var chargementStationsTrajetFrance = null;
 var carburantSelectionne = {{ carburant|tojson }};
+var electricFeatureEnabled = {{ electric_enabled|tojson }};
 var rayonCalculEconomieKm = Number({{ rayon|tojson }}) || 25;
 var rayonStationsPremiumCle = "optiplein-rayon-stations";
 var rayonStationsDefautKm = 25;
@@ -12471,7 +12476,8 @@ var profilsVehicule = {
         conso: "Consommation mixte (L/100 km)",
         autonomie: "Autonomie totale estim\u00e9e (km)",
         aide: "Profil hybride : renseignez votre consommation moyenne observ\u00e9e."
-    },
+    }
+    {% if electric_enabled %},
     electrique: {
         libelle: "\u00c9lectrique",
         reservoir: "Capacit\u00e9 batterie (kWh)",
@@ -12479,6 +12485,7 @@ var profilsVehicule = {
         autonomie: "Autonomie estim\u00e9e (km)",
         aide: "Profil \u00e9lectrique : la carte s\u00e9lectionne automatiquement les bornes de recharge."
     }
+    {% endif %}
 };
 var editeurVehiculeOuvert = false;
 var editionVehiculeExistant = false;
@@ -12514,6 +12521,12 @@ function creerIdVehicule() {
 }
 
 function profilVehiculeValide(profil) {
+
+    profil = String(profil || "");
+
+    if (!electricFeatureEnabled && profil === "electrique") {
+        return "essence";
+    }
 
     return profilsVehicule[profil] ? profil : "essence";
 
@@ -12967,11 +12980,11 @@ function actualiserHistoriqueEconomiesPremium() {
 
 var capacitesPremiumArchitecture = {
     optimisation_avancee: "Optimisation avanc\u00e9e : prix, d\u00e9tour, consommation, temps du trajet et volume achet\u00e9.",
-    alertes_prix: "Alertes de prix : seuils par carburant, borne, station ou zone.",
-    favoris_illimites: "Favoris illimit\u00e9s : stations, bornes et lieux utiles.",
+    alertes_prix: "Alertes de prix : seuils par carburant, station ou zone.",
+    favoris_illimites: "Favoris illimit\u00e9s : stations et lieux utiles.",
     historique_avance: "Historique avanc\u00e9 : \u00e9conomies d\u00e9taill\u00e9es et sauvegard\u00e9es.",
     statistiques: "Statistiques : total, moyenne, v\u00e9hicules et carburants.",
-    optimisation_longs_trajets: "Longs trajets : ravitaillements et recharges optimis\u00e9s."
+    optimisation_longs_trajets: "Longs trajets : ravitaillements optimis\u00e9s."
 };
 
 function actualiserCapacitesPremium() {

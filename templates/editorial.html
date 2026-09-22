@@ -52,7 +52,6 @@
         "knowsAbout": [
             "prix des carburants",
             "stations-service",
-            "recharge de véhicules électriques",
             "économies de carburant",
             "préparation d'itinéraires automobiles"
         ]
@@ -65,7 +64,7 @@
         "@id": {{ (base_url ~ "/web#application")|tojson }},
         "name": "OptiPlein",
         "url": {{ (base_url ~ "/web")|tojson }},
-        "description": "Comparateur français de prix des carburants, de stations-service et de bornes de recharge avec calcul de rentabilité et préparation d'itinéraire.",
+        "description": "Comparateur français de prix des carburants et de stations-service avec calcul de rentabilité et préparation d'itinéraire.",
         "applicationCategory": "TravelApplication",
         "applicationSubCategory": "Comparateur de prix des carburants et assistant de trajet automobile",
         "operatingSystem": "Web, Android, iOS",
@@ -88,8 +87,7 @@
             "Comparaison des prix des carburants",
             "Recherche de stations-service proches",
             "Calcul de la station la plus rentable",
-            "Préparation de trajets avec ravitaillements conseillés",
-            "Consultation des bornes de recharge électrique"
+            "Préparation de trajets avec ravitaillements conseillés"
         ]
     }
     </script>
@@ -152,7 +150,6 @@
         "about": [
             {"@type": "Thing", "name": "Prix des carburants en France"},
             {"@type": "Thing", "name": "Stations-service"},
-            {"@type": "Thing", "name": "Recharge de véhicules électriques"},
             {"@type": "Thing", "name": "Économies de carburant"},
             {"@type": "Thing", "name": "Itinéraires automobiles"}
         ]
@@ -1182,7 +1179,7 @@
             <section class="guide-directory" aria-labelledby="featured-guides-title">
                 <div class="guide-directory-head">
                     <h2 id="featured-guides-title">Guides recommand&eacute;s</h2>
-                    <p>Des explications ind&eacute;pendantes de la carte pour comprendre les prix, les calculs et la recharge.</p>
+                    <p>Des explications ind&eacute;pendantes de la carte pour comprendre les prix, les calculs et les trajets.</p>
                 </div>
                 <div class="guide-grid">
                     {% for guide in featured_guides %}
@@ -1256,7 +1253,7 @@
             <div class="faq-toolbar">
                 <label for="faq-search">
                     Rechercher dans les questions
-                    <input id="faq-search" type="search" placeholder="Ex. tarif, GPS, borne, compte…" autocomplete="off">
+                    <input id="faq-search" type="search" placeholder="Ex. tarif, GPS, compte…" autocomplete="off">
                 </label>
                 <span class="faq-count" id="faq-count">{{ page.faq_items|length }} réponses</span>
             </div>
