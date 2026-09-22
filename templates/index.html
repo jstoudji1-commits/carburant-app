@@ -3,6 +3,24 @@
 
 <head>
     <meta charset="utf-8">
+    <script>
+    // iPadOS can use a desktop user agent; Capacitor identifies the native app.
+    function estPlateformeIOS() {
+        var capacitor = window.Capacitor;
+        return Boolean(
+            (capacitor && typeof capacitor.getPlatform === "function"
+                && capacitor.getPlatform() === "ios")
+            || /iPad|iPhone|iPod/i.test(navigator.userAgent)
+            || (/Mac/i.test(navigator.platform) && navigator.maxTouchPoints > 1)
+        );
+    }
+    if (estPlateformeIOS()) {
+        document.documentElement.classList.add("plateforme-ios");
+    }
+    </script>
+    <style>
+        html.plateforme-ios #premium-note { display: none !important; }
+    </style>
     <meta name="robots" content="noindex, follow">
     <meta
         name="description"
@@ -13295,7 +13313,7 @@ function actualiserPlanCompte() {
     }
 
     if (offrePremium) {
-        offrePremium.hidden = compteUtilisateurConnecte();
+        offrePremium.hidden = estPlateformeIOS() || compteUtilisateurConnecte();
     }
 
     if (nouveauVehiculeBouton) {
