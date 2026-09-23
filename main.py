@@ -221,6 +221,24 @@ GRAPHHOPPER_API_KEY = lire_variable_graphhopper()
 SESSIONS_UTILISATEURS = {}
 PBKDF2_ITERATIONS = 260000
 PREMIUM_TEST_ACTIF = True
+APPLE_PREMIUM_PRODUCT_ID = os.getenv(
+    "APPLE_PREMIUM_PRODUCT_ID",
+    "optiplein_premium_yearly",
+).strip()
+APPLE_PREMIUM_PRODUCT_IDS = {
+    identifiant.strip()
+    for identifiant in os.getenv(
+        "APPLE_PREMIUM_PRODUCT_IDS",
+        ",".join(
+            [
+                APPLE_PREMIUM_PRODUCT_ID,
+                "optiplein_premium_annual",
+                "premium_yearly",
+            ]
+        ),
+    ).split(",")
+    if identifiant.strip()
+}
 DELAI_VALIDATION_EMAIL_SECONDES = 24 * 60 * 60
 DELAI_RECUPERATION_MOT_DE_PASSE_SECONDES = 60 * 60
 # Une connexion reste valable un an sur l'appareil. La déconnexion volontaire,
@@ -328,6 +346,7 @@ class CompteIdentifiants(BaseModel):
 
     email: str = Field(min_length=5, max_length=160)
     mot_de_passe: str = Field(min_length=8, max_length=120)
+    plateforme: Literal["web", "android", "ios"] = "web"
 
 
 class DonneesCompte(BaseModel):
@@ -349,6 +368,9 @@ class DonneesCompte(BaseModel):
     alertes_prix: list = Field(default_factory=list)
     statistiques: dict = Field(default_factory=dict)
     optimisation: dict = Field(default_factory=dict)
+    plateforme_creation: str = ""
+    plateforme_derniere_connexion: str = ""
+    abonnement_apple: dict = Field(default_factory=dict)
 
 
 class MiseAJourProfilCompte(BaseModel):
@@ -644,6 +666,19 @@ class SauvegardeCompte(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     donnees: DonneesCompte
+
+
+class AchatApplePremium(BaseModel):
+
+    model_config = ConfigDict(extra="allow")
+
+    product_id: str = Field(min_length=3, max_length=160)
+    transaction_id: str = Field(default="", max_length=160)
+    original_transaction_id: str = Field(default="", max_length=160)
+    purchase_date: str = Field(default="", max_length=80)
+    expiration_date: str = Field(default="", max_length=80)
+    signed_transaction: str = Field(default="", max_length=12000)
+    source: Literal["ios_storekit"] = "ios_storekit"
 
 
 class AdminChangementPlan(BaseModel):
@@ -1128,7 +1163,7 @@ def compte_premium_requis(request):
     utilisateur = comptes.get("users", {}).get(email, {})
     donnees = utilisateur.get("data", {})
 
-    if not premium_actif_donnees(donnees):
+    if not premium_actif_donnees(donnees, plateforme_depuis_requete(request)):
         raise HTTPException(
             status_code=403,
             detail="Accès Premium requis.",
@@ -2026,14 +2061,46 @@ CAPACITES_PREMIUM = {
 }
 
 
-def premium_actif_donnees(donnees):
+def plateforme_depuis_requete(request):
 
-    return PREMIUM_TEST_ACTIF or donnees.get("plan") == "premium"
+    plateforme = (
+        request.headers.get("X-OptiPlein-Platform", "")
+        if request
+        else ""
+    ).strip().lower()
+    return plateforme if plateforme in {"web", "android", "ios"} else "web"
 
 
-def limites_premium(donnees):
+def compte_ios_donnees(donnees, plateforme=None):
 
-    premium = premium_actif_donnees(donnees)
+    if plateforme == "ios":
+        return True
+
+    return any(
+        str(donnees.get(cle) or "").strip().lower() == "ios"
+        for cle in (
+            "plateforme_creation",
+            "plateforme_derniere_connexion",
+        )
+    )
+
+
+def premium_test_actif_pour_donnees(donnees, plateforme=None):
+
+    return PREMIUM_TEST_ACTIF and not compte_ios_donnees(donnees, plateforme)
+
+
+def premium_actif_donnees(donnees, plateforme=None):
+
+    return (
+        donnees.get("plan") == "premium"
+        or premium_test_actif_pour_donnees(donnees, plateforme)
+    )
+
+
+def limites_premium(donnees, plateforme=None):
+
+    premium = premium_actif_donnees(donnees, plateforme)
 
     return {
         "premium_actif": premium,
@@ -2044,7 +2111,11 @@ def limites_premium(donnees):
         "longs_trajets": premium,
         "alertes_prix": premium,
         "statistiques": premium,
-        "prix": "gratuit tout l'été" if PREMIUM_TEST_ACTIF else "3,99 €/an",
+        "prix": (
+            "gratuit tout l'été"
+            if premium_test_actif_pour_donnees(donnees, plateforme)
+            else "4,99 €/an"
+        ),
     }
 
 
@@ -2172,11 +2243,17 @@ def statistiques_compte(historique):
 def premium_compte_nettoye(donnees):
 
     historique = donnees.get("historique_economies", [])
+    plateforme = donnees.get("plateforme_derniere_connexion") or donnees.get(
+        "plateforme_creation"
+    )
 
     return {
-        "test_gratuit_ete": PREMIUM_TEST_ACTIF,
+        "test_gratuit_ete": premium_test_actif_pour_donnees(
+            donnees,
+            plateforme,
+        ),
         "capacites": CAPACITES_PREMIUM,
-        "limites": limites_premium(donnees),
+        "limites": limites_premium(donnees, plateforme),
         "alertes_prix": alertes_prix_nettoyees(
             donnees.get("alertes_prix", [])
         ),
@@ -2187,7 +2264,7 @@ def premium_compte_nettoye(donnees):
     }
 
 
-def limiter_donnees_compte(donnees):
+def limiter_donnees_compte(donnees, plateforme=None):
 
     donnees.favoris = donnees.favoris[:500]
     donnees.vehicules = vehicules_compte_nettoyes(donnees.vehicules)
@@ -2198,7 +2275,20 @@ def limiter_donnees_compte(donnees):
         5,
         min(50, int(donnees.rayon_stations or 25)),
     )
-    if PREMIUM_TEST_ACTIF:
+    donnees.plateforme_creation = limiter_texte_compte(
+        donnees.plateforme_creation,
+        20,
+    )
+    donnees.plateforme_derniere_connexion = limiter_texte_compte(
+        plateforme or donnees.plateforme_derniere_connexion,
+        20,
+    )
+    donnees.abonnement_apple = dict(donnees.abonnement_apple or {})
+
+    if premium_test_actif_pour_donnees(
+        donnees.model_dump(),
+        plateforme,
+    ):
         donnees.plan = "premium"
 
     donnees.profil = profil_compte_nettoye(donnees.profil)
@@ -2223,7 +2313,7 @@ def limiter_donnees_compte(donnees):
     return donnees.model_dump()
 
 
-def donnees_compte_premium_test(donnees):
+def donnees_compte_premium_test(donnees, plateforme=None):
 
     donnees = dict(donnees or {})
     donnees.setdefault("profil", profil_compte_nettoye({}))
@@ -2236,7 +2326,9 @@ def donnees_compte_premium_test(donnees):
         "statistiques",
         statistiques_compte(donnees.get("historique_economies", [])),
     )
-    if PREMIUM_TEST_ACTIF:
+    if plateforme:
+        donnees["plateforme_derniere_connexion"] = plateforme
+    if premium_test_actif_pour_donnees(donnees, plateforme):
         donnees["plan"] = "premium"
     donnees["premium"] = premium_compte_nettoye(donnees)
     return donnees
@@ -7991,6 +8083,7 @@ def creer_compte(
 ):
 
     email = normaliser_email(identifiants.email)
+    plateforme = identifiants.plateforme or plateforme_depuis_requete(request)
     adresse_client = request.client.host if request.client else "inconnue"
 
     if not email_valide(email):
@@ -8032,8 +8125,18 @@ def creer_compte(
     maintenant = datetime.now().astimezone().isoformat()
     donnees_initiales = utilisateur_existant.get(
         "data",
-        limiter_donnees_compte(DonneesCompte()),
-    ) if utilisateur_existant else limiter_donnees_compte(DonneesCompte())
+        limiter_donnees_compte(DonneesCompte(), plateforme),
+    ) if utilisateur_existant else limiter_donnees_compte(
+        DonneesCompte(
+            plateforme_creation=plateforme,
+            plateforme_derniere_connexion=plateforme,
+        ),
+        plateforme,
+    )
+    donnees_initiales["plateforme_creation"] = (
+        donnees_initiales.get("plateforme_creation") or plateforme
+    )
+    donnees_initiales["plateforme_derniere_connexion"] = plateforme
     donnees_initiales["profil"] = profil_compte_nettoye(
         donnees_initiales.get("profil", {}),
         email,
@@ -8092,6 +8195,7 @@ def creer_compte(
 def connecter_compte(identifiants: CompteIdentifiants, request: Request):
 
     email = normaliser_email(identifiants.email)
+    plateforme = identifiants.plateforme or plateforme_depuis_requete(request)
     adresse_client = request.client.host if request.client else "inconnue"
     verifier_limite_action(
         "connexion",
@@ -8121,6 +8225,7 @@ def connecter_compte(identifiants: CompteIdentifiants, request: Request):
         )
 
     donnees = synchroniser_meta_securite(utilisateur)
+    donnees["plateforme_derniere_connexion"] = plateforme
     donnees["securite"]["derniere_connexion"] = date_iso_maintenant()
     utilisateur["updated_at"] = date_iso_maintenant()
     enregistrer_comptes_utilisateurs(comptes)
@@ -8130,7 +8235,8 @@ def connecter_compte(identifiants: CompteIdentifiants, request: Request):
         "email": email,
         "token": creer_session(email),
         "donnees": donnees_compte_premium_test(
-            donnees
+            donnees,
+            plateforme,
         ),
     }
 
@@ -8169,15 +8275,16 @@ def valider_email_compte(token: str, request: Request):
         synchroniser_meta_securite(utilisateur)
         enregistrer_comptes_utilisateurs(comptes)
 
-        try:
-            envoyer_email_bienvenue_premium(
-                email,
-                url_base_application(request),
-            )
-        except Exception:
-            logger.exception(
-                "Impossible d’envoyer l’e-mail de bienvenue Premium."
-            )
+        if premium_actif_donnees(utilisateur.get("data", {})):
+            try:
+                envoyer_email_bienvenue_premium(
+                    email,
+                    url_base_application(request),
+                )
+            except Exception:
+                logger.exception(
+                    "Impossible d’envoyer l’e-mail de bienvenue Premium."
+                )
 
         return RedirectResponse(
             url="/web?email_verifie=1",
@@ -8194,14 +8301,17 @@ def valider_email_compte(token: str, request: Request):
 def lire_donnees_compte(request: Request):
 
     email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    plateforme = plateforme_depuis_requete(request)
     donnees = synchroniser_meta_securite(utilisateur)
+    donnees["plateforme_derniere_connexion"] = plateforme
 
     return {
         "ok": True,
         "email": email,
         "token": creer_session(email),
         "donnees": donnees_compte_premium_test(
-            donnees
+            donnees,
+            plateforme,
         ),
     }
 
@@ -8213,9 +8323,20 @@ def sauvegarder_donnees_compte(
 ):
 
     email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    donnees_existantes = utilisateur.get("data", {}) or {}
+    donnees_a_sauver = sauvegarde.donnees
+    donnees_a_sauver.plan = donnees_existantes.get("plan", "free")
+    donnees_a_sauver.abonnement_apple = dict(
+        donnees_existantes.get("abonnement_apple", {}) or {}
+    )
+    donnees_a_sauver.plateforme_creation = (
+        donnees_existantes.get("plateforme_creation")
+        or donnees_a_sauver.plateforme_creation
+    )
 
     utilisateur["data"] = limiter_donnees_compte(
-        sauvegarde.donnees
+        donnees_a_sauver,
+        plateforme_depuis_requete(request),
     )
     utilisateur["data"]["profil"] = profil_compte_nettoye(
         utilisateur["data"].get("profil", {}),
@@ -8232,7 +8353,8 @@ def sauvegarder_donnees_compte(
         "ok": True,
         "updated_at": utilisateur["updated_at"],
         "donnees": donnees_compte_premium_test(
-            utilisateur.get("data", {})
+            utilisateur.get("data", {}),
+            plateforme_depuis_requete(request),
         ),
     }
 
@@ -8320,18 +8442,31 @@ def lire_profils_vehicules_compte():
 
 
 @app.get("/api/premium/architecture")
-def architecture_premium():
+def architecture_premium(request: Request):
 
+    plateforme = plateforme_depuis_requete(request)
     donnees = {
-        "plan": "premium" if PREMIUM_TEST_ACTIF else "free",
+        "plan": (
+            "premium"
+            if premium_test_actif_pour_donnees({}, plateforme)
+            else "free"
+        ),
         "historique_economies": [],
+        "plateforme_derniere_connexion": plateforme,
     }
 
     return {
-        "test_gratuit_ete": PREMIUM_TEST_ACTIF,
-        "prix": "gratuit tout l'été" if PREMIUM_TEST_ACTIF else "3,99 €/an",
+        "test_gratuit_ete": premium_test_actif_pour_donnees(
+            donnees,
+            plateforme,
+        ),
+        "prix": (
+            "gratuit tout l'été"
+            if premium_test_actif_pour_donnees(donnees, plateforme)
+            else "4,99 €/an"
+        ),
         "capacites": CAPACITES_PREMIUM,
-        "limites": limites_premium(donnees),
+        "limites": limites_premium(donnees, plateforme),
         "modules": {
             "optimisation_avancee": "moteur_rentabilite",
             "alertes_prix": "alertes_prix",
@@ -8467,12 +8602,61 @@ def lire_premium_compte(request: Request):
 
     _email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
     donnees = synchroniser_meta_securite(utilisateur)
+    donnees["plateforme_derniere_connexion"] = plateforme_depuis_requete(request)
     donnees["premium"] = premium_compte_nettoye(donnees)
 
     return {
         "ok": True,
         "premium": donnees["premium"],
         "plan": donnees.get("plan", "free"),
+    }
+
+
+@app.post("/api/compte/premium/apple")
+def activer_premium_apple(
+    achat: AchatApplePremium,
+    request: Request,
+):
+
+    plateforme = plateforme_depuis_requete(request)
+
+    if plateforme != "ios":
+        raise HTTPException(
+            status_code=403,
+            detail="L’achat intégré Apple est réservé à l’application iOS.",
+        )
+
+    if achat.product_id not in APPLE_PREMIUM_PRODUCT_IDS:
+        raise HTTPException(
+            status_code=422,
+            detail="Produit Apple Premium non reconnu.",
+        )
+
+    email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    maintenant = date_iso_maintenant()
+    donnees = utilisateur.setdefault("data", {})
+    donnees["plan"] = "premium"
+    donnees["plateforme_derniere_connexion"] = "ios"
+    donnees["abonnement_apple"] = {
+        "product_id": achat.product_id,
+        "transaction_id": achat.transaction_id,
+        "original_transaction_id": achat.original_transaction_id,
+        "purchase_date": achat.purchase_date,
+        "expiration_date": achat.expiration_date,
+        "signed_transaction": achat.signed_transaction,
+        "source": achat.source,
+        "verified_at": maintenant,
+    }
+    donnees["premium"] = premium_compte_nettoye(donnees)
+    utilisateur["updated_at"] = maintenant
+    enregistrer_comptes_utilisateurs(comptes)
+
+    return {
+        "ok": True,
+        "email": email,
+        "plan": "premium",
+        "premium": donnees["premium"],
+        "donnees": donnees_compte_premium_test(donnees, "ios"),
     }
 
 
@@ -9029,6 +9213,7 @@ def page_web(
             "base_url": url_base_application(request),
 
             "electric_enabled": FONCTIONNALITE_ELECTRIQUE_ACTIVE,
+            "apple_premium_product_id": APPLE_PREMIUM_PRODUCT_ID,
 
         }
 

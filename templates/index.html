@@ -29,6 +29,9 @@
     <link rel="canonical" href="{{ base_url }}/web">
     <title>OptiPlein - Optimisateur de carburant</title>
     <link rel="icon" type="image/png" href="/static/favicon.png">
+    <meta name="apple-itunes-app" content="app-id=6810203217, app-argument=https://www.optiplein.fr/web">
+    <link rel="stylesheet" href="/static/ios-app-banner.css">
+    <script defer src="/static/ios-app-banner.js"></script>
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -3792,9 +3795,18 @@ body{
                             type="button"
                             class="account-plan-button"
                             id="plan-premium-button"
-                            onclick="changerPlanCompte('premium')"
+                            onclick="acheterPremiumIOS(event)"
                         >
-                            Premium
+                            Premium 4,99 €/an
+                        </button>
+                        <button
+                            type="button"
+                            class="account-plan-button"
+                            id="plan-restore-button"
+                            onclick="restaurerPremiumIOS(event)"
+                            hidden
+                        >
+                            Restaurer
                         </button>
                     </div>
                 </div>
@@ -8533,8 +8545,9 @@ var optimisationPremiumCle = "optiplein-optimisation-premium";
 var compteTokenCle = "optiplein-compte-token";
 var compteEmailCle = "optiplein-compte-email";
 var carteTotalenergiesCle = "optiplein-carte-totalenergies";
-var modeDecouvertePremiumActif = true;
-var choixFormuleMasquePendantTest = true;
+var modeDecouvertePremiumActif = !estPlateformeIOS();
+var choixFormuleMasquePendantTest = !estPlateformeIOS();
+var produitPremiumApple = {{ apple_premium_product_id|tojson }};
 var publiciteAdsenseActive = {{ adsense_active|tojson }};
 var publiciteAdsenseMasqueeVide = false;
 var nombreMaximumFavorisGratuit = 3;
@@ -8560,6 +8573,24 @@ function comptePremiumActif() {
             modeDecouvertePremiumActif
             || planCompteActuel() === "premium"
         );
+
+}
+
+function plateformeCompteActuelle() {
+
+    if (estPlateformeIOS()) {
+        return "ios";
+    }
+
+    if (
+        window.Capacitor
+        && typeof window.Capacitor.getPlatform === "function"
+        && window.Capacitor.getPlatform() === "android"
+    ) {
+        return "android";
+    }
+
+    return "web";
 
 }
 
@@ -9643,7 +9674,7 @@ function donneesCompteLocales() {
             notifications: true,
             carte_totalenergies: carteTotalenergiesActive()
         },
-        plan: compteUtilisateurConnecte() ? "premium" : planCompteActuel(),
+        plan: planCompteActuel(),
         historique_economies: lireHistoriqueEconomies(),
         lieux_trajet: lireLieuxTrajet(),
         rayon_stations: rayonStationsCompteActuel(),
@@ -9657,7 +9688,9 @@ function donneesCompteLocales() {
                 vehicules_max: nombreMaximumVehiculesActuel(),
                 recalcul_secondes: comptePremiumActif() ? 15 : 180
             }
-        }
+        },
+        plateforme_creation: plateformeCompteActuelle(),
+        plateforme_derniere_connexion: plateformeCompteActuelle()
     };
 
 }
@@ -9803,7 +9836,8 @@ function actualiserInterfaceCompte() {
 async function requeteCompte(chemin, options) {
 
     var entetes = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-OptiPlein-Platform": plateformeCompteActuelle()
     };
     var jeton = jetonCompte();
     var generationRequete = generationSessionCompte;
@@ -9862,7 +9896,8 @@ function identifiantsCompteDepuisFormulaire() {
 
     return {
         email: email,
-        mot_de_passe: motDePasse
+        mot_de_passe: motDePasse,
+        plateforme: plateformeCompteActuelle()
     };
 
 }
@@ -9908,7 +9943,11 @@ window.creerCompteOptiPlein = async function(event) {
             document.getElementById("account-password").value = "";
             definirStatutCompte(
                 "Compte cr\u00e9\u00e9. Cliquez sur le lien envoy\u00e9 par e-mail "
-                + "pour activer la d\u00e9couverte Premium.",
+                + (
+                    estPlateformeIOS()
+                        ? "pour activer votre compte."
+                        : "pour activer la d\u00e9couverte Premium."
+                ),
                 "success"
             );
             return;
@@ -9916,8 +9955,7 @@ window.creerCompteOptiPlein = async function(event) {
 
         await finaliserConnexionCompte(resultat, true);
         definirStatutCompte(
-            "Compte cr\u00e9\u00e9 : d\u00e9couverte Premium activ\u00e9e "
-            + "et donn\u00e9es sauvegard\u00e9es.",
+            "Compte cr\u00e9\u00e9 et donn\u00e9es sauvegard\u00e9es.",
             "success"
         );
     } catch (erreur) {
@@ -9960,6 +9998,133 @@ window.deconnecterCompteOptiPlein = function(event) {
     }
 
     effacerDonneesCompteLocales();
+
+};
+
+function pluginAchatsApple() {
+
+    return window.Capacitor
+        && window.Capacitor.Plugins
+        && window.Capacitor.Plugins.OptiPleinPurchases
+        ? window.Capacitor.Plugins.OptiPleinPurchases
+        : null;
+
+}
+
+async function synchroniserAchatApplePremium(transaction) {
+
+    var resultat = await requeteCompte(
+        "/api/compte/premium/apple",
+        {
+            method: "POST",
+            body: JSON.stringify({
+                product_id: transaction.productId || produitPremiumApple,
+                transaction_id: String(transaction.transactionId || ""),
+                original_transaction_id: String(
+                    transaction.originalTransactionId || ""
+                ),
+                purchase_date: transaction.purchaseDate || "",
+                expiration_date: transaction.expirationDate || "",
+                signed_transaction: transaction.signedTransaction || "",
+                source: "ios_storekit"
+            })
+        }
+    );
+
+    appliquerDonneesCompte(resultat.donnees || {});
+    actualiserInterfaceCompte();
+    actualiserPlanCompte();
+    dernierCalculPeriodiqueRentabilite = 0;
+    calculerMeilleureStation();
+
+}
+
+window.acheterPremiumIOS = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    if (!estPlateformeIOS()) {
+        changerPlanCompte("premium");
+        return;
+    }
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte(
+            "Cr\u00e9ez ou connectez votre compte avant de vous abonner.",
+            "error"
+        );
+        return;
+    }
+
+    var achats = pluginAchatsApple();
+    if (!achats || typeof achats.purchase !== "function") {
+        definirStatutCompte(
+            "L'achat int\u00e9gr\u00e9 Apple n'est pas disponible dans cette version.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        definirStatutCompte("Ouverture de l'achat Apple...", "");
+        var transaction = await achats.purchase({
+            productId: produitPremiumApple
+        });
+        await synchroniserAchatApplePremium(transaction || {});
+        definirStatutCompte("Premium activ\u00e9 avec l'abonnement Apple.", "success");
+    } catch (erreur) {
+        definirStatutCompte(
+            erreur && erreur.message
+                ? erreur.message
+                : "Achat Apple non finalis\u00e9.",
+            "error"
+        );
+    }
+
+};
+
+window.restaurerPremiumIOS = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte(
+            "Connectez votre compte avant de restaurer l'achat.",
+            "error"
+        );
+        return;
+    }
+
+    var achats = pluginAchatsApple();
+    if (!achats || typeof achats.restore !== "function") {
+        definirStatutCompte(
+            "La restauration Apple n'est pas disponible dans cette version.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        definirStatutCompte("Recherche de l'abonnement Apple...", "");
+        var transaction = await achats.restore({
+            productId: produitPremiumApple
+        });
+        await synchroniserAchatApplePremium(transaction || {});
+        definirStatutCompte("Abonnement Apple restaur\u00e9.", "success");
+    } catch (erreur) {
+        definirStatutCompte(
+            erreur && erreur.message
+                ? erreur.message
+                : "Aucun abonnement Apple actif trouv\u00e9.",
+            "error"
+        );
+    }
 
 };
 
@@ -10045,7 +10210,7 @@ async function sauvegarderCompteMaintenant() {
         return;
     }
 
-    await requeteCompte(
+    var resultat = await requeteCompte(
         "/api/compte/sauvegarde",
         {
             method: "POST",
@@ -10054,6 +10219,10 @@ async function sauvegarderCompteMaintenant() {
             })
         }
     );
+
+    if (resultat && resultat.donnees) {
+        appliquerDonneesCompte(resultat.donnees);
+    }
 
 }
 
@@ -13286,30 +13455,42 @@ function definirModeDestinationEncadre(actif) {
 function actualiserPlanCompte() {
 
     var premium = comptePremiumActif();
+    var ios = estPlateformeIOS();
+    var connecte = compteUtilisateurConnecte();
     var blocChoixFormule = document.querySelector(".account-plan");
     var boutonGratuit = document.getElementById("plan-free-button");
     var boutonPremium = document.getElementById("plan-premium-button");
+    var boutonRestaurer = document.getElementById("plan-restore-button");
     var comparatifPlan = document.getElementById("plan-comparison");
     var offrePremium = document.getElementById("premium-note");
     var nouveauVehiculeBouton = document.getElementById("vehicle-new-button");
 
     if (boutonGratuit) {
+        boutonGratuit.hidden = ios;
         boutonGratuit.classList.toggle("active", !premium);
     }
 
     if (boutonPremium) {
+        boutonPremium.textContent = ios ? "S'abonner 4,99 €/an" : "Premium";
         boutonPremium.classList.toggle("active", premium);
     }
 
+    if (boutonRestaurer) {
+        boutonRestaurer.hidden = !ios || premium;
+    }
+
     if (blocChoixFormule) {
-        blocChoixFormule.hidden = choixFormuleMasquePendantTest;
+        blocChoixFormule.hidden = ios
+            ? (!connecte || premium)
+            : choixFormuleMasquePendantTest;
     }
 
     actualiserPlacementPublicite();
 
     if (comparatifPlan) {
-        comparatifPlan.hidden =
-            choixFormuleMasquePendantTest || premium;
+        comparatifPlan.hidden = ios
+            ? (!connecte || premium)
+            : (choixFormuleMasquePendantTest || premium);
     }
 
     if (offrePremium) {
@@ -13337,6 +13518,11 @@ function actualiserPlanCompte() {
 }
 
 window.changerPlanCompte = function(plan) {
+
+    if (estPlateformeIOS() && plan === "premium") {
+        acheterPremiumIOS();
+        return;
+    }
 
     localStorage.setItem(
         planCompteCle,

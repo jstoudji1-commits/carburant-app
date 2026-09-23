@@ -24,11 +24,14 @@
     <meta name="robots" content="noindex, follow">
     <meta
         name="description"
-        content="OptiPlein compare les prix des carburants, les stations-service et les bornes de recharge pour préparer un trajet automobile rentable."
+        content="OptiPlein compare les prix des carburants et les stations-service pour préparer un trajet automobile rentable."
     >
     <link rel="canonical" href="{{ base_url }}/web">
     <title>OptiPlein - Optimisateur de carburant</title>
     <link rel="icon" type="image/png" href="/static/favicon.png">
+    <meta name="apple-itunes-app" content="app-id=6810203217, app-argument=https://www.optiplein.fr/web">
+    <link rel="stylesheet" href="/static/ios-app-banner.css">
+    <script defer src="/static/ios-app-banner.js"></script>
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -36,7 +39,7 @@
         "@id": {{ (base_url ~ "/web#application")|tojson }},
         "name": "OptiPlein",
         "url": {{ (base_url ~ "/web")|tojson }},
-        "description": "Comparateur français de prix des carburants, de stations-service et de bornes de recharge avec calcul de rentabilité et préparation d'itinéraire.",
+        "description": "Comparateur français de prix des carburants et de stations-service avec calcul de rentabilité et préparation d'itinéraire.",
         "applicationCategory": "TravelApplication",
         "applicationSubCategory": "Comparateur de prix des carburants et assistant de trajet automobile",
         "operatingSystem": "Web, Android, iOS",
@@ -424,6 +427,119 @@ body{
 
 .account-sync-status.error{
     color:#b42318;
+}
+
+.account-profile{
+    display:grid;
+    gap:10px;
+}
+
+.account-compact-card{
+    padding:0;
+    overflow:hidden;
+}
+
+.account-edit-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    width:100%;
+    padding:14px 15px;
+    border:0;
+    background:white;
+    color:var(--ink);
+    font:inherit;
+    cursor:pointer;
+}
+
+.account-edit-toggle span:first-child{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:16px;
+    font-weight:900;
+}
+
+.account-edit-icon{
+    display:grid;
+    flex:0 0 34px;
+    width:34px;
+    height:34px;
+    place-items:center;
+    border:1px solid #dce4ea;
+    border-radius:999px;
+    background:#f8fbf9;
+    color:var(--green-dark);
+}
+
+.account-edit-icon svg{
+    width:17px;
+    height:17px;
+    stroke-width:2.4;
+}
+
+.account-edit-toggle:hover .account-edit-icon,
+.account-edit-toggle:focus-visible .account-edit-icon{
+    border-color:var(--green);
+    background:#e8f7ec;
+}
+
+.account-edit-content{
+    display:grid;
+    gap:10px;
+    padding:0 15px 15px;
+    border-top:1px solid #edf1f3;
+}
+
+.account-edit-content[hidden]{
+    display:none;
+}
+
+.account-profile-email{
+    margin:0;
+    color:var(--muted);
+    font-size:12px;
+    font-weight:800;
+    line-height:1.35;
+}
+
+.account-profile-fields{
+    display:grid;
+    gap:8px;
+}
+
+.account-profile-fields input{
+    width:100%;
+    padding:10px 11px;
+    border:1px solid #cbd5dd;
+    border-radius:8px;
+    color:var(--ink);
+    font-size:14px;
+}
+
+.account-delete-link{
+    display:block;
+    margin-top:8px;
+    padding-top:11px;
+    border-top:1px solid #edf1f3;
+    color:#b42318;
+    font-size:13px;
+    font-weight:800;
+    text-align:center;
+    text-decoration:none;
+}
+
+.account-delete-link:hover,
+.account-delete-link:focus-visible{
+    color:#8f1b13;
+    text-decoration:underline;
+    text-underline-offset:3px;
+}
+
+.account-delete-link + .premium-option-button{
+    margin-top:10px;
 }
 
 .vehicle-list{
@@ -2193,6 +2309,12 @@ body{
     white-space:nowrap;
 }
 
+.avantage-total-ligne > span:last-child{
+    font-size:11px;
+    font-weight:900;
+    line-height:1;
+}
+
 .avantage-total-carte{
     position:relative;
     flex:0 0 22px;
@@ -3173,6 +3295,15 @@ body{
     font-size:15px;
 }
 
+.destination-next-refuel{
+    display:block;
+    margin-top:7px;
+    color:var(--green-dark);
+    font-size:14px;
+    font-weight:800;
+    line-height:1.35;
+}
+
 .economy-saving{
     display:inline-block;
     color:#159b31;
@@ -3350,6 +3481,16 @@ body{
     .app-menu-toggle{
         width:42px;
         height:42px;
+    }
+
+    .app-main-nav{
+        position:fixed;
+        top:90px;
+        left:12px;
+        right:12px;
+        width:auto;
+        max-height:calc(100vh - 110px - var(--ad-banner-height));
+        max-height:calc(100dvh - 110px - var(--ad-banner-height));
     }
 
     .vehicle-panel{
@@ -3563,7 +3704,7 @@ body{
                 aria-controls="vehicle-panel"
                 onclick="basculerPanneauVehicule(event)"
             >
-                Mon v&eacute;hicule
+                Mon compte
             </button>
 
             <section
@@ -3654,9 +3795,18 @@ body{
                             type="button"
                             class="account-plan-button"
                             id="plan-premium-button"
-                            onclick="changerPlanCompte('premium')"
+                            onclick="acheterPremiumIOS(event)"
                         >
-                            Premium
+                            Premium 4,99 €/an
+                        </button>
+                        <button
+                            type="button"
+                            class="account-plan-button"
+                            id="plan-restore-button"
+                            onclick="restaurerPremiumIOS(event)"
+                            hidden
+                        >
+                            Restaurer
                         </button>
                     </div>
                 </div>
@@ -3748,6 +3898,14 @@ body{
                     <button
                         type="button"
                         class="premium-menu-button active"
+                        data-premium-page="account"
+                        onclick="changerPagePremium('account')"
+                    >
+                        Mon compte
+                    </button>
+                    <button
+                        type="button"
+                        class="premium-menu-button"
                         data-premium-page="vehicles"
                         onclick="changerPagePremium('vehicles')"
                     >
@@ -3787,8 +3945,135 @@ body{
                     </button>
                 </nav>
 
+                <section
+                    class="premium-page premium-only active"
+                    id="premium-page-account"
+                    hidden
+                >
+                    <div class="premium-panel-card account-compact-card">
+                        <button
+                            type="button"
+                            class="account-edit-toggle"
+                            aria-expanded="false"
+                            aria-controls="account-info-editor"
+                            onclick="basculerBlocCompte(event, 'account-info-editor')"
+                        >
+                            <span>Mes informations</span>
+                            <span class="account-edit-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                                </svg>
+                            </span>
+                        </button>
+                        <div
+                            class="account-edit-content"
+                            id="account-info-editor"
+                            hidden
+                        >
+                            <p class="account-profile-email">
+                                Compte : <span id="account-profile-email">-</span>
+                            </p>
+                            <div class="account-profile">
+                                <div class="account-profile-fields">
+                                    <input
+                                        id="account-profile-name"
+                                        type="text"
+                                        maxlength="80"
+                                        autocomplete="name"
+                                        placeholder="Nom"
+                                    >
+                                    <input
+                                        id="account-profile-phone"
+                                        type="tel"
+                                        maxlength="30"
+                                        autocomplete="tel"
+                                        placeholder="T&eacute;l&eacute;phone"
+                                    >
+                                    <input
+                                        id="account-profile-city"
+                                        type="text"
+                                        maxlength="90"
+                                        autocomplete="address-level2"
+                                        placeholder="Ville"
+                                    >
+                                </div>
+                                <button
+                                    type="button"
+                                    class="premium-option-button"
+                                    onclick="enregistrerProfilCompte(event)"
+                                >
+                                    Enregistrer mes informations
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="premium-panel-card account-compact-card">
+                        <button
+                            type="button"
+                            class="account-edit-toggle"
+                            aria-expanded="false"
+                            aria-controls="account-security-editor"
+                            onclick="basculerBlocCompte(event, 'account-security-editor')"
+                        >
+                            <span>S&eacute;curit&eacute;</span>
+                            <span class="account-edit-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                                </svg>
+                            </span>
+                        </button>
+                        <div
+                            class="account-edit-content"
+                            id="account-security-editor"
+                            hidden
+                        >
+                            <div class="account-profile">
+                                <div class="account-profile-fields">
+                                    <input
+                                        id="account-current-password"
+                                        type="password"
+                                        minlength="8"
+                                        autocomplete="current-password"
+                                        placeholder="Mot de passe actuel"
+                                    >
+                                    <input
+                                        id="account-new-password"
+                                        type="password"
+                                        minlength="8"
+                                        autocomplete="new-password"
+                                        placeholder="Nouveau mot de passe"
+                                    >
+                                </div>
+                                <button
+                                    type="button"
+                                    class="premium-option-button"
+                                    onclick="changerMotDePasseCompte(event)"
+                                >
+                                    Modifier mon mot de passe
+                                </button>
+                            </div>
+                            <a
+                                class="account-delete-link"
+                                href="/suppression-compte"
+                            >
+                                Formulaire de suppression et droits RGPD
+                            </a>
+                            <button
+                                type="button"
+                                class="premium-option-button danger"
+                                onclick="supprimerCompteUtilisateur(event)"
+                            >
+                                Supprimer définitivement mon compte
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
                 <div
-                    class="premium-page active"
+                    class="premium-page"
                     id="premium-page-vehicles"
                 >
                     <div
@@ -3833,7 +4118,9 @@ body{
                                 <option value="e85">E85</option>
                                 <option value="gpl">GPL</option>
                                 <option value="hybride">Hybride</option>
+                                {% if electric_enabled %}
                                 <option value="electrique">&Eacute;lectrique</option>
+                                {% endif %}
                             </select>
 
                             <input
@@ -3987,7 +4274,7 @@ body{
                             Alertes de prix
                         </p>
                         <p class="premium-option-copy">
-                            Pr&eacute;parez des alertes par carburant, borne ou zone.
+                            Pr&eacute;parez des alertes par carburant, station ou zone.
                             Elles sont sauvegard&eacute;es avec votre compte.
                         </p>
                         <div
@@ -4165,6 +4452,7 @@ body{
                     GPL
                 </label>
 
+                {% if electric_enabled %}
                 <input
                     type="radio"
                     id="carburant-electrique"
@@ -4176,6 +4464,7 @@ body{
                     <span class="fuel-dot electric"></span>
                     &Eacute;lec
                 </label>
+                {% endif %}
             </div>
 
             <input
@@ -5999,11 +6288,27 @@ function configurerBoutonsNavigationExterneTrajetPrepare() {
 
 function actualiserNavigationPremium() {
 
+    var premium = comptePremiumActif();
+
     document.querySelectorAll(".premium-navigation").forEach(
         function(element) {
-            element.hidden = !comptePremiumActif();
+            element.hidden = !premium;
         }
     );
+
+    var jaugeReservoir = document.querySelector(
+        ".economy-reservoir-gauge"
+    );
+    if (jaugeReservoir) {
+        jaugeReservoir.hidden = !premium || navigationActive;
+    }
+
+    var jaugePlanificateur = document.querySelector(
+        ".trip-planner-gauge"
+    );
+    if (jaugePlanificateur) {
+        jaugePlanificateur.hidden = navigationActive;
+    }
 
 }
 
@@ -6365,6 +6670,7 @@ function creerAdaptateurMapLibre() {
         compteurGeoJson += 1;
         var identifiant = "route-" + Date.now() + "-" + compteurGeoJson;
         var carteCible = null;
+        var coucheActive = true;
         var couche = {
             addTo: function(carte) {
                 carteCible = carte;
@@ -6379,6 +6685,9 @@ function creerAdaptateurMapLibre() {
                     : 0.92;
 
                 function ajouter() {
+                    if (!coucheActive) {
+                        return;
+                    }
                     if (carte._map.getLayer(identifiant)) {
                         carte._map.removeLayer(identifiant);
                     }
@@ -6405,11 +6714,22 @@ function creerAdaptateurMapLibre() {
                     });
                 }
 
-                if (carte._map.isStyleLoaded()) {
-                    ajouter();
-                } else {
-                    carte._map.once("load", ajouter);
+                function ajouterQuandPret(tentatives) {
+                    if (!coucheActive) {
+                        return;
+                    }
+                    try {
+                        ajouter();
+                    } catch (erreur) {
+                        if (tentatives < 40) {
+                            window.setTimeout(function() {
+                                ajouterQuandPret(tentatives + 1);
+                            }, 100);
+                        }
+                    }
                 }
+
+                ajouterQuandPret(0);
 
                 return couche;
             },
@@ -6421,6 +6741,7 @@ function creerAdaptateurMapLibre() {
                 return limites;
             },
             remove: function() {
+                coucheActive = false;
                 if (!carteCible) {
                     return;
                 }
@@ -6629,6 +6950,7 @@ var actualisationStationsEconomieEnCours = null;
 var stationsTrajetFrance = null;
 var chargementStationsTrajetFrance = null;
 var carburantSelectionne = {{ carburant|tojson }};
+var electricFeatureEnabled = {{ electric_enabled|tojson }};
 var rayonCalculEconomieKm = Number({{ rayon|tojson }}) || 25;
 var rayonStationsPremiumCle = "optiplein-rayon-stations";
 var rayonStationsDefautKm = 25;
@@ -8215,6 +8537,7 @@ var favorisStationsCle = "optiplein-favoris";
 var planCompteCle = "optiplein-plan";
 var vehiculesCle = "optiplein-vehicules";
 var vehiculeActifCle = "optiplein-vehicule-actif";
+var profilCompteCle = "optiplein-profil";
 var historiqueEconomiesCle = "optiplein-historique-economies";
 var lieuxTrajetCle = "optiplein-lieux-trajet";
 var alertesPrixCle = "optiplein-alertes-prix";
@@ -8222,8 +8545,9 @@ var optimisationPremiumCle = "optiplein-optimisation-premium";
 var compteTokenCle = "optiplein-compte-token";
 var compteEmailCle = "optiplein-compte-email";
 var carteTotalenergiesCle = "optiplein-carte-totalenergies";
-var modeDecouvertePremiumActif = true;
-var choixFormuleMasquePendantTest = true;
+var modeDecouvertePremiumActif = !estPlateformeIOS();
+var choixFormuleMasquePendantTest = !estPlateformeIOS();
+var produitPremiumApple = {{ apple_premium_product_id|tojson }};
 var publiciteAdsenseActive = {{ adsense_active|tojson }};
 var publiciteAdsenseMasqueeVide = false;
 var nombreMaximumFavorisGratuit = 3;
@@ -8232,6 +8556,7 @@ var nombreMaximumVehiculesPremium = 5;
 var sauvegardeCompteTimer = null;
 var restaurationSessionCompteTimer = null;
 var applicationDonneesCompteEnCours = false;
+var generationSessionCompte = 0;
 
 function planCompteActuel() {
 
@@ -8248,6 +8573,24 @@ function comptePremiumActif() {
             modeDecouvertePremiumActif
             || planCompteActuel() === "premium"
         );
+
+}
+
+function plateformeCompteActuelle() {
+
+    if (estPlateformeIOS()) {
+        return "ios";
+    }
+
+    if (
+        window.Capacitor
+        && typeof window.Capacitor.getPlatform === "function"
+        && window.Capacitor.getPlatform() === "android"
+    ) {
+        return "android";
+    }
+
+    return "web";
 
 }
 
@@ -8418,6 +8761,7 @@ window.modifierCarteTotalenergies = function() {
         String(Boolean(caseCarte && caseCarte.checked))
     );
     programmerSauvegardeCompte();
+
     var latitudeRecherche = Number.isFinite(latitudeUtilisateur)
         ? latitudeUtilisateur
         : latitudeDerniereRecherche;
@@ -9083,9 +9427,243 @@ function initialiserBoutonsLieuxTrajet() {
 
 window.addEventListener("load", initialiserBoutonsLieuxTrajet);
 
+function lireProfilCompteLocal() {
+
+    try {
+        var profil = JSON.parse(
+            localStorage.getItem(profilCompteCle)
+        ) || {};
+
+        return {
+            nom: String(profil.nom || "").trim(),
+            telephone: String(profil.telephone || "").trim(),
+            ville: String(profil.ville || "").trim()
+        };
+    } catch (erreur) {
+        return {
+            nom: "",
+            telephone: "",
+            ville: ""
+        };
+    }
+
+}
+
+function enregistrerProfilCompteLocal(profil) {
+
+    localStorage.setItem(
+        profilCompteCle,
+        JSON.stringify({
+            nom: String(profil && profil.nom || "").trim(),
+            telephone: String(profil && profil.telephone || "").trim(),
+            ville: String(profil && profil.ville || "").trim()
+        })
+    );
+
+}
+
+function champsProfilCompteDepuisFormulaire() {
+
+    return {
+        nom: (
+            document.getElementById("account-profile-name").value || ""
+        ).trim(),
+        telephone: (
+            document.getElementById("account-profile-phone").value || ""
+        ).trim(),
+        ville: (
+            document.getElementById("account-profile-city").value || ""
+        ).trim()
+    };
+
+}
+
+function remplirFormulaireMonCompte(force) {
+
+    var email = localStorage.getItem(compteEmailCle) || "";
+    var profil = lireProfilCompteLocal();
+    var emailAffiche = document.getElementById("account-profile-email");
+    var champNom = document.getElementById("account-profile-name");
+    var champTelephone = document.getElementById("account-profile-phone");
+    var champVille = document.getElementById("account-profile-city");
+    var elementActif = document.activeElement;
+
+    if (emailAffiche) {
+        emailAffiche.textContent = email || "-";
+    }
+
+    [
+        [champNom, profil.nom],
+        [champTelephone, profil.telephone],
+        [champVille, profil.ville]
+    ].forEach(function(definition) {
+        var champ = definition[0];
+        var valeur = definition[1];
+
+        if (!champ) {
+            return;
+        }
+
+        if (force || (champ !== elementActif && !champ.value)) {
+            champ.value = valeur || "";
+        }
+    });
+
+}
+
+window.basculerBlocCompte = function(event, identifiant) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var panneau = document.getElementById(identifiant);
+    var bouton = event ? event.currentTarget : null;
+
+    if (!panneau) {
+        return;
+    }
+
+    var ouvrir = panneau.hidden;
+    panneau.hidden = !ouvrir;
+
+    if (bouton) {
+        bouton.setAttribute("aria-expanded", String(ouvrir));
+    }
+
+    if (ouvrir) {
+        window.setTimeout(function() {
+            var champ = panneau.querySelector("input, select, textarea, button");
+            if (champ) {
+                champ.focus();
+            }
+        }, 80);
+    }
+
+};
+
+function fermerBlocCompte(identifiant) {
+
+    var panneau = document.getElementById(identifiant);
+    var bouton = document.querySelector(
+        ".account-edit-toggle[aria-controls=\"" + identifiant + "\"]"
+    );
+
+    if (panneau) {
+        panneau.hidden = true;
+    }
+    if (bouton) {
+        bouton.setAttribute("aria-expanded", "false");
+    }
+
+}
+
+async function chargerProfilCompteDepuisServeur() {
+
+    if (!compteUtilisateurConnecte()) {
+        return;
+    }
+
+    var resultat = await requeteCompte(
+        "/api/compte/profil",
+        {
+            method: "GET"
+        }
+    );
+
+    enregistrerProfilCompteLocal(resultat.profil || {});
+    remplirFormulaireMonCompte(true);
+
+}
+
+window.enregistrerProfilCompte = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte("Connectez-vous pour modifier votre compte.", "error");
+        return;
+    }
+
+    try {
+        var profil = champsProfilCompteDepuisFormulaire();
+        definirStatutCompte("Enregistrement du compte...", "");
+        var resultat = await requeteCompte(
+            "/api/compte/profil",
+            {
+                method: "PATCH",
+                body: JSON.stringify(profil)
+            }
+        );
+        enregistrerProfilCompteLocal(resultat.profil || profil);
+        remplirFormulaireMonCompte(true);
+        fermerBlocCompte("account-info-editor");
+        definirStatutCompte("Informations du compte enregistr\u00e9es.", "success");
+    } catch (erreur) {
+        definirStatutCompte(erreur.message, "error");
+    }
+
+};
+
+window.changerMotDePasseCompte = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var ancienChamp = document.getElementById("account-current-password");
+    var nouveauChamp = document.getElementById("account-new-password");
+    var ancienMotDePasse = ancienChamp ? ancienChamp.value : "";
+    var nouveauMotDePasse = nouveauChamp ? nouveauChamp.value : "";
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte("Connectez-vous pour modifier votre mot de passe.", "error");
+        return;
+    }
+
+    if (ancienMotDePasse.length < 8 || nouveauMotDePasse.length < 8) {
+        definirStatutCompte(
+            "Le mot de passe doit contenir au moins 8 caract\u00e8res.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        definirStatutCompte("Modification du mot de passe...", "");
+        await requeteCompte(
+            "/api/compte/mot-de-passe",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    ancien_mot_de_passe: ancienMotDePasse,
+                    nouveau_mot_de_passe: nouveauMotDePasse
+                })
+            }
+        );
+        if (ancienChamp) {
+            ancienChamp.value = "";
+        }
+        if (nouveauChamp) {
+            nouveauChamp.value = "";
+        }
+        fermerBlocCompte("account-security-editor");
+        definirStatutCompte("Mot de passe modifi\u00e9.", "success");
+    } catch (erreur) {
+        definirStatutCompte(erreur.message, "error");
+    }
+
+};
+
 function donneesCompteLocales() {
 
     return {
+        profil: lireProfilCompteLocal(),
         favoris: lireFavoris(),
         vehicules: lireVehicules(),
         vehicule_actif: localStorage.getItem(vehiculeActifCle) || "",
@@ -9096,7 +9674,7 @@ function donneesCompteLocales() {
             notifications: true,
             carte_totalenergies: carteTotalenergiesActive()
         },
-        plan: compteUtilisateurConnecte() ? "premium" : planCompteActuel(),
+        plan: planCompteActuel(),
         historique_economies: lireHistoriqueEconomies(),
         lieux_trajet: lireLieuxTrajet(),
         rayon_stations: rayonStationsCompteActuel(),
@@ -9110,7 +9688,9 @@ function donneesCompteLocales() {
                 vehicules_max: nombreMaximumVehiculesActuel(),
                 recalcul_secondes: comptePremiumActif() ? 15 : 180
             }
-        }
+        },
+        plateforme_creation: plateformeCompteActuelle(),
+        plateforme_derniere_connexion: plateformeCompteActuelle()
     };
 
 }
@@ -9123,6 +9703,10 @@ function appliquerDonneesCompte(donnees) {
 
     applicationDonneesCompteEnCours = true;
 
+    localStorage.setItem(
+        profilCompteCle,
+        JSON.stringify(donnees.profil || {})
+    );
     localStorage.setItem(
         favorisStationsCle,
         JSON.stringify(donnees.favoris || [])
@@ -9177,6 +9761,7 @@ function appliquerDonneesCompte(donnees) {
     actualiserLieuxTrajet();
     actualiserRayonPremium(false);
     actualiserPlanCompte();
+    remplirFormulaireMonCompte(true);
     actualiserAlertesPrixPremium();
     actualiserStatistiquesPremium();
     calculerMeilleureStation();
@@ -9237,6 +9822,8 @@ function actualiserInterfaceCompte() {
         boutonDeconnexion.hidden = !connecte;
     }
 
+    remplirFormulaireMonCompte(false);
+
     definirStatutCompte(
         connecte
             ? "Sauvegarde active pour " + email + "."
@@ -9249,9 +9836,11 @@ function actualiserInterfaceCompte() {
 async function requeteCompte(chemin, options) {
 
     var entetes = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-OptiPlein-Platform": plateformeCompteActuelle()
     };
     var jeton = jetonCompte();
+    var generationRequete = generationSessionCompte;
 
     if (jeton) {
         entetes.Authorization = "Bearer " + jeton;
@@ -9271,6 +9860,12 @@ async function requeteCompte(chemin, options) {
             return {};
         }
     );
+
+    if (generationRequete !== generationSessionCompte) {
+        // La session a été fermée pendant la requête : ne jamais réappliquer
+        // son jeton, son profil ou ses véhicules dans le nouvel état invité.
+        return new Promise(function() {});
+    }
 
     if (!reponse.ok) {
         var erreurRequete = new Error(
@@ -9301,7 +9896,8 @@ function identifiantsCompteDepuisFormulaire() {
 
     return {
         email: email,
-        mot_de_passe: motDePasse
+        mot_de_passe: motDePasse,
+        plateforme: plateformeCompteActuelle()
     };
 
 }
@@ -9310,6 +9906,9 @@ async function finaliserConnexionCompte(resultat, sauvegarderLocal) {
 
     localStorage.setItem(compteTokenCle, resultat.token);
     localStorage.setItem(compteEmailCle, resultat.email);
+    if (resultat.donnees && resultat.donnees.profil) {
+        enregistrerProfilCompteLocal(resultat.donnees.profil);
+    }
 
     if (sauvegarderLocal) {
         await sauvegarderCompteMaintenant();
@@ -9317,6 +9916,7 @@ async function finaliserConnexionCompte(resultat, sauvegarderLocal) {
         appliquerDonneesCompte(resultat.donnees || {});
     }
 
+    await chargerProfilCompteDepuisServeur().catch(function() {});
     actualiserInterfaceCompte();
 
 }
@@ -9343,7 +9943,11 @@ window.creerCompteOptiPlein = async function(event) {
             document.getElementById("account-password").value = "";
             definirStatutCompte(
                 "Compte cr\u00e9\u00e9. Cliquez sur le lien envoy\u00e9 par e-mail "
-                + "pour activer la d\u00e9couverte Premium.",
+                + (
+                    estPlateformeIOS()
+                        ? "pour activer votre compte."
+                        : "pour activer la d\u00e9couverte Premium."
+                ),
                 "success"
             );
             return;
@@ -9351,8 +9955,7 @@ window.creerCompteOptiPlein = async function(event) {
 
         await finaliserConnexionCompte(resultat, true);
         definirStatutCompte(
-            "Compte cr\u00e9\u00e9 : d\u00e9couverte Premium activ\u00e9e "
-            + "et donn\u00e9es sauvegard\u00e9es.",
+            "Compte cr\u00e9\u00e9 et donn\u00e9es sauvegard\u00e9es.",
             "success"
         );
     } catch (erreur) {
@@ -9394,13 +9997,210 @@ window.deconnecterCompteOptiPlein = function(event) {
         event.stopPropagation();
     }
 
-    localStorage.removeItem(compteTokenCle);
-    localStorage.removeItem(compteEmailCle);
-    window.clearTimeout(restaurationSessionCompteTimer);
-    restaurationSessionCompteTimer = null;
+    effacerDonneesCompteLocales();
+
+};
+
+function pluginAchatsApple() {
+
+    return window.Capacitor
+        && window.Capacitor.Plugins
+        && window.Capacitor.Plugins.OptiPleinPurchases
+        ? window.Capacitor.Plugins.OptiPleinPurchases
+        : null;
+
+}
+
+async function synchroniserAchatApplePremium(transaction) {
+
+    var resultat = await requeteCompte(
+        "/api/compte/premium/apple",
+        {
+            method: "POST",
+            body: JSON.stringify({
+                product_id: transaction.productId || produitPremiumApple,
+                transaction_id: String(transaction.transactionId || ""),
+                original_transaction_id: String(
+                    transaction.originalTransactionId || ""
+                ),
+                purchase_date: transaction.purchaseDate || "",
+                expiration_date: transaction.expirationDate || "",
+                signed_transaction: transaction.signedTransaction || "",
+                source: "ios_storekit"
+            })
+        }
+    );
+
+    appliquerDonneesCompte(resultat.donnees || {});
     actualiserInterfaceCompte();
     actualiserPlanCompte();
+    dernierCalculPeriodiqueRentabilite = 0;
     calculerMeilleureStation();
+
+}
+
+window.acheterPremiumIOS = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    if (!estPlateformeIOS()) {
+        changerPlanCompte("premium");
+        return;
+    }
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte(
+            "Cr\u00e9ez ou connectez votre compte avant de vous abonner.",
+            "error"
+        );
+        return;
+    }
+
+    var achats = pluginAchatsApple();
+    if (!achats || typeof achats.purchase !== "function") {
+        definirStatutCompte(
+            "L'achat int\u00e9gr\u00e9 Apple n'est pas disponible dans cette version.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        definirStatutCompte("Ouverture de l'achat Apple...", "");
+        var transaction = await achats.purchase({
+            productId: produitPremiumApple
+        });
+        await synchroniserAchatApplePremium(transaction || {});
+        definirStatutCompte("Premium activ\u00e9 avec l'abonnement Apple.", "success");
+    } catch (erreur) {
+        definirStatutCompte(
+            erreur && erreur.message
+                ? erreur.message
+                : "Achat Apple non finalis\u00e9.",
+            "error"
+        );
+    }
+
+};
+
+window.restaurerPremiumIOS = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte(
+            "Connectez votre compte avant de restaurer l'achat.",
+            "error"
+        );
+        return;
+    }
+
+    var achats = pluginAchatsApple();
+    if (!achats || typeof achats.restore !== "function") {
+        definirStatutCompte(
+            "La restauration Apple n'est pas disponible dans cette version.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        definirStatutCompte("Recherche de l'abonnement Apple...", "");
+        var transaction = await achats.restore({
+            productId: produitPremiumApple
+        });
+        await synchroniserAchatApplePremium(transaction || {});
+        definirStatutCompte("Abonnement Apple restaur\u00e9.", "success");
+    } catch (erreur) {
+        definirStatutCompte(
+            erreur && erreur.message
+                ? erreur.message
+                : "Aucun abonnement Apple actif trouv\u00e9.",
+            "error"
+        );
+    }
+
+};
+
+function effacerDonneesCompteLocales() {
+
+    generationSessionCompte += 1;
+    applicationDonneesCompteEnCours = true;
+    window.clearTimeout(sauvegardeCompteTimer);
+    window.clearTimeout(restaurationSessionCompteTimer);
+    sauvegardeCompteTimer = null;
+    restaurationSessionCompteTimer = null;
+
+    // Inclut les anciennes clés : sinon lireVehicules recrée le véhicule.
+    [localStorage, sessionStorage].forEach(function(stockage) {
+        var cles = [];
+        for (var i = 0; i < stockage.length; i += 1) {
+            cles.push(stockage.key(i));
+        }
+        cles.forEach(function(cle) {
+            if (cle && (cle.indexOf("optiplein-") === 0
+                || cle.indexOf("vehicule-") === 0)
+                && cle !== "optiplein-geolocalisation-acceptee") {
+                stockage.removeItem(cle);
+            }
+        });
+    });
+
+    // Retire immédiatement les données visibles, puis recrée un état invité
+    // sans trajet, formulaires, marqueurs ou paramètres personnels en mémoire.
+    document.querySelectorAll("input, textarea").forEach(function(champ) {
+        champ.value = "";
+    });
+    document.body.replaceChildren();
+    window.location.replace("/web");
+
+}
+
+window.supprimerCompteUtilisateur = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte("Connectez-vous pour supprimer votre compte.", "error");
+        return;
+    }
+
+    var confirmation = window.confirm(
+        "Supprimer définitivement votre compte OptiPlein ? "
+        + "Vos informations sauvegardées seront effacées et vous serez déconnecté."
+    );
+
+    if (!confirmation) {
+        return;
+    }
+
+    try {
+        definirStatutCompte("Suppression du compte...", "");
+        await requeteCompte(
+            "/api/compte",
+            {
+                method: "DELETE"
+            }
+        );
+        window.clearTimeout(restaurationSessionCompteTimer);
+        restaurationSessionCompteTimer = null;
+        effacerDonneesCompteLocales();
+        definirStatutCompte(
+            "Compte supprimé. Vos données sauvegardées ont été effacées.",
+            "success"
+        );
+    } catch (erreur) {
+        definirStatutCompte(erreur.message, "error");
+    }
 
 };
 
@@ -9410,7 +10210,7 @@ async function sauvegarderCompteMaintenant() {
         return;
     }
 
-    await requeteCompte(
+    var resultat = await requeteCompte(
         "/api/compte/sauvegarde",
         {
             method: "POST",
@@ -9419,6 +10219,10 @@ async function sauvegarderCompteMaintenant() {
             })
         }
     );
+
+    if (resultat && resultat.donnees) {
+        appliquerDonneesCompte(resultat.donnees);
+    }
 
 }
 
@@ -9467,6 +10271,7 @@ async function restaurerSessionCompte() {
             localStorage.setItem(compteEmailCle, resultat.email);
         }
         appliquerDonneesCompte(resultat.donnees || {});
+        await chargerProfilCompteDepuisServeur().catch(function() {});
         window.clearTimeout(restaurationSessionCompteTimer);
         restaurationSessionCompteTimer = null;
         definirStatutCompte("", "");
@@ -9886,6 +10691,11 @@ let utilisateurMarker = null;
 
 var marqueurUtilisateur = null;
 var animationPositionUtilisateur = null;
+var cibleAnimationPositionUtilisateur = null;
+var instantDerniereTramePositionUtilisateur = 0;
+var capAnimationPositionUtilisateur = Number.NaN;
+var dureeAnticipationPositionMs = 1350;
+var dureeAnticipationPositionHorsGuidageMs = 900;
 var suiviGeolocalisationId = null;
 var accordGeolocalisationCle = "optiplein-geolocalisation-acceptee";
 var zoomNavigation = 16.8;
@@ -10063,6 +10873,26 @@ function delaiActualisationStationsActuelMs() {
 
 }
 
+function intervalleCalculRentabiliteGpsActuel() {
+
+    var vitesseKmh = vitesseUtilisateurKmh();
+
+    if (!utilisateurEnMouvement || vitesseKmh < 8) {
+        return intervalleCalculRentabiliteGpsMs;
+    }
+
+    if (vitesseKmh >= 110) {
+        return 5000;
+    }
+
+    if (vitesseKmh >= 70) {
+        return 7000;
+    }
+
+    return 10000;
+
+}
+
 function calculerPenaliteRetourStationSansItineraire(
     latitudeCalcul,
     longitudeCalcul,
@@ -10170,12 +11000,9 @@ async function activerOrientationTelephone() {
         if (
             typeof DeviceOrientationEvent.requestPermission === "function"
         ) {
-            var permission =
-                await DeviceOrientationEvent.requestPermission();
-
-            if (permission !== "granted") {
-                return;
-            }
+            // Le cap GPS suffit pendant le déplacement. La permission de
+            // mouvement ne doit pas interrompre un itinéraire préparé.
+            return;
         }
 
         window.removeEventListener(
@@ -10328,6 +11155,17 @@ function appliquerMouvementCarteAutomatique(action) {
 }
 
 function lisserPositionAffichee(latitude, longitude) {
+
+    // Une fois le marqueur cree, le moteur d'animation continu assure seul
+    // le lissage, en guidage comme sur la carte classique.
+    if (navigationActive || marqueurUtilisateur) {
+        latitudeAffichageUtilisateur = latitude;
+        longitudeAffichageUtilisateur = longitude;
+        return {
+            latitude: latitude,
+            longitude: longitude
+        };
+    }
 
     if (
         !Number.isFinite(latitudeAffichageUtilisateur)
@@ -10616,6 +11454,7 @@ function suivrePositionGpsSurCarte(
                             ],
                             duration: dureeSuivi,
                             easing: navigationActive
+                                || utilisateurEnMouvement
                                 ? function(t) {
                                     return t;
                                 }
@@ -10659,6 +11498,263 @@ function suspendreZoomAutomatique() {
 
 }
 
+function creerAncreRouteAnimation(latitude, longitude, capReference) {
+
+    if (!navigationActive || coordonneesRouteNavigation.length < 2) {
+        return null;
+    }
+
+    var projection = trouverPointRouteLePlusProche(
+        latitude,
+        longitude,
+        capReference
+    );
+
+    if (!projection || projection.distanceMetres > 45) {
+        return null;
+    }
+
+    return {
+        coordonnees: coordonneesRouteNavigation,
+        index: projection.index,
+        latitude: projection.latitude,
+        longitude: projection.longitude,
+        cap: projection.capSegment
+    };
+
+}
+
+function avancerDepuisAncreRoute(ancre, distanceMetres) {
+
+    if (
+        !ancre
+        || !Array.isArray(ancre.coordonnees)
+        || ancre.coordonnees.length < 2
+    ) {
+        return null;
+    }
+
+    var coordonnees = ancre.coordonnees;
+    var index = Math.max(
+        0,
+        Math.min(ancre.index, coordonnees.length - 2)
+    );
+    var latitudeCourante = ancre.latitude;
+    var longitudeCourante = ancre.longitude;
+    var distanceRestante = Math.max(0, distanceMetres);
+    var capSegment = ancre.cap;
+
+    while (index < coordonnees.length - 1) {
+        var finSegment = coordonnees[index + 1];
+        var longueurSegment = distanceDeplacementKm(
+            latitudeCourante,
+            longitudeCourante,
+            finSegment[1],
+            finSegment[0]
+        ) * 1000;
+
+        capSegment = calculerCapDeplacement(
+            latitudeCourante,
+            longitudeCourante,
+            finSegment[1],
+            finSegment[0]
+        );
+
+        if (longueurSegment > 0 && distanceRestante <= longueurSegment) {
+            var ratio = distanceRestante / longueurSegment;
+            return {
+                latitude: latitudeCourante
+                    + (finSegment[1] - latitudeCourante) * ratio,
+                longitude: longitudeCourante
+                    + (finSegment[0] - longitudeCourante) * ratio,
+                cap: capSegment
+            };
+        }
+
+        distanceRestante -= longueurSegment;
+        latitudeCourante = finSegment[1];
+        longitudeCourante = finSegment[0];
+        index += 1;
+    }
+
+    return {
+        latitude: latitudeCourante,
+        longitude: longitudeCourante,
+        cap: capSegment
+    };
+
+}
+
+function positionPrediteAnimationUtilisateur(instantActuel) {
+
+    var cible = cibleAnimationPositionUtilisateur;
+
+    if (!cible) {
+        return null;
+    }
+
+    var resultat = {
+        latitude: cible.latitude,
+        longitude: cible.longitude,
+        cap: cible.capFleche
+    };
+
+    if (
+        !cible.enMouvement
+        || cible.vitesse < 0.7
+    ) {
+        return resultat;
+    }
+
+    var ageMesureMs = Math.max(0, instantActuel - cible.instant);
+    var dureeAnticipationActuelleMs = navigationActive
+        ? dureeAnticipationPositionMs
+        : dureeAnticipationPositionHorsGuidageMs;
+    var horizonSecondes = Math.min(
+        dureeAnticipationActuelleMs / 1000,
+        ageMesureMs / 1000 + (navigationActive ? 0.22 : 0.12)
+    );
+    var distanceAnticipee = Math.min(
+        navigationActive ? 45 : 25,
+        cible.vitesse * horizonSecondes
+    );
+    var positionRoute = avancerDepuisAncreRoute(
+        cible.ancreRoute,
+        distanceAnticipee
+    );
+
+    if (positionRoute) {
+        return positionRoute;
+    }
+
+    if (Number.isFinite(cible.capFleche)) {
+        var positionDevant = calculerPointDevant(
+            cible.latitude,
+            cible.longitude,
+            cible.capFleche,
+            distanceAnticipee
+        );
+        return {
+            latitude: positionDevant.latitude,
+            longitude: positionDevant.longitude,
+            cap: cible.capFleche
+        };
+    }
+
+    return resultat;
+
+}
+
+function animerPositionUtilisateurContinue(instantActuel) {
+
+    animationPositionUtilisateur = null;
+
+    if (!marqueurUtilisateur || !cibleAnimationPositionUtilisateur) {
+        instantDerniereTramePositionUtilisateur = 0;
+        return;
+    }
+
+    var ciblePredite = positionPrediteAnimationUtilisateur(instantActuel);
+
+    if (!ciblePredite) {
+        instantDerniereTramePositionUtilisateur = 0;
+        return;
+    }
+
+    var deltaSecondes = instantDerniereTramePositionUtilisateur > 0
+        ? Math.max(
+            1 / 120,
+            Math.min(
+                0.10,
+                (instantActuel - instantDerniereTramePositionUtilisateur)
+                    / 1000
+            )
+        )
+        : 1 / 60;
+    instantDerniereTramePositionUtilisateur = instantActuel;
+
+    var positionActuelle = marqueurUtilisateur.getLatLng();
+    var distanceCorrection = distanceDeplacementKm(
+        positionActuelle.lat,
+        positionActuelle.lng,
+        ciblePredite.latitude,
+        ciblePredite.longitude
+    ) * 1000;
+    var constanteLissage = navigationActive
+        ? cibleAnimationPositionUtilisateur.vitesse >= 10
+            ? 0.16
+            : 0.21
+        : 0.24;
+    var facteurCorrection = 1 - Math.exp(
+        -deltaSecondes / constanteLissage
+    );
+
+    if (distanceCorrection > 120) {
+        facteurCorrection = 1;
+    } else if (distanceCorrection > 45) {
+        facteurCorrection = Math.max(facteurCorrection, 0.34);
+    }
+
+    var latitudeAffichee = positionActuelle.lat
+        + (ciblePredite.latitude - positionActuelle.lat)
+        * facteurCorrection;
+    var longitudeAffichee = positionActuelle.lng
+        + (ciblePredite.longitude - positionActuelle.lng)
+        * facteurCorrection;
+
+    if (distanceCorrection >= 0.04) {
+        marqueurUtilisateur.setLatLng([
+            latitudeAffichee,
+            longitudeAffichee
+        ]);
+    }
+
+    if (Number.isFinite(ciblePredite.cap)) {
+        var facteurCap = 1 - Math.exp(-deltaSecondes / 0.14);
+        capAnimationPositionUtilisateur = lisserCap(
+            capAnimationPositionUtilisateur,
+            ciblePredite.cap,
+            facteurCap
+        );
+        actualiserOrientationFlecheUtilisateur(
+            capAnimationPositionUtilisateur
+        );
+    }
+
+    var ageCibleMs = instantActuel
+        - cibleAnimationPositionUtilisateur.instant;
+    var dureeAnticipationActuelleMs = navigationActive
+        ? dureeAnticipationPositionMs
+        : dureeAnticipationPositionHorsGuidageMs;
+    var animationNecessaire = distanceCorrection >= 0.04
+        || (
+            cibleAnimationPositionUtilisateur.enMouvement
+            && ageCibleMs < dureeAnticipationActuelleMs + 300
+        );
+
+    if (animationNecessaire) {
+        animationPositionUtilisateur = requestAnimationFrame(
+            animerPositionUtilisateurContinue
+        );
+    } else {
+        instantDerniereTramePositionUtilisateur = 0;
+    }
+
+}
+
+function demarrerAnimationPositionUtilisateur() {
+
+    if (animationPositionUtilisateur !== null) {
+        return;
+    }
+
+    instantDerniereTramePositionUtilisateur = 0;
+    animationPositionUtilisateur = requestAnimationFrame(
+        animerPositionUtilisateurContinue
+    );
+
+}
+
 function deplacerMarqueurUtilisateur(
     nouvelleLatitude,
     nouvelleLongitude,
@@ -10666,84 +11762,28 @@ function deplacerMarqueurUtilisateur(
     capAffichageFleche
 ) {
 
-    if (animationPositionUtilisateur) {
-
-        cancelAnimationFrame(
-            animationPositionUtilisateur
-        );
-
-    }
-
-    var depart = marqueurUtilisateur.getLatLng();
-    var latitudeDepart = depart.lat;
-    var longitudeDepart = depart.lng;
-    var distanceAnimationMetres = distanceDeplacementKm(
-        latitudeDepart,
-        longitudeDepart,
-        nouvelleLatitude,
-        nouvelleLongitude
-    ) * 1000;
-
-    if (distanceAnimationMetres < 0.6) {
-        suivrePositionGpsSurCarte(
+    cibleAnimationPositionUtilisateur = {
+        latitude: nouvelleLatitude,
+        longitude: nouvelleLongitude,
+        capCarte: capAffichageCarte,
+        capFleche: capAffichageFleche,
+        vitesse: Number.isFinite(vitesseUtilisateurMps)
+            ? Math.max(0, vitesseUtilisateurMps)
+            : 0,
+        enMouvement: utilisateurEnMouvement,
+        instant: performance.now(),
+        ancreRoute: creerAncreRouteAnimation(
             nouvelleLatitude,
             nouvelleLongitude,
-            capAffichageCarte,
             capAffichageFleche
-        );
-        return;
+        )
+    };
+
+    if (!Number.isFinite(capAnimationPositionUtilisateur)) {
+        capAnimationPositionUtilisateur = capAffichageFleche;
     }
 
-    var debutAnimation = performance.now();
-    var dureeAnimation = navigationActive
-        ? vitesseUtilisateurMps >= 19
-            ? 1250
-            : vitesseUtilisateurMps >= 10
-                ? 1080
-                : 880
-        : 650;
-
-    function animerPosition(tempsActuel) {
-
-        var progression = Math.min(
-            (tempsActuel - debutAnimation) / dureeAnimation,
-            1
-        );
-
-        var progressionAdoucie =
-            progression * (2 - progression);
-
-        var latitudeActuelle =
-            latitudeDepart
-            + (nouvelleLatitude - latitudeDepart)
-            * progressionAdoucie;
-
-        var longitudeActuelle =
-            longitudeDepart
-            + (nouvelleLongitude - longitudeDepart)
-            * progressionAdoucie;
-
-        marqueurUtilisateur.setLatLng([
-            latitudeActuelle,
-            longitudeActuelle
-        ]);
-
-        if (progression < 1) {
-
-            animationPositionUtilisateur =
-                requestAnimationFrame(
-                    animerPosition
-                );
-
-        }
-
-    }
-
-    animationPositionUtilisateur =
-        requestAnimationFrame(
-            animerPosition
-    );
-
+    demarrerAnimationPositionUtilisateur();
     suivrePositionGpsSurCarte(
         nouvelleLatitude,
         nouvelleLongitude,
@@ -11337,7 +12377,11 @@ function demarrerGeolocalisation() {
                 capCarteStabilise = capAffichageStabilise;
             }
 
-            actualiserOrientationFlecheUtilisateur(capFlecheStabilise);
+            if (!marqueurUtilisateur) {
+                actualiserOrientationFlecheUtilisateur(
+                    capFlecheStabilise
+                );
+            }
 
             document.getElementById(
                 "latitude"
@@ -11353,8 +12397,9 @@ function demarrerGeolocalisation() {
 
             actualiserModeNuitCarte();
             actualiserStationsSelonPosition();
-            calculerMeilleureStation();
+            actualiserRentabiliteDepuisGps();
             actualiserGuidageNavigation();
+            actualiserEncadreDestinationNavigation();
             verifierEcartItineraire();
             verifierRavitaillementPlusRentablePendantNavigation();
 
@@ -11432,6 +12477,11 @@ function demarrerGeolocalisation() {
                     .bindPopup(
                         "Vous \u00eates ici"
                     );
+
+                capAnimationPositionUtilisateur = capFlecheAffiche;
+                actualiserOrientationFlecheUtilisateur(
+                    capFlecheAffiche
+                );
 
                 if (premierCentrageUtilisateur) {
 
@@ -11613,7 +12663,8 @@ var profilsVehicule = {
         conso: "Consommation mixte (L/100 km)",
         autonomie: "Autonomie totale estim\u00e9e (km)",
         aide: "Profil hybride : renseignez votre consommation moyenne observ\u00e9e."
-    },
+    }
+    {% if electric_enabled %},
     electrique: {
         libelle: "\u00c9lectrique",
         reservoir: "Capacit\u00e9 batterie (kWh)",
@@ -11621,6 +12672,7 @@ var profilsVehicule = {
         autonomie: "Autonomie estim\u00e9e (km)",
         aide: "Profil \u00e9lectrique : la carte s\u00e9lectionne automatiquement les bornes de recharge."
     }
+    {% endif %}
 };
 var editeurVehiculeOuvert = false;
 var editionVehiculeExistant = false;
@@ -11656,6 +12708,12 @@ function creerIdVehicule() {
 }
 
 function profilVehiculeValide(profil) {
+
+    profil = String(profil || "");
+
+    if (!electricFeatureEnabled && profil === "electrique") {
+        return "essence";
+    }
 
     return profilsVehicule[profil] ? profil : "essence";
 
@@ -11995,7 +13053,7 @@ function actualiserJaugeReservoir() {
 
 window.actualiserJaugeReservoir = actualiserJaugeReservoir;
 
-var pagePremiumActive = "vehicles";
+var pagePremiumActive = "account";
 
 function actualiserHistoriqueEconomiesPremium() {
 
@@ -12109,11 +13167,11 @@ function actualiserHistoriqueEconomiesPremium() {
 
 var capacitesPremiumArchitecture = {
     optimisation_avancee: "Optimisation avanc\u00e9e : prix, d\u00e9tour, consommation, temps du trajet et volume achet\u00e9.",
-    alertes_prix: "Alertes de prix : seuils par carburant, borne, station ou zone.",
-    favoris_illimites: "Favoris illimit\u00e9s : stations, bornes et lieux utiles.",
+    alertes_prix: "Alertes de prix : seuils par carburant, station ou zone.",
+    favoris_illimites: "Favoris illimit\u00e9s : stations et lieux utiles.",
     historique_avance: "Historique avanc\u00e9 : \u00e9conomies d\u00e9taill\u00e9es et sauvegard\u00e9es.",
     statistiques: "Statistiques : total, moyenne, v\u00e9hicules et carburants.",
-    optimisation_longs_trajets: "Longs trajets : ravitaillements et recharges optimis\u00e9s."
+    optimisation_longs_trajets: "Longs trajets : ravitaillements optimis\u00e9s."
 };
 
 function actualiserCapacitesPremium() {
@@ -12272,7 +13330,7 @@ function actualiserPagesPremium() {
     var premium = comptePremiumActif();
 
     if (!premium) {
-        pagePremiumActive = "vehicles";
+        pagePremiumActive = "account";
     }
 
     document.querySelectorAll(".premium-menu-button").forEach(
@@ -12315,6 +13373,7 @@ function actualiserPagesPremium() {
 window.changerPagePremium = function(page) {
 
     pagePremiumActive = [
+        "account",
         "vehicles",
         "history",
         "alerts",
@@ -12322,7 +13381,7 @@ window.changerPagePremium = function(page) {
         "options"
     ].indexOf(page) >= 0
         ? page
-        : "vehicles";
+        : "account";
     actualiserPagesPremium();
 
 };
@@ -12396,30 +13455,42 @@ function definirModeDestinationEncadre(actif) {
 function actualiserPlanCompte() {
 
     var premium = comptePremiumActif();
+    var ios = estPlateformeIOS();
+    var connecte = compteUtilisateurConnecte();
     var blocChoixFormule = document.querySelector(".account-plan");
     var boutonGratuit = document.getElementById("plan-free-button");
     var boutonPremium = document.getElementById("plan-premium-button");
+    var boutonRestaurer = document.getElementById("plan-restore-button");
     var comparatifPlan = document.getElementById("plan-comparison");
     var offrePremium = document.getElementById("premium-note");
     var nouveauVehiculeBouton = document.getElementById("vehicle-new-button");
 
     if (boutonGratuit) {
+        boutonGratuit.hidden = ios;
         boutonGratuit.classList.toggle("active", !premium);
     }
 
     if (boutonPremium) {
+        boutonPremium.textContent = ios ? "S'abonner 4,99 €/an" : "Premium";
         boutonPremium.classList.toggle("active", premium);
     }
 
+    if (boutonRestaurer) {
+        boutonRestaurer.hidden = !ios || premium;
+    }
+
     if (blocChoixFormule) {
-        blocChoixFormule.hidden = choixFormuleMasquePendantTest;
+        blocChoixFormule.hidden = ios
+            ? (!connecte || premium)
+            : choixFormuleMasquePendantTest;
     }
 
     actualiserPlacementPublicite();
 
     if (comparatifPlan) {
-        comparatifPlan.hidden =
-            choixFormuleMasquePendantTest || premium;
+        comparatifPlan.hidden = ios
+            ? (!connecte || premium)
+            : (choixFormuleMasquePendantTest || premium);
     }
 
     if (offrePremium) {
@@ -12447,6 +13518,11 @@ function actualiserPlanCompte() {
 }
 
 window.changerPlanCompte = function(plan) {
+
+    if (estPlateformeIOS() && plan === "premium") {
+        acheterPremiumIOS();
+        return;
+    }
 
     localStorage.setItem(
         planCompteCle,
@@ -12732,10 +13808,7 @@ function cacherPopupStationPlusRentable() {
 
 function effacerItineraireNavigation() {
 
-    if (itineraireLayer) {
-        map.removeLayer(itineraireLayer);
-        itineraireLayer = null;
-    }
+    retirerCoucheItineraire();
 
     routeNavigation = null;
     coordonneesRouteNavigation = [];
@@ -12931,14 +14004,21 @@ async function accepterRavitaillementPlusRentable(station, arret, economie) {
 function actualiserNomBoutonVehicule() {
 
     var bouton = document.getElementById("vehicle-button");
-    var vehicule = vehiculeActif();
-    var nom = vehicule ? (vehicule.nom || "").trim() : "";
 
     if (!bouton) {
         return;
     }
 
-    bouton.textContent = nom || "Mon v\u00e9hicule";
+    if (!compteUtilisateurConnecte()) {
+        bouton.textContent = "Mon compte";
+        bouton.title = "Mon compte";
+        return;
+    }
+
+    var vehicule = vehiculeActif();
+    var nom = vehicule ? (vehicule.nom || "").trim() : "";
+
+    bouton.textContent = nom || "Mon compte";
     bouton.title = nom
         ? "Modifier " + nom
         : "Mon compte";
@@ -13491,6 +14571,91 @@ function libelleDestinationNavigation() {
 
 }
 
+function prochainRavitaillementNavigation() {
+
+    if (
+        !navigationActive
+        || !trajetPrepare
+        || !Array.isArray(trajetPrepare.arrets)
+        || !trajetPrepare.arrets.length
+        || !routeNavigation
+        || !routeNavigation.geometry
+        || !Array.isArray(routeNavigation.geometry.coordinates)
+        || !Number.isFinite(latitudeUtilisateur)
+        || !Number.isFinite(longitudeUtilisateur)
+    ) {
+        return null;
+    }
+
+    var coordonnees = routeNavigation.geometry.coordinates;
+    var progressionUtilisateur = positionStationSurRoute(
+        {
+            latitude: latitudeUtilisateur,
+            longitude: longitudeUtilisateur
+        },
+        coordonnees
+    );
+
+    if (!progressionUtilisateur) {
+        return null;
+    }
+
+    return trajetPrepare.arrets.map(function(arret) {
+        if (!arret || !arret.station) {
+            return null;
+        }
+        var progressionStation = positionStationSurRoute(
+            arret.station,
+            coordonnees
+        );
+        if (!progressionStation) {
+            return null;
+        }
+        return {
+            arret: arret,
+            distanceRouteKm: progressionStation.distanceRouteKm,
+            distanceRestanteKm: Math.max(
+                0,
+                progressionStation.distanceRouteKm
+                    - progressionUtilisateur.distanceRouteKm
+            )
+        };
+    }).filter(function(candidat) {
+        return candidat
+            && candidat.distanceRouteKm
+                >= progressionUtilisateur.distanceRouteKm - 0.4;
+    }).sort(function(a, b) {
+        return a.distanceRouteKm - b.distanceRouteKm;
+    })[0] || null;
+
+}
+
+function ajouterProchainRavitaillementDestination(sousTitre) {
+
+    var prochain = prochainRavitaillementNavigation();
+    if (!prochain || !sousTitre) {
+        return;
+    }
+
+    var station = prochain.arret.station;
+    var ligne = document.createElement("span");
+    ligne.className = "destination-next-refuel";
+    ligne.textContent = "Prochain ravitaillement : "
+        + (station.enseigne || "Station-service")
+        + (station.ville ? ", " + station.ville : "")
+        + ", "
+        + prochain.distanceRestanteKm.toLocaleString(
+            "fr-FR",
+            {
+                maximumFractionDigits:
+                    prochain.distanceRestanteKm < 10 ? 1 : 0
+            }
+        )
+        + " km restants";
+    sousTitre.appendChild(ligne);
+
+}
+
 function afficherDestinationNavigationDansEncadre(
     titre,
     sousTitre,
@@ -13505,6 +14670,7 @@ function afficherDestinationNavigationDansEncadre(
     definirModeDestinationEncadre(true);
     titre.textContent = "Destination";
     sousTitre.textContent = libelleDestinationNavigation();
+    ajouterProchainRavitaillementDestination(sousTitre);
 
     if (boutonItineraire) {
         boutonItineraire.hidden = false;
@@ -13561,7 +14727,8 @@ function afficherTrajetPrepareDansEncadre() {
     sousTitre.innerHTML = htmlArretsRavitaillement({
         arrets: trajetPrepare.arrets || [],
         autonomieKm: trajetPrepare.autonomieKm || 0,
-        distanceTrajetKm: trajetPrepare.distanceTrajetKm || 0
+        distanceTrajetKm: trajetPrepare.distanceTrajetKm || 0,
+        economieTotale: trajetPrepare.economieTotale || 0
     });
 
     if (infoItineraire) {
@@ -13580,12 +14747,101 @@ function afficherTrajetPrepareDansEncadre() {
 
 }
 
+async function recalculerTrajetPrepareApresChangementAvantageTotalenergies() {
+
+    if (
+        recalculTrajetPrepareAvantageEnCours
+        || validationTrajetPrepareEnCours
+        || !trajetPrepare
+        || !trajetPrepare.destination
+    ) {
+        return;
+    }
+
+    if (navigationActive) {
+        verifierRavitaillementPlusRentablePendantNavigation();
+        return;
+    }
+
+    if (
+        latitudeUtilisateur === null
+        || longitudeUtilisateur === null
+    ) {
+        return;
+    }
+
+    recalculTrajetPrepareAvantageEnCours = true;
+
+    var resultat = document.getElementById("trip-planner-result");
+    var panneau = document.getElementById("trip-planner");
+
+    if (resultat && panneau && !panneau.hidden) {
+        resultat.textContent =
+            "Recalcul avec votre option TotalEnergies...";
+    }
+
+    try {
+        var routeDirecte = trajetPrepare.routeDirecte;
+
+        if (
+            !routeDirecte
+            || !routeDirecte.geometry
+            || !Array.isArray(routeDirecte.geometry.coordinates)
+        ) {
+            routeDirecte = await calculerRouteAvecCoordonnees([
+                {
+                    latitude: latitudeUtilisateur,
+                    longitude: longitudeUtilisateur
+                },
+                trajetPrepare.destination
+            ]);
+        }
+
+        var stationsFrance = await chargerStationsTrajetFrance();
+        var jaugeTrajet = Number(trajetPrepare.jauge);
+        var ravitaillement = calculerArretsRavitaillementRoute(
+            routeDirecte,
+            Number.isFinite(jaugeTrajet) ? jaugeTrajet : null,
+            stationsFrance
+        );
+
+        trajetPrepare.arrets = ravitaillement.arrets;
+        trajetPrepare.routeDirecte = routeDirecte;
+        trajetPrepare.autonomieKm = ravitaillement.autonomieKm;
+        trajetPrepare.distanceTrajetKm = ravitaillement.distanceTrajetKm;
+        trajetPrepare.economieTotale = ravitaillement.economieTotale || 0;
+        trajetPrepare.carburant = carburantRentabiliteActuel();
+        trajetPrepare.carteTotalenergies = carteTotalenergiesActive();
+
+        var pointsApercu = pointsTrajetPrepareDepuisArrets();
+        var routeApercu = await calculerRouteAvecCoordonnees(pointsApercu);
+        trajetPrepare.route = routeApercu;
+
+        afficherMarqueursRavitaillement(trajetPrepare.arrets);
+        dessinerItineraire(routeApercu.geometry.coordinates, true);
+        masquerStationsClassiquesSurCarte();
+
+        if (resultat) {
+            resultat.innerHTML = htmlArretsRavitaillement(ravitaillement);
+        }
+
+        configurerBoutonsNavigationExterneTrajetPrepare();
+        afficherEtatPlanificateurCalcule(true);
+        afficherTrajetPrepareDansEncadre();
+    } catch (erreur) {
+        if (resultat && panneau && !panneau.hidden) {
+            resultat.textContent =
+                "Recalcul TotalEnergies impossible pour le moment.";
+        }
+    } finally {
+        recalculTrajetPrepareAvantageEnCours = false;
+    }
+
+}
+
 window.annulerPreparationTrajet = function() {
 
-    if (itineraireLayer) {
-        map.removeLayer(itineraireLayer);
-        itineraireLayer = null;
-    }
+    retirerCoucheItineraire();
 
     trajetPrepare = null;
     jaugeTrajetTemporaire = null;
@@ -14178,7 +15434,9 @@ window.addEventListener(
 
 var intervalleCalculRentabiliteGratuitMs = 3 * 60 * 1000;
 var intervalleCalculRentabilitePremiumMs = 15 * 1000;
+var intervalleCalculRentabiliteGpsMs = 15 * 1000;
 var dernierCalculPeriodiqueRentabilite = Date.now();
+var dernierCalculGpsRentabilite = 0;
 
 function intervalleCalculRentabiliteActuel() {
 
@@ -14203,6 +15461,23 @@ function actualiserRentabilitePeriodiquement() {
 
     calculerMeilleureStation();
     dernierCalculPeriodiqueRentabilite = Date.now();
+
+}
+
+function actualiserRentabiliteDepuisGps() {
+
+    var maintenant = Date.now();
+
+    if (
+        maintenant - dernierCalculGpsRentabilite
+        < intervalleCalculRentabiliteGpsActuel()
+    ) {
+        return;
+    }
+
+    calculerMeilleureStation();
+    dernierCalculGpsRentabilite = maintenant;
+    dernierCalculPeriodiqueRentabilite = maintenant;
 
 }
 
@@ -14242,6 +15517,7 @@ var dernierControleRavitaillementRentable = 0;
 var trajetPrepare = null;
 var jaugeTrajetTemporaire = null;
 var validationTrajetPrepareEnCours = false;
+var recalculTrajetPrepareAvantageEnCours = false;
 var coordonneesRouteNavigation = [];
 var positionsHorsItineraire = 0;
 var derniereRelanceItineraire = 0;
@@ -14762,6 +16038,177 @@ function filtrerArretsEspaces(arrets, distanceMinimumKm) {
 
 }
 
+function positionsComparablesAutourRavitaillement(positions, arret, rayonKm) {
+
+    return (positions || []).filter(function(position) {
+        return position
+            && position.station
+            && arret
+            && arret.station
+            && !memeStation(position.station, arret.station)
+            && Number.isFinite(prixPublicStationRentabilite(position.station))
+            && prixPublicStationRentabilite(position.station) > 0
+            && prixPublicStationRentabilite(position.station) !== 9.999
+            && Math.abs(
+                Number(position.distanceRouteKm)
+                - Number(arret.distanceRouteKm)
+            ) <= rayonKm;
+    });
+
+}
+
+function prixReferenceLocalRavitaillement(positions, arret, prixSecours) {
+
+    var rayonKm = 25;
+    var comparables = positionsComparablesAutourRavitaillement(
+        positions,
+        arret,
+        rayonKm
+    );
+
+    if (comparables.length < 3) {
+        rayonKm = 50;
+        comparables = positionsComparablesAutourRavitaillement(
+            positions,
+            arret,
+            rayonKm
+        );
+    }
+
+    if (!comparables.length) {
+        return {
+            prixReference: prixSecours,
+            nombreStations: 0,
+            rayonKm: 0
+        };
+    }
+
+    return {
+        prixReference: comparables.reduce(function(total, position) {
+            return total + prixPublicStationRentabilite(position.station);
+        }, 0) / comparables.length,
+        nombreStations: comparables.length,
+        rayonKm: rayonKm
+    };
+
+}
+
+function litresAchetesPourRavitaillement(
+    arret,
+    index,
+    arrets,
+    reservoir,
+    consommation,
+    jauge,
+    litresSecours
+) {
+
+    var carburantDepart = reservoir * jauge / 100;
+    var distanceDepuisPleinKm = index === 0
+        ? Number(arret.distanceRouteKm || 0)
+        : Math.max(
+            0,
+            Number(arret.distanceRouteKm || 0)
+                - Number(arrets[index - 1].distanceRouteKm || 0)
+        );
+    var carburantAvantArret = index === 0
+        ? carburantDepart - distanceDepuisPleinKm * consommation / 100
+        : reservoir - distanceDepuisPleinKm * consommation / 100;
+    var litres = reservoir - Math.max(
+        0,
+        Math.min(reservoir, carburantAvantArret)
+    );
+
+    if (!Number.isFinite(litres) || litres < 1) {
+        return Math.max(0, Math.min(reservoir, litresSecours || 0));
+    }
+
+    return Math.max(0, Math.min(reservoir, litres));
+
+}
+
+function enrichirArretsAvecComparaisonLocale(
+    arrets,
+    positions,
+    reservoir,
+    consommation,
+    jauge,
+    prixReferenceSecours,
+    litresSecours
+) {
+
+    return (arrets || []).map(function(arret, index, liste) {
+        var referenceLocale = prixReferenceLocalRavitaillement(
+            positions,
+            arret,
+            prixReferenceSecours
+        );
+        var litres = litresAchetesPourRavitaillement(
+            arret,
+            index,
+            liste,
+            reservoir,
+            consommation,
+            jauge,
+            litresSecours
+        );
+        var arretEnrichi = enrichirRentabiliteArret(
+            arret,
+            referenceLocale.prixReference,
+            litres,
+            consommation
+        );
+
+        return Object.assign({}, arretEnrichi, {
+            litresComparaison: litres,
+            prixReferenceLocale: referenceLocale.prixReference,
+            nombreStationsComparaisonLocale: referenceLocale.nombreStations,
+            rayonComparaisonLocaleKm: referenceLocale.rayonKm
+        });
+    });
+
+}
+
+function totalEconomieRavitaillements(arrets) {
+
+    return (arrets || []).reduce(function(total, arret) {
+        return total + Math.max(0, Number(arret.economieNette) || 0);
+    }, 0);
+
+}
+
+function resultatRavitaillementTrajet(
+    arrets,
+    positions,
+    autonomieDepartKm,
+    distanceTrajetKm,
+    reservoir,
+    consommation,
+    jauge,
+    prixReferenceSecours,
+    litresSecours
+) {
+
+    var arretsEnrichis = enrichirArretsAvecComparaisonLocale(
+        arrets,
+        positions,
+        reservoir,
+        consommation,
+        jauge,
+        prixReferenceSecours,
+        litresSecours
+    );
+
+    return {
+        arrets: arretsEnrichis,
+        autonomieKm: autonomieDepartKm,
+        distanceTrajetKm: distanceTrajetKm,
+        economieTotale: totalEconomieRavitaillements(arretsEnrichis),
+        comparaisonLocale: true
+    };
+
+}
+
 function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
 
     var vehicule = vehiculeActif();
@@ -14776,7 +16223,9 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
             arrets: [],
             html: "Renseignez votre v\u00e9hicule pour calculer les ravitaillements du trajet.",
             autonomieKm: 0,
-            distanceTrajetKm: route && route.distance ? route.distance / 1000 : 0
+            distanceTrajetKm: route && route.distance ? route.distance / 1000 : 0,
+            economieTotale: 0,
+            comparaisonLocale: false
         };
     }
 
@@ -14801,7 +16250,9 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
         return {
             arrets: [],
             autonomieKm: autonomieDepartKm,
-            distanceTrajetKm: distanceTrajetKm
+            distanceTrajetKm: distanceTrajetKm,
+            economieTotale: 0,
+            comparaisonLocale: false
         };
     }
 
@@ -14819,7 +16270,7 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
             litresACompleter || litresComparaisonReelle
         )
     );
-    var positionsStations = stationsValides
+    var positionsStationsBrutes = stationsValides
         .map(function(station) {
             return positionStationSurRoute(
                 station,
@@ -14831,11 +16282,17 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
                 && position.ecartMetres <= 1200
                 && position.distanceRouteKm > 5
                 && position.distanceRouteKm < distanceTrajetKm - 1;
-        })
+        });
+    var positionsStations = positionsStationsBrutes
         .map(function(position) {
+            var referenceLocale = prixReferenceLocalRavitaillement(
+                positionsStationsBrutes,
+                position,
+                prixReference
+            );
             return enrichirRentabiliteArret(
                 position,
-                prixReference,
+                referenceLocale.prixReference,
                 Math.max(0, litresRentabilite),
                 consommation
             );
@@ -14862,11 +16319,17 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
             80
         )[0];
 
-        return {
-            arrets: arretOpportuniste ? [arretOpportuniste] : [],
-            autonomieKm: autonomieDepartKm,
-            distanceTrajetKm: distanceTrajetKm
-        };
+        return resultatRavitaillementTrajet(
+            arretOpportuniste ? [arretOpportuniste] : [],
+            positionsStations,
+            autonomieDepartKm,
+            distanceTrajetKm,
+            reservoir,
+            consommation,
+            jauge,
+            prixReference,
+            litresRentabilite
+        );
     }
 
     var arrets = [];
@@ -14956,18 +16419,26 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
     }
 
     if (arrets.length) {
-        return {
-            arrets: arrets,
-            autonomieKm: autonomieDepartKm,
-            distanceTrajetKm: distanceTrajetKm
-        };
+        return resultatRavitaillementTrajet(
+            arrets,
+            positionsStations,
+            autonomieDepartKm,
+            distanceTrajetKm,
+            reservoir,
+            consommation,
+            jauge,
+            prixReference,
+            litresRentabilite
+        );
     }
 
     if (distanceTrajetKm > autonomieDepartKm * 0.90) {
         return {
             arrets: [],
             autonomieKm: autonomieDepartKm,
-            distanceTrajetKm: distanceTrajetKm
+            distanceTrajetKm: distanceTrajetKm,
+            economieTotale: 0,
+            comparaisonLocale: false
         };
     }
 
@@ -14990,11 +16461,17 @@ function calculerArretsRavitaillementRoute(route, jaugeForcee, stationsSource) {
         80
     )[0];
 
-    return {
-        arrets: meilleurArretRentable ? [meilleurArretRentable] : [],
-        autonomieKm: autonomieDepartKm,
-        distanceTrajetKm: distanceTrajetKm
-    };
+    return resultatRavitaillementTrajet(
+        meilleurArretRentable ? [meilleurArretRentable] : [],
+        positionsStations,
+        autonomieDepartKm,
+        distanceTrajetKm,
+        reservoir,
+        consommation,
+        jauge,
+        prixReference,
+        litresRentabilite
+    );
 
 }
 
@@ -15006,17 +16483,34 @@ function htmlArretsRavitaillement(resultat) {
             : "<strong>Ravitaillement :</strong> aucune station pertinente charg\u00e9e sur ce trajet.";
     }
 
-    var economieTotale = (resultat.arrets || []).reduce(function(total, arret) {
-        return total + Math.max(0, Number(arret.economieNette || 0));
-    }, 0);
+    var economieTotale = Number.isFinite(Number(resultat.economieTotale))
+        ? Number(resultat.economieTotale)
+        : totalEconomieRavitaillements(resultat.arrets);
     var prefixe =
         '<strong class="trip-total-savings">\u00c9conomie totale estim\u00e9e : '
         + echapperHtml(formaterEurosRentabilite(economieTotale))
         + "</strong><br>"
+        + "<span>Compar\u00e9e aux stations autour des ravitaillements pr\u00e9vus.</span><br>"
         + "<strong>Ravitaillement conseill\u00e9 :</strong> ";
 
     return prefixe
         + resultat.arrets.map(function(arret) {
+            var detailsComparaison = [];
+
+            if (Number.isFinite(Number(arret.litresComparaison))) {
+                detailsComparaison.push(
+                    formaterLitresRentabilite(arret.litresComparaison)
+                );
+            }
+
+            if (Number.isFinite(Number(arret.nombreStationsComparaisonLocale))
+                && arret.nombreStationsComparaisonLocale > 0) {
+                detailsComparaison.push(
+                    arret.nombreStationsComparaisonLocale
+                    + " stations autour"
+                );
+            }
+
             return echapperHtml(
                 (arret.station.enseigne || "Station")
                 + (arret.station.ville ? " \u00e0 " + arret.station.ville : "")
@@ -15039,6 +16533,16 @@ function htmlArretsRavitaillement(resultat) {
                                 }
                             )
                             + " \u20ac)"
+                        : ""
+                )
+                + (
+                    detailsComparaison.length
+                        ? " [" + detailsComparaison.join(", ") + "]"
+                        : ""
+                )
+                + (
+                    arret.station.avantageTotalenergiesApplique
+                        ? " - plafond TotalEnergies inclus"
                         : ""
                 )
             );
@@ -15773,8 +17277,12 @@ window.calculerTrajetPrepare = async function() {
             jauge: jaugeTrajet,
             arrets: ravitaillement.arrets,
             route: routeDirecte,
+            routeDirecte: routeDirecte,
             autonomieKm: ravitaillement.autonomieKm,
-            distanceTrajetKm: ravitaillement.distanceTrajetKm
+            distanceTrajetKm: ravitaillement.distanceTrajetKm,
+            economieTotale: ravitaillement.economieTotale || 0,
+            carburant: carburantRentabiliteActuel(),
+            carteTotalenergies: carteTotalenergiesActive()
         };
         var pointsApercu = pointsTrajetPrepareDepuisArrets();
         var routeApercu = await calculerRouteAvecCoordonnees(pointsApercu);
@@ -15849,6 +17357,7 @@ window.validerTrajetPrepare = async function() {
         configurerBoutonsNavigationExterneTrajetPrepare();
         fermerPlanificateurTrajet();
         navigationActive = true;
+        actualiserNavigationPremium();
         suiviCarteActif = true;
         orientationAutomatiqueActive = true;
         stabiliserCapDepartNavigation();
@@ -15889,20 +17398,54 @@ window.validerTrajetPrepare = async function() {
 
 function dessinerItineraire(coordonnees, afficherApercu) {
 
-    if (itineraireLayer) {
+    retirerCoucheItineraire();
 
-        map.removeLayer(itineraireLayer);
-        itineraireLayer = null;
+    var coordonneesAffichees = (coordonnees || []).map(function(point) {
+        return [Number(point[0]), Number(point[1])];
+    }).filter(function(point) {
+        return Number.isFinite(point[0]) && Number.isFinite(point[1]);
+    });
 
+    if (
+        navigationActive
+        && Number.isFinite(latitudeUtilisateur)
+        && Number.isFinite(longitudeUtilisateur)
+        && coordonneesAffichees.length
+    ) {
+        var premierPointRoute = coordonneesAffichees[0];
+        var ecartDepartKm = distanceDeplacementKm(
+            latitudeUtilisateur,
+            longitudeUtilisateur,
+            premierPointRoute[1],
+            premierPointRoute[0]
+        );
+        if (ecartDepartKm >= 0.003) {
+            coordonneesAffichees.unshift([
+                longitudeUtilisateur,
+                latitudeUtilisateur
+            ]);
+        }
+    }
+
+    if (coordonneesAffichees.length < 2) {
+        return;
     }
 
     var donneesItineraire = {
         type: "Feature",
         geometry: {
             type: "LineString",
-            coordinates: coordonnees
+            coordinates: coordonneesAffichees
         }
     };
+    var coucheMapLibre = creerCoucheItineraireMapLibre(
+        donneesItineraire,
+        coordonneesAffichees
+    );
+
+    if (coucheMapLibre) {
+        itineraireLayer = coucheMapLibre;
+    } else {
     var contourItineraire = L.geoJSON(
         donneesItineraire,
         {
@@ -15933,6 +17476,7 @@ function dessinerItineraire(coordonnees, afficherApercu) {
             return ligneItineraire.getBounds();
         }
     };
+    }
 
     if (afficherApercu) {
         suiviCarteActif = false;
@@ -15949,6 +17493,123 @@ function dessinerItineraire(coordonnees, afficherApercu) {
             }
         );
     }
+
+}
+
+function creerCoucheItineraireMapLibre(donnees, coordonnees) {
+
+    var carteInterne = map && map._map;
+    if (
+        !carteInterne
+        || typeof carteInterne.addSource !== "function"
+        || typeof carteInterne.addLayer !== "function"
+    ) {
+        return null;
+    }
+
+    var sourceId = "optiplein-guidage-source";
+    var contourId = "optiplein-guidage-contour";
+    var ligneId = "optiplein-guidage-ligne";
+    var coucheActive = true;
+
+    function retirerElements() {
+        if (carteInterne.getLayer(ligneId)) {
+            carteInterne.removeLayer(ligneId);
+        }
+        if (carteInterne.getLayer(contourId)) {
+            carteInterne.removeLayer(contourId);
+        }
+        if (carteInterne.getSource(sourceId)) {
+            carteInterne.removeSource(sourceId);
+        }
+    }
+
+    function ajouterElements() {
+        if (!coucheActive) {
+            return;
+        }
+
+        retirerElements();
+        carteInterne.addSource(sourceId, {
+            type: "geojson",
+            data: donnees
+        });
+        carteInterne.addLayer({
+            id: contourId,
+            type: "line",
+            source: sourceId,
+            layout: {
+                "line-cap": "round",
+                "line-join": "round"
+            },
+            paint: {
+                "line-color": "#075c2b",
+                "line-width": navigationActive ? 14 : 11,
+                "line-opacity": 0.96
+            }
+        });
+        carteInterne.addLayer({
+            id: ligneId,
+            type: "line",
+            source: sourceId,
+            layout: {
+                "line-cap": "round",
+                "line-join": "round"
+            },
+            paint: {
+                "line-color": "#22e85c",
+                "line-width": navigationActive ? 8 : 6,
+                "line-opacity": 1
+            }
+        });
+    }
+
+    function ajouterElementsQuandPret(tentatives) {
+        try {
+            ajouterElements();
+        } catch (erreur) {
+            if (tentatives < 40) {
+                window.setTimeout(function() {
+                    ajouterElementsQuandPret(tentatives + 1);
+                }, 100);
+            }
+        }
+    }
+
+    ajouterElementsQuandPret(0);
+
+    return {
+        remove: function() {
+            coucheActive = false;
+            retirerElements();
+        },
+        getBounds: function() {
+            var limites = new maplibregl.LngLatBounds();
+            coordonnees.forEach(function(point) {
+                limites.extend(point);
+            });
+            return limites;
+        }
+    };
+
+}
+
+function retirerCoucheItineraire() {
+
+    if (!itineraireLayer) {
+        return;
+    }
+
+    if (typeof itineraireLayer.remove === "function") {
+        itineraireLayer.remove();
+    } else if (
+        typeof map.hasLayer === "function"
+        && map.hasLayer(itineraireLayer)
+    ) {
+        map.removeLayer(itineraireLayer);
+    }
+
+    itineraireLayer = null;
 
 }
 
@@ -16045,21 +17706,22 @@ function symboleManeuvre(maneuvre) {
 function texteManeuvre(etape) {
 
     var maneuvre = etape.maneuver || {};
-    var voie = etape.name ? " sur " + etape.name : "";
+    var nomVoie = String(etape.name || "")
+        .replace(/\btoward\b/gi, "direction")
+        .replace(/\bonto\b/gi, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    var voie = nomVoie
+        ? /^direction\b/i.test(nomVoie)
+            ? " " + nomVoie
+            : " sur " + nomVoie
+        : "";
     var modificateur = maneuvre.modifier || "straight";
     var type = maneuvre.type || "";
     var sortie = etape.exits || maneuvre.exit || "";
-    var instruction = (etape.instruction || "").trim();
 
     if (maneuvre.type === "arrive") {
         return "Vous \u00eates arriv\u00e9";
-    }
-    if (
-        instruction
-        && type === "continue"
-        && instruction.toLowerCase() !== "continue"
-    ) {
-        return instruction;
     }
     if (type === "off ramp") {
         return "Prenez la sortie" + (sortie ? " " + sortie : "") + voie;
@@ -16076,8 +17738,15 @@ function texteManeuvre(etape) {
             : "Restez \u00e0 droite" + voie;
     }
     if (type === "roundabout" || type === "rotary") {
-        return "Au rond-point, prenez la sortie "
-            + (maneuvre.exit || "indiqu\u00e9e")
+        var numeroSortie = Number(maneuvre.exit || sortie);
+        var libelleSortie = Number.isFinite(numeroSortie)
+            && numeroSortie > 0
+                ? numeroSortie === 1
+                    ? "1re sortie"
+                    : Math.round(numeroSortie) + "e sortie"
+                : "sortie indiqu\u00e9e";
+        return "Au rond-point, prenez la "
+            + libelleSortie
             + voie;
     }
     if (modificateur.includes("left")) {
@@ -16255,6 +17924,7 @@ function verifierEcartItineraire() {
 
         if (!debutEcartItineraire) {
             debutEcartItineraire = Date.now();
+            capRecalculItineraireStabilise();
             programmerVerificationEcartItineraire(
                 delaiRecalculItineraireMs
             );
@@ -16295,8 +17965,6 @@ function verifierEcartItineraire() {
 
 window.demarrerNavigation = async function() {
 
-    await activerOrientationTelephone();
-
     if (!routeNavigation && !destinationNavigation) {
         return;
     }
@@ -16317,8 +17985,10 @@ window.demarrerNavigation = async function() {
         ? derniereEconomieEstimee
         : null;
     navigationActive = true;
+    actualiserNavigationPremium();
     suiviCarteActif = true;
     orientationAutomatiqueActive = true;
+    activerOrientationTelephone();
     stabiliserCapDepartNavigation();
     actualiserBoutonSuiviCarte();
     document.getElementById("navigation-panel").hidden = false;
@@ -16362,6 +18032,7 @@ window.demarrerNavigation = async function() {
 window.arreterNavigation = function() {
 
     navigationActive = false;
+    actualiserNavigationPremium();
     economieEstimeeFigee = null;
     jaugeTrajetTemporaire = null;
     trajetPrepare = null;
@@ -16433,6 +18104,7 @@ async function tracerItineraire(
 
     if (maintenirNavigation) {
         navigationActive = true;
+        actualiserNavigationPremium();
         document.getElementById("navigation-panel").hidden = false;
         document.getElementById("navigation-instruction").textContent =
             "Calcul en cours...";
