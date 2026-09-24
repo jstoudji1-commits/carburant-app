@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 import asyncio
 import csv
 from contextlib import asynccontextmanager, suppress
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from email.message import EmailMessage
 from email.utils import getaddresses
 import base64
@@ -32,6 +32,17 @@ import time
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
 import requests as http_requests
+try:
+    from appstoreserverlibrary.models.Environment import Environment as AppleEnvironment
+    from appstoreserverlibrary.signed_data_verifier import (
+        SignedDataVerifier,
+        VerificationException,
+    )
+except Exception:  # pragma: no cover - dependency is installed in production.
+    AppleEnvironment = None
+    SignedDataVerifier = None
+    VerificationException = Exception
+
 from editorial_guides import GUIDES_EDITORIAUX
 from update_data import (
     date_derniere_mise_a_jour,
@@ -51,6 +62,7 @@ from optiplein_db import (
 )
 
 
+BASE_DIR = Path(__file__).resolve().parent
 INTERVALLE_MISE_A_JOUR_SECONDES = 10 * 60
 RETARD_MISE_A_JOUR_TOLERE_SECONDES = 60
 logger = logging.getLogger("optiplein.update")
@@ -239,6 +251,25 @@ APPLE_PREMIUM_PRODUCT_IDS = {
     ).split(",")
     if identifiant.strip()
 }
+APPLE_BUNDLE_ID = os.getenv("APPLE_BUNDLE_ID", "com.optiplein.app").strip()
+APPLE_APP_APPLE_ID = int(os.getenv("APPLE_APP_APPLE_ID", "6810203217") or "0")
+APPLE_ROOT_CERTS_DIR = Path(
+    os.getenv("APPLE_ROOT_CERTS_DIR", str(BASE_DIR / "certs" / "apple"))
+)
+if not APPLE_ROOT_CERTS_DIR.is_absolute():
+    APPLE_ROOT_CERTS_DIR = BASE_DIR / APPLE_ROOT_CERTS_DIR
+APPLE_JWS_ONLINE_CHECKS = os.getenv(
+    "APPLE_JWS_ONLINE_CHECKS",
+    "false",
+).strip().lower() in {"1", "true", "yes", "on"}
+APPLE_VERIFICATION_ENVIRONMENTS = [
+    environnement.strip()
+    for environnement in os.getenv(
+        "APPLE_VERIFICATION_ENVIRONMENTS",
+        "Production,Sandbox",
+    ).split(",")
+    if environnement.strip()
+]
 DELAI_VALIDATION_EMAIL_SECONDES = 24 * 60 * 60
 DELAI_RECUPERATION_MOT_DE_PASSE_SECONDES = 60 * 60
 # Une connexion reste valable un an sur l'appareil. La déconnexion volontaire,
@@ -1197,6 +1228,219 @@ def compte_depuis_requete_ou_404(request):
 def date_iso_maintenant():
 
     return datetime.now().astimezone().isoformat()
+
+
+APPLE_ROOT_CERTIFICATES_CACHE = None
+
+
+def charger_certificats_racine_apple():
+
+    global APPLE_ROOT_CERTIFICATES_CACHE
+
+    if APPLE_ROOT_CERTIFICATES_CACHE is not None:
+        return APPLE_ROOT_CERTIFICATES_CACHE
+
+    chemins = sorted(APPLE_ROOT_CERTS_DIR.glob("*.cer")) + sorted(
+        APPLE_ROOT_CERTS_DIR.glob("*.der")
+    )
+    certificats = [
+        chemin.read_bytes()
+        for chemin in chemins
+        if chemin.is_file()
+    ]
+
+    if not certificats:
+        raise HTTPException(
+            status_code=503,
+            detail="Certificats racine Apple introuvables sur le serveur.",
+        )
+
+    APPLE_ROOT_CERTIFICATES_CACHE = certificats
+    return certificats
+
+
+def environnement_apple_depuis_nom(nom):
+
+    if AppleEnvironment is None:
+        return None
+
+    correspondances = {
+        "production": AppleEnvironment.PRODUCTION,
+        "sandbox": AppleEnvironment.SANDBOX,
+        "xcode": AppleEnvironment.XCODE,
+        "localtesting": AppleEnvironment.LOCAL_TESTING,
+        "local_testing": AppleEnvironment.LOCAL_TESTING,
+    }
+
+    return correspondances.get(str(nom).strip().lower())
+
+
+def datetime_depuis_valeur_apple(valeur):
+
+    if valeur in (None, ""):
+        return None
+
+    if isinstance(valeur, datetime):
+        date_valeur = valeur
+    elif isinstance(valeur, (int, float)):
+        timestamp = float(valeur)
+        if timestamp > 10_000_000_000:
+            timestamp /= 1000
+        date_valeur = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    else:
+        texte = str(valeur).strip()
+        if not texte:
+            return None
+        if texte.isdigit():
+            return datetime_depuis_valeur_apple(int(texte))
+        date_valeur = datetime.fromisoformat(
+            texte.replace("Z", "+00:00")
+        )
+
+    if date_valeur.tzinfo is None:
+        date_valeur = date_valeur.replace(tzinfo=timezone.utc)
+
+    return date_valeur.astimezone(timezone.utc)
+
+
+def valeur_iso_depuis_apple(valeur):
+
+    date_valeur = datetime_depuis_valeur_apple(valeur)
+    if not date_valeur:
+        return ""
+
+    return date_valeur.isoformat()
+
+
+def verifier_transaction_apple_premium(achat):
+
+    if SignedDataVerifier is None or AppleEnvironment is None:
+        raise HTTPException(
+            status_code=503,
+            detail="La librairie de verification Apple n'est pas disponible.",
+        )
+
+    if not achat.signed_transaction:
+        raise HTTPException(
+            status_code=422,
+            detail="Transaction Apple signee manquante.",
+        )
+
+    certificats = charger_certificats_racine_apple()
+    erreurs = []
+
+    for nom_environnement in APPLE_VERIFICATION_ENVIRONMENTS:
+        environnement = environnement_apple_depuis_nom(nom_environnement)
+        if environnement is None:
+            continue
+
+        app_apple_id = (
+            APPLE_APP_APPLE_ID
+            if environnement == AppleEnvironment.PRODUCTION
+            else None
+        )
+        verificateur = SignedDataVerifier(
+            certificats,
+            APPLE_JWS_ONLINE_CHECKS,
+            environnement,
+            APPLE_BUNDLE_ID,
+            app_apple_id or None,
+        )
+
+        try:
+            payload = verificateur.verify_and_decode_signed_transaction(
+                achat.signed_transaction
+            )
+        except VerificationException as exc:
+            statut = getattr(exc, "status", None)
+            erreurs.append(
+                f"{nom_environnement}: "
+                f"{getattr(statut, 'name', str(statut or exc))}"
+            )
+            continue
+
+        product_id = str(getattr(payload, "productId", "") or "")
+        bundle_id = str(getattr(payload, "bundleId", "") or "")
+        transaction_id = str(getattr(payload, "transactionId", "") or "")
+        original_transaction_id = str(
+            getattr(payload, "originalTransactionId", "") or ""
+        )
+        revocation_date = getattr(payload, "revocationDate", None)
+        expiration_date = datetime_depuis_valeur_apple(
+            getattr(payload, "expiresDate", None)
+        )
+
+        if product_id not in APPLE_PREMIUM_PRODUCT_IDS:
+            raise HTTPException(
+                status_code=422,
+                detail="La transaction Apple ne correspond pas au produit Premium.",
+            )
+
+        if achat.product_id and achat.product_id != product_id:
+            raise HTTPException(
+                status_code=422,
+                detail="Produit Apple incoherent avec la transaction signee.",
+            )
+
+        if bundle_id and bundle_id != APPLE_BUNDLE_ID:
+            raise HTTPException(
+                status_code=422,
+                detail="La transaction Apple ne correspond pas a cette application.",
+            )
+
+        if achat.transaction_id and achat.transaction_id != transaction_id:
+            raise HTTPException(
+                status_code=422,
+                detail="Identifiant de transaction Apple incoherent.",
+            )
+
+        if revocation_date:
+            raise HTTPException(
+                status_code=422,
+                detail="Abonnement Apple revoque ou rembourse.",
+            )
+
+        if not expiration_date:
+            raise HTTPException(
+                status_code=422,
+                detail="Date d'expiration Apple manquante.",
+            )
+
+        if expiration_date <= datetime.now(timezone.utc):
+            raise HTTPException(
+                status_code=402,
+                detail="Abonnement Apple expire.",
+            )
+
+        return {
+            "product_id": product_id,
+            "transaction_id": transaction_id,
+            "original_transaction_id": original_transaction_id,
+            "purchase_date": valeur_iso_depuis_apple(
+                getattr(payload, "purchaseDate", None)
+            ),
+            "expiration_date": expiration_date.isoformat(),
+            "signed_date": valeur_iso_depuis_apple(
+                getattr(payload, "signedDate", None)
+            ),
+            "environment": str(
+                getattr(getattr(payload, "environment", ""), "value", "")
+                or getattr(payload, "rawEnvironment", "")
+                or nom_environnement
+            ),
+            "verification_environment": str(
+                getattr(environnement, "value", nom_environnement)
+            ),
+            "bundle_id": bundle_id,
+            "source": achat.source,
+            "signed_transaction": achat.signed_transaction,
+        }
+
+    detail = "Transaction Apple invalide ou non verifiable."
+    if erreurs:
+        detail += " " + " | ".join(erreurs)
+
+    raise HTTPException(status_code=422, detail=detail)
 
 
 def ids_vehicules(donnees):
@@ -8632,19 +8876,15 @@ def activer_premium_apple(
             detail="Produit Apple Premium non reconnu.",
         )
 
+    transaction_verifiee = verifier_transaction_apple_premium(achat)
+
     email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
     maintenant = date_iso_maintenant()
     donnees = utilisateur.setdefault("data", {})
     donnees["plan"] = "premium"
     donnees["plateforme_derniere_connexion"] = "ios"
     donnees["abonnement_apple"] = {
-        "product_id": achat.product_id,
-        "transaction_id": achat.transaction_id,
-        "original_transaction_id": achat.original_transaction_id,
-        "purchase_date": achat.purchase_date,
-        "expiration_date": achat.expiration_date,
-        "signed_transaction": achat.signed_transaction,
-        "source": achat.source,
+        **transaction_verifiee,
         "verified_at": maintenant,
     }
     donnees["premium"] = premium_compte_nettoye(donnees)
