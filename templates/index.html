@@ -132,49 +132,57 @@ body{
 }
 
 .account-plan-badge{
-    width:86px;
+    width:82px;
     min-width:74px;
-    min-height:40px;
-    display:grid;
-    align-content:center;
-    justify-items:center;
-    gap:2px;
-    padding:6px 9px;
+    min-height:42px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    padding:6px 8px;
     border:1px solid #cfd9df;
-    border-radius:10px;
+    border-radius:999px;
     background:#f6faf7;
     color:var(--ink);
+    text-align:center;
     cursor:pointer;
-    box-shadow:0 8px 18px rgba(16,37,54,0.10);
+    box-shadow:0 7px 16px rgba(16,37,54,0.10);
 }
 
 .account-plan-badge-label{
+    display:block;
     font-size:12px;
     font-weight:900;
     line-height:1;
+    width:100%;
 }
 
 .account-plan-badge-action{
+    display:block;
     color:var(--green-dark);
     font-size:9px;
     font-weight:800;
     line-height:1.1;
     text-decoration:underline;
     text-underline-offset:2px;
+    width:100%;
+    white-space:normal;
 }
 
 .account-plan-badge.premium{
-    border-color:#f1c75b;
-    background:linear-gradient(135deg, #fff7da, #1aa33a 58%, #087a2c);
-    color:white;
+    border-color:#0f8f35;
+    background:linear-gradient(180deg, #22b83f, #07822e);
+    color:#fff;
+    box-shadow:0 8px 18px rgba(8,122,44,0.22);
 }
 
 .account-plan-badge.premium .account-plan-badge-label{
-    text-shadow:0 1px 5px rgba(0,0,0,0.22);
+    text-shadow:none;
 }
 
 .account-plan-badge.premium .account-plan-badge-action{
-    color:#fff7da;
+    color:#e9fff0;
     text-decoration:none;
 }
 
@@ -913,6 +921,31 @@ body{
     margin-top:5px;
     color:var(--green-dark);
     font-size:22px;
+    line-height:1;
+}
+
+.referral-pending-stat{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-top:10px;
+    padding:13px 14px;
+    border:1px solid #d7e5dc;
+    border-radius:10px;
+    background:#f6fbf7;
+    color:var(--ink);
+}
+
+.referral-pending-stat span{
+    color:#536575;
+    font-size:13px;
+    font-weight:800;
+}
+
+.referral-pending-stat strong{
+    color:var(--green-dark);
+    font-size:24px;
     line-height:1;
 }
 
@@ -3060,12 +3093,82 @@ body{
 }
 
 .navigation-saving{
-    display:block;
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:5px;
     margin-top:7px;
     color:var(--green-dark);
     font-size:15px;
     line-height:1.25;
     font-weight:900;
+}
+
+.navigation-saving-info{
+    width:18px;
+    height:18px;
+    display:inline-grid;
+    place-items:center;
+    flex:0 0 auto;
+    padding:0;
+    border:1px solid rgba(8,122,44,0.55);
+    border-radius:50%;
+    background:#f2fbf4;
+    color:var(--green-dark);
+    font-size:12px;
+    font-weight:900;
+    line-height:1;
+    cursor:pointer;
+}
+
+.estimated-saving-info-popup{
+    position:fixed;
+    inset:0;
+    z-index:2200;
+    display:grid;
+    place-items:center;
+    padding:18px;
+    background:rgba(8,20,30,0.28);
+}
+
+.estimated-saving-info-popup[hidden]{
+    display:none;
+}
+
+.estimated-saving-info-card{
+    width:min(390px, calc(100vw - 32px));
+    padding:16px;
+    border:1px solid rgba(20,159,56,0.24);
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 18px 42px rgba(16,37,54,0.24);
+}
+
+.estimated-saving-info-title{
+    margin:0 0 8px 0;
+    color:var(--ink);
+    font-size:17px;
+    font-weight:900;
+}
+
+.estimated-saving-info-copy{
+    margin:0;
+    color:#4f6170;
+    font-size:14px;
+    line-height:1.42;
+}
+
+.estimated-saving-info-close{
+    width:100%;
+    margin-top:13px;
+    padding:10px 12px;
+    border:0;
+    border-radius:9px;
+    background:linear-gradient(180deg, #27b33e, #087a2c);
+    color:#fff;
+    font-size:14px;
+    font-weight:900;
+    cursor:pointer;
 }
 
 .navigation-refuel[hidden]{
@@ -3800,11 +3903,10 @@ body{
     }
 
     .account-plan-badge{
-        width:58px;
-        min-width:58px;
+        width:64px;
+        min-width:64px;
         min-height:38px;
-        padding:5px 6px;
-        border-radius:8px;
+        padding:5px 7px;
     }
 
     .account-plan-badge-label{
@@ -3851,8 +3953,8 @@ body{
         }
 
         .account-plan-badge{
-            width:52px;
-            min-width:52px;
+            width:58px;
+            min-width:58px;
         }
 
         .account-plan-badge-label{
@@ -4535,6 +4637,10 @@ body{
                                 <span>Filleuls valid&eacute;s</span>
                                 <strong id="referral-count">0</strong>
                             </div>
+                        </div>
+                        <div class="referral-pending-stat">
+                            <span>En attente de validation du filleul</span>
+                            <strong id="referral-pending-count">0</strong>
                         </div>
                     </div>
 
@@ -9525,18 +9631,11 @@ function actualiserBadgeCompte() {
 
     var connecte = compteUtilisateurConnecte();
     var premium = comptePremiumActif();
-    var premiumInfo = lirePremiumCompte();
-
     badge.classList.toggle("premium", premium);
     libelle.textContent = premium ? "Premium" : "Gratuit";
 
     if (premium) {
-        var expiration = formatterDateCourteOptiPlein(
-            premiumInfo.expires_at
-            || premiumInfo.expiration_date
-            || premiumInfo.bonus_until
-        );
-        action.textContent = expiration ? "jusqu'au " + expiration : "Actif";
+        action.textContent = "Actif";
     } else {
         action.textContent = "Devenir Premium";
     }
@@ -9596,6 +9695,7 @@ function actualiserParrainageCompte() {
     var codeElement = document.getElementById("referral-code");
     var bonusElement = document.getElementById("referral-bonus-months");
     var countElement = document.getElementById("referral-count");
+    var pendingElement = document.getElementById("referral-pending-count");
     var liste = document.getElementById("referral-list");
     var vide = document.getElementById("referral-empty");
 
@@ -9612,6 +9712,12 @@ function actualiserParrainageCompte() {
     if (countElement) {
         countElement.textContent = String(
             Number(parrainage.filleuls_total || 0) || 0
+        );
+    }
+
+    if (pendingElement) {
+        pendingElement.textContent = String(
+            Number(parrainage.filleuls_en_attente_total || 0) || 0
         );
     }
 
@@ -9665,13 +9771,58 @@ window.copierCodeParrainage = async function(event) {
     }
 
     try {
-        await navigator.clipboard.writeText(code);
+        await copierTexteDansPressePapiers(code);
         definirStatutCompte("Code parrain copi\u00e9.", "success");
     } catch (erreur) {
         window.prompt("Copiez votre code parrain :", code);
     }
 
 };
+
+function lienParrainageCompte(code) {
+
+    return "https://www.optiplein.fr/web?parrain="
+        + encodeURIComponent(code);
+
+}
+
+function messageParrainageCompte(code) {
+
+    return "Mon code parrain OptiPlein : " + code
+        + ". Active Premium avec l'app iOS et je gagne 1 mois offert : "
+        + lienParrainageCompte(code);
+
+}
+
+async function copierTexteDansPressePapiers(texte) {
+
+    if (
+        navigator.clipboard
+        && typeof navigator.clipboard.writeText === "function"
+    ) {
+        await navigator.clipboard.writeText(texte);
+        return;
+    }
+
+    var zone = document.createElement("textarea");
+    zone.value = texte;
+    zone.setAttribute("readonly", "readonly");
+    zone.style.position = "fixed";
+    zone.style.left = "-9999px";
+    zone.style.top = "0";
+    document.body.appendChild(zone);
+    zone.focus();
+    zone.select();
+
+    try {
+        if (!document.execCommand("copy")) {
+            throw new Error("Copie refus\u00e9e par le navigateur.");
+        }
+    } finally {
+        document.body.removeChild(zone);
+    }
+
+}
 
 window.partagerCodeParrainage = async function(event) {
 
@@ -9689,19 +9840,25 @@ window.partagerCodeParrainage = async function(event) {
         return;
     }
 
-    var lien = window.location.origin + "/web?parrain="
-        + encodeURIComponent(code);
-    var texte = "Mon code parrain OptiPlein : " + code
-        + ". Active Premium avec l'app iOS et je gagne 1 mois offert. "
-        + lien;
+    var lien = lienParrainageCompte(code);
+    var texte = messageParrainageCompte(code);
+    var donneesPartage = {
+        title: "Code parrain OptiPlein",
+        text: "Mon code parrain OptiPlein : " + code
+            + ". Active Premium avec l'app iOS et je gagne 1 mois offert.",
+        url: lien
+    };
 
-    if (navigator.share) {
+    if (
+        navigator.share
+        && (
+            !navigator.canShare
+            || navigator.canShare(donneesPartage)
+        )
+    ) {
         try {
-            await navigator.share({
-                title: "Code parrain OptiPlein",
-                text: texte,
-                url: lien
-            });
+            await navigator.share(donneesPartage);
+            definirStatutCompte("Partage du code ouvert.", "success");
             return;
         } catch (erreur) {
             if (erreur && erreur.name === "AbortError") {
@@ -9711,7 +9868,7 @@ window.partagerCodeParrainage = async function(event) {
     }
 
     try {
-        await navigator.clipboard.writeText(texte);
+        await copierTexteDansPressePapiers(texte);
         definirStatutCompte("Message de parrainage copi\u00e9.", "success");
     } catch (erreurCopie) {
         window.prompt("Copiez votre message de parrainage :", texte);
@@ -15468,18 +15625,91 @@ function ajouterEconomieNavigationFigee(sousTitre) {
 
     var ligne = document.createElement("span");
     ligne.className = "navigation-saving";
-    ligne.textContent = "\u00c9conomie au d\u00e9part : "
-        + economieEstimeeFigee.toLocaleString(
-            "fr-FR",
-            {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }
-        )
-        + " \u20ac";
+
+    var texte = document.createElement("span");
+    texte.textContent = "\u00c9conomie estim\u00e9e : ";
+
+    var montant = document.createElement("span");
+    montant.textContent = economieEstimeeFigee.toLocaleString(
+        "fr-FR",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    ) + " \u20ac";
+
+    var info = document.createElement("button");
+    info.type = "button";
+    info.className = "navigation-saving-info";
+    info.textContent = "i";
+    info.setAttribute(
+        "aria-label",
+        "Comprendre l'\u00e9conomie estim\u00e9e"
+    );
+    info.onclick = afficherInfoEconomieEstimee;
+
+    ligne.appendChild(texte);
+    ligne.appendChild(montant);
+    ligne.appendChild(info);
     sousTitre.appendChild(ligne);
 
 }
+
+window.fermerInfoEconomieEstimee = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var popup = document.getElementById("estimated-saving-info-popup");
+    if (popup) {
+        popup.hidden = true;
+    }
+
+};
+
+window.afficherInfoEconomieEstimee = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var popup = document.getElementById("estimated-saving-info-popup");
+    if (!popup) {
+        popup = document.createElement("div");
+        popup.id = "estimated-saving-info-popup";
+        popup.className = "estimated-saving-info-popup";
+        popup.innerHTML = ''
+            + '<div class="estimated-saving-info-card" role="dialog"'
+            + ' aria-modal="true" aria-labelledby="estimated-saving-info-title">'
+            + '<p class="estimated-saving-info-title" id="estimated-saving-info-title">'
+            + '\u00c9conomie estim\u00e9e</p>'
+            + '<p class="estimated-saving-info-copy">'
+            + 'Le montant est une estimation fig\u00e9e au d\u00e9marrage de '
+            + 'l&rsquo;itin\u00e9raire. Il peut varier selon la circulation, le '
+            + 'd\u00e9tour r\u00e9el, votre conduite, la consommation du v\u00e9hicule, '
+            + 'le volume achet\u00e9, le prix affich\u00e9 en station et les '
+            + 'conditions d&rsquo;acc\u00e8s.</p>'
+            + '<button type="button" class="estimated-saving-info-close"'
+            + ' onclick="fermerInfoEconomieEstimee(event)">Compris</button>'
+            + '</div>';
+        popup.addEventListener("click", function(clic) {
+            if (clic.target === popup) {
+                fermerInfoEconomieEstimee(clic);
+            }
+        });
+        document.body.appendChild(popup);
+    }
+
+    popup.hidden = false;
+    var fermer = popup.querySelector(".estimated-saving-info-close");
+    if (fermer) {
+        fermer.focus();
+    }
+
+};
 
 function afficherDestinationNavigationDansEncadre(
     titre,

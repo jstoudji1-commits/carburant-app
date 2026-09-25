@@ -1253,13 +1253,25 @@ def trouver_parrain_par_code(comptes, code):
     return None, None
 
 
+def email_deja_present_liste_parrainage(lignes, email):
+
+    email_masque = masquer_email(email)
+    email_normalise = normaliser_email(email)
+
+    return any(
+        normaliser_email(ligne.get("email", "")) in {email_normalise, email_masque}
+        for ligne in lignes
+        if isinstance(ligne, dict)
+    )
+
+
 def enregistrer_code_parrain_inscription(comptes, email, donnees, code):
 
     code = normaliser_code_parrainage(code)
     if not code:
         return
 
-    parrain_email, _parrain = trouver_parrain_par_code(comptes, code)
+    parrain_email, parrain = trouver_parrain_par_code(comptes, code)
     if not parrain_email:
         raise HTTPException(
             status_code=422,
@@ -1282,6 +1294,30 @@ def enregistrer_code_parrain_inscription(comptes, email, donnees, code):
         parrainage,
         email,
     )
+
+    donnees_parrain = parrain.setdefault("data", {})
+    parrainage_parrain = dict(donnees_parrain.get("parrainage", {}) or {})
+    attentes = list(parrainage_parrain.get("filleuls_en_attente", []) or [])
+    filleuls = list(parrainage_parrain.get("filleuls", []) or [])
+
+    if (
+        not email_deja_present_liste_parrainage(attentes, email)
+        and not email_deja_present_liste_parrainage(filleuls, email)
+    ):
+        attentes.append(
+            {
+                "email": email,
+                "statut": "en_attente_premium",
+                "created_at": date_iso_maintenant(),
+            }
+        )
+
+    parrainage_parrain["filleuls_en_attente"] = attentes
+    donnees_parrain["parrainage"] = parrainage_compte_nettoye(
+        parrainage_parrain,
+        parrain_email,
+    )
+    parrain["updated_at"] = date_iso_maintenant()
 
 
 def date_bonus_base_parrain(donnees):
@@ -1330,6 +1366,18 @@ def attribuer_bonus_parrainage_premium(comptes, filleul_email, filleul_donnees):
     bonus_until = mois_entre_dates(bonus_base, 1)
 
     filleuls = list(parrainage_parrain.get("filleuls", []) or [])
+    attentes = [
+        attente
+        for attente in parrainage_parrain.get("filleuls_en_attente", []) or []
+        if (
+            isinstance(attente, dict)
+            and normaliser_email(attente.get("email", ""))
+            not in {
+                normaliser_email(filleul_email),
+                masquer_email(filleul_email),
+            }
+        )
+    ]
     filleuls.append(
         {
             "email": filleul_email,
@@ -1340,6 +1388,7 @@ def attribuer_bonus_parrainage_premium(comptes, filleul_email, filleul_donnees):
     )
 
     parrainage_parrain["filleuls"] = filleuls
+    parrainage_parrain["filleuls_en_attente"] = attentes
     parrainage_parrain["filleuls_total"] = len(filleuls)
     parrainage_parrain["bonus_mois_total"] = (
         int(parrainage_parrain.get("bonus_mois_total", 0) or 0) + 1
@@ -1616,6 +1665,10 @@ def synchroniser_meta_securite(utilisateur):
     donnees["securite"] = securite_compte_nettoyee(
         donnees.get("securite", {}),
         utilisateur,
+    )
+    donnees["parrainage"] = parrainage_compte_nettoye(
+        donnees.get("parrainage", {}),
+        donnees["profil"].get("email", ""),
     )
     return donnees
 
@@ -2479,7 +2532,7 @@ def normaliser_code_parrainage(code):
     return re.sub(r"[^A-Z0-9]", "", str(code or "").upper())[:18]
 
 
-def generer_code_parrainage(email):
+def generer_code_parrainage_legacy(email):
 
     base = hashlib.sha1(normaliser_email(email).encode("utf-8")).hexdigest()
     alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -2491,6 +2544,17 @@ def generer_code_parrainage(email):
         caracteres.append(alphabet[index])
 
     return "OPTI" + "".join(caracteres)
+
+
+def generer_code_parrainage(email):
+
+    email = normaliser_email(email)
+    nom = email.split("@", 1)[0] if "@" in email else email
+    prefixe = re.sub(r"[^A-Z0-9]", "", nom.upper())[:7] or "AMI"
+    empreinte = hashlib.sha1(email.encode("utf-8")).hexdigest()
+    suffixe = f"{int(empreinte[:8], 16) % 10000:04d}"
+
+    return normaliser_code_parrainage(f"OPTI{prefixe}{suffixe}")
 
 
 def masquer_email(email):
@@ -2544,7 +2608,12 @@ def parrainage_compte_nettoye(parrainage, email=""):
 
     parrainage = dict(parrainage or {})
     code = normaliser_code_parrainage(parrainage.get("code"))
-    if not code and email:
+    if email and (
+        not code
+        or code == normaliser_code_parrainage(
+            generer_code_parrainage_legacy(email)
+        )
+    ):
         code = generer_code_parrainage(email)
 
     filleuls = []
@@ -2569,6 +2638,24 @@ def parrainage_compte_nettoye(parrainage, email=""):
             }
         )
 
+    filleuls_en_attente = []
+    for filleul in parrainage.get("filleuls_en_attente", []) or []:
+        if not isinstance(filleul, dict):
+            continue
+        filleuls_en_attente.append(
+            {
+                "email": masquer_email(filleul.get("email", "")),
+                "statut": limiter_texte_compte(
+                    filleul.get("statut", "en_attente_premium"),
+                    40,
+                ),
+                "created_at": limiter_texte_compte(
+                    filleul.get("created_at", ""),
+                    80,
+                ),
+            }
+        )
+
     bonus_mois_total = max(
         0,
         int(parrainage.get("bonus_mois_total", 0) or 0),
@@ -2586,10 +2673,12 @@ def parrainage_compte_nettoye(parrainage, email=""):
             80,
         ),
         "filleuls": filleuls[:500],
+        "filleuls_en_attente": filleuls_en_attente[:500],
         "filleuls_total": max(
             len(filleuls),
             int(parrainage.get("filleuls_total", len(filleuls)) or 0),
         ),
+        "filleuls_en_attente_total": len(filleuls_en_attente),
         "bonus_attribue_au_parrain": bool(
             parrainage.get("bonus_attribue_au_parrain")
         ),
