@@ -8949,10 +8949,12 @@ def valider_email_compte(token: str, request: Request):
 @app.get("/api/compte/donnees")
 def lire_donnees_compte(request: Request):
 
-    email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
     plateforme = plateforme_depuis_requete(request)
     donnees = synchroniser_meta_securite(utilisateur)
     donnees["plateforme_derniere_connexion"] = plateforme
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
 
     return {
         "ok": True,
@@ -9014,14 +9016,17 @@ def sauvegarder_donnees_compte(
 @app.get("/api/compte/profil")
 def lire_profil_compte(request: Request):
 
-    email, _comptes, utilisateur = compte_depuis_requete_ou_404(request)
+    email, comptes, utilisateur = compte_depuis_requete_ou_404(request)
     donnees = synchroniser_meta_securite(utilisateur)
+    utilisateur["updated_at"] = date_iso_maintenant()
+    enregistrer_comptes_utilisateurs(comptes)
 
     return {
         "ok": True,
         "email": email,
         "profil": donnees.get("profil", {}),
         "securite": donnees.get("securite", {}),
+        "parrainage": donnees.get("parrainage", {}),
     }
 
 

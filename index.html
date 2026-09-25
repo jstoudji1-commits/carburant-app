@@ -9165,6 +9165,7 @@ var sauvegardeCompteTimer = null;
 var restaurationSessionCompteTimer = null;
 var applicationDonneesCompteEnCours = false;
 var generationSessionCompte = 0;
+var rechargementParrainageEnCours = false;
 
 function planCompteActuel() {
 
@@ -9700,7 +9701,37 @@ function actualiserParrainageCompte() {
     var vide = document.getElementById("referral-empty");
 
     if (codeElement) {
-        codeElement.textContent = code || "Connectez-vous";
+        codeElement.textContent = code
+            || (
+                compteUtilisateurConnecte()
+                    ? "Chargement..."
+                    : "Connectez-vous"
+            );
+    }
+
+    if (
+        !code
+        && compteUtilisateurConnecte()
+        && !rechargementParrainageEnCours
+    ) {
+        rechargementParrainageEnCours = true;
+        requeteCompte(
+            "/api/compte/donnees",
+            {
+                method: "GET"
+            }
+        ).then(function(resultat) {
+            if (resultat.token) {
+                localStorage.setItem(compteTokenCle, resultat.token);
+            }
+            appliquerDonneesCompte(resultat.donnees || {});
+        }).catch(function() {
+            if (codeElement) {
+                codeElement.textContent = "Code indisponible";
+            }
+        }).finally(function() {
+            rechargementParrainageEnCours = false;
+        });
     }
 
     if (bonusElement) {
@@ -9754,6 +9785,38 @@ function actualiserParrainageCompte() {
 
 }
 
+async function obtenirCodeParrainageCompte() {
+
+    var codeLocal = lireParrainageCompte().code || "";
+    if (codeLocal) {
+        return codeLocal;
+    }
+
+    if (!compteUtilisateurConnecte()) {
+        return "";
+    }
+
+    var resultat = await requeteCompte(
+        "/api/compte/donnees",
+        {
+            method: "GET"
+        }
+    );
+
+    if (resultat.token) {
+        localStorage.setItem(compteTokenCle, resultat.token);
+    }
+
+    appliquerDonneesCompte(resultat.donnees || {});
+
+    return (
+        resultat.donnees
+        && resultat.donnees.parrainage
+        && resultat.donnees.parrainage.code
+    ) || lireParrainageCompte().code || "";
+
+}
+
 window.copierCodeParrainage = async function(event) {
 
     if (event) {
@@ -9761,10 +9824,17 @@ window.copierCodeParrainage = async function(event) {
         event.stopPropagation();
     }
 
-    var code = lireParrainageCompte().code || "";
+    var code = "";
+    try {
+        code = await obtenirCodeParrainageCompte();
+    } catch (erreurCode) {
+        code = "";
+    }
     if (!code) {
         definirStatutCompte(
-            "Connectez-vous pour obtenir votre code parrain.",
+            compteUtilisateurConnecte()
+                ? "Code parrain indisponible pour le moment. R\u00e9essayez dans quelques secondes."
+                : "Connectez-vous pour obtenir votre code parrain.",
             "error"
         );
         return;
@@ -9831,10 +9901,17 @@ window.partagerCodeParrainage = async function(event) {
         event.stopPropagation();
     }
 
-    var code = lireParrainageCompte().code || "";
+    var code = "";
+    try {
+        code = await obtenirCodeParrainageCompte();
+    } catch (erreurCode) {
+        code = "";
+    }
     if (!code) {
         definirStatutCompte(
-            "Connectez-vous pour partager votre code parrain.",
+            compteUtilisateurConnecte()
+                ? "Code parrain indisponible pour le moment. R\u00e9essayez dans quelques secondes."
+                : "Connectez-vous pour partager votre code parrain.",
             "error"
         );
         return;
@@ -10487,6 +10564,13 @@ async function chargerProfilCompteDepuisServeur() {
     );
 
     enregistrerProfilCompteLocal(resultat.profil || {});
+    if (resultat.parrainage) {
+        localStorage.setItem(
+            parrainageCompteCle,
+            JSON.stringify(resultat.parrainage || {})
+        );
+        actualiserParrainageCompte();
+    }
     remplirFormulaireMonCompte(true);
 
 }
