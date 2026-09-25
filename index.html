@@ -9528,7 +9528,7 @@ function actualiserBadgeCompte() {
     var premiumInfo = lirePremiumCompte();
 
     badge.classList.toggle("premium", premium);
-    libelle.textContent = premium ? "Premium" : (connecte ? "Gratuit" : "Compte");
+    libelle.textContent = premium ? "Premium" : "Gratuit";
 
     if (premium) {
         var expiration = formatterDateCourteOptiPlein(
