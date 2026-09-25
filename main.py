@@ -378,6 +378,7 @@ class CompteIdentifiants(BaseModel):
     email: str = Field(min_length=5, max_length=160)
     mot_de_passe: str = Field(min_length=8, max_length=120)
     plateforme: Literal["web", "android", "ios"] = "web"
+    code_parrain: str = Field(default="", max_length=40)
 
 
 class DonneesCompte(BaseModel):
@@ -402,6 +403,7 @@ class DonneesCompte(BaseModel):
     plateforme_creation: str = ""
     plateforme_derniere_connexion: str = ""
     abonnement_apple: dict = Field(default_factory=dict)
+    parrainage: dict = Field(default_factory=dict)
 
 
 class MiseAJourProfilCompte(BaseModel):
@@ -1223,6 +1225,144 @@ def compte_depuis_requete_ou_404(request):
     utilisateur = compte_depuis_email_ou_404(comptes, email)
 
     return email, comptes, utilisateur
+
+
+def assurer_parrainage_utilisateur(utilisateur, email):
+
+    donnees = utilisateur.setdefault("data", {})
+    profil = profil_compte_nettoye(donnees.get("profil", {}), email)
+    donnees["profil"] = profil
+    donnees["parrainage"] = parrainage_compte_nettoye(
+        donnees.get("parrainage", {}),
+        email,
+    )
+    return donnees["parrainage"]
+
+
+def trouver_parrain_par_code(comptes, code):
+
+    code = normaliser_code_parrainage(code)
+    if not code:
+        return None, None
+
+    for email, utilisateur in comptes.get("users", {}).items():
+        parrainage = assurer_parrainage_utilisateur(utilisateur, email)
+        if parrainage.get("code") == code:
+            return email, utilisateur
+
+    return None, None
+
+
+def enregistrer_code_parrain_inscription(comptes, email, donnees, code):
+
+    code = normaliser_code_parrainage(code)
+    if not code:
+        return
+
+    parrain_email, _parrain = trouver_parrain_par_code(comptes, code)
+    if not parrain_email:
+        raise HTTPException(
+            status_code=422,
+            detail="Code parrain introuvable.",
+        )
+
+    if normaliser_email(parrain_email) == normaliser_email(email):
+        raise HTTPException(
+            status_code=422,
+            detail="Vous ne pouvez pas utiliser votre propre code parrain.",
+        )
+
+    parrainage = dict(donnees.get("parrainage", {}) or {})
+    parrainage["parrain_code"] = code
+    parrainage["parrain_email"] = parrain_email
+    parrainage["bonus_attribue_au_parrain"] = bool(
+        parrainage.get("bonus_attribue_au_parrain")
+    )
+    donnees["parrainage"] = parrainage_compte_nettoye(
+        parrainage,
+        email,
+    )
+
+
+def date_bonus_base_parrain(donnees):
+
+    maintenant = datetime.now(timezone.utc)
+    dates = [maintenant]
+    abonnement = donnees.get("abonnement_apple", {}) or {}
+    parrainage = donnees.get("parrainage", {}) or {}
+
+    for valeur in (
+        abonnement.get("expiration_date"),
+        parrainage.get("bonus_until"),
+    ):
+        try:
+            date_valeur = datetime_depuis_valeur_apple(valeur)
+        except Exception:
+            date_valeur = None
+        if date_valeur:
+            dates.append(date_valeur)
+
+    return max(dates)
+
+
+def attribuer_bonus_parrainage_premium(comptes, filleul_email, filleul_donnees):
+
+    parrainage_filleul = dict(filleul_donnees.get("parrainage", {}) or {})
+    if parrainage_filleul.get("bonus_attribue_au_parrain"):
+        return None
+
+    code = normaliser_code_parrainage(parrainage_filleul.get("parrain_code"))
+    if not code:
+        return None
+
+    parrain_email, parrain = trouver_parrain_par_code(comptes, code)
+    if not parrain or normaliser_email(parrain_email) == normaliser_email(filleul_email):
+        return None
+
+    maintenant = date_iso_maintenant()
+    donnees_parrain = parrain.setdefault("data", {})
+    parrainage_parrain = dict(donnees_parrain.get("parrainage", {}) or {})
+    parrainage_parrain = parrainage_compte_nettoye(
+        parrainage_parrain,
+        parrain_email,
+    )
+    bonus_base = date_bonus_base_parrain(donnees_parrain)
+    bonus_until = mois_entre_dates(bonus_base, 1)
+
+    filleuls = list(parrainage_parrain.get("filleuls", []) or [])
+    filleuls.append(
+        {
+            "email": filleul_email,
+            "statut": "premium_valide",
+            "bonus_mois": 1,
+            "validated_at": maintenant,
+        }
+    )
+
+    parrainage_parrain["filleuls"] = filleuls
+    parrainage_parrain["filleuls_total"] = len(filleuls)
+    parrainage_parrain["bonus_mois_total"] = (
+        int(parrainage_parrain.get("bonus_mois_total", 0) or 0) + 1
+    )
+    parrainage_parrain["bonus_until"] = bonus_until.isoformat()
+    donnees_parrain["parrainage"] = parrainage_compte_nettoye(
+        parrainage_parrain,
+        parrain_email,
+    )
+    donnees_parrain["premium"] = premium_compte_nettoye(donnees_parrain)
+    parrain["updated_at"] = maintenant
+
+    parrainage_filleul["bonus_attribue_au_parrain"] = True
+    parrainage_filleul["premium_validated_at"] = maintenant
+    filleul_donnees["parrainage"] = parrainage_compte_nettoye(
+        parrainage_filleul,
+        filleul_email,
+    )
+
+    return {
+        "parrain_email": parrain_email,
+        "bonus_until": bonus_until.isoformat(),
+    }
 
 
 def date_iso_maintenant():
@@ -2334,10 +2474,151 @@ def premium_test_actif_pour_donnees(donnees, plateforme=None):
     return PREMIUM_TEST_ACTIF and not compte_ios_donnees(donnees, plateforme)
 
 
+def normaliser_code_parrainage(code):
+
+    return re.sub(r"[^A-Z0-9]", "", str(code or "").upper())[:18]
+
+
+def generer_code_parrainage(email):
+
+    base = hashlib.sha1(normaliser_email(email).encode("utf-8")).hexdigest()
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    nombre = int(base[:12], 16)
+    caracteres = []
+
+    for _ in range(7):
+        nombre, index = divmod(nombre, len(alphabet))
+        caracteres.append(alphabet[index])
+
+    return "OPTI" + "".join(caracteres)
+
+
+def masquer_email(email):
+
+    email = normaliser_email(email)
+    if "@" not in email:
+        return ""
+
+    nom, domaine = email.split("@", 1)
+    if len(nom) <= 2:
+        nom_masque = nom[:1] + "*"
+    else:
+        nom_masque = nom[:2] + "***"
+
+    return nom_masque + "@" + domaine
+
+
+def mois_entre_dates(date_depart, mois):
+
+    if date_depart.tzinfo is None:
+        date_depart = date_depart.replace(tzinfo=timezone.utc)
+
+    mois_total = date_depart.month - 1 + int(mois)
+    annee = date_depart.year + mois_total // 12
+    mois_cible = mois_total % 12 + 1
+    jours_mois = [
+        31,
+        29 if (
+            annee % 4 == 0 and (annee % 100 != 0 or annee % 400 == 0)
+        ) else 28,
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31,
+    ][mois_cible - 1]
+
+    return date_depart.replace(
+        year=annee,
+        month=mois_cible,
+        day=min(date_depart.day, jours_mois),
+    )
+
+
+def parrainage_compte_nettoye(parrainage, email=""):
+
+    parrainage = dict(parrainage or {})
+    code = normaliser_code_parrainage(parrainage.get("code"))
+    if not code and email:
+        code = generer_code_parrainage(email)
+
+    filleuls = []
+    for filleul in parrainage.get("filleuls", []) or []:
+        if not isinstance(filleul, dict):
+            continue
+        filleuls.append(
+            {
+                "email": masquer_email(filleul.get("email", "")),
+                "statut": limiter_texte_compte(
+                    filleul.get("statut", "premium_valide"),
+                    40,
+                ),
+                "bonus_mois": max(
+                    0,
+                    int(filleul.get("bonus_mois", 1) or 1),
+                ),
+                "validated_at": limiter_texte_compte(
+                    filleul.get("validated_at", ""),
+                    80,
+                ),
+            }
+        )
+
+    bonus_mois_total = max(
+        0,
+        int(parrainage.get("bonus_mois_total", 0) or 0),
+    )
+
+    return {
+        "code": code,
+        "parrain_code": normaliser_code_parrainage(
+            parrainage.get("parrain_code")
+        ),
+        "parrain_email": masquer_email(parrainage.get("parrain_email", "")),
+        "bonus_mois_total": bonus_mois_total,
+        "bonus_until": limiter_texte_compte(
+            parrainage.get("bonus_until", ""),
+            80,
+        ),
+        "filleuls": filleuls[:500],
+        "filleuls_total": max(
+            len(filleuls),
+            int(parrainage.get("filleuls_total", len(filleuls)) or 0),
+        ),
+        "bonus_attribue_au_parrain": bool(
+            parrainage.get("bonus_attribue_au_parrain")
+        ),
+        "conditions": (
+            "1 filleul Premium validé = 1 mois Premium offert en réserve. "
+            "Aucune limite de filleuls. Le bonus est appliqué une seule fois "
+            "par filleul, hors auto-parrainage et comptes frauduleux."
+        ),
+    }
+
+
+def premium_bonus_actif_donnees(donnees):
+
+    bonus_until = (
+        donnees.get("parrainage", {}) or {}
+    ).get("bonus_until", "")
+    try:
+        date_bonus = datetime_depuis_valeur_apple(bonus_until)
+    except Exception:
+        return False
+
+    return bool(date_bonus and date_bonus > datetime.now(timezone.utc))
+
+
 def premium_actif_donnees(donnees, plateforme=None):
 
     return (
         donnees.get("plan") == "premium"
+        or premium_bonus_actif_donnees(donnees)
         or premium_test_actif_pour_donnees(donnees, plateforme)
     )
 
@@ -2490,12 +2771,19 @@ def premium_compte_nettoye(donnees):
     plateforme = donnees.get("plateforme_derniere_connexion") or donnees.get(
         "plateforme_creation"
     )
+    actif = premium_actif_donnees(donnees, plateforme)
+    parrainage = parrainage_compte_nettoye(
+        donnees.get("parrainage", {}),
+        donnees.get("profil", {}).get("email", ""),
+    )
 
     return {
+        "active": actif,
         "test_gratuit_ete": premium_test_actif_pour_donnees(
             donnees,
             plateforme,
         ),
+        "bonus_until": parrainage.get("bonus_until", ""),
         "capacites": CAPACITES_PREMIUM,
         "limites": limites_premium(donnees, plateforme),
         "alertes_prix": alertes_prix_nettoyees(
@@ -2505,6 +2793,7 @@ def premium_compte_nettoye(donnees):
             donnees.get("optimisation", {})
         ),
         "statistiques": statistiques_compte(historique),
+        "parrainage": parrainage,
     }
 
 
@@ -2528,6 +2817,10 @@ def limiter_donnees_compte(donnees, plateforme=None):
         20,
     )
     donnees.abonnement_apple = dict(donnees.abonnement_apple or {})
+    donnees.parrainage = parrainage_compte_nettoye(
+        donnees.parrainage,
+        donnees.profil.get("email", "") if isinstance(donnees.profil, dict) else "",
+    )
 
     if premium_test_actif_pour_donnees(
         donnees.model_dump(),
@@ -2536,6 +2829,10 @@ def limiter_donnees_compte(donnees, plateforme=None):
         donnees.plan = "premium"
 
     donnees.profil = profil_compte_nettoye(donnees.profil)
+    donnees.parrainage = parrainage_compte_nettoye(
+        donnees.parrainage,
+        donnees.profil.get("email", "") if isinstance(donnees.profil, dict) else "",
+    )
     donnees.preferences = preferences_compte_nettoye(
         donnees.preferences,
         donnees.rayon_stations,
@@ -2564,6 +2861,15 @@ def donnees_compte_premium_test(donnees, plateforme=None):
     donnees.setdefault("preferences", preferences_compte_nettoye({}))
     donnees.setdefault("vehicule_principal", donnees.get("vehicule_actif", ""))
     donnees.setdefault("securite", securite_compte_nettoyee({}))
+    donnees.setdefault(
+        "parrainage",
+        parrainage_compte_nettoye(
+            donnees.get("parrainage", {}),
+            donnees.get("profil", {}).get("email", "")
+            if isinstance(donnees.get("profil"), dict)
+            else "",
+        ),
+    )
     donnees.setdefault("alertes_prix", alertes_prix_nettoyees([]))
     donnees.setdefault("optimisation", optimisation_compte_nettoyee({}))
     donnees.setdefault(
@@ -8389,6 +8695,16 @@ def creer_compte(
         donnees_initiales.get("securite", {}),
         {"email_verified": False},
     )
+    donnees_initiales["parrainage"] = parrainage_compte_nettoye(
+        donnees_initiales.get("parrainage", {}),
+        email,
+    )
+    enregistrer_code_parrain_inscription(
+        comptes,
+        email,
+        donnees_initiales,
+        identifiants.code_parrain,
+    )
 
     utilisateurs[email] = {
         "email": email,
@@ -8572,6 +8888,9 @@ def sauvegarder_donnees_compte(
     donnees_a_sauver.plan = donnees_existantes.get("plan", "free")
     donnees_a_sauver.abonnement_apple = dict(
         donnees_existantes.get("abonnement_apple", {}) or {}
+    )
+    donnees_a_sauver.parrainage = dict(
+        donnees_existantes.get("parrainage", {}) or {}
     )
     donnees_a_sauver.plateforme_creation = (
         donnees_existantes.get("plateforme_creation")
@@ -8887,6 +9206,11 @@ def activer_premium_apple(
         **transaction_verifiee,
         "verified_at": maintenant,
     }
+    bonus_parrainage = attribuer_bonus_parrainage_premium(
+        comptes,
+        email,
+        donnees,
+    )
     donnees["premium"] = premium_compte_nettoye(donnees)
     utilisateur["updated_at"] = maintenant
     enregistrer_comptes_utilisateurs(comptes)
@@ -8896,6 +9220,7 @@ def activer_premium_apple(
         "email": email,
         "plan": "premium",
         "premium": donnees["premium"],
+        "bonus_parrainage": bonus_parrainage,
         "donnees": donnees_compte_premium_test(donnees, "ios"),
     }
 

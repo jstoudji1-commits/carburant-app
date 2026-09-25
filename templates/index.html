@@ -124,6 +124,52 @@ body{
     gap:18px;
 }
 
+.account-plan-badge{
+    min-width:112px;
+    min-height:46px;
+    display:grid;
+    align-content:center;
+    justify-items:center;
+    gap:2px;
+    padding:7px 13px;
+    border:1px solid #cfd9df;
+    border-radius:10px;
+    background:#f6faf7;
+    color:var(--ink);
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(16,37,54,0.10);
+}
+
+.account-plan-badge-label{
+    font-size:14px;
+    font-weight:900;
+    line-height:1;
+}
+
+.account-plan-badge-action{
+    color:var(--green-dark);
+    font-size:11px;
+    font-weight:800;
+    line-height:1.1;
+    text-decoration:underline;
+    text-underline-offset:2px;
+}
+
+.account-plan-badge.premium{
+    border-color:#f1c75b;
+    background:linear-gradient(135deg, #fff7da, #1aa33a 58%, #087a2c);
+    color:white;
+}
+
+.account-plan-badge.premium .account-plan-badge-label{
+    text-shadow:0 1px 5px rgba(0,0,0,0.22);
+}
+
+.account-plan-badge.premium .account-plan-badge-action{
+    color:#fff7da;
+    text-decoration:none;
+}
+
 .guides-link{
     display:inline-flex;
     align-items:center;
@@ -385,6 +431,13 @@ body{
     border-radius:8px;
     color:var(--ink);
     font-size:14px;
+}
+
+.account-referral-hint{
+    margin:-3px 0 0;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.35;
 }
 
 .account-sync-actions{
@@ -774,6 +827,108 @@ body{
 
 .premium-option-button.danger.is-loading{
     color:white;
+}
+
+.referral-hero{
+    display:grid;
+    gap:12px;
+}
+
+.referral-title{
+    margin:0;
+    color:var(--ink);
+    font-size:20px;
+    line-height:1.15;
+}
+
+.referral-copy,
+.referral-terms{
+    margin:0;
+    color:#536575;
+    font-size:14px;
+    line-height:1.45;
+}
+
+.referral-code-box{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px;
+    border:1px solid #b9d9c1;
+    border-radius:10px;
+    background:#f2fbf4;
+}
+
+.referral-code{
+    color:var(--green-dark);
+    font-size:24px;
+    font-weight:900;
+    letter-spacing:0;
+}
+
+.referral-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.referral-actions .premium-option-button{
+    width:auto;
+    min-width:140px;
+}
+
+.referral-stat-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:10px;
+}
+
+.referral-stat{
+    padding:12px;
+    border:1px solid #e2e8ef;
+    border-radius:10px;
+    background:#fbfdfc;
+}
+
+.referral-stat span{
+    display:block;
+    color:var(--muted);
+    font-size:12px;
+    font-weight:800;
+}
+
+.referral-stat strong{
+    display:block;
+    margin-top:5px;
+    color:var(--green-dark);
+    font-size:22px;
+    line-height:1;
+}
+
+.referral-list{
+    display:grid;
+    gap:8px;
+    margin:0;
+    padding:0;
+    list-style:none;
+}
+
+.referral-list li{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:10px 12px;
+    border:1px solid #e2e8ef;
+    border-radius:9px;
+    background:white;
+    color:var(--muted);
+    font-size:13px;
+}
+
+.referral-list strong{
+    color:var(--ink);
 }
 
 .vehicle-secondary-button{
@@ -3830,6 +3985,20 @@ body{
     >
 
     <div class="top-actions">
+        <button
+            type="button"
+            class="account-plan-badge"
+            id="account-plan-badge"
+            onclick="ouvrirActionBadgeCompte(event)"
+            aria-label="Statut du compte"
+        >
+            <span class="account-plan-badge-label" id="account-plan-badge-label">
+                Gratuit
+            </span>
+            <span class="account-plan-badge-action" id="account-plan-badge-action">
+                Devenir Premium
+            </span>
+        </button>
         <div class="app-site-menu" id="app-site-menu">
             <button
                 class="app-menu-toggle"
@@ -3904,6 +4073,18 @@ body{
                         minlength="8"
                         placeholder="Mot de passe"
                     >
+                    <input
+                        id="account-referral-code"
+                        type="text"
+                        maxlength="40"
+                        autocomplete="off"
+                        inputmode="latin"
+                        placeholder="Code parrain optionnel"
+                    >
+                    <p class="account-referral-hint">
+                        Si un proche vous a invit&eacute;, indiquez son code avant
+                        de cr&eacute;er votre compte.
+                    </p>
                     <div class="account-sync-actions">
                         <button
                             type="button"
@@ -4092,6 +4273,14 @@ body{
                     <button
                         type="button"
                         class="premium-menu-button"
+                        data-premium-page="referrals"
+                        onclick="changerPagePremium('referrals')"
+                    >
+                        Parrainage
+                    </button>
+                    <button
+                        type="button"
+                        class="premium-menu-button"
                         data-premium-page="options"
                         onclick="changerPagePremium('options')"
                     >
@@ -4223,6 +4412,88 @@ body{
                                 Supprimer définitivement mon compte
                             </button>
                         </div>
+                    </div>
+                </section>
+
+                <section
+                    class="premium-page premium-only"
+                    id="premium-page-referrals"
+                    hidden
+                >
+                    <div class="premium-panel-card referral-hero">
+                        <p class="referral-title">
+                            Parrainez vos proches, gagnez du Premium
+                        </p>
+                        <p class="referral-copy">
+                            Chaque filleul qui valide un abonnement Premium avec
+                            Apple ajoute automatiquement 1 mois Premium en
+                            r&eacute;serve sur votre compte. Il n'y a pas de
+                            limite de filleuls.
+                        </p>
+                        <div class="referral-code-box">
+                            <span>
+                                <span class="premium-option-copy">Votre code</span>
+                                <strong class="referral-code" id="referral-code">
+                                    -
+                                </strong>
+                            </span>
+                        </div>
+                        <div class="referral-actions">
+                            <button
+                                type="button"
+                                class="premium-option-button"
+                                onclick="copierCodeParrainage(event)"
+                            >
+                                Copier le code
+                            </button>
+                            <button
+                                type="button"
+                                class="premium-option-button"
+                                onclick="partagerCodeParrainage(event)"
+                            >
+                                Partager
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="premium-panel-card">
+                        <div class="referral-stat-grid">
+                            <div class="referral-stat">
+                                <span>Mois offerts</span>
+                                <strong id="referral-bonus-months">0</strong>
+                            </div>
+                            <div class="referral-stat">
+                                <span>Filleuls valid&eacute;s</span>
+                                <strong id="referral-count">0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="premium-panel-card">
+                        <p class="premium-panel-title">
+                            Filleuls Premium valid&eacute;s
+                        </p>
+                        <ul class="referral-list" id="referral-list"></ul>
+                        <p class="premium-empty" id="referral-empty">
+                            Aucun filleul Premium valid&eacute; pour le moment.
+                        </p>
+                    </div>
+
+                    <div class="premium-panel-card">
+                        <p class="premium-panel-title">
+                            Conditions du parrainage
+                        </p>
+                        <p class="referral-terms">
+                            Le bonus est accord&eacute; uniquement apr&egrave;s
+                            validation effective du Premium du filleul par Apple.
+                            La cr&eacute;ation d'un compte seule ne suffit pas.
+                            Le bonus est de 1 mois Premium par filleul valid&eacute;,
+                            sans limite de filleuls. Un filleul ne peut d&eacute;clencher
+                            qu'un seul bonus, l'auto-parrainage est interdit, et
+                            OptiPlein peut refuser ou retirer un bonus en cas de
+                            fraude, d'abus, de remboursement ou d'annulation de
+                            transaction.
+                        </p>
                     </div>
                 </section>
 
@@ -8702,6 +8973,8 @@ var historiqueEconomiesCle = "optiplein-historique-economies";
 var lieuxTrajetCle = "optiplein-lieux-trajet";
 var alertesPrixCle = "optiplein-alertes-prix";
 var optimisationPremiumCle = "optiplein-optimisation-premium";
+var parrainageCompteCle = "optiplein-parrainage";
+var premiumCompteCle = "optiplein-premium";
 var compteTokenCle = "optiplein-compte-token";
 var compteEmailCle = "optiplein-compte-email";
 var carteTotalenergiesCle = "optiplein-carte-totalenergies";
@@ -8726,12 +8999,27 @@ function planCompteActuel() {
 
 }
 
+function lirePremiumCompte() {
+
+    try {
+        return JSON.parse(
+            localStorage.getItem(premiumCompteCle)
+        ) || {};
+    } catch (erreur) {
+        return {};
+    }
+
+}
+
 function comptePremiumActif() {
+
+    var premiumServeur = lirePremiumCompte();
 
     return compteUtilisateurConnecte()
         && (
             modeDecouvertePremiumActif
             || planCompteActuel() === "premium"
+            || premiumServeur.active === true
         );
 
 }
@@ -9121,6 +9409,246 @@ function enregistrerOptimisationPremium(configuration) {
     programmerSauvegardeCompte();
 
 }
+
+function lireParrainageCompte() {
+
+    try {
+        return JSON.parse(
+            localStorage.getItem(parrainageCompteCle)
+        ) || {};
+    } catch (erreur) {
+        return {};
+    }
+
+}
+
+function formatterDateCourteOptiPlein(valeur) {
+
+    if (!valeur) {
+        return "";
+    }
+
+    var date = new Date(valeur);
+    if (!Number.isFinite(date.getTime())) {
+        return "";
+    }
+
+    return date.toLocaleDateString(
+        "fr-FR",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        }
+    );
+
+}
+
+function actualiserBadgeCompte() {
+
+    var badge = document.getElementById("account-plan-badge");
+    var libelle = document.getElementById("account-plan-badge-label");
+    var action = document.getElementById("account-plan-badge-action");
+
+    if (!badge || !libelle || !action) {
+        return;
+    }
+
+    var connecte = compteUtilisateurConnecte();
+    var premium = comptePremiumActif();
+    var premiumInfo = lirePremiumCompte();
+
+    badge.classList.toggle("premium", premium);
+    libelle.textContent = premium ? "Premium" : (connecte ? "Gratuit" : "Compte");
+
+    if (premium) {
+        var expiration = formatterDateCourteOptiPlein(
+            premiumInfo.expires_at
+            || premiumInfo.expiration_date
+            || premiumInfo.bonus_until
+        );
+        action.textContent = expiration ? "jusqu'au " + expiration : "Actif";
+    } else {
+        action.textContent = "Devenir Premium";
+    }
+
+}
+
+window.ouvrirActionBadgeCompte = function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var panneau = document.getElementById("vehicle-panel");
+    var bouton = document.getElementById("vehicle-button");
+
+    fermerMenuPrincipal(false);
+    if (panneau) {
+        panneau.hidden = false;
+    }
+    if (bouton) {
+        bouton.setAttribute("aria-expanded", "true");
+    }
+
+    if (comptePremiumActif()) {
+        changerPagePremium("account");
+        return;
+    }
+
+    changerPagePremium("account");
+
+    if (!compteUtilisateurConnecte()) {
+        definirStatutCompte(
+            "Cr\u00e9ez ou connectez votre compte pour activer Premium.",
+            "success"
+        );
+        var email = document.getElementById("account-email");
+        if (email) {
+            email.focus();
+        }
+        return;
+    }
+
+    if (estPlateformeIOS()) {
+        acheterPremiumIOS(event);
+        return;
+    }
+
+    changerPlanCompte("premium");
+
+};
+
+function actualiserParrainageCompte() {
+
+    var parrainage = lireParrainageCompte();
+    var code = parrainage.code || "";
+    var codeElement = document.getElementById("referral-code");
+    var bonusElement = document.getElementById("referral-bonus-months");
+    var countElement = document.getElementById("referral-count");
+    var liste = document.getElementById("referral-list");
+    var vide = document.getElementById("referral-empty");
+
+    if (codeElement) {
+        codeElement.textContent = code || "Connectez-vous";
+    }
+
+    if (bonusElement) {
+        bonusElement.textContent = String(
+            Number(parrainage.bonus_mois_total || 0) || 0
+        );
+    }
+
+    if (countElement) {
+        countElement.textContent = String(
+            Number(parrainage.filleuls_total || 0) || 0
+        );
+    }
+
+    if (!liste) {
+        return;
+    }
+
+    liste.innerHTML = "";
+    var filleuls = Array.isArray(parrainage.filleuls)
+        ? parrainage.filleuls
+        : [];
+
+    filleuls.slice(0, 30).forEach(function(filleul) {
+        var item = document.createElement("li");
+        var nom = document.createElement("strong");
+        nom.textContent = filleul.email || "Filleul Premium";
+
+        var statut = document.createElement("span");
+        statut.textContent = "Premium valid\u00e9"
+            + (
+                filleul.validated_at
+                    ? " le " + formatterDateCourteOptiPlein(filleul.validated_at)
+                    : ""
+            );
+
+        item.appendChild(nom);
+        item.appendChild(statut);
+        liste.appendChild(item);
+    });
+
+    if (vide) {
+        vide.hidden = filleuls.length > 0;
+    }
+
+}
+
+window.copierCodeParrainage = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var code = lireParrainageCompte().code || "";
+    if (!code) {
+        definirStatutCompte(
+            "Connectez-vous pour obtenir votre code parrain.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(code);
+        definirStatutCompte("Code parrain copi\u00e9.", "success");
+    } catch (erreur) {
+        window.prompt("Copiez votre code parrain :", code);
+    }
+
+};
+
+window.partagerCodeParrainage = async function(event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    var code = lireParrainageCompte().code || "";
+    if (!code) {
+        definirStatutCompte(
+            "Connectez-vous pour partager votre code parrain.",
+            "error"
+        );
+        return;
+    }
+
+    var lien = window.location.origin + "/web?parrain="
+        + encodeURIComponent(code);
+    var texte = "Mon code parrain OptiPlein : " + code
+        + ". Active Premium avec l'app iOS et je gagne 1 mois offert. "
+        + lien;
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: "Code parrain OptiPlein",
+                text: texte,
+                url: lien
+            });
+            return;
+        } catch (erreur) {
+            if (erreur && erreur.name === "AbortError") {
+                return;
+            }
+        }
+    }
+
+    try {
+        await navigator.clipboard.writeText(texte);
+        definirStatutCompte("Message de parrainage copi\u00e9.", "success");
+    } catch (erreurCopie) {
+        window.prompt("Copiez votre message de parrainage :", texte);
+    }
+
+};
 
 function statistiquesEconomiesLocales() {
 
@@ -9841,14 +10369,19 @@ function donneesCompteLocales() {
         alertes_prix: lireAlertesPrix(),
         statistiques: statistiquesEconomiesLocales(),
         optimisation: lireOptimisationPremium(),
-        premium: {
+        parrainage: lireParrainageCompte(),
+        premium: Object.assign(
+            {},
+            lirePremiumCompte(),
+            {
             test_gratuit_ete: modeDecouvertePremiumActif,
             limites: {
                 favoris_max: comptePremiumActif() ? null : nombreMaximumFavorisGratuit,
                 vehicules_max: nombreMaximumVehiculesActuel(),
                 recalcul_secondes: comptePremiumActif() ? 15 : 180
             }
-        },
+            }
+        ),
         plateforme_creation: plateformeCompteActuelle(),
         plateforme_derniere_connexion: plateformeCompteActuelle()
     };
@@ -9892,6 +10425,14 @@ function appliquerDonneesCompte(donnees) {
         JSON.stringify(donnees.optimisation || {})
     );
     localStorage.setItem(
+        parrainageCompteCle,
+        JSON.stringify(donnees.parrainage || {})
+    );
+    localStorage.setItem(
+        premiumCompteCle,
+        JSON.stringify(donnees.premium || {})
+    );
+    localStorage.setItem(
         rayonStationsPremiumCle,
         String(normaliserRayonStationsKm(donnees.rayon_stations || 25))
     );
@@ -9921,6 +10462,8 @@ function appliquerDonneesCompte(donnees) {
     actualiserLieuxTrajet();
     actualiserRayonPremium(false);
     actualiserPlanCompte();
+    actualiserParrainageCompte();
+    actualiserBadgeCompte();
     remplirFormulaireMonCompte(true);
     actualiserAlertesPrixPremium();
     actualiserStatistiquesPremium();
@@ -9937,6 +10480,7 @@ function actualiserInterfaceCompte() {
     var texteCompte = document.querySelector(".account-sync-copy");
     var champEmail = document.getElementById("account-email");
     var champMotDePasse = document.getElementById("account-password");
+    var champParrain = document.getElementById("account-referral-code");
     var boutonConnexion = document.getElementById("account-login-button");
     var boutonCreation = document.getElementById("account-create-button");
     var boutonDeconnexion = document.getElementById("account-logout-button");
@@ -9970,6 +10514,10 @@ function actualiserInterfaceCompte() {
         champMotDePasse.hidden = connecte;
     }
 
+    if (champParrain) {
+        champParrain.hidden = connecte;
+    }
+
     if (boutonConnexion) {
         boutonConnexion.hidden = connecte;
     }
@@ -9983,6 +10531,8 @@ function actualiserInterfaceCompte() {
     }
 
     remplirFormulaireMonCompte(false);
+    actualiserBadgeCompte();
+    actualiserParrainageCompte();
 
     definirStatutCompte(
         connecte
@@ -10045,6 +10595,11 @@ function identifiantsCompteDepuisFormulaire() {
         document.getElementById("account-email").value || ""
     ).trim();
     var motDePasse = document.getElementById("account-password").value || "";
+    var codeParrain = (
+        document.getElementById("account-referral-code")
+        && document.getElementById("account-referral-code").value
+        || ""
+    ).trim();
 
     if (!email || !motDePasse) {
         throw new Error("Renseignez l'e-mail et le mot de passe.");
@@ -10057,7 +10612,8 @@ function identifiantsCompteDepuisFormulaire() {
     return {
         email: email,
         mot_de_passe: motDePasse,
-        plateforme: plateformeCompteActuelle()
+        plateforme: plateformeCompteActuelle(),
+        code_parrain: codeParrain
     };
 
 }
@@ -10489,9 +11045,15 @@ function ouvrirCreationCompteDepuisLanding() {
     window.setTimeout(
         function() {
             var parametres = new URLSearchParams(window.location.search);
+            var codeParrainParametre = (
+                parametres.get("parrain")
+                || parametres.get("code_parrain")
+                || ""
+            ).trim();
 
             if (
                 parametres.get("inscription") !== "1"
+                && !codeParrainParametre
                 || compteUtilisateurConnecte()
             ) {
                 return;
@@ -10500,11 +11062,15 @@ function ouvrirCreationCompteDepuisLanding() {
             var emailParametre = (parametres.get("email") || "").trim();
             var champEmail = document.getElementById("account-email");
             var champMotDePasse = document.getElementById("account-password");
+            var champParrain = document.getElementById("account-referral-code");
             var panneau = document.getElementById("vehicle-panel");
             var bouton = document.getElementById("vehicle-button");
 
             if (champEmail && emailParametre) {
                 champEmail.value = emailParametre;
+            }
+            if (champParrain && codeParrainParametre) {
+                champParrain.value = codeParrainParametre;
             }
 
             if (panneau) {
@@ -10516,7 +11082,9 @@ function ouvrirCreationCompteDepuisLanding() {
 
             actualiserInterfaceCompte();
             definirStatutCompte(
-                "Cr\u00e9ez votre mot de passe pour activer l'acc\u00e8s Premium gratuit.",
+                codeParrainParametre
+                    ? "Cr\u00e9ez votre compte avec ce code parrain, puis activez Premium avec Apple si vous le souhaitez."
+                    : "Cr\u00e9ez votre mot de passe pour activer votre compte OptiPlein.",
                 "success"
             );
 
@@ -13527,6 +14095,7 @@ function actualiserPagesPremium() {
     actualiserAlertesPrixPremium();
     actualiserStatistiquesPremium();
     actualiserCapacitesPremium();
+    actualiserParrainageCompte();
 
 }
 
@@ -13538,6 +14107,7 @@ window.changerPagePremium = function(page) {
         "history",
         "alerts",
         "stats",
+        "referrals",
         "options"
     ].indexOf(page) >= 0
         ? page
@@ -13674,6 +14244,7 @@ function actualiserPlanCompte() {
     actualiserPagesPremium();
     actualiserNavigationPremium();
     actualiserLieuxTrajet();
+    actualiserBadgeCompte();
 
 }
 
