@@ -9473,6 +9473,15 @@ def ads_txt():
     )
 
 
+@app.get("/app-ads.txt")
+def app_ads_txt():
+
+    return PlainTextResponse(
+        "google.com, pub-2412536365588890, DIRECT, f08c47fec0942fa0\n",
+        media_type="text/plain",
+    )
+
+
 @app.get("/robots.txt")
 def robots_txt(request: Request):
 
