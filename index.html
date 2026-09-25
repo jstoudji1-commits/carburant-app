@@ -105,6 +105,7 @@ body{
     display:flex;
     align-items:center;
     justify-content:space-between;
+    gap:18px;
     padding:18px 28px;
     background:rgba(255,255,255,0.95);
     border:1px solid rgba(220,228,234,0.9);
@@ -116,22 +117,29 @@ body{
 .logo{
     height:72px;
     width:auto;
+    max-width:min(280px, 34vw);
+    object-fit:contain;
+    flex:0 1 auto;
 }
 
 .top-actions{
     display:flex;
     align-items:center;
-    gap:18px;
+    justify-content:flex-end;
+    gap:12px;
+    min-width:0;
+    flex:1 1 auto;
 }
 
 .account-plan-badge{
-    min-width:112px;
-    min-height:46px;
+    width:86px;
+    min-width:74px;
+    min-height:40px;
     display:grid;
     align-content:center;
     justify-items:center;
     gap:2px;
-    padding:7px 13px;
+    padding:6px 9px;
     border:1px solid #cfd9df;
     border-radius:10px;
     background:#f6faf7;
@@ -141,14 +149,14 @@ body{
 }
 
 .account-plan-badge-label{
-    font-size:14px;
+    font-size:12px;
     font-weight:900;
     line-height:1;
 }
 
 .account-plan-badge-action{
     color:var(--green-dark);
-    font-size:11px;
+    font-size:9px;
     font-weight:800;
     line-height:1.1;
     text-decoration:underline;
@@ -274,10 +282,12 @@ body{
 
 .vehicle-menu{
     position:relative;
+    min-width:0;
+    flex:0 1 auto;
 }
 
 .vehicle-button{
-    max-width:min(260px, 44vw);
+    max-width:clamp(132px, 24vw, 230px);
     padding:16px 24px;
     background:linear-gradient(180deg, #27b33e, #087a2c);
     color:white;
@@ -3776,15 +3786,34 @@ body{
 
     .logo{
         height:54px;
+        max-width:132px;
     }
 
     .vehicle-button{
-        padding:12px 14px;
-        font-size:14px;
+        max-width:clamp(92px, 28vw, 142px);
+        padding:11px 12px;
+        font-size:13px;
     }
 
     .top-actions{
-        gap:7px;
+        gap:6px;
+    }
+
+    .account-plan-badge{
+        width:58px;
+        min-width:58px;
+        min-height:38px;
+        padding:5px 6px;
+        border-radius:8px;
+    }
+
+    .account-plan-badge-label{
+        font-size:10px;
+    }
+
+    .account-plan-badge-action{
+        font-size:8px;
+        line-height:1;
     }
 
     .app-menu-toggle{
@@ -3804,6 +3833,46 @@ body{
 
     .vehicle-panel{
         width:min(340px, calc(100vw - 28px));
+    }
+
+    @media (max-width: 420px){
+        .topbar{
+            gap:10px;
+            padding:12px 10px;
+        }
+
+        .logo{
+            height:48px;
+            max-width:112px;
+        }
+
+        .top-actions{
+            gap:5px;
+        }
+
+        .account-plan-badge{
+            width:52px;
+            min-width:52px;
+        }
+
+        .account-plan-badge-label{
+            font-size:9px;
+        }
+
+        .account-plan-badge-action{
+            font-size:7px;
+        }
+
+        .app-menu-toggle{
+            width:40px;
+            height:40px;
+        }
+
+        .vehicle-button{
+            max-width:clamp(74px, 23vw, 92px);
+            padding:10px 9px;
+            font-size:12px;
+        }
     }
 
     .app-layout{
