@@ -512,6 +512,13 @@
                 </button>
                 <button
                     type="button"
+                    data-admin-target="reports"
+                    onclick="changerSectionAdmin('reports')"
+                >
+                    Signalements
+                </button>
+                <button
+                    type="button"
                     data-admin-target="testers"
                     onclick="changerSectionAdmin('testers')"
                 >
@@ -870,6 +877,25 @@
                         Recherchez une station pour corriger son enseigne,
                         son adresse ou ses coordonnées GPS.
                     </p>
+                </div>
+            </section>
+
+            <section class="panel admin-section" data-admin-section="reports">
+                <div class="panel-head">
+                    <div>
+                        <h2>Signalements utilisateurs</h2>
+                        <p class="muted">
+                            Contrôlez les prix signalés, stations fermées,
+                            carburants indisponibles et corrections proposées
+                            depuis les popups stations.
+                        </p>
+                    </div>
+                    <button type="button" onclick="chargerSignalementsAdmin()">
+                        Actualiser
+                    </button>
+                </div>
+                <div class="table-wrap" id="signalements-wrap">
+                    <p class="empty">Chargement des signalements...</p>
                 </div>
             </section>
 
@@ -1284,6 +1310,115 @@
                         + '</tr>';
                 }).join("")
                 + '</tbody></table>';
+        }
+
+        function badgeSignalement(statut) {
+            if (statut === "corrige") {
+                return '<span class="badge premium">Corrigé</span>';
+            }
+            if (statut === "ignore") {
+                return '<span class="badge">Ignoré</span>';
+            }
+            if (statut === "en_cours") {
+                return '<span class="badge">En cours</span>';
+            }
+            return '<span class="badge danger">Nouveau</span>';
+        }
+
+        function afficherSignalementsAdmin(signalements) {
+            var conteneur = document.getElementById("signalements-wrap");
+            signalements = signalements || [];
+
+            if (!signalements.length) {
+                conteneur.innerHTML =
+                    '<p class="empty">Aucun signalement utilisateur.</p>';
+                return;
+            }
+
+            conteneur.innerHTML =
+                '<table>'
+                + '<thead><tr>'
+                + '<th>Statut</th>'
+                + '<th>Station</th>'
+                + '<th>Type</th>'
+                + '<th>Description</th>'
+                + '<th>Reçu le</th>'
+                + '<th>Action</th>'
+                + '</tr></thead>'
+                + '<tbody>'
+                + signalements.map(function(signalement) {
+                    var station = [
+                        echapperHtml(signalement.station || ""),
+                        signalement.station_id
+                            ? "#" + echapperHtml(signalement.station_id)
+                            : "",
+                        echapperHtml(signalement.carburant || ""),
+                        signalement.prix_affiche
+                            ? echapperHtml(signalement.prix_affiche) + " €"
+                            : ""
+                    ].filter(Boolean).join("<br>");
+                    return '<tr>'
+                        + '<td>' + badgeSignalement(signalement.statut) + '</td>'
+                        + '<td>' + (station || "-") + '</td>'
+                        + '<td>' + echapperHtml(signalement.categorie || "-") + '</td>'
+                        + '<td>'
+                        + echapperHtml(signalement.description || "-")
+                        + (signalement.email
+                            ? '<br><span class="muted">'
+                                + echapperHtml(signalement.email)
+                                + '</span>'
+                            : '')
+                        + (signalement.note_admin
+                            ? '<br><span class="muted">Note : '
+                                + echapperHtml(signalement.note_admin)
+                                + '</span>'
+                            : '')
+                        + '</td>'
+                        + '<td>' + echapperHtml(
+                            texteDate(signalement.created_at)
+                        ) + '</td>'
+                        + '<td>'
+                        + '<button type="button" onclick="traiterSignalementAdmin('
+                        + "'" + echapperHtml(signalement.id) + "', 'en_cours'"
+                        + ')">En cours</button> '
+                        + '<button type="button" onclick="traiterSignalementAdmin('
+                        + "'" + echapperHtml(signalement.id) + "', 'corrige'"
+                        + ')">Corrigé</button> '
+                        + '<button type="button" class="ghost" onclick="traiterSignalementAdmin('
+                        + "'" + echapperHtml(signalement.id) + "', 'ignore'"
+                        + ')">Ignorer</button>'
+                        + '</td>'
+                        + '</tr>';
+                }).join("")
+                + '</tbody></table>';
+        }
+
+        async function chargerSignalementsAdmin() {
+            var donnees = await requeteAdmin("/api/admin/signalements");
+            afficherSignalementsAdmin(donnees.signalements || []);
+        }
+
+        async function traiterSignalementAdmin(id, statut) {
+            var note = "";
+
+            if (statut !== "en_cours") {
+                note = window.prompt(
+                    "Note admin facultative",
+                    ""
+                ) || "";
+            }
+
+            await requeteAdmin(
+                "/api/admin/signalements/" + encodeURIComponent(id),
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        statut: statut,
+                        note: note
+                    })
+                }
+            );
+            await chargerSignalementsAdmin();
         }
 
         async function rechercherStationsAdmin() {
@@ -1707,6 +1842,7 @@
             afficherComptes(donnees.comptes || []);
             afficherVehiculesAdmin(donnees.vehicules || {});
             afficherTesteurs(donnees.testeurs || []);
+            await chargerSignalementsAdmin();
             await chargerTarifsIrve();
             await chargerContributionsTarifsIrve();
             await chargerStatutEmailAdmin();

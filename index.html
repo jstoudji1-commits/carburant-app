@@ -3676,6 +3676,63 @@ body{
     min-width:0;
 }
 
+.opti-savings-banner{
+    margin:12px 18px 0;
+    padding:12px 16px;
+    border:1px solid rgba(20,159,56,0.22);
+    border-radius:12px;
+    background:linear-gradient(180deg, #f2fbf4, #ffffff);
+    color:var(--green-dark);
+    font-size:16px;
+    font-weight:900;
+    line-height:1.25;
+    box-shadow:0 8px 20px rgba(16,37,54,0.10);
+}
+
+.opti-savings-banner[hidden]{
+    display:none;
+}
+
+.opti-savings-banner strong{
+    color:#0f9b35;
+}
+
+.opti-savings-banner small{
+    display:block;
+    margin-top:3px;
+    color:#536575;
+    font-size:12px;
+    font-weight:700;
+}
+
+.opti-savings-summary{
+    margin:0 0 12px 0;
+    padding:14px 16px;
+    border:1px solid rgba(20,159,56,0.24);
+    border-radius:12px;
+    background:#f2fbf4;
+    color:var(--green-dark);
+    font-size:17px;
+    font-weight:900;
+    line-height:1.28;
+}
+
+.opti-savings-summary[hidden]{
+    display:none;
+}
+
+.opti-savings-summary strong{
+    color:#0f9b35;
+}
+
+.opti-savings-summary small{
+    display:block;
+    margin-top:4px;
+    color:#536575;
+    font-size:12px;
+    font-weight:700;
+}
+
 .bottom-cancel{
     padding:16px 18px;
     border:1px solid #cbd5dd;
@@ -4436,14 +4493,6 @@ body{
                     <button
                         type="button"
                         class="premium-menu-button"
-                        data-premium-page="stats"
-                        onclick="changerPagePremium('stats')"
-                    >
-                        Stats
-                    </button>
-                    <button
-                        type="button"
-                        class="premium-menu-button"
                         data-premium-page="referrals"
                         onclick="changerPagePremium('referrals')"
                     >
@@ -4795,6 +4844,22 @@ body{
                     id="premium-page-history"
                     hidden
                 >
+                    <div
+                        class="opti-savings-summary"
+                        id="opti-savings-summary"
+                        hidden
+                    ></div>
+
+                    <div class="premium-panel-card">
+                        <p class="premium-panel-title">
+                            Statistiques
+                        </p>
+                        <div
+                            class="premium-history-list"
+                            id="premium-stats-list"
+                        ></div>
+                    </div>
+
                     <div class="premium-panel-card">
                         <p class="premium-panel-title">
                             Historique des &eacute;conomies
@@ -4888,22 +4953,6 @@ body{
                         >
                             Ajouter une alerte
                         </button>
-                    </div>
-                </section>
-
-                <section
-                    class="premium-page premium-only"
-                    id="premium-page-stats"
-                    hidden
-                >
-                    <div class="premium-panel-card">
-                        <p class="premium-panel-title">
-                            Statistiques
-                        </p>
-                        <div
-                            class="premium-history-list"
-                            id="premium-stats-list"
-                        ></div>
                     </div>
                 </section>
 
@@ -5410,6 +5459,12 @@ body{
                 ></span>
             </label>
         </div>
+
+        <div
+            class="opti-savings-banner"
+            id="opti-savings-banner"
+            hidden
+        ></div>
 
         <div id="bottom-card" class="bottom-card">
             <div id="bottom-card-icon" class="bottom-icon">Eco</div>
@@ -9989,6 +10044,48 @@ function statistiquesEconomiesLocales() {
 
 }
 
+function formaterMontantEconomiesOptiPlein(valeur) {
+
+    return Number(valeur || 0).toLocaleString(
+        "fr-FR",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    ) + " \u20ac";
+
+}
+
+function actualiserBanniereEconomiesOptiPlein() {
+
+    var stats = statistiquesEconomiesLocales();
+    var total = Number(stats.economies_total || 0);
+    var elements = [
+        document.getElementById("opti-savings-banner"),
+        document.getElementById("opti-savings-summary")
+    ];
+
+    elements.forEach(function(element) {
+        if (!element) {
+            return;
+        }
+
+        if (!compteUtilisateurConnecte() || total <= 0) {
+            element.hidden = true;
+            element.innerHTML = "";
+            return;
+        }
+
+        element.hidden = false;
+        element.innerHTML = "Gr\u00e2ce \u00e0 OptiPlein, vous avez d\u00e9j\u00e0 \u00e9conomis\u00e9 "
+            + "<strong>"
+            + formaterMontantEconomiesOptiPlein(total)
+            + "</strong>"
+            + "<small>Total calcul\u00e9 \u00e0 partir de vos trajets enregistr\u00e9s.</small>";
+    });
+
+}
+
 function lireLieuxTrajet() {
 
     try {
@@ -10777,6 +10874,7 @@ function appliquerDonneesCompte(donnees) {
     remplirFormulaireMonCompte(true);
     actualiserAlertesPrixPremium();
     actualiserStatistiquesPremium();
+    actualiserBanniereEconomiesOptiPlein();
     calculerMeilleureStation();
     applicationDonneesCompteEnCours = false;
 
@@ -14098,6 +14196,8 @@ function actualiserHistoriqueEconomiesPremium() {
     var conteneur = document.getElementById("premium-history-list");
     var historique = lireHistoriqueEconomies();
 
+    actualiserBanniereEconomiesOptiPlein();
+
     if (!conteneur) {
         return;
     }
@@ -14293,6 +14393,8 @@ function actualiserStatistiquesPremium() {
     var conteneur = document.getElementById("premium-stats-list");
     var stats = statistiquesEconomiesLocales();
 
+    actualiserBanniereEconomiesOptiPlein();
+
     if (!conteneur) {
         return;
     }
@@ -14411,12 +14513,15 @@ function actualiserPagesPremium() {
 
 window.changerPagePremium = function(page) {
 
+    if (page === "stats") {
+        page = "history";
+    }
+
     pagePremiumActive = [
         "account",
         "vehicles",
         "history",
         "alerts",
-        "stats",
         "referrals",
         "options"
     ].indexOf(page) >= 0
@@ -14453,6 +14558,7 @@ window.viderHistoriqueEconomies = function() {
     localStorage.setItem(historiqueEconomiesCle, "[]");
     programmerSauvegardeCompte();
     actualiserHistoriqueEconomiesPremium();
+    actualiserStatistiquesPremium();
 
 };
 
@@ -16558,6 +16664,7 @@ function chargerVehicule() {
     actualiserListeVehicules();
     actualiserPlanCompte();
     actualiserInterfaceCompte();
+    actualiserBanniereEconomiesOptiPlein();
     calculerMeilleureStation();
 
 }

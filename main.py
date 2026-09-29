@@ -54,9 +54,11 @@ from optiplein_db import (
     base_donnees_active,
     charger_comptes as charger_comptes_postgres,
     charger_corrections_stations as charger_corrections_stations_postgres,
+    charger_donnee_application as charger_donnee_application_postgres,
     charger_testeurs as charger_testeurs_postgres,
     enregistrer_comptes as enregistrer_comptes_postgres,
     enregistrer_correction_station as enregistrer_correction_station_postgres,
+    enregistrer_donnee_application as enregistrer_donnee_application_postgres,
     enregistrer_testeurs as enregistrer_testeurs_postgres,
     libelle_stockage,
 )
@@ -151,6 +153,10 @@ TESTEURS_FICHIER = (
 TESTEURS_VALIDATION_FICHIER = (
     DOSSIER_DONNEES_UTILISATEURS
     / "testeurs_validation.json"
+)
+SIGNALEMENTS_STATIONS_FICHIER = (
+    DOSSIER_DONNEES_UTILISATEURS
+    / "signalements_stations.json"
 )
 STATIONS_REPO_CSV = Path(__file__).resolve().parent / "stations.csv"
 STATIONS_RUNTIME_CSV = DOSSIER_DONNEES_UTILISATEURS / "stations.csv"
@@ -354,9 +360,20 @@ class SignalementProbleme(BaseModel):
     ]
     description: str = Field(min_length=10, max_length=2000)
     station: str = Field(default="", max_length=160)
+    station_id: str = Field(default="", max_length=80)
+    carburant: str = Field(default="", max_length=20)
+    prix_affiche: str = Field(default="", max_length=30)
     email: str = Field(default="", max_length=160)
     page: str = Field(default="", max_length=300)
     site_web: str = Field(default="", max_length=120)
+
+
+class MiseAJourSignalementAdmin(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    statut: Literal["nouveau", "en_cours", "corrige", "ignore"] = "en_cours"
+    note: str = Field(default="", max_length=600)
 
 
 class MessageContact(BaseModel):
@@ -1037,6 +1054,90 @@ def enregistrer_testeurs_landing(donnees):
 
     temporaire.replace(TESTEURS_FICHIER)
     enregistrer_validations_testeurs_landing(donnees)
+
+
+def charger_signalements_stations():
+
+    signalements_postgres = charger_donnee_application_postgres(
+        "station_reports"
+    )
+    if signalements_postgres is not None:
+        signalements_postgres.setdefault("signalements", [])
+        return signalements_postgres
+
+    if not SIGNALEMENTS_STATIONS_FICHIER.exists():
+        return {"signalements": []}
+
+    try:
+        donnees = json.loads(
+            SIGNALEMENTS_STATIONS_FICHIER.read_text(encoding="utf-8")
+        )
+        if isinstance(donnees, dict):
+            donnees.setdefault("signalements", [])
+            return donnees
+    except (OSError, ValueError, TypeError):
+        logger.exception("Impossible de lire les signalements stations.")
+
+    return {"signalements": []}
+
+
+def enregistrer_signalements_stations(donnees):
+
+    donnees = dict(donnees or {})
+    donnees.setdefault("signalements", [])
+    donnees["updated_at"] = date_iso_maintenant()
+
+    if enregistrer_donnee_application_postgres(
+        "station_reports",
+        donnees,
+        donnees["updated_at"],
+    ):
+        return
+
+    SIGNALEMENTS_STATIONS_FICHIER.parent.mkdir(parents=True, exist_ok=True)
+    temporaire = SIGNALEMENTS_STATIONS_FICHIER.with_suffix(".tmp")
+    temporaire.write_text(
+        json.dumps(donnees, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    temporaire.replace(SIGNALEMENTS_STATIONS_FICHIER)
+
+
+def signalements_ouverts_par_station():
+
+    regroupement = {}
+    donnees = charger_signalements_stations()
+
+    for signalement in donnees.get("signalements", []) or []:
+        statut = str(signalement.get("statut") or "nouveau")
+        station_id = str(signalement.get("station_id") or "").strip()
+
+        if not station_id or statut in {"corrige", "ignore"}:
+            continue
+
+        regroupement.setdefault(station_id, []).append(signalement)
+
+    return regroupement
+
+
+def resume_signalement_admin(signalement):
+
+    return {
+        "id": signalement.get("id", ""),
+        "statut": signalement.get("statut", "nouveau"),
+        "categorie": signalement.get("categorie", ""),
+        "station": signalement.get("station", ""),
+        "station_id": signalement.get("station_id", ""),
+        "carburant": signalement.get("carburant", ""),
+        "prix_affiche": signalement.get("prix_affiche", ""),
+        "description": signalement.get("description", ""),
+        "email": signalement.get("email", ""),
+        "page": signalement.get("page", ""),
+        "note_admin": signalement.get("note_admin", ""),
+        "created_at": signalement.get("created_at", ""),
+        "updated_at": signalement.get("updated_at", ""),
+        "ip": signalement.get("ip", ""),
+    }
 
 
 def hasher_mot_de_passe(mot_de_passe, sel=None):
@@ -2104,6 +2205,9 @@ def appliquer_enrichissements_admin(stations):
             ):
                 station["latitude"] = latitude_corrigee
                 station["longitude"] = longitude_corrigee
+
+        station["correction_admin"] = bool(enrichissement.get("forcer_correction"))
+        station["source_correction"] = enrichissement.get("source_correction", "")
 
 
 def station_resume_admin(station):
@@ -3975,6 +4079,102 @@ def version_donnees_stations():
         )
     except OSError:
         return date_mise_a_jour.isoformat() if date_mise_a_jour else ""
+
+
+def _age_minutes(date_mise_a_jour):
+
+    if not date_mise_a_jour:
+        return None
+
+    maintenant = datetime.now(timezone.utc)
+    date_reference = date_mise_a_jour
+
+    if date_reference.tzinfo is None:
+        date_reference = date_reference.replace(tzinfo=timezone.utc)
+
+    return max(
+        0,
+        int(
+            (
+                maintenant
+                - date_reference.astimezone(timezone.utc)
+            ).total_seconds() / 60
+        ),
+    )
+
+
+def calculer_confiance_prix_station(
+    station,
+    carburant,
+    date_mise_a_jour,
+    signalements_station=None,
+):
+
+    age_minutes = _age_minutes(date_mise_a_jour)
+    signalements_station = list(signalements_station or [])
+    signalements_prix = [
+        signalement
+        for signalement in signalements_station
+        if (
+            "prix" in str(signalement.get("categorie", "")).casefold()
+            or "prix" in str(signalement.get("description", "")).casefold()
+            or "station" in str(signalement.get("categorie", "")).casefold()
+        )
+    ]
+
+    if age_minutes is None:
+        score = 2
+        label = "Prix à vérifier"
+        detail = "Date de mise à jour indisponible."
+    elif age_minutes <= 15:
+        score = 5
+        label = "Prix récent"
+        detail = "Prix officiel actualisé récemment."
+    elif age_minutes <= 60:
+        score = 4
+        label = "Prix fiable"
+        detail = "Prix officiel actualisé il y a moins d'une heure."
+    elif age_minutes <= 6 * 60:
+        score = 3
+        label = "Prix à surveiller"
+        detail = "Prix officiel actualisé aujourd'hui."
+    elif age_minutes <= 24 * 60:
+        score = 2
+        label = "Prix ancien"
+        detail = "Prix officiel plus ancien, vérification conseillée."
+    else:
+        score = 1
+        label = "À vérifier"
+        detail = "Prix officiel très ancien, vérifiez avant détour."
+
+    if signalements_prix:
+        score = min(score, 2)
+        label = "Signalé à vérifier"
+        detail = (
+            f"{len(signalements_prix)} signalement"
+            f"{'s' if len(signalements_prix) > 1 else ''} "
+            "utilisateur ouvert sur cette station."
+        )
+
+    if station.get("correction_admin") and score >= 3:
+        detail += " Infos station corrigées par OptiPlein."
+
+    return {
+        "score": score,
+        "label": label,
+        "detail": detail,
+        "age_minutes": age_minutes,
+        "source": (
+            "Prix officiel public"
+            + (
+                " + correction station OptiPlein"
+                if station.get("correction_admin")
+                else ""
+            )
+        ),
+        "signalements_ouverts": len(signalements_station),
+        "carburant": carburant,
+    }
 
 
 def charger_stations(appliquer_corrections=True):
@@ -7735,6 +7935,52 @@ def corriger_station_admin(
         mise_a_jour_admin_lock.release()
 
 
+@app.get("/api/admin/signalements")
+def lister_signalements_admin(request: Request):
+
+    verifier_admin(request)
+    donnees = charger_signalements_stations()
+    signalements = donnees.get("signalements", []) or []
+
+    return {
+        "signalements": [
+            resume_signalement_admin(signalement)
+            for signalement in signalements[:200]
+        ],
+        "count": len(signalements),
+    }
+
+
+@app.post("/api/admin/signalements/{signalement_id}")
+def mettre_a_jour_signalement_admin(
+    signalement_id: str,
+    mise_a_jour: MiseAJourSignalementAdmin,
+    request: Request,
+):
+
+    verifier_admin(request)
+    donnees = charger_signalements_stations()
+    signalements = donnees.get("signalements", []) or []
+
+    for signalement in signalements:
+        if str(signalement.get("id", "")) != str(signalement_id):
+            continue
+
+        signalement["statut"] = mise_a_jour.statut
+        signalement["note_admin"] = mise_a_jour.note.strip()
+        signalement["updated_at"] = date_iso_maintenant()
+        enregistrer_signalements_stations(donnees)
+        return {
+            "ok": True,
+            "signalement": resume_signalement_admin(signalement),
+        }
+
+    raise HTTPException(
+        status_code=404,
+        detail="Signalement introuvable.",
+    )
+
+
 @app.get("/api/admin/tarifs-irve")
 def lister_tarifs_irve_admin(request: Request):
 
@@ -8546,6 +8792,7 @@ def get_stations_proches(
         }
 
     date_mise_a_jour = date_mise_a_jour_stations()
+    signalements_par_station = signalements_ouverts_par_station()
     stations = preparer_stations_pour_carte(
         charger_stations(),
         carburant,
@@ -8578,6 +8825,15 @@ def get_stations_proches(
                 ),
                 "avantage_totalenergies": station.get(
                     "avantage_totalenergies"
+                ),
+                "confiance_prix": calculer_confiance_prix_station(
+                    station,
+                    carburant,
+                    date_mise_a_jour,
+                    signalements_par_station.get(
+                        str(station.get("id", "")),
+                        [],
+                    ),
                 ),
             }
             for station in stations
@@ -9639,22 +9895,42 @@ async def signaler_probleme(
             detail="Veuillez patienter une minute avant un nouvel envoi.",
         )
 
+    maintenant_iso = date_iso_maintenant()
+    donnees_signalements = charger_signalements_stations()
+    donnees_signalements.setdefault("signalements", []).insert(
+        0,
+        {
+            "id": secrets.token_urlsafe(10),
+            "statut": "nouveau",
+            "categorie": signalement.categorie,
+            "station": signalement.station,
+            "station_id": signalement.station_id,
+            "carburant": signalement.carburant,
+            "prix_affiche": signalement.prix_affiche,
+            "description": signalement.description,
+            "email": signalement.email,
+            "page": signalement.page,
+            "ip": adresse_client,
+            "created_at": maintenant_iso,
+            "updated_at": maintenant_iso,
+            "note_admin": "",
+        },
+    )
+    donnees_signalements["signalements"] = (
+        donnees_signalements["signalements"][:500]
+    )
+    enregistrer_signalements_stations(donnees_signalements)
+
     try:
         await asyncio.to_thread(
             envoyer_signalement_email,
             signalement,
         )
     except RuntimeError:
-        raise HTTPException(
-            status_code=503,
-            detail="L’envoi des signalements n’est pas encore configuré.",
-        )
+        logger.warning("Signalement enregistré sans envoi e-mail configuré.")
     except Exception:
         logger.exception("L’envoi du signalement a échoué.")
-        raise HTTPException(
-            status_code=502,
-            detail="Le message n’a pas pu être envoyé. Réessayez plus tard.",
-        )
+        # Le signalement est deja enregistre dans l'administration.
 
     signalements_recents[adresse_client] = maintenant
 
@@ -9805,6 +10081,20 @@ def page_web(
             rayon,
         )
 
+    date_mise_a_jour = date_mise_a_jour_stations()
+    signalements_par_station = signalements_ouverts_par_station()
+
+    for station in stations:
+        station["confiance_prix"] = calculer_confiance_prix_station(
+            station,
+            carburant,
+            date_mise_a_jour,
+            signalements_par_station.get(
+                str(station.get("id", "")),
+                [],
+            ),
+        )
+
     nombre_stations = len(stations)
 
     stations_avec_prix = []
@@ -9823,7 +10113,6 @@ def page_web(
         else None
     )
     prix_min = station_prix_min[0] if station_prix_min else None
-    date_mise_a_jour = date_mise_a_jour_stations()
     maintenant = datetime.now().astimezone()
 
     return templates.TemplateResponse(

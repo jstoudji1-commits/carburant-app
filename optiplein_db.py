@@ -305,3 +305,33 @@ def enregistrer_correction_station(station_id, correction):
         ligne.updated_at = ligne.payload.get("updated_at", "")
 
     return True
+
+
+def charger_donnee_application(cle):
+
+    if not base_donnees_active():
+        return None
+
+    with session_base() as session:
+        ligne = session.get(DonneeApplication, str(cle))
+        if not ligne:
+            return None
+        return ligne.value or {}
+
+
+def enregistrer_donnee_application(cle, valeur, updated_at=""):
+
+    if not base_donnees_active():
+        return False
+
+    with session_base() as session:
+        ligne = session.get(DonneeApplication, str(cle))
+
+        if not ligne:
+            ligne = DonneeApplication(key=str(cle))
+            session.add(ligne)
+
+        ligne.value = dict(valeur or {})
+        ligne.updated_at = updated_at or ligne.value.get("updated_at", "")
+
+    return True
