@@ -756,7 +756,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 21140001,21140,Semur-en-Auxois,Rue Champ de la Perdrix,47.48187,4.351136,Avia,2.449,,2.349,2.299,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 74300004,74300,Thyez,RD 19 Lieu dit Les Bossons,46.08617,6.52416,Intermarché,2.399,2.219,,2.239,,,egal,egal,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 21350001,21350,Vitteaux,LOT ST ANNE,47.3953733,4.5482333,Avia,2.449,,2.349,2.299,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-89140004,89140,Pont-sur-Yonne,32 B AVENUE GENERAL LECLERC,48.284,3.212,E.Leclerc,2.250,1.990,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+89140004,89140,Pont-sur-Yonne,32 B AVENUE GENERAL LECLERC,48.284,3.212,E.Leclerc,,,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 84000001,84000,Avignon,162 Avenue Pierre Sémard,43.93,4.833,Carrefour,2.337,2.149,2.236,,0.848,1.073,egal,egal,egal,,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 34410009,34410,sauvian,2 ROUTE DE BEZIERS,43.299887,3.248499,Carrefour Contact,2.396,2.179,,,,,egal,egal,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 94400005,94400,Vitry-sur-Seine,34 AV. HENRI BARBUSSE,48.793,2.39,TotalEnergies,2.250,,1.990,,0.979,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -3060,9 +3060,9 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 9190005,09190,Saint-Lizier,Route de Toulouse (direction Saint Girons),43.002738,1.130775,Avia,2.399,2.199,2.299,,0.995,,egal,egal,egal,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 76360001,76360,BARENTIN,"Plateau du Mesnil-Roux, Zone la Carbonnière",49.5346942,0.9656848,Carrefour,2.340,,2.257,2.242,,0.999,hausse,,baisse,egal,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 26503001,26500,Bourg-lès-Valence,Les Chabanneries,44.959,4.883,E.Leclerc,2.339,2.152,2.243,2.207,,1.086,egal,hausse,egal,egal,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-44800008,44800,Saint-Herblain,BD CHARLES DE GAULLE - CD 17,47.211,-1.619,Total Access,2.250,1.990,,,,0.982,egal,egal,,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 62700008,62700,Bruay-la-Buissière,864 RUE DE LA REPUBLIQUE - RN 41,50.477,2.534,Total,2.250,1.990,,,0.912,1.055,egal,egal,,,baisse,hausse,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 38240003,38240,MEYLAN,1 Boulevard des Alpes,45.203,5.762,Carrefour,2.390,2.145,2.263,2.195,0.979,1.010,egal,egal,egal,egal,egal,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+44800008,44800,Saint-Herblain,BD CHARLES DE GAULLE - CD 17,47.211,-1.619,Total Access,2.250,1.990,1.990,,,0.982,egal,egal,,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 22270001,22270,Jugon-les-Lacs,"21 ter, rue de Penthièvre",48.409,-2.324,Carrefour,2.399,,2.329,2.212,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 95870010,95870,Bezons,179 avenue Gabriel Péri,48.936889,2.206983,TotalEnergies,2.250,,,,,,egal,,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 1150002,01150,SAINT-VULBAS,Avenue Charles de Gaulle,45.8375739,5.2864939,Total,,,,,,,,,,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
@@ -6245,7 +6245,7 @@ id,cp,ville,adresse,latitude,longitude,enseigne,gazole,e10,sp98,sp95,e85,gplc,te
 54700011,54700,LOISY,AUTOROUTE A31AIRE DE LOISY,48.860588,6.091694,Dyneff,2.419,2.229,2.295,,,1.120,egal,egal,baisse,,,egal,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 14100007,14100,LISIEUX,Avenue Georges Pompidou,49.130643,0.224842,Intermarché,2.320,2.164,2.238,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 2200012,02200,Venizel,2 Rue d'Acy,49.362238,3.403579,Carrefour,2.379,,2.279,2.219,,,egal,,egal,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
-84500007,84500,Bollène,Avenue Jean Giono STATION 2 ROND POINT,44.286892,4.750636,Intermarché,2.350,2.150,2.299,,0.879,,hausse,baisse,hausse,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
+84500007,84500,Bollène,Avenue Jean Giono STATION 2 ROND POINT,44.286892,4.750636,Intermarché,2.399,2.150,2.305,,0.879,,hausse,baisse,hausse,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 35520003,35520,La Mézière,Lieu-dit Beauséjour,48.21824,-1.74787,,2.379,2.158,2.268,,,,egal,egal,egal,,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 14520002,14520,Sainte-Honorine-des-Pertes,45 ROUTE D'OMAHA,49.3487174,-0.8169558,Total,2.250,,,1.990,,,egal,,,egal,,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
 67114001,67114,ESCHAU,"25, rue du Tramway",48.4813453,7.7273233,Système U,2.447,2.299,2.375,,0.921,,baisse,baisse,baisse,,egal,,stable,1,stable,1,stable,1,stable,1,stable,1,stable,1
