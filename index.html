@@ -56,7 +56,7 @@
             "@type": "Offer",
             "price": "0",
             "priceCurrency": "EUR",
-            "description": "Accès gratuit pendant la phase de test"
+            "description": "Compte gratuit ; abonnement Premium en option"
         }
     }
     </script>
@@ -4958,12 +4958,12 @@ body{
 
                 <section class="premium-offer" id="premium-note">
                     <p class="premium-offer-title">
-                        <span>D&eacute;couverte Premium</span>
-                        <span class="premium-price">gratuit tout l'&eacute;t&eacute;</span>
+                        <span>OptiPlein Premium</span>
+                        <span class="premium-price">4,99 &euro;/an</span>
                     </p>
                     <p class="premium-offer-copy">
-                        Cr&eacute;ez votre compte pour tester gratuitement toutes les
-                        fonctions Premium avant le lancement officiel.
+                        Votre compte est gratuit. L'abonnement Premium donne
+                        acc&egrave;s aux fonctions avanc&eacute;es ci-dessous.
                     </p>
                     <ul class="premium-benefits">
                         <li>5 v&eacute;hicules, favoris illimit&eacute;s et historique des &eacute;conomies.</li>
@@ -5178,7 +5178,7 @@ body{
                     data-full-width-responsive="true"
                 ></ins>
                 <span class="ad-fallback" hidden>
-                    Publicit&eacute; - D&eacute;couverte Premium gratuite avec compte.
+                    Publicit&eacute;
                 </span>
             </div>
             {% endif %}
@@ -9208,8 +9208,6 @@ var premiumCompteCle = "optiplein-premium";
 var compteTokenCle = "optiplein-compte-token";
 var compteEmailCle = "optiplein-compte-email";
 var carteTotalenergiesCle = "optiplein-carte-totalenergies";
-var modeDecouvertePremiumActif = !estPlateformeIOS();
-var choixFormuleMasquePendantTest = !estPlateformeIOS();
 var produitPremiumApple = {{ apple_premium_product_id|tojson }};
 var publiciteAdsenseActive = {{ adsense_active|tojson }};
 var publiciteAdsenseMasqueeVide = false;
@@ -9248,8 +9246,7 @@ function comptePremiumActif() {
 
     return compteUtilisateurConnecte()
         && (
-            modeDecouvertePremiumActif
-            || planCompteActuel() === "premium"
+            planCompteActuel() === "premium"
             || premiumServeur.active === true
         );
 
@@ -10781,7 +10778,6 @@ function donneesCompteLocales() {
             {},
             lirePremiumCompte(),
             {
-            test_gratuit_ete: modeDecouvertePremiumActif,
             limites: {
                 favoris_max: comptePremiumActif() ? null : nombreMaximumFavorisGratuit,
                 vehicules_max: nombreMaximumVehiculesActuel(),
@@ -11067,11 +11063,7 @@ window.creerCompteOptiPlein = async function(event) {
             document.getElementById("account-password").value = "";
             definirStatutCompte(
                 "Compte cr\u00e9\u00e9. Cliquez sur le lien envoy\u00e9 par e-mail "
-                + (
-                    estPlateformeIOS()
-                        ? "pour activer votre compte."
-                        : "pour activer la d\u00e9couverte Premium."
-                ),
+                + "pour activer votre compte gratuit.",
                 "success"
             );
             return;
@@ -14626,17 +14618,13 @@ function actualiserPlanCompte() {
     }
 
     if (blocChoixFormule) {
-        blocChoixFormule.hidden = ios
-            ? (!connecte || premium)
-            : choixFormuleMasquePendantTest;
+        blocChoixFormule.hidden = !connecte || premium;
     }
 
     actualiserPlacementPublicite();
 
     if (comparatifPlan) {
-        comparatifPlan.hidden = ios
-            ? (!connecte || premium)
-            : (choixFormuleMasquePendantTest || premium);
+        comparatifPlan.hidden = !connecte || premium;
     }
 
     if (offrePremium) {
@@ -14666,30 +14654,18 @@ function actualiserPlanCompte() {
 
 window.changerPlanCompte = function(plan) {
 
-    if (estPlateformeIOS() && plan === "premium") {
-        acheterPremiumIOS();
-        return;
-    }
-
-    localStorage.setItem(
-        planCompteCle,
-        plan === "premium" ? "premium" : "free"
-    );
-    programmerSauvegardeCompte();
-
-    if (!comptePremiumActif()) {
-        var vehicules = lireVehicules().slice(0, 1);
-        enregistrerVehicules(vehicules);
-        if (vehicules[0]) {
-            localStorage.setItem(vehiculeActifCle, vehicules[0].id);
-            synchroniserAnciennesClesVehicule(vehicules[0]);
+    if (plan === "premium") {
+        if (estPlateformeIOS()) {
+            acheterPremiumIOS();
+        } else {
+            definirStatutCompte(
+                "L'abonnement Premium est disponible dans l'application iOS. "
+                + "Votre compte reste gratuit sans abonnement actif.",
+                ""
+            );
         }
     }
-
     actualiserPlanCompte();
-    chargerVehicule();
-    dernierCalculPeriodiqueRentabilite = 0;
-    calculerMeilleureStation();
 
 };
 

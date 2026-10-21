@@ -31,7 +31,7 @@ Trouvez les prix carburants autour de vous, préparez vos trajets et laissez Opt
 
 OptiPlein aide les conducteurs à comparer les prix des carburants et à choisir une station rentable, pas seulement la moins chère. L'app prend en compte le prix, la distance, le détour, la consommation du véhicule et le volume à ravitailler.
 
-Pendant la phase de lancement, les fonctionnalités Premium sont accessibles gratuitement tout l'été après création d'un compte.
+La création d'un compte est gratuite. Les fonctions Premium sont accessibles avec un abonnement à 4,99 €/an ou un bonus de parrainage actif.
 
 ## Description App Store
 
@@ -55,7 +55,7 @@ OptiPlein est conçu pour les trajets du quotidien comme pour les longs déplace
 
 Les données carburants proviennent de sources publiques et sont enrichies pour améliorer l'affichage des stations, des enseignes et des informations utiles aux conducteurs.
 
-Pendant la phase de test et de lancement, les fonctionnalités Premium sont offertes gratuitement tout l'été aux utilisateurs qui créent leur compte.
+La création d'un compte est gratuite. Les fonctions Premium sont accessibles avec un abonnement à 4,99 €/an ou un bonus de parrainage actif.
 
 ## Mots-clés
 
@@ -67,7 +67,7 @@ Bonjour,
 
 OptiPlein est une app d'aide au ravitaillement carburant et à la préparation de trajet. Elle utilise la localisation de l'utilisateur pour afficher les stations autour de lui, calculer la station la plus rentable et proposer un guidage intégré.
 
-Un compte peut être créé afin de synchroniser les véhicules, favoris, préférences, historique d'économies et accès Premium gratuit pendant la phase de lancement.
+Un compte gratuit permet de synchroniser un véhicule, jusqu'à trois favoris et les préférences. Les fonctions avancées nécessitent un accès Premium.
 
 La suppression directe de compte est accessible depuis l'app :
 Mon véhicule / Mon compte / Supprimer définitivement mon compte.
@@ -75,7 +75,7 @@ Mon véhicule / Mon compte / Supprimer définitivement mon compte.
 La politique de confidentialité est disponible ici :
 https://www.optiplein.fr/confidentialite
 
-Les fonctions Premium sont actuellement gratuites tout l'été pour les utilisateurs connectés.
+La création d'un compte est gratuite. Les fonctions Premium sont accessibles avec un abonnement à 4,99 €/an ou un bonus de parrainage actif.
 
 ## Données collectées - aide pour App Privacy
 

@@ -635,7 +635,7 @@ GUIDES_EDITORIAUX = {
             {
                 "title": "Écrire à OptiPlein",
                 "paragraphs": [
-                    "Le formulaire « Signaler un problème » de l’application constitue le chemin le plus direct. Il est également possible d’écrire à optiplein5@gmail.com en indiquant « Signalement station » dans l’objet, puis la ville et le carburant concernés.",
+                    "Le formulaire « Signaler un problème » de l’application constitue le chemin le plus direct. Il est également possible d’écrire à contact@optiplein.fr en indiquant « Signalement station » dans l’objet, puis la ville et le carburant concernés.",
                     "Un signalement clair peut être résumé ainsi : station, adresse, donnée affichée, donnée observée, date, source de vérification et capture facultative. Cette structure accélère le contrôle.",
                 ],
             },

@@ -28,6 +28,27 @@ DEFAULT_PUBLIC_KEY = "woos-c236c6f3-31fe-3118-82e7-a19ca42466f7"
 OFFICIAL_TAG = "OpeAvantageCarburant"
 LOCATOR_ORIGIN = "https://locator.totalenergies.com"
 MAX_MATCH_DISTANCE_METERS = 500
+# Le point gouvernemental de Gignac Sud est décalé d'environ 1,1 km.
+# Le plus proche du point TotalEnergies est donc Eni Rebuty (206 m).
+# Identité vérifiée par l'adresse A55 - Aire Gignac Sud La Nerthe :
+# https://locator.totalenergies.com/NF059602?business_type=RETAIL&type=FUELING
+# Audit national du 21/10/2026 : adresses recoupées entre le localisateur
+# officiel et https://donnees.roulez-eco.fr/opendata/instantane.
+# Les signatures empêchent de réutiliser une exception si la station change.
+# Limas porte 69400 chez TotalEnergies et 69651 dans le référentiel public.
+CORRESPONDANCES_VERIFIEES = {
+    "NF059602": ("13700009", "13180", "AUTOROUTE A55 - AIRE GIGNAC SUD LA NERTHE"),
+    "NF038800": ("46500001", "46500", "ROUTE DE ST CERE"),
+    "NF058065": ("50200008", "50200", "2, AVENUE DE VERDUN"),
+    "NF040877": ("67110002", "67110", "16 Faubourg de Niederbronn"),
+    "NF082120": ("69651001", "69651", "19 avenue Edouard Hérriot"),
+    "NF041389": ("70300009", "70300", "28 Rue Édouard Herriot"),
+    "NF078387": ("1430005", "01430", "AUTOROUTE A40 - AIRE DE CEIGNES CERDON"),
+    "NF059775": ("77600003", "77600", "AUTOROUTE A4 - AIRE DE BUSSY ST GEORGES"),
+    "NF062704": ("77600004", "77600", "AUTOROUTE A4 - AIRE DE FERRIÈRES"),
+    "NF043503": ("14320004", "14320", "35 Route d'Harcourt"),
+    "NF040821": ("21250010", "21250", "58 Gd Rue du Faubourg Saint-Georges"),
+}
 
 
 def normaliser(value: object) -> str:
@@ -98,6 +119,28 @@ def rapprocher(feature: dict, stations_gouv: list[dict]) -> tuple[dict | None, f
     lon, lat = float(coordinates[0]), float(coordinates[1])
     cp = str(address.get("zipcode") or "").zfill(5)
     ville = normaliser(address.get("city"))
+
+    locator_id = str((properties.get("user_properties") or {}).get("location_id") or "").strip()
+    correspondance = CORRESPONDANCES_VERIFIEES.get(locator_id)
+    if correspondance:
+        station_id_verifie, cp_verifie, adresse_verifiee = correspondance
+        station = next(
+            (s for s in stations_gouv if str(s.get("id")) == station_id_verifie),
+            None,
+        )
+        # Ne pas retomber sur l'aire voisine si le référentiel change.
+        if station is None:
+            return None, None, "identifiant_verifie_absent"
+        enseigne = normaliser(station.get("enseigne"))
+        if (
+            station["_cp"] != cp_verifie
+            or cp[:2] != cp_verifie[:2]
+            or normaliser(station.get("adresse")) != normaliser(adresse_verifiee)
+            or (enseigne and "total" not in enseigne and "elan" not in enseigne)
+        ):
+            return None, None, "identifiant_verifie_incoherent"
+        distance = distance_metres(lat, lon, station["_latitude"], station["_longitude"])
+        return station, round(distance, 1), "identifiant_verifie"
 
     # Le code postal réduit les homonymes ; un repli départemental couvre les
     # stations placées juste de l'autre côté d'une limite postale.
@@ -176,7 +219,8 @@ def construire_document(features: list[dict], stations_gouv: list[dict]) -> dict
         "generated_at": now,
         "methodology": (
             "Filtre officiel du localisateur TotalEnergies, puis rapprochement avec stations.csv "
-            "par code postal et distance géographique (500 m maximum)."
+            "par identifiant vérifié pour les exceptions documentées, sinon par code postal "
+            "et distance géographique (500 m maximum)."
         ),
         "counts": {
             "official_participants": len(features),

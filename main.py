@@ -86,9 +86,10 @@ FONCTIONNALITE_ELECTRIQUE_ACTIVE = os.getenv(
 ).strip().lower() in {"1", "true", "yes", "on"}
 IRVE_FUSEAU_HORAIRE = ZoneInfo("Europe/Paris")
 IRVE_HEURE_MISE_A_JOUR = 6
+EMAIL_CONTACT = "contact@optiplein.fr"
 EMAIL_SIGNALEMENT = os.getenv(
     "REPORT_EMAIL",
-    "optiplein5@gmail.com"
+    EMAIL_CONTACT,
 )
 APP_BASE_URL = os.getenv("APP_BASE_URL", "").strip().rstrip("/")
 # L'hébergement redirige déjà le domaine nu vers www. Conserver www comme
@@ -238,7 +239,6 @@ def lire_variable_graphhopper():
 GRAPHHOPPER_API_KEY = lire_variable_graphhopper()
 SESSIONS_UTILISATEURS = {}
 PBKDF2_ITERATIONS = 260000
-PREMIUM_TEST_ACTIF = True
 APPLE_PREMIUM_PRODUCT_ID = os.getenv(
     "APPLE_PREMIUM_PRODUCT_ID",
     "optiplein_premium_yearly",
@@ -896,6 +896,8 @@ def enregistrer_validations_testeurs_landing(donnees):
         "email_verification_expires_at",
         "validation_email_sent_at",
         "validation_email_error_at",
+        "bienvenue_email_sent_at",
+        "bienvenue_email_error_at",
         "validated_at",
     }
 
@@ -2612,25 +2614,6 @@ def plateforme_depuis_requete(request):
     return plateforme if plateforme in {"web", "android", "ios"} else "web"
 
 
-def compte_ios_donnees(donnees, plateforme=None):
-
-    if plateforme == "ios":
-        return True
-
-    return any(
-        str(donnees.get(cle) or "").strip().lower() == "ios"
-        for cle in (
-            "plateforme_creation",
-            "plateforme_derniere_connexion",
-        )
-    )
-
-
-def premium_test_actif_pour_donnees(donnees, plateforme=None):
-
-    return PREMIUM_TEST_ACTIF and not compte_ios_donnees(donnees, plateforme)
-
-
 def normaliser_code_parrainage(code):
 
     return re.sub(r"[^A-Z0-9]", "", str(code or "").upper())[:18]
@@ -2812,7 +2795,6 @@ def premium_actif_donnees(donnees, plateforme=None):
     return (
         donnees.get("plan") == "premium"
         or premium_bonus_actif_donnees(donnees)
-        or premium_test_actif_pour_donnees(donnees, plateforme)
     )
 
 
@@ -2829,11 +2811,7 @@ def limites_premium(donnees, plateforme=None):
         "longs_trajets": premium,
         "alertes_prix": premium,
         "statistiques": premium,
-        "prix": (
-            "gratuit tout l'été"
-            if premium_test_actif_pour_donnees(donnees, plateforme)
-            else "4,99 €/an"
-        ),
+        "prix": "4,99 €/an",
     }
 
 
@@ -2972,10 +2950,6 @@ def premium_compte_nettoye(donnees):
 
     return {
         "active": actif,
-        "test_gratuit_ete": premium_test_actif_pour_donnees(
-            donnees,
-            plateforme,
-        ),
         "bonus_until": parrainage.get("bonus_until", ""),
         "capacites": CAPACITES_PREMIUM,
         "limites": limites_premium(donnees, plateforme),
@@ -3015,12 +2989,6 @@ def limiter_donnees_compte(donnees, plateforme=None):
         donnees.profil.get("email", "") if isinstance(donnees.profil, dict) else "",
     )
 
-    if premium_test_actif_pour_donnees(
-        donnees.model_dump(),
-        plateforme,
-    ):
-        donnees.plan = "premium"
-
     donnees.profil = profil_compte_nettoye(donnees.profil)
     donnees.parrainage = parrainage_compte_nettoye(
         donnees.parrainage,
@@ -3047,7 +3015,7 @@ def limiter_donnees_compte(donnees, plateforme=None):
     return donnees.model_dump()
 
 
-def donnees_compte_premium_test(donnees, plateforme=None):
+def donnees_compte_pour_client(donnees, plateforme=None):
 
     donnees = dict(donnees or {})
     donnees.setdefault("profil", profil_compte_nettoye({}))
@@ -3071,8 +3039,7 @@ def donnees_compte_premium_test(donnees, plateforme=None):
     )
     if plateforme:
         donnees["plateforme_derniere_connexion"] = plateforme
-    if premium_test_actif_pour_donnees(donnees, plateforme):
-        donnees["plan"] = "premium"
+    donnees.setdefault("plan", "free")
     donnees["premium"] = premium_compte_nettoye(donnees)
     return donnees
 
@@ -3306,6 +3273,10 @@ def envoyer_email_brevo(message, api_key):
         "subject": message.get("Subject", "OptiPlein"),
     }
 
+    adresses_reponse = getaddresses(message.get_all("Reply-To", []))
+    if adresses_reponse and adresses_reponse[0][1]:
+        payload["replyTo"] = {"email": adresses_reponse[0][1]}
+
     if html:
         payload["htmlContent"] = html
 
@@ -3389,6 +3360,9 @@ def envoyer_email_smtp(message):
 
 
 def envoyer_email(message):
+
+    if not message.get("Reply-To"):
+        message["Reply-To"] = EMAIL_CONTACT
 
     configuration_api = lire_configuration_email_api()
     erreur_brevo = None
@@ -3536,8 +3510,6 @@ def envoyer_email_confirmation_testeur(email, lien_validation, base_url):
         "votre inscription sera bien prise en compte. Vous recevrez ensuite "
         "le lien officiel Google Play permettant de télécharger l'application "
         "de test une fois la période de recrutement terminée.\n\n"
-        "Les testeurs retenus bénéficieront d'un accès Premium offert au "
-        "lancement de l'application.\n\n"
         "Ce lien est valable 24 heures. Si vous n'êtes pas à l'origine "
         "de cette demande, ignorez simplement cet e-mail.\n\n"
         "Merci de participer à l'amélioration d'OptiPlein.\n\n"
@@ -3558,8 +3530,6 @@ def envoyer_email_confirmation_testeur(email, lien_validation, base_url):
         "recevrez ensuite le lien officiel Google Play permettant de "
         "t&eacute;l&eacute;charger l'application de test une fois la p&eacute;riode "
         "de recrutement termin&eacute;e.</p>"
-        "<p>Les testeurs retenus b&eacute;n&eacute;ficieront d'un acc&egrave;s "
-        "Premium offert au lancement de l'application.</p>"
         '<p style="margin:24px 0;">'
         f'<a href="{lien_validation}" '
         'style="display:inline-block;background:#149f38;color:#ffffff;'
@@ -3576,6 +3546,59 @@ def envoyer_email_confirmation_testeur(email, lien_validation, base_url):
     envoyer_email(message)
 
 
+def envoyer_email_bienvenue_testeur(email, base_url):
+
+    message = EmailMessage()
+    message["Subject"] = "Bienvenue parmi les testeurs Android OptiPlein !"
+    message["To"] = email
+    message["Reply-To"] = "contact@optiplein.fr"
+    message.set_content(
+        "Bonjour,\n\n"
+        "Votre adresse e-mail a bien été validée et votre inscription comme "
+        "testeur Android OptiPlein est confirmée.\n\n"
+        "Merci de participer à cette aventure ! Vos retours nous aideront à "
+        "améliorer l’application : affichage des stations, prix des carburants, "
+        "utilisation de la carte et confort de navigation.\n\n"
+        "Quelle est la prochaine étape ?\n\n"
+        "À la fin de la période de recrutement, vous recevrez un nouvel e-mail "
+        "contenant le lien officiel Google Play et les instructions pour rejoindre "
+        "le test. Vous n’avez aucune autre démarche à effectuer pour le moment.\n\n"
+        "L’inscription comme testeur est distincte de la création d’un compte "
+        "dans l’application. Si vous créez un compte OptiPlein, celui-ci bénéficie "
+        "de la formule gratuite.\n\n"
+        "Pour toute question ou suggestion, vous pouvez nous écrire à "
+        "contact@optiplein.fr.\n\n"
+        "À bientôt sur OptiPlein !\n\n"
+        "L’équipe OptiPlein\n"
+    )
+    message.add_alternative(
+        '<div style="font-family:Arial,sans-serif;color:#102536;'
+        'line-height:1.55;font-size:16px;">'
+        + html_logo_email(base_url)
+        + "<p>Bonjour,</p>"
+        "<p>Votre adresse e-mail a bien été validée et votre inscription comme "
+        "testeur Android OptiPlein est confirmée.</p>"
+        "<p>Merci de participer à cette aventure ! Vos retours nous aideront à "
+        "améliorer l’application : affichage des stations, prix des carburants, "
+        "utilisation de la carte et confort de navigation.</p>"
+        '<h2 style="font-size:18px;">Quelle est la prochaine étape ?</h2>'
+        "<p>À la fin de la période de recrutement, vous recevrez un nouvel e-mail "
+        "contenant le lien officiel Google Play et les instructions pour rejoindre "
+        "le test. Vous n’avez aucune autre démarche à effectuer pour le moment.</p>"
+        "<p>L’inscription comme testeur est distincte de la création d’un compte "
+        "dans l’application. Si vous créez un compte OptiPlein, celui-ci bénéficie "
+        "de la formule gratuite.</p>"
+        "<p>Pour toute question ou suggestion, vous pouvez nous écrire à "
+        '<a href="mailto:contact@optiplein.fr">contact@optiplein.fr</a>.</p>'
+        "<p>À bientôt sur OptiPlein !</p>"
+        "<p><strong>L’équipe OptiPlein</strong></p>"
+        "</div>",
+        subtype="html",
+    )
+
+    envoyer_email(message)
+
+
 def envoyer_email_validation_compte(email, lien_validation, base_url):
 
     message = EmailMessage()
@@ -3583,7 +3606,7 @@ def envoyer_email_validation_compte(email, lien_validation, base_url):
     message["To"] = email
     message.set_content(
         "Bienvenue sur OptiPlein.\n\n"
-        "Pour activer votre compte et débloquer la découverte Premium, "
+        "Pour activer votre compte gratuit, "
         "cliquez sur ce lien :\n"
         f"{lien_validation}\n\n"
         "Ce lien est valable 24 heures. Si vous n’êtes pas à l’origine "
@@ -3597,8 +3620,8 @@ def envoyer_email_validation_compte(email, lien_validation, base_url):
         "Validez votre compte OptiPlein"
         "</h1>"
         "<p>Bienvenue sur OptiPlein.</p>"
-        "<p>Pour activer votre compte et d&eacute;bloquer la "
-        "d&eacute;couverte Premium, cliquez sur le bouton ci-dessous.</p>"
+        "<p>Pour activer votre compte gratuit, "
+        "cliquez sur le bouton ci-dessous.</p>"
         '<p style="margin:24px 0;">'
         f'<a href="{lien_validation}" '
         'style="display:inline-block;background:#149f38;color:#ffffff;'
@@ -3607,50 +3630,6 @@ def envoyer_email_validation_compte(email, lien_validation, base_url):
         "</p>"
         "<p>Ce lien est valable 24 heures. Si vous n’&ecirc;tes pas &agrave; "
         "l’origine de cette demande, ignorez simplement cet e-mail.</p>"
-        "</div>",
-        subtype="html",
-    )
-
-    envoyer_email(message)
-
-
-def envoyer_email_bienvenue_premium(email, base_url):
-
-    message = EmailMessage()
-    message["Subject"] = "Votre accès Premium OptiPlein est activé"
-    message["To"] = email
-    message.set_content(
-        "Votre compte OptiPlein est validé.\n\n"
-        "Pendant la phase de test de cet été, vous avez accès gratuitement "
-        "aux fonctions Premium : préparation de trajet, calcul de la station "
-        "la plus rentable, historique des économies, plusieurs véhicules, "
-        "favoris illimités, tendances de prix et suggestions de "
-        "ravitaillement.\n\n"
-        "Vos retours vont aider à améliorer l’application avant son "
-        "lancement officiel. Merci de faire partie des premiers testeurs.\n\n"
-        f"Accéder à l’application : {base_url}/web\n"
-    )
-    message.add_alternative(
-        '<div style="font-family:Arial,sans-serif;color:#102536;'
-        'line-height:1.55;font-size:16px;">'
-        + html_logo_email(base_url)
-        + "<h1 style=\"font-size:22px;margin:0 0 12px 0;\">"
-        "Bienvenue dans la d&eacute;couverte Premium"
-        "</h1>"
-        "<p>Votre compte OptiPlein est valid&eacute; et votre acc&egrave;s Premium est "
-        "activ&eacute; gratuitement pendant la phase de test de cet &eacute;t&eacute;.</p>"
-        "<p>Vous pouvez maintenant profiter des fonctions avanc&eacute;es : "
-        "pr&eacute;paration de trajet, calcul de la station la plus rentable, "
-        "historique des &eacute;conomies, plusieurs v&eacute;hicules, favoris illimit&eacute;s, "
-        "tendances de prix et suggestions de ravitaillement.</p>"
-        "<p>Vos retours vont aider &agrave; am&eacute;liorer l’application avant son "
-        "lancement officiel. Merci de faire partie des premiers testeurs.</p>"
-        '<p style="margin:24px 0;">'
-        f'<a href="{base_url}/web" '
-        'style="display:inline-block;background:#149f38;color:#ffffff;'
-        'text-decoration:none;font-weight:700;padding:12px 18px;'
-        'border-radius:8px;">Ouvrir OptiPlein</a>'
-        "</p>"
         "</div>",
         subtype="html",
     )
@@ -5624,9 +5603,9 @@ def construire_page_ville_seo(ville):
                     ),
                     (
                         "C'est pour cela que l'application OptiPlein propose un calcul "
-                        "personnalisé après création de compte testeur : véhicules "
-                        "sauvegardés, favoris, historique et préparation de trajet "
-                        "pendant la phase gratuite."
+                        "personnalisé selon votre formule : un véhicule et trois "
+                        "favoris avec le compte gratuit ; plusieurs véhicules, "
+                        "historique et préparation de trajet avec Premium."
                     ),
                 ],
                 "links": [
@@ -5781,8 +5760,8 @@ PAGES_EDITORIALES = {
                 "text": "Les donn\u00e9es carburants sont mises \u00e0 jour r\u00e9guli\u00e8rement \u00e0 partir des sources publiques disponibles.",
             },
             {
-                "title": "Premium gratuit tout l'\u00e9t\u00e9",
-                "text": "Un compte suffit pendant la phase de test pour d\u00e9bloquer les fonctions avanc\u00e9es.",
+                "title": "Un compte gratuit pour commencer",
+                "text": "Enregistrez un véhicule et trois favoris. Les fonctions avancées sont réservées au Premium.",
             },
             {
                 "title": "Calcul utile",
@@ -5819,12 +5798,12 @@ PAGES_EDITORIALES = {
                 ],
             },
             {
-                "title": "Des fonctions gratuites pendant la phase de test",
+                "title": "Compte gratuit et abonnement Premium",
                 "paragraphs": [
                     (
-                        "Pendant la d\u00e9couverte de l'application, la cr\u00e9ation de "
-                        "compte permet d'acc\u00e9der gratuitement aux fonctions avanc\u00e9es "
-                        "pr\u00e9vues pour les testeurs."
+                        "Tout nouveau compte utilise la formule gratuite. "
+                        "L'abonnement Premium à 4,99 €/an donne accès aux "
+                        "fonctions avancées indiquées dans le comparatif des formules."
                     )
                 ],
                 "bullets": [
@@ -6601,7 +6580,7 @@ PAGES_EDITORIALES = {
                     (
                         "OptiPlein est un service \u00e9dit\u00e9 par J. Stoudji. Pour toute "
                         "question relative au site, \u00e0 l'application ou aux donn\u00e9es, "
-                        "vous pouvez \u00e9crire \u00e0 optiplein5@gmail.com."
+                        "vous pouvez \u00e9crire \u00e0 contact@optiplein.fr."
                     )
                 ],
             },
@@ -6685,7 +6664,7 @@ PAGES_EDITORIALES = {
                     (
                         "Vous pouvez demander l'acc\u00e8s, la rectification ou la "
                         "suppression de vos informations en \u00e9crivant \u00e0 "
-                        "optiplein5@gmail.com. Une page d\u00e9di\u00e9e \u00e0 la suppression "
+                        "contact@optiplein.fr. Une page d\u00e9di\u00e9e \u00e0 la suppression "
                         "de compte est \u00e9galement disponible."
                     )
                 ],
@@ -7124,9 +7103,9 @@ def renforcer_pages_pour_adsense():
         ],
         "conditions": [
             {
-                "title": "Accès au service et phase de test",
+                "title": "Accès au service et formules",
                 "paragraphs": [
-                    "OptiPlein peut proposer certaines fonctions gratuitement pendant une phase de test afin de recueillir des retours et d'améliorer l'application avant une diffusion plus large. Les fonctionnalités disponibles peuvent évoluer selon les corrections techniques, les sources de données et les contraintes de publication.",
+                    "La création d'un compte OptiPlein donne accès à la formule gratuite. Les fonctions Premium nécessitent un abonnement ou un bonus de parrainage actif. Les fonctionnalités disponibles peuvent évoluer selon les corrections techniques, les sources de données et les contraintes de publication.",
                     "La création d'un compte peut être nécessaire pour sauvegarder les véhicules, favoris, préférences, historique et réglages avancés. L'utilisateur doit fournir une adresse e-mail valide et conserver la confidentialité de ses identifiants.",
                 ],
             },
@@ -8371,6 +8350,23 @@ def valider_email_testeur(token: str, request: Request):
         testeur.pop("email_verification_expires_at", None)
         enregistrer_testeurs_landing(donnees)
 
+        # L'inscription reste validée même si le fournisseur e-mail échoue.
+        if not testeur.get("bienvenue_email_sent_at"):
+            try:
+                envoyer_email_bienvenue_testeur(
+                    testeur["email"],
+                    url_base_application(request),
+                )
+            except Exception:
+                testeur["bienvenue_email_error_at"] = date_iso_maintenant()
+                logger.exception(
+                    "Impossible d'envoyer l'e-mail de bienvenue testeur."
+                )
+            else:
+                testeur["bienvenue_email_sent_at"] = date_iso_maintenant()
+                testeur.pop("bienvenue_email_error_at", None)
+            enregistrer_testeurs_landing(donnees)
+
         return RedirectResponse(
             url="/landing?testeur_valide=1#devenir-testeur",
             status_code=303,
@@ -9028,6 +9024,9 @@ def creer_compte(
         ),
         plateforme,
     )
+    # Une inscription, y compris une nouvelle demande de validation, reste gratuite.
+    donnees_initiales["plan"] = "free"
+    donnees_initiales["premium"] = premium_compte_nettoye(donnees_initiales)
     donnees_initiales["plateforme_creation"] = (
         donnees_initiales.get("plateforme_creation") or plateforme
     )
@@ -9139,7 +9138,7 @@ def connecter_compte(identifiants: CompteIdentifiants, request: Request):
         "ok": True,
         "email": email,
         "token": creer_session(email),
-        "donnees": donnees_compte_premium_test(
+        "donnees": donnees_compte_pour_client(
             donnees,
             plateforme,
         ),
@@ -9180,17 +9179,6 @@ def valider_email_compte(token: str, request: Request):
         synchroniser_meta_securite(utilisateur)
         enregistrer_comptes_utilisateurs(comptes)
 
-        if premium_actif_donnees(utilisateur.get("data", {})):
-            try:
-                envoyer_email_bienvenue_premium(
-                    email,
-                    url_base_application(request),
-                )
-            except Exception:
-                logger.exception(
-                    "Impossible d’envoyer l’e-mail de bienvenue Premium."
-                )
-
         return RedirectResponse(
             url="/web?email_verifie=1",
             status_code=303,
@@ -9216,7 +9204,7 @@ def lire_donnees_compte(request: Request):
         "ok": True,
         "email": email,
         "token": creer_session(email),
-        "donnees": donnees_compte_premium_test(
+        "donnees": donnees_compte_pour_client(
             donnees,
             plateforme,
         ),
@@ -9262,7 +9250,7 @@ def sauvegarder_donnees_compte(
     return {
         "ok": True,
         "updated_at": utilisateur["updated_at"],
-        "donnees": donnees_compte_premium_test(
+        "donnees": donnees_compte_pour_client(
             utilisateur.get("data", {}),
             plateforme_depuis_requete(request),
         ),
@@ -9359,25 +9347,13 @@ def architecture_premium(request: Request):
 
     plateforme = plateforme_depuis_requete(request)
     donnees = {
-        "plan": (
-            "premium"
-            if premium_test_actif_pour_donnees({}, plateforme)
-            else "free"
-        ),
+        "plan": "free",
         "historique_economies": [],
         "plateforme_derniere_connexion": plateforme,
     }
 
     return {
-        "test_gratuit_ete": premium_test_actif_pour_donnees(
-            donnees,
-            plateforme,
-        ),
-        "prix": (
-            "gratuit tout l'été"
-            if premium_test_actif_pour_donnees(donnees, plateforme)
-            else "4,99 €/an"
-        ),
+        "prix": "4,99 €/an",
         "capacites": CAPACITES_PREMIUM,
         "limites": limites_premium(donnees, plateforme),
         "modules": {
@@ -9571,7 +9547,7 @@ def activer_premium_apple(
         "plan": "premium",
         "premium": donnees["premium"],
         "bonus_parrainage": bonus_parrainage,
-        "donnees": donnees_compte_premium_test(donnees, "ios"),
+        "donnees": donnees_compte_pour_client(donnees, "ios"),
     }
 
 

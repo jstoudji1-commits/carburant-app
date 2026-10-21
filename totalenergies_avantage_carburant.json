@@ -7,7 +7,7 @@
   "source_url": "https://services.totalenergies.fr/stations",
   "source_locator_url": "https://locator.totalenergies.com",
   "generated_at": "2026-08-25T03:48:57+00:00",
-  "methodology": "Filtre officiel du localisateur TotalEnergies, puis rapprochement avec stations.csv par code postal et distance géographique (500 m maximum).",
+  "methodology": "Filtre officiel du localisateur TotalEnergies, puis rapprochement avec stations.csv par identifiant vérifié pour les exceptions documentées, sinon par code postal et distance géographique (500 m maximum).",
   "counts": {
     "official_participants": 2076,
     "matched_government_stations": 1901,
@@ -1245,21 +1245,6 @@
       "distance_rapprochement_m": 11.2,
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
-    "13180001": {
-      "locator_id": "NF059602",
-      "nom": "REL.GIGNAC  LA NERTHE",
-      "marque": "TOTAL",
-      "adresse": "A55 - AIRE  GIGNAC SUD LA  NERTHE.",
-      "code_postal": "13180",
-      "ville": "GIGNAC LA NERTHE",
-      "latitude": 43.390842,
-      "longitude": 5.258521,
-      "mise_a_jour_source": "2026-08-24T18:05:36.000765+00:00",
-      "source_url": "https://locator.totalenergies.com/NF059602?business_type=RETAIL&type=FUELING",
-      "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 206.0,
-      "methode_rapprochement": "coordonnees_et_code_postal"
-    },
     "13190001": {
       "locator_id": "NF033799",
       "nom": "SARL S.E.G.G.A",
@@ -1695,6 +1680,22 @@
       "distance_rapprochement_m": 49.7,
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
+    "13700009": {
+      "locator_id": "NF059602",
+      "nom": "REL.GIGNAC  LA NERTHE",
+      "marque": "TOTAL",
+      "adresse": "A55 - AIRE  GIGNAC SUD LA  NERTHE.",
+      "code_postal": "13180",
+      "ville": "GIGNAC LA NERTHE",
+      "latitude": 43.390842,
+      "longitude": 5.258521,
+      "mise_a_jour_source": "2026-10-21T18:06:49.089611+00:00",
+      "source_url": "https://locator.totalenergies.com/NF059602?business_type=RETAIL&type=FUELING",
+      "code_offre": "OpeAvantageCarburant",
+      "distance_rapprochement_m": 1137.4,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
+    },
     "13700010": {
       "locator_id": "NF059546",
       "nom": "REL.DE BOLMON AEROPORT",
@@ -2025,7 +2026,7 @@
       "distance_rapprochement_m": 24.0,
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
-    "1430003": {
+    "1430005": {
       "locator_id": "NF078387",
       "nom": "REL.CEIGNES CERDON",
       "marque": "TOTAL",
@@ -2034,11 +2035,12 @@
       "ville": "CEIGNES",
       "latitude": 46.11458,
       "longitude": 5.490948,
-      "mise_a_jour_source": "2026-08-24T18:04:14.102192+00:00",
+      "mise_a_jour_source": "2026-10-21T18:13:17.654288+00:00",
       "source_url": "https://locator.totalenergies.com/NF078387?business_type=RETAIL&type=FUELING",
       "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 391.2,
-      "methode_rapprochement": "coordonnees_et_code_postal"
+      "distance_rapprochement_m": 1212.0,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
     },
     "14310002": {
       "locator_id": "NF058224",
@@ -2055,7 +2057,7 @@
       "distance_rapprochement_m": 6.1,
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
-    "14320001": {
+    "14320004": {
       "locator_id": "NF043503",
       "nom": "STATION OZENNE",
       "marque": "TOTAL",
@@ -2064,11 +2066,12 @@
       "ville": "SAINT-MARTIN-DE-MAY",
       "latitude": 49.115158,
       "longitude": -0.374232,
-      "mise_a_jour_source": "2026-08-24T18:08:23.947831+00:00",
+      "mise_a_jour_source": "2026-10-21T18:11:23.871807+00:00",
       "source_url": "https://locator.totalenergies.com/NF043503?business_type=RETAIL&type=FUELING",
       "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 27.0,
-      "methode_rapprochement": "coordonnees_et_code_postal"
+      "distance_rapprochement_m": 0.2,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
     },
     "14350002": {
       "locator_id": "NF004627",
@@ -3285,20 +3288,21 @@
       "distance_rapprochement_m": 25.0,
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
-    "21250002": {
+    "21250010": {
       "locator_id": "NF040821",
-      "nom": "RELAIS DE LA SAONE",
+      "nom": "LE RELAIS DE LA SAONE",
       "marque": "TOTAL",
       "adresse": "58 FAUBOURG SAINT GEORGES",
       "code_postal": "21250",
       "ville": "SEURRE",
       "latitude": 46.990416,
       "longitude": 5.148198,
-      "mise_a_jour_source": "2026-08-24T18:03:42.679157+00:00",
+      "mise_a_jour_source": "2026-10-21T18:10:17.836118+00:00",
       "source_url": "https://locator.totalenergies.com/NF040821?business_type=RETAIL&type=FUELING",
       "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 48.6,
-      "methode_rapprochement": "coordonnees_et_code_postal"
+      "distance_rapprochement_m": 3.5,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
     },
     "21340002": {
       "locator_id": "NF040817",
@@ -11220,7 +11224,7 @@
       "distance_rapprochement_m": 54.2,
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
-    "46500006": {
+    "46500001": {
       "locator_id": "NF038800",
       "nom": "MME POUJADE COLOMBE",
       "marque": "TOTAL",
@@ -11229,11 +11233,12 @@
       "ville": "GRAMAT",
       "latitude": 44.783093,
       "longitude": 1.732074,
-      "mise_a_jour_source": "2026-08-24T18:11:30.429448+00:00",
+      "mise_a_jour_source": "2026-10-21T18:03:51.006986+00:00",
       "source_url": "https://locator.totalenergies.com/NF038800?business_type=RETAIL&type=FUELING",
       "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 463.2,
-      "methode_rapprochement": "coordonnees_et_code_postal"
+      "distance_rapprochement_m": 834.1,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
     },
     "46600003": {
       "locator_id": "NF078602",
@@ -11910,7 +11915,7 @@
       "distance_rapprochement_m": 36.9,
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
-    "50200001": {
+    "50200008": {
       "locator_id": "NF058065",
       "nom": "RELAIS DE MONTBRAY",
       "marque": "ACCESS",
@@ -11919,11 +11924,12 @@
       "ville": "COUTANCES",
       "latitude": 49.03827,
       "longitude": -1.44603,
-      "mise_a_jour_source": "2026-08-24T18:09:56.393594+00:00",
+      "mise_a_jour_source": "2026-10-21T18:03:23.891264+00:00",
       "source_url": "https://locator.totalenergies.com/NF058065?business_type=RETAIL&type=FUELING",
       "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 18.0,
-      "methode_rapprochement": "coordonnees_et_code_postal"
+      "distance_rapprochement_m": 30.1,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
     },
     "50200012": {
       "locator_id": "NF059810",
@@ -17565,7 +17571,7 @@
       "distance_rapprochement_m": 41.3,
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
-    "67110003": {
+    "67110002": {
       "locator_id": "NF040877",
       "nom": "SAS MECA BG",
       "marque": "TOTAL",
@@ -17574,11 +17580,12 @@
       "ville": "REICHSHOFFEN",
       "latitude": 48.934609,
       "longitude": 7.660607,
-      "mise_a_jour_source": "2026-08-24T18:10:09.370792+00:00",
+      "mise_a_jour_source": "2026-10-21T18:10:23.404465+00:00",
       "source_url": "https://locator.totalenergies.com/NF040877?business_type=RETAIL&type=FUELING",
       "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 135.5,
-      "methode_rapprochement": "coordonnees_et_code_postal"
+      "distance_rapprochement_m": 52.1,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
     },
     "67112002": {
       "locator_id": "NF003611",
@@ -19080,21 +19087,6 @@
       "distance_rapprochement_m": 14.7,
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
-    "69400010": {
-      "locator_id": "NF082120",
-      "nom": "SAS VILLEFRANCHE AUTOMOBILES",
-      "marque": "TOTAL",
-      "adresse": "19 BVD EDOUARD HERRIOT",
-      "code_postal": "69400",
-      "ville": "LIMAS",
-      "latitude": 45.978783,
-      "longitude": 4.732326,
-      "mise_a_jour_source": "2026-08-24T18:10:33.919296+00:00",
-      "source_url": "https://locator.totalenergies.com/NF082120?business_type=RETAIL&type=FUELING",
-      "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 357.0,
-      "methode_rapprochement": "coordonnees_et_code_postal"
-    },
     "69400014": {
       "locator_id": "NF058377",
       "nom": "RELAIS DE LA CALADE",
@@ -19229,6 +19221,22 @@
       "code_offre": "OpeAvantageCarburant",
       "distance_rapprochement_m": 67.2,
       "methode_rapprochement": "coordonnees_et_code_postal"
+    },
+    "69651001": {
+      "locator_id": "NF082120",
+      "nom": "SAS VILLEFRANCHE AUTOMOBILES",
+      "marque": "TOTAL",
+      "adresse": "19 BVD EDOUARD HERRIOT",
+      "code_postal": "69400",
+      "ville": "LIMAS",
+      "latitude": 45.978783,
+      "longitude": 4.732326,
+      "mise_a_jour_source": "2026-10-21T18:12:41.167284+00:00",
+      "source_url": "https://locator.totalenergies.com/NF082120?business_type=RETAIL&type=FUELING",
+      "code_offre": "OpeAvantageCarburant",
+      "distance_rapprochement_m": 57.4,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
     },
     "69720004": {
       "locator_id": "NF027096",
@@ -19425,7 +19433,7 @@
       "distance_rapprochement_m": 45.7,
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
-    "70300011": {
+    "70300009": {
       "locator_id": "NF041389",
       "nom": "SARL BOCHER GUILLOT",
       "marque": "TOTAL",
@@ -19434,11 +19442,12 @@
       "ville": "SAINT SAUVEUR",
       "latitude": 47.804898,
       "longitude": 6.383395,
-      "mise_a_jour_source": "2026-08-24T18:12:54.835916+00:00",
+      "mise_a_jour_source": "2026-10-21T18:02:54.425348+00:00",
       "source_url": "https://locator.totalenergies.com/NF041389?business_type=RETAIL&type=FUELING",
       "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 17.9,
-      "methode_rapprochement": "coordonnees_et_code_postal"
+      "distance_rapprochement_m": 31.6,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
     },
     "70400001": {
       "locator_id": "NF088558",
@@ -22096,21 +22105,6 @@
       "methode_rapprochement": "coordonnees_et_code_postal"
     },
     "77600003": {
-      "locator_id": "NF062704",
-      "nom": "REL.FERRIERES",
-      "marque": "ACCESS",
-      "adresse": "A4 -  AIRE DE FERRIERES",
-      "code_postal": "77600",
-      "ville": "BUSSY ST GEORGES",
-      "latitude": 48.828458,
-      "longitude": 2.740971,
-      "mise_a_jour_source": "2026-08-24T18:09:04.752034+00:00",
-      "source_url": "https://locator.totalenergies.com/NF062704?business_type=RETAIL&type=FUELING",
-      "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 45.0,
-      "methode_rapprochement": "coordonnees_et_code_postal"
-    },
-    "77600004": {
       "locator_id": "NF059775",
       "nom": "REL.BUSSY ST GEORGES",
       "marque": "ACCESS",
@@ -22119,11 +22113,28 @@
       "ville": "BUSSY ST GEORGES",
       "latitude": 48.830553,
       "longitude": 2.745807,
-      "mise_a_jour_source": "2026-08-24T18:11:55.582396+00:00",
+      "mise_a_jour_source": "2026-10-21T18:07:09.135982+00:00",
       "source_url": "https://locator.totalenergies.com/NF059775?business_type=RETAIL&type=FUELING",
       "code_offre": "OpeAvantageCarburant",
-      "distance_rapprochement_m": 327.8,
-      "methode_rapprochement": "coordonnees_et_code_postal"
+      "distance_rapprochement_m": 379.1,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
+    },
+    "77600004": {
+      "locator_id": "NF062704",
+      "nom": "REL.FERRIERES",
+      "marque": "ACCESS",
+      "adresse": "A4 -  AIRE DE FERRIERES",
+      "code_postal": "77600",
+      "ville": "BUSSY ST GEORGES",
+      "latitude": 48.828458,
+      "longitude": 2.740971,
+      "mise_a_jour_source": "2026-10-21T18:07:57.676604+00:00",
+      "source_url": "https://locator.totalenergies.com/NF062704?business_type=RETAIL&type=FUELING",
+      "code_offre": "OpeAvantageCarburant",
+      "distance_rapprochement_m": 96.5,
+      "methode_rapprochement": "identifiant_verifie",
+      "correspondance_verifiee_le": "2026-10-21"
     },
     "77740002": {
       "locator_id": "NF059584",

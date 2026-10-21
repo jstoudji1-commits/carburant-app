@@ -33,7 +33,7 @@ services:
       - key: SMTP_USER
         value: optiplein5@gmail.com
       - key: SMTP_FROM
-        value: optiplein5@gmail.com
+        value: contact@optiplein.fr
       - key: SMTP_PASSWORD
         sync: false
       - key: BREVO_API_KEY
@@ -47,7 +47,7 @@ services:
       - key: GRAPHHOPPER_API_KEY
         sync: false
       - key: REPORT_EMAIL
-        value: optiplein5@gmail.com
+        value: contact@optiplein.fr
       - key: ADSENSE_CLIENT
         value: ca-pub-4904497922619715
       - key: ADSENSE_SLOT_MAP
