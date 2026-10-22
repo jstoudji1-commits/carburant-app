@@ -702,6 +702,7 @@ class RequeteItineraire(BaseModel):
 
     points: list[PointItineraire] = Field(min_length=2, max_length=12)
     cap_depart: Optional[float] = None
+    retour_intersection: bool = False
     moteur: Literal[
         "auto",
         "graphhopper",
@@ -8573,7 +8574,7 @@ def calculer_itineraire_osrm(points, cap_depart=None):
     }
 
     if cap_depart is not None and math.isfinite(cap_depart):
-        parametres["bearings"] = f"{round(cap_depart)},45;"
+        parametres["bearings"] = ";".join([f"{round(cap_depart) % 360},45"] + [""] * (len(points) - 1))
 
     reponse = http_requests.get(
         url,
@@ -8637,8 +8638,53 @@ def fournisseurs_itineraire(moteur):
     return [fournisseurs[moteur]] if fournisseurs[moteur]["actif"] else []
 
 
+def valider_retour_intersection(donnees, cap_depart):
+    """Refuser un depart inverse et les demi-tours sans carrefour documente."""
+    routes = donnees.get("routes") or []
+    if not routes:
+        raise ValueError("Aucun retour trouve")
+    etapes = [etape for leg in routes[0].get("legs", [])
+              for etape in leg.get("steps", [])]
+    if not etapes:
+        raise ValueError("Manoeuvres absentes")
+    cap_route = etapes[0].get("maneuver", {}).get("bearing_after")
+    if (not isinstance(cap_route, (float, int))
+            or not math.isfinite(cap_route)
+            or abs((cap_route - cap_depart + 180) % 360 - 180) > 45):
+        raise ValueError("Le retour ne respecte pas le sens de circulation")
+    for etape in etapes:
+        manoeuvre = etape.get("maneuver", {})
+        if manoeuvre.get("modifier") != "uturn":
+            continue
+        intersections = etape.get("intersections") or []
+        carrefour = intersections[0] if intersections else {}
+        entrees = carrefour.get("entry") or []
+        sortie = carrefour.get("out")
+        if (carrefour.get("location") != manoeuvre.get("location")
+                or len(carrefour.get("bearings") or []) < 3
+                or not isinstance(sortie, int)
+                or not 0 <= sortie < len(entrees)
+                or entrees[sortie] is not True):
+            raise ValueError("Demi-tour sans intersection autorisee identifiee")
+    return donnees
+
+
 @app.post("/api/itineraire")
 async def calculer_itineraire(requete: RequeteItineraire):
+
+    if requete.retour_intersection:
+        if requete.cap_depart is None or not math.isfinite(requete.cap_depart):
+            raise HTTPException(status_code=422, detail="Cap de circulation requis")
+        try:
+            donnees = await asyncio.to_thread(
+                calculer_itineraire_openstreetmap, requete.points, requete.cap_depart
+            )
+            return valider_retour_intersection(donnees, requete.cap_depart)
+        except Exception as erreur:
+            raise HTTPException(
+                status_code=502,
+                detail="Recherche d'un retour par une intersection adaptee",
+            ) from erreur
 
     moteur = normaliser_moteur_itineraire(requete.moteur)
     fournisseurs = fournisseurs_itineraire(moteur)

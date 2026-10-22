@@ -2348,19 +2348,20 @@ body{
 .gps-position-arrow::after{
     content:"";
     position:absolute;
-    clip-path:polygon(50% 0, 96% 100%, 50% 80%, 4% 100%);
-    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 118'%3E%3Cpath d='M50 0C52 0 54 2 55 5L96 111C97 114 94 117 91 115L53 96C51 95 49 95 47 96L9 115C6 117 3 114 4 111L45 5C46 2 48 0 50 0Z' fill='black'/%3E%3C/svg%3E") center/100% 100% no-repeat;
-    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 118'%3E%3Cpath d='M50 0C52 0 54 2 55 5L96 111C97 114 94 117 91 115L53 96C51 95 49 95 47 96L9 115C6 117 3 114 4 111L45 5C46 2 48 0 50 0Z' fill='black'/%3E%3C/svg%3E") center/100% 100% no-repeat;
 }
 
 .gps-position-arrow::before{
     inset:0;
     background:white;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http%3A//www.w3.org/2000/svg' viewBox='0 0 100 118'%3E%3Cpath d='M50 0C52.5 0 54.5 1.8 56 5.5L98 110C100 115.5 96 120 91 117L50 94L9 117C4 120 0 115.5 2 110L44 5.5C45.5 1.8 47.5 0 50 0Z' fill='black' fill-rule='evenodd'/%3E%3C/svg%3E") center/100% 100% no-repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http%3A//www.w3.org/2000/svg' viewBox='0 0 100 118'%3E%3Cpath d='M50 0C52.5 0 54.5 1.8 56 5.5L98 110C100 115.5 96 120 91 117L50 94L9 117C4 120 0 115.5 2 110L44 5.5C45.5 1.8 47.5 0 50 0Z' fill='black' fill-rule='evenodd'/%3E%3C/svg%3E") center/100% 100% no-repeat;
 }
 
 .gps-position-arrow::after{
     inset:4px 5px 5px;
     background:linear-gradient(180deg, #39a7ff 0%, #0878e8 68%, #005fc4 100%);
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http%3A//www.w3.org/2000/svg' viewBox='0 0 100 118'%3E%3Cpath d='M50 0C52.5 0 54.5 1.8 56 5.5L98 110C100 115.5 96 120 91 117L50 94L9 117C4 120 0 115.5 2 110L44 5.5C45.5 1.8 47.5 0 50 0ZM50 22L50 80L81 98Z' fill='black' fill-rule='evenodd'/%3E%3C/svg%3E") center/100% 100% no-repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http%3A//www.w3.org/2000/svg' viewBox='0 0 100 118'%3E%3Cpath d='M50 0C52.5 0 54.5 1.8 56 5.5L98 110C100 115.5 96 120 91 117L50 94L9 117C4 120 0 115.5 2 110L44 5.5C45.5 1.8 47.5 0 50 0ZM50 22L50 80L81 98Z' fill='black' fill-rule='evenodd'/%3E%3C/svg%3E") center/100% 100% no-repeat;
 }
 
 .gps-position-arrow span{
@@ -3045,15 +3046,15 @@ body{
 .navigation-roundabout-exit{
     position:relative;
     z-index:1;
-    width:22px;
-    height:22px;
+    width:28px;
+    height:28px;
     display:flex;
     align-items:center;
     justify-content:center;
     border-radius:50%;
     background:white;
     color:var(--green-dark);
-    font-size:14px;
+    font-size:22px;
     font-weight:900;
     line-height:1;
 }
@@ -12221,13 +12222,23 @@ function actualiserOrientationFlecheUtilisateur(capCible) {
         return;
     }
 
+    // La camera peut encore etre en rotation vers son cap cible.
+    // Seul son cap reel sert a orienter la fleche a l'ecran.
+    var capCarteReel = typeof map.getBearing === "function"
+        ? map.getBearing()
+        : capCarte;
+    if (!Number.isFinite(capCarteReel)) {
+        capCarteReel = capCarte;
+    }
     var ecartRotation =
-        ((capFlecheUtilisateur - capCarte + 540) % 360) - 180;
-    var rotation = suiviCarteActif
-        && orientationAutomatiqueActive
-        && !navigationActive
-            ? 0
-            : ecartRotation;
+        ((capFlecheUtilisateur - capCarteReel + 540) % 360) - 180;
+    var rotationPrecedente = fleche.rotationGpsAffichee;
+    // Conserver le chemin le plus court, y compris au passage de +/-180 degres.
+    var rotation = Number.isFinite(rotationPrecedente)
+        ? rotationPrecedente
+            + ((ecartRotation - rotationPrecedente) % 360 + 540) % 360 - 180
+        : ecartRotation;
+    fleche.rotationGpsAffichee = rotation;
     fleche.style.transform = "rotate(" + rotation + "deg)";
 
 }
@@ -18385,7 +18396,7 @@ async function calculerRouteAvecCoordonnees(points) {
 
 }
 
-async function demanderRouteItineraire(points, capDepart, moteur) {
+async function demanderRouteItineraire(points, capDepart, moteur, retourIntersection) {
 
     var reponse = await fetch(
         "/api/itineraire",
@@ -18397,6 +18408,7 @@ async function demanderRouteItineraire(points, capDepart, moteur) {
             body: JSON.stringify({
                 points: points,
                 cap_depart: Number.isFinite(capDepart) ? capDepart : null,
+                retour_intersection: Boolean(retourIntersection),
                 moteur: moteur || "auto"
             })
         }
@@ -19090,6 +19102,47 @@ function texteManeuvre(etape) {
 
 }
 
+function calculerTrajetRestant(route, progressionMetres) {
+
+    var distanceTotale = Math.max(0, Number(route.distance) || 0);
+    var dureeTotale = Math.max(0, Number(route.duration) || 0);
+    var progression = Math.max(0, Math.min(distanceTotale, progressionMetres));
+    var distanceRestante = Math.max(0, distanceTotale - progression);
+    var etapes = (route.legs || []).reduce(function(resultat, leg) {
+        return resultat.concat(leg.steps || []);
+    }, []);
+    var etapesValides = etapes.length > 0 && etapes.every(function(etape) {
+        return Number.isFinite(etape.distance) && etape.distance >= 0
+            && Number.isFinite(etape.duration) && etape.duration >= 0;
+    });
+    var distanceEtapes = etapes.reduce(function(total, etape) {
+        return total + (Number(etape.distance) || 0);
+    }, 0);
+    var dureeEtapes = etapes.reduce(function(total, etape) {
+        return total + (Number(etape.duration) || 0);
+    }, 0);
+    var dureeRestante = distanceTotale > 0
+        ? dureeTotale * distanceRestante / distanceTotale
+        : 0;
+
+    if (etapesValides && distanceEtapes > 0 && dureeEtapes > 0 && distanceTotale > 0) {
+        // Consommer les troncons dans l'ordre, avec leur propre temps de trajet.
+        var distanceParcourue = progression / distanceTotale * distanceEtapes;
+        var tempsRestant = 0;
+        etapes.forEach(function(etape) {
+            if (distanceParcourue >= etape.distance) {
+                distanceParcourue -= etape.distance;
+            } else {
+                tempsRestant += etape.duration * (1 - distanceParcourue / etape.distance);
+                distanceParcourue = 0;
+            }
+        });
+        dureeRestante = tempsRestant / dureeEtapes * dureeTotale;
+    }
+    return {distance: distanceRestante, duration: Math.max(0, dureeRestante)};
+
+}
+
 function actualiserGuidageNavigation() {
 
     if (relanceItineraireEnCours) {
@@ -19168,6 +19221,16 @@ function actualiserGuidageNavigation() {
         0,
         distanceTotaleMetres - progressionMetres
     );
+
+    if (routeNavigation && progression
+        && Number.isFinite(progression.distanceRouteMetres)
+        && distanceRouteActuelle <= Math.max(75, precisionUtilisateur * 1.5)) {
+        var trajetRestant = calculerTrajetRestant(routeNavigation, progressionMetres);
+        afficherInfoItineraire(
+            (trajetRestant.distance / 1000).toFixed(1) + " km - "
+            + formaterDuree(trajetRestant.duration / 60)
+        );
+    }
 
     var instruction = texteManeuvre(etape);
     var prefixeDistanceInstruction = distanceManeuvre > 20
@@ -19275,13 +19338,18 @@ function verifierEcartItineraire() {
         return;
     }
 
+    var capRetourIntersection = capStableRecalculItineraire;
     reinitialiserDetectionEcart();
     derniereRelanceItineraire = Date.now();
     relanceItineraireEnCours = true;
     tracerItineraire(
         destinationNavigation.latitude,
         destinationNavigation.longitude,
-        true
+        true,
+        null,
+        null,
+        true,
+        capRetourIntersection
     ).finally(
         function() {
             relanceItineraireEnCours = false;
@@ -19396,7 +19464,9 @@ async function tracerItineraire(
     longitudeStation,
     maintenirNavigation,
     stationCible,
-    economieCible
+    economieCible,
+    retourIntersection,
+    capRetourIntersection
 ) {
 
     maintenirNavigation = Boolean(maintenirNavigation);
@@ -19453,6 +19523,9 @@ async function tracerItineraire(
     }
 
     var capDepartItineraire = capNavigationFiable(8000);
+    if (retourIntersection && Number.isFinite(capRetourIntersection)) {
+        capDepartItineraire = capRetourIntersection;
+    }
     try {
 
         var pointsItineraire = [
@@ -19468,7 +19541,8 @@ async function tracerItineraire(
         var data = await demanderRouteItineraire(
             pointsItineraire,
             capDepartItineraire,
-            "auto"
+            "auto",
+            retourIntersection
         );
         var route = normaliserRouteItineraire(data);
 
@@ -19476,7 +19550,8 @@ async function tracerItineraire(
             data = await demanderRouteItineraire(
                 pointsItineraire,
                 capDepartItineraire,
-                "openstreetmap"
+                "openstreetmap",
+                retourIntersection
             );
             route = normaliserRouteItineraire(data);
         }
@@ -19549,6 +19624,18 @@ async function tracerItineraire(
         map.closePopup();
 
     } catch (erreur) {
+
+        if (retourIntersection) {
+            // Ne pas reutiliser les anciennes consignes apres une sortie de route.
+            etapesNavigation = [];
+            distanceProchaineInstructionMetres = Number.POSITIVE_INFINITY;
+            definirIconeGuidage({ maneuver: { modifier: "straight" } });
+            document.getElementById("navigation-instruction").textContent =
+                "Recherche d'un retour par une intersection adaptee...";
+            document.getElementById("navigation-distance").textContent = "";
+            afficherInfoItineraire("Nouveau calcul en attente.");
+            return;
+        }
 
         if (boutonItineraire && !maintenirNavigation) {
             boutonItineraire.disabled = false;
