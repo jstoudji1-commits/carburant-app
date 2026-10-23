@@ -4136,9 +4136,6 @@ def calculer_confiance_prix_station(
             "utilisateur ouvert sur cette station."
         )
 
-    if station.get("correction_admin") and score >= 3:
-        detail += " Infos station corrigées par OptiPlein."
-
     return {
         "score": score,
         "label": label,
