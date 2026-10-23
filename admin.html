@@ -315,15 +315,20 @@
                     autocomplete="current-password"
                     placeholder="Mot de passe admin"
                 >
-                <button type="button" onclick="connexionAdmin()">
+                <button id="admin-login-button" type="button" onclick="connexionAdmin()">
                     Se connecter
                 </button>
             </div>
-            <p class="status" id="login-status"></p>
+            <form id="admin-code-zone" onsubmit="validerCodeAdmin(event)" hidden>
+                <label>Code reçu par e-mail<input id="admin-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
+                <label><input type="checkbox" id="admin-remember" checked> Reconnaître cette adresse IP pendant 30 jours</label>
+                <button type="submit">Valider le code</button>
+            </form>
+            <p class="status" id="login-status" role="status"></p>
         </section>
 
         <section class="dashboard" id="dashboard" hidden>
-            <h1>Tableau de bord</h1>
+            <h1>Tableau de bord</h1><button type="button" class="ghost" onclick="oublierReseauxAdmin()">Oublier les IP reconnues et fermer les sessions</button>
             <p class="muted">
                 Gestion simple des comptes utilisateurs et des inscriptions
                 testeurs OptiPlein.
@@ -404,7 +409,9 @@
                         Actualiser
                     </button>
                 </div>
-                <div class="table-wrap" id="comptes-wrap"></div>
+                <label style="display:block;padding:12px 18px">Rechercher un compte
+<input type="search" placeholder="Adresse e-mail" oninput="filtrerComptesAdmin(this.value)"></label>
+<div class="table-wrap" id="comptes-wrap"></div>
             </section>
 
             <section class="panel">
@@ -486,7 +493,8 @@
 
     <script>
         var cleAdmin = "optiplein-admin-password";
-        var motDePasseAdmin = sessionStorage.getItem(cleAdmin) || "";
+        sessionStorage.removeItem(cleAdmin);
+        var challengeAdmin = "";
         var loginCard = document.getElementById("login-card");
         var dashboard = document.getElementById("dashboard");
         var loginStatus = document.getElementById("login-status");
@@ -518,7 +526,8 @@
         async function requeteAdmin(url, options) {
             options = options || {};
             options.headers = options.headers || {};
-            options.headers["X-Admin-Password"] = motDePasseAdmin;
+            options.headers["X-Admin-Request"] = "1";
+            options.credentials = "same-origin";
 
             if (options.body) {
                 options.headers["Content-Type"] = "application/json";
@@ -533,7 +542,9 @@
                 } catch (exception) {
                     message = response.statusText || message;
                 }
-                throw new Error(message);
+                var echec = new Error(message);
+                echec.retryAfter = Number(response.headers.get("Retry-After")) || 0;
+                throw echec;
             }
             return response.json();
         }
@@ -607,16 +618,13 @@
                 + '<tbody>'
                 + comptes.map(function(compte) {
                     var premium = compte.plan === "premium";
-                    var action = premium
-                        ? '<button class="danger" type="button" onclick="changerPlan('
-                            + "'" + echapperHtml(compte.email) + "', 'free'"
-                            + ')">Repasser gratuit</button>'
-                        : '<button type="button" onclick="changerPlan('
-                            + "'" + echapperHtml(compte.email) + "', 'premium'"
-                            + ')">Passer Premium</button>';
+                    var action = '<button type="button" data-compte-email="'
+                        + echapperHtml(compte.email) + '" data-plan="'
+                        + (premium ? 'free' : 'premium') + '">'
+                        + (premium ? 'Repasser gratuit' : 'Passer Premium') + '</button>';
 
                     return '<tr>'
-                        + '<td><strong>' + echapperHtml(compte.email) + '</strong></td>'
+                        + '<td><button type="button" data-compte-email="' + echapperHtml(compte.email) + '">' + echapperHtml(compte.email) + '</button></td>'
                         + '<td><span class="badge '
                         + (premium ? "premium" : "")
                         + '">'
@@ -934,42 +942,84 @@
             }
         }
 
-        async function connexionAdmin() {
-            motDePasseAdmin = passwordInput.value.trim();
-            sessionStorage.setItem(cleAdmin, motDePasseAdmin);
-            loginStatus.textContent = "Connexion...";
+        var finBlocageAdmin = 0;
+        var minuteurBlocageAdmin = null;
+        function afficherBlocageAdmin(secondes) {
+            finBlocageAdmin = Date.now() + secondes * 1000;
+            if (minuteurBlocageAdmin) clearInterval(minuteurBlocageAdmin);
+            function actualiser() {
+                var reste = Math.max(0, Math.ceil((finBlocageAdmin - Date.now()) / 1000));
+                document.getElementById("admin-login-button").disabled = reste > 0;
+                loginStatus.textContent = reste > 0
+                    ? "Connexion bloquée. Nouvelle tentative dans " + Math.floor(reste / 60)
+                        + " min " + String(reste % 60).padStart(2, "0") + " s."
+                    : "Vous pouvez réessayer de vous connecter.";
+                if (!reste) { clearInterval(minuteurBlocageAdmin); minuteurBlocageAdmin = null; }
+            }
+            actualiser();
+            if (finBlocageAdmin > Date.now()) minuteurBlocageAdmin = setInterval(actualiser, 1000);
+        }
 
+        async function connexionAdmin() {
+            if (Date.now() < finBlocageAdmin) return;
+            loginStatus.textContent = "Connexion…";
+            document.getElementById("admin-code-zone").hidden = true;
             try {
-                await chargerAdmin();
-                loginStatus.textContent = "";
+                var resultat = await requeteAdmin("/api/admin/auth/connexion", {
+                    method: "POST", body: JSON.stringify({mot_de_passe: passwordInput.value})
+                });
+                passwordInput.value = "";
+                if (resultat.requires_code) {
+                    challengeAdmin = resultat.challenge;
+                    document.getElementById("admin-code-zone").hidden = false;
+                    document.getElementById("admin-code").value = "";
+                    document.getElementById("admin-code").focus();
+                    loginStatus.textContent = "Code envoyé par e-mail. Valable 10 minutes."
+                        + (resultat.ip_verified ? "" : " Adresse réseau non vérifiée : un code sera demandé à chaque connexion.");
+                } else {
+                    await chargerAdmin();loginStatus.textContent = "";
+                }
             } catch (erreur) {
-                sessionStorage.removeItem(cleAdmin);
-                motDePasseAdmin = "";
-                loginStatus.textContent = "Mot de passe incorrect.";
+                if (erreur.retryAfter) afficherBlocageAdmin(erreur.retryAfter);
+                else loginStatus.textContent = erreur.message;
             }
         }
 
-        async function changerPlan(email, plan) {
-            await requeteAdmin(
-                "/api/admin/plan",
-                {
-                    method: "POST",
-                    body: JSON.stringify({
-                        email: email,
-                        plan: plan
-                    })
-                }
-            );
-            await chargerAdmin();
+        async function validerCodeAdmin(event) {
+            event.preventDefault();
+            try {
+                await requeteAdmin("/api/admin/auth/code", {method:"POST",body:JSON.stringify({
+                    challenge:challengeAdmin,code:document.getElementById("admin-code").value,
+                    memoriser:document.getElementById("admin-remember").checked
+                })});
+                challengeAdmin="";document.getElementById("admin-code-zone").hidden=true;
+                document.getElementById("admin-code").value="";
+                await chargerAdmin();loginStatus.textContent="";
+            } catch(error) {loginStatus.textContent=error.message;}
         }
 
-        function deconnexionAdmin() {
+        async function oublierReseauxAdmin() {
+            if (!confirm("Oublier toutes les adresses reconnues et fermer toutes les sessions administrateur ?")) return;
+            try { await requeteAdmin("/api/admin/auth/oublier",{method:"POST"}); await deconnexionAdmin(); }
+            catch(error) { alert(error.message); }
+        }
+
+        async function changerPlan(email, plan) {
+            await ouvrirFicheUtilisateur(email);
+            if (ficheAdminCourante && ficheAdminCourante.email === email) {
+                champFiche("plan").value = plan;
+                champFiche("motif").focus();
+            }
+        }
+
+        async function deconnexionAdmin() {
+            try { await requeteAdmin("/api/admin/auth/deconnexion", {method:"POST"}); }
+            catch(error) { loginStatus.textContent=error.message; }
             sessionStorage.removeItem(cleAdmin);
-            motDePasseAdmin = "";
-            dashboard.hidden = true;
-            loginCard.hidden = false;
-            passwordInput.value = "";
-            loginStatus.textContent = "";
+            challengeAdmin="";
+            dashboard.hidden=true;loginCard.hidden=false;passwordInput.value="";
+            document.getElementById("admin-code-zone").hidden=true;
+            var fiche=document.getElementById("fiche-dialog");if(fiche)fiche.close();
         }
 
         passwordInput.addEventListener(
@@ -981,11 +1031,29 @@
             }
         );
 
-        if (motDePasseAdmin) {
-            chargerAdmin().catch(function() {
-                deconnexionAdmin();
-            });
-        }
+        chargerAdmin().catch(function() {
+            dashboard.hidden=true;loginCard.hidden=false;
+        });
     </script>
+<dialog id="fiche-dialog" style="width:min(1000px,94vw);max-height:90vh;border:0;border-radius:16px;padding:24px">
+<div class="panel-head"><h2 id="fiche-titre">Fiche utilisateur</h2><button type="button" onclick="document.getElementById('fiche-dialog').close()">Fermer</button></div>
+<p id="fiche-status" role="status"></p>
+<form id="fiche-form" onsubmit="enregistrerFicheUtilisateur(event)" hidden>
+<p id="fiche-resume"></p>
+<div class="station-tools">
+<label>Nom<input id="fiche-nom" maxlength="80"></label>
+<label>Ville<input id="fiche-ville" maxlength="90"></label>
+<label>Téléphone<input id="fiche-telephone" maxlength="30"></label>
+<label>Formule<select id="fiche-plan"><option value="free">Gratuit</option><option value="premium">Premium</option></select></label>
+<label><input type="checkbox" id="fiche-verifie"> E-mail validé</label>
+<label>Fin du bonus Premium<input id="fiche-bonus" placeholder="2026-12-31T23:59:59+01:00" maxlength="80"></label>
+</div>
+<p class="muted">Date au format ISO avec fuseau horaire. Effacer la date retire le bonus ; une formule Premium reste active indépendamment. Les montants correspondent aux données synchronisées, pas à une comptabilité vérifiée.</p>
+<label>Note interne<textarea id="fiche-note" maxlength="5000" rows="3" style="display:block;width:100%"></textarea></label>
+<label>Motif de la modification<input id="fiche-motif" required minlength="3" maxlength="500" style="width:100%"></label>
+<div class="actions"><button id="fiche-enregistrer" type="submit">Enregistrer les modifications</button><button type="button" onclick="ouvrirFicheUtilisateur(ficheAdminCourante.email)">Recharger la fiche</button></div>
+<div id="fiche-details"></div>
+</form></dialog>
+<script src="/static/admin_users.js"></script>
 </body>
 </html>

@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 import asyncio
+from admin_auth import AdminAuth, AuthError, client_identity
 import csv
 from contextlib import asynccontextmanager, suppress
 from datetime import date, datetime, timedelta, timezone
@@ -751,6 +752,20 @@ class AdminCompteUtilisateur(BaseModel):
     nom: str = Field(default="", max_length=80)
     ville: str = Field(default="", max_length=90)
     vehicule_demo: bool = True
+
+
+class AdminFicheUtilisateur(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    email: str = Field(min_length=5, max_length=160)
+    version: str = Field(max_length=100)
+    nom: str = Field(default="", max_length=80)
+    ville: str = Field(default="", max_length=90)
+    telephone: str = Field(default="", max_length=30)
+    plan: Literal["free", "premium"]
+    email_verified: bool
+    bonus_until: str = Field(default="", max_length=80)
+    note: str = Field(default="", max_length=5000)
+    motif: str = Field(min_length=3, max_length=500)
 
 
 class AdminCorrectionStation(BaseModel):
@@ -1777,36 +1792,26 @@ def synchroniser_meta_securite(utilisateur):
     return donnees
 
 
+def service_auth_admin():
+    return AdminAuth(DOSSIER_DONNEES_UTILISATEURS / "admin-security.sqlite3", ADMIN_PASSWORD)
+
+
+def identite_reseau_admin(request):
+    return client_identity(request, os.getenv("ADMIN_TRUSTED_PROXY_CIDRS", ""))
+
+
+def verifier_entete_admin(request):
+    if request.headers.get("X-Admin-Request") != "1":
+        raise HTTPException(status_code=403, detail="Requete administrateur invalide.")
+
+
 def verifier_admin(request):
-
-    mot_de_passe = request.headers.get("X-Admin-Password", "")
-    mot_de_passe_attendu = ADMIN_PASSWORD
-    adresse_client = request.client.host if request.client else ""
-
-    if (
-        not mot_de_passe_attendu
-        and adresse_client in {"127.0.0.1", "localhost", "::1"}
-    ):
-        mot_de_passe_attendu = "optiplein-admin"
-
-    if not mot_de_passe_attendu:
-        raise HTTPException(
-            status_code=503,
-            detail="Mot de passe admin non configure.",
-        )
-
-    if not hmac.compare_digest(mot_de_passe, mot_de_passe_attendu):
-        verifier_limite_action(
-            "admin",
-            adresse_client or "inconnue",
-            20,
-            10 * 60,
-            "Trop de tentatives administrateur. Réessayez plus tard.",
-        )
-        raise HTTPException(
-            status_code=401,
-            detail="Mot de passe admin incorrect.",
-        )
+    verifier_entete_admin(request)
+    try:
+        identite, _ = identite_reseau_admin(request)
+        service_auth_admin().validate(request.cookies.get("optiplein_admin", ""), identite)
+    except AuthError as erreur:
+        raise HTTPException(status_code=erreur.status, detail=str(erreur)) from erreur
 
 
 def verifier_limite_action(action, cle, maximum, fenetre_secondes, message):
@@ -7661,6 +7666,82 @@ def page_admin(request: Request):
     )
 
 
+class AdminConnexion(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    mot_de_passe: str = Field(max_length=200)
+
+
+class AdminCodeConnexion(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    challenge: str = Field(min_length=20, max_length=100)
+    code: str = Field(pattern=r"^\d{6}$")
+    memoriser: bool = True
+
+
+def cookie_session_admin(response, token, request):
+    response.set_cookie("optiplein_admin", token, max_age=8*3600,
+        httponly=True, secure=bool(os.getenv("RENDER")) or APP_BASE_URL.startswith("https://")
+        or request.url.scheme == "https", samesite="strict", path="/api/admin")
+    response.headers["Cache-Control"] = "no-store"
+
+
+def envoyer_code_admin(code, adresse):
+    message = EmailMessage()
+    message["To"] = os.getenv("ADMIN_2FA_EMAIL", EMAIL_CONTACT)
+    message["Subject"] = "OptiPlein — Code de connexion administrateur"
+    message.set_content(
+        "Une connexion administrateur avec le bon mot de passe a ete demandee.\n"
+        + "Adresse : " + adresse + "\nCode : " + code
+        + "\nCe code expire dans 10 minutes et ne peut etre utilise qu'une fois."
+        + "\nSi vous n'etes pas a l'origine de cette connexion, ne communiquez pas ce code."
+    )
+    envoyer_email(message)
+
+
+@app.post("/api/admin/auth/connexion")
+def connexion_admin_auth(donnees: AdminConnexion, request: Request, response: Response):
+    verifier_entete_admin(request)
+    try:
+        identite, fiable = identite_reseau_admin(request)
+        resultat = service_auth_admin().start(donnees.mot_de_passe, identite, fiable, envoyer_code_admin)
+        token = resultat.pop("token", None)
+        if token:
+            cookie_session_admin(response, token, request)
+        response.headers["Cache-Control"] = "no-store"
+        return resultat
+    except AuthError as erreur:
+        raise HTTPException(status_code=erreur.status, detail=str(erreur),
+            headers={"Retry-After": str(erreur.retry_after)} if erreur.retry_after else None) from erreur
+
+
+@app.post("/api/admin/auth/code")
+def verifier_code_admin(donnees: AdminCodeConnexion, request: Request, response: Response):
+    verifier_entete_admin(request)
+    try:
+        identite, _ = identite_reseau_admin(request)
+        token = service_auth_admin().verify(donnees.challenge, donnees.code, identite, donnees.memoriser)
+        cookie_session_admin(response, token, request)
+        return {"ok": True}
+    except AuthError as erreur:
+        raise HTTPException(status_code=erreur.status, detail=str(erreur)) from erreur
+
+
+@app.post("/api/admin/auth/deconnexion")
+def deconnexion_admin_auth(request: Request, response: Response):
+    verifier_entete_admin(request)
+    service_auth_admin().logout(request.cookies.get("optiplein_admin", ""))
+    response.delete_cookie("optiplein_admin", path="/api/admin")
+    return {"ok": True}
+
+
+@app.post("/api/admin/auth/oublier")
+def oublier_reseaux_admin(request: Request, response: Response):
+    verifier_admin(request)
+    service_auth_admin().forget(request.cookies.get("optiplein_admin", ""))
+    response.delete_cookie("optiplein_admin", path="/api/admin")
+    return {"ok": True}
+
+
 @app.get("/api/admin/donnees")
 def donnees_admin(request: Request):
 
@@ -7801,6 +7882,136 @@ def creer_ou_modifier_compte_admin(
         "email_verified": utilisateur.get("email_verified", False),
         "updated_at": utilisateur["updated_at"],
     }
+
+
+def lire_metadonnees_admin(email):
+    cle = "admin-utilisateur-" + hashlib.sha256(email.encode()).hexdigest()
+    if base_donnees_active():
+        return charger_donnee_application_postgres(cle) or {}
+    fichier = DOSSIER_DONNEES_UTILISATEURS / (cle + ".json")
+    return json.loads(fichier.read_text(encoding="utf-8")) if fichier.exists() else {}
+
+
+def ecrire_metadonnees_admin(email, donnees):
+    cle = "admin-utilisateur-" + hashlib.sha256(email.encode()).hexdigest()
+    if base_donnees_active():
+        enregistrer_donnee_application_postgres(cle, donnees)
+        return
+    fichier = DOSSIER_DONNEES_UTILISATEURS / (cle + ".json")
+    fichier.parent.mkdir(parents=True, exist_ok=True)
+    temporaire = fichier.with_suffix(".tmp")
+    temporaire.write_text(json.dumps(donnees, ensure_ascii=False), encoding="utf-8")
+    temporaire.replace(fichier)
+
+
+def fiche_utilisateur_admin(email, comptes):
+    utilisateur = comptes.get("users", {}).get(email)
+    if utilisateur is None:
+        raise HTTPException(status_code=404, detail="Compte introuvable.")
+    donnees = utilisateur.get("data", {}) or {}
+    parrainage = donnees.get("parrainage", {}) or {}
+    def selection(objet, champs):
+        return {cle: objet.get(cle) for cle in champs if cle in objet}
+    historique = [selection(ligne, (
+        "date", "economie", "station", "enseigne", "ville", "vehicule",
+        "carburant", "energie", "litres", "distance", "prix"
+    )) for ligne in donnees.get("historique_economies", []) if isinstance(ligne, dict)]
+    # Retrouver les adresses completes depuis les comptes, sans deviner les adresses masquees.
+    code = parrainage.get("code") or generer_code_parrainage(email)
+    filleuls = []
+    parrain = None
+    for adresse, autre in comptes.get("users", {}).items():
+        relation = (autre.get("data", {}) or {}).get("parrainage", {}) or {}
+        if relation.get("parrain_code") == code:
+            filleuls.append({"email": adresse, "created_at": autre.get("created_at", ""),
+                "email_verified": bool(autre.get("email_verified")),
+                "bonus_attribue": bool(relation.get("bonus_attribue_au_parrain")),
+                "plan": (autre.get("data", {}) or {}).get("plan", "free")})
+        if parrainage.get("parrain_code") and relation.get("code") == parrainage["parrain_code"]:
+            parrain = adresse
+    return {
+        "email": email, "version": utilisateur.get("updated_at", ""),
+        "created_at": utilisateur.get("created_at", ""),
+        "email_verified": bool(utilisateur.get("email_verified")),
+        "profil": selection(donnees.get("profil", {}) or {}, ("nom", "ville", "telephone")),
+        "plan": donnees.get("plan", "free"), "premium_actif": premium_actif_donnees(donnees),
+        "plateforme_creation": donnees.get("plateforme_creation", ""),
+        "plateforme_derniere_connexion": donnees.get("plateforme_derniere_connexion", ""),
+        "parrainage": selection(parrainage, ("code", "parrain_code", "parrain_email",
+            "bonus_until", "bonus_mois_total", "filleuls", "filleuls_en_attente",
+            "bonus_attribue_au_parrain")),
+        "parrain": parrain, "filleuls_comptes": filleuls,
+        "statistiques": statistiques_compte(historique), "historique": historique,
+        "vehicules": [selection(v, ("id", "nom", "profil", "motorisation", "reservoir", "conso", "jauge"))
+            for v in donnees.get("vehicules", []) if isinstance(v, dict)],
+        "favoris": donnees.get("favoris", []),
+        "abonnement_apple": selection(donnees.get("abonnement_apple", {}) or {},
+            ("product_id", "expiration_date", "purchase_date", "verified_at", "status", "environment")),
+        "note": lire_metadonnees_admin(email).get("note", ""),
+        "journal": lire_metadonnees_admin(email).get("journal", []),
+    }
+
+
+@app.get("/api/admin/utilisateur")
+def lire_fiche_utilisateur_admin(request: Request, email: str):
+    verifier_admin(request)
+    return fiche_utilisateur_admin(normaliser_email(email), charger_comptes_utilisateurs())
+
+
+@app.post("/api/admin/utilisateur")
+def modifier_fiche_utilisateur_admin(modification: AdminFicheUtilisateur, request: Request):
+    verifier_admin(request)
+    comptes = charger_comptes_utilisateurs()
+    email = normaliser_email(modification.email)
+    avant = fiche_utilisateur_admin(email, comptes)
+    if modification.version != avant["version"]:
+        raise HTTPException(status_code=409, detail="Ce compte a change. Rechargez sa fiche avant de modifier.")
+    motif = modification.motif.strip()
+    if len(motif) < 3:
+        raise HTTPException(status_code=422, detail="Precisez le motif de la modification.")
+    bonus = modification.bonus_until.strip()
+    if bonus:
+        try:
+            date_bonus = datetime.fromisoformat(bonus.replace("Z", "+00:00"))
+            if date_bonus.tzinfo is None:
+                raise ValueError("Fuseau horaire requis")
+            bonus = date_bonus.isoformat()
+        except ValueError as erreur:
+            raise HTTPException(status_code=422, detail="Date du bonus invalide (fuseau horaire requis).") from erreur
+    utilisateur = comptes["users"][email]
+    donnees = utilisateur.setdefault("data", {})
+    profil = donnees.setdefault("profil", {})
+    changements = {}
+    valeurs_avant = {**avant["profil"], "plan": avant["plan"],
+        "email_verified": avant["email_verified"], "note": avant["note"],
+        "bonus_until": avant["parrainage"].get("bonus_until", "")}
+    nouvelles = {"nom": modification.nom.strip(), "ville": modification.ville.strip(),
+        "telephone": modification.telephone.strip(), "plan": modification.plan,
+        "email_verified": modification.email_verified, "note": modification.note.strip(),
+        "bonus_until": bonus}
+    for cle, valeur in nouvelles.items():
+        if valeurs_avant.get(cle, "") != valeur:
+            changements[cle] = {"avant": valeurs_avant.get(cle, ""), "apres": valeur}
+    for cle in ("nom", "ville", "telephone"):
+        profil[cle] = nouvelles[cle]
+    donnees["plan"] = modification.plan
+    donnees.setdefault("parrainage", {})["bonus_until"] = bonus
+    utilisateur["email_verified"] = modification.email_verified
+    if modification.email_verified:
+        utilisateur.pop("email_verification_hash", None)
+        utilisateur.pop("email_verification_expires_at", None)
+    meta = lire_metadonnees_admin(email)
+    meta["note"] = nouvelles["note"]
+    if changements:
+        maintenant = date_iso_maintenant()
+        meta.setdefault("journal", []).append({
+            "date": maintenant, "acteur": "Administrateur", "motif": motif,
+            "changements": changements,
+        })
+        utilisateur["updated_at"] = maintenant
+        enregistrer_comptes_utilisateurs(comptes)
+        ecrire_metadonnees_admin(email, meta)
+    return fiche_utilisateur_admin(email, comptes)
 
 
 @app.get("/api/admin/stations")
