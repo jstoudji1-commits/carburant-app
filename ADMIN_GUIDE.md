@@ -66,3 +66,10 @@ même avec le bon mot de passe, sans allonger le délai ni compter comme un nouv
 rebours. Seule une authentification complète avec le code remet le compteur à
 zéro. Les IP reconnues restent soumises à la limitation classique des tentatives.
 Les limites globales anti-abus restent également actives.
+
+## Continuité derrière les proxys
+Lorsque l'adresse publique n'est pas fiable, le code et la session sont liés à
+un identifiant navigateur aléatoire dans un cookie HttpOnly, plutôt qu'à une
+empreinte des proxys pouvant changer entre deux requêtes. Cela n'autorise jamais
+la mémorisation d'une IP non vérifiée. Le mot de passe et le code restent requis.
+Pour une adresse fiable, le contrôle strict de l'IP reste inchangé.

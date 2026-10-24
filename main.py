@@ -1809,7 +1809,8 @@ def verifier_admin(request):
     verifier_entete_admin(request)
     try:
         identite, _ = identite_reseau_admin(request)
-        service_auth_admin().validate(request.cookies.get("optiplein_admin", ""), identite)
+        service_auth_admin().validate(request.cookies.get("optiplein_admin", ""), identite,
+            request.cookies.get("optiplein_admin_browser"))
     except AuthError as erreur:
         raise HTTPException(status_code=erreur.status, detail=str(erreur)) from erreur
 
@@ -7703,7 +7704,15 @@ def connexion_admin_auth(donnees: AdminConnexion, request: Request, response: Re
     verifier_entete_admin(request)
     try:
         identite, fiable = identite_reseau_admin(request)
-        resultat = service_auth_admin().start(donnees.mot_de_passe, identite, fiable, envoyer_code_admin)
+        browser = request.cookies.get("optiplein_admin_browser", "")
+        if not re.fullmatch(r"[A-Za-z0-9_-]{43}", browser):
+            browser = secrets.token_urlsafe(32)
+        resultat = service_auth_admin().start(
+            donnees.mot_de_passe, identite, fiable, envoyer_code_admin, browser
+        )
+        response.set_cookie("optiplein_admin_browser", browser, max_age=8*3600,
+            httponly=True, secure=bool(os.getenv("RENDER")) or APP_BASE_URL.startswith("https://")
+            or request.url.scheme == "https", samesite="strict", path="/api/admin")
         token = resultat.pop("token", None)
         if token:
             cookie_session_admin(response, token, request)
@@ -7719,7 +7728,8 @@ def verifier_code_admin(donnees: AdminCodeConnexion, request: Request, response:
     verifier_entete_admin(request)
     try:
         identite, _ = identite_reseau_admin(request)
-        token = service_auth_admin().verify(donnees.challenge, donnees.code, identite, donnees.memoriser)
+        token = service_auth_admin().verify(donnees.challenge, donnees.code, identite, donnees.memoriser,
+            request.cookies.get("optiplein_admin_browser"))
         cookie_session_admin(response, token, request)
         return {"ok": True}
     except AuthError as erreur:

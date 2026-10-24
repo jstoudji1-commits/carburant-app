@@ -119,4 +119,38 @@ class AdminAuthTests(unittest.TestCase):
         for _ in range(2):self.wrong()
         self.assertEqual(self.wrong().retry_after,60)
 
+    def test_proxy_change_keeps_browser_challenge_and_session_valid(self):
+        browser='browser-secret'
+        result=self.auth.start('secret-password','unverified:proxyA',False,
+            lambda code,ip:self.codes.append(code),browser)
+        token=self.auth.verify(result['challenge'],self.codes[-1],
+            'unverified:proxyB',True,browser)
+        self.auth.validate(token,'unverified:proxyC',browser)
+        # Proxy fallback must never create an IP exemption from 2FA.
+        result=self.auth.start('secret-password','unverified:proxyC',False,
+            lambda code,ip:self.codes.append(code),browser)
+        self.assertTrue(result['requires_code'])
+
+    def test_browser_binding_cannot_be_omitted_or_replaced(self):
+        result=self.auth.start('secret-password','unverified:proxyA',False,
+            lambda code,ip:self.codes.append(code),'browserA')
+        for browser in (None,'browserB'):
+            with self.assertRaises(AuthError):
+                self.auth.verify(result['challenge'],self.codes[-1],
+                    'unverified:proxyA',True,browser)
+        token=self.auth.verify(result['challenge'],self.codes[-1],
+            'unverified:proxyB',True,'browserA')
+        with self.assertRaises(AuthError):self.auth.validate(token,'unverified:proxyB','browserB')
+        with self.assertRaises(AuthError):self.auth.validate(token,'8.8.8.8','browserA')
+        with self.assertRaises(AuthError):
+            self.auth.verify(result['challenge'],self.codes[-1],'unverified:proxyC',True,'browserA')
+
+    def test_reliable_ip_remains_bound_even_with_same_browser(self):
+        result=self.auth.start('secret-password','8.8.8.8',True,
+            lambda code,ip:self.codes.append(code),'browserA')
+        with self.assertRaises(AuthError):
+            self.auth.verify(result['challenge'],self.codes[-1],'1.1.1.1',True,'browserA')
+        token=self.auth.verify(result['challenge'],self.codes[-1],'8.8.8.8',True,'browserA')
+        with self.assertRaises(AuthError):self.auth.validate(token,'1.1.1.1','browserA')
+
 if __name__=='__main__':unittest.main()

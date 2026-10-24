@@ -81,12 +81,12 @@ class AdminAuth:
         if blocked:
             raise AuthError('Trop de tentatives. Reessayez plus tard.', 429)
 
-    def session(self, db, identity):
+    def session(self, db, identity, browser=None):
         token = secrets.token_urlsafe(32)
-        self.write(db, 'session:' + self.digest(token), {'identity': self.digest(identity), 'expires': self.now()+8*3600})
+        self.write(db, 'session:' + self.digest(token), {'identity': self.digest(identity), 'browser': self.digest(browser) if browser else None, 'expires': self.now()+8*3600})
         return token
 
-    def start(self, supplied, identity, reliable, send):
+    def start(self, supplied, identity, reliable, send, browser=None):
         if not self.password:
             raise AuthError('Mot de passe administrateur non configure.', 503)
         self.rate('global', 'login', 100, 600)
@@ -129,6 +129,7 @@ class AdminAuth:
         with self.transaction() as db:
             self.write(db, 'challenge:' + self.digest(challenge), {
                 'identity': self.digest(identity), 'reliable': reliable,
+                'browser': self.digest(browser) if browser and not reliable else None,
                 'code': self.digest(challenge + ':' + code), 'expires': self.now()+600, 'attempts': 0,
             })
         try:
@@ -139,32 +140,40 @@ class AdminAuth:
             raise AuthError("Impossible d'envoyer le code. Reessayez plus tard.", 503) from error
         return {'challenge': challenge, 'requires_code': True, 'ip_verified': reliable}
 
-    def verify(self, challenge, code, identity, remember):
+    def verify(self, challenge, code, identity, remember, browser=None):
         self.rate('global', 'code', 100, 600)
         self.rate(identity, 'code', 20, 600)
         token = None
         with self.transaction() as db:
             key = 'challenge:' + self.digest(challenge)
             data = self.read(db, key)
-            if data.get('identity') == self.digest(identity) and data.get('expires', 0) > self.now() and data.get('attempts', 5) < 5:
+            same_client = (
+                bool(browser) and identity.startswith('unverified:')
+                and hmac.compare_digest(data['browser'], self.digest(browser))
+            ) if data.get('browser') else data.get('identity') == self.digest(identity)
+            if same_client and data.get('expires', 0) > self.now() and data.get('attempts', 5) < 5:
                 data['attempts'] += 1
                 self.write(db, key, data)
                 if hmac.compare_digest(data['code'], self.digest(challenge + ':' + code)):
                     db.execute('DELETE FROM auth WHERE key=?', (key,))
                     if remember and data.get('reliable'):
                         self.write(db, 'trusted:' + self.digest(identity), {'expires': self.now()+30*86400})
-                    db.execute('DELETE FROM auth WHERE key=?', ('backoff:' + self.digest(identity),))
-                    token = self.session(db, identity)
+                    db.execute('DELETE FROM auth WHERE key=?', ('backoff:' + data['identity'],))
+                    token = self.session(db, identity, browser if data.get('browser') else None)
         if not token:
             raise AuthError('Code invalide ou expire. Demandez un nouveau code.')
         return token
 
-    def validate(self, token, identity):
+    def validate(self, token, identity, browser=None):
         if not token or not self.password:
             raise AuthError('Connexion administrateur requise.')
         with self.transaction() as db:
             data = self.read(db, 'session:' + self.digest(token))
-        if data.get('expires', 0) <= self.now() or data.get('identity') != self.digest(identity):
+        same_client = (
+            bool(browser) and identity.startswith('unverified:')
+            and hmac.compare_digest(data['browser'], self.digest(browser))
+        ) if data.get('browser') else data.get('identity') == self.digest(identity)
+        if data.get('expires', 0) <= self.now() or not same_client:
             raise AuthError('Session expiree ou adresse reseau modifiee. Reconnectez-vous.')
 
     def logout(self, token):

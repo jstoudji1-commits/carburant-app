@@ -960,8 +960,10 @@
             if (finBlocageAdmin > Date.now()) minuteurBlocageAdmin = setInterval(actualiser, 1000);
         }
 
+        var connexionAdminEnCours = false;
         async function connexionAdmin() {
-            if (Date.now() < finBlocageAdmin) return;
+            if (connexionAdminEnCours || Date.now() < finBlocageAdmin) return;
+            connexionAdminEnCours = true;
             loginStatus.textContent = "Connexion…";
             document.getElementById("admin-code-zone").hidden = true;
             try {
@@ -982,7 +984,7 @@
             } catch (erreur) {
                 if (erreur.retryAfter) afficherBlocageAdmin(erreur.retryAfter);
                 else loginStatus.textContent = erreur.message;
-            }
+            } finally { connexionAdminEnCours = false; }
         }
 
         async function validerCodeAdmin(event) {
