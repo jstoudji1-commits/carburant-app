@@ -8647,8 +8647,8 @@ def signe_graphhopper_vers_maneuvre(signe):
         4: ("arrive", "straight"),
         5: ("arrive", "straight"),
         6: ("roundabout", "right"),
-        7: ("roundabout", "right"),
-        -7: ("roundabout", "left"),
+        7: ("fork", "right"),
+        -7: ("fork", "left"),
         -6: ("roundabout", "left"),
     }
 
@@ -8669,6 +8669,9 @@ def ajuster_maneuvre_graphhopper(instruction, type_maneuvre, modificateur):
         str(instruction.get(cle, "") or "").lower()
         for cle in ("text", "street_name", "heading")
     )
+
+    if instruction.get("motorway_junction") or instruction.get("exits"):
+        return "off ramp", modificateur
 
     if "sortie" in texte or "exit" in texte:
         return "off ramp", modificateur
@@ -8714,12 +8717,15 @@ def convertir_route_graphhopper(donnees):
                 "duration": (instruction.get("time", 0) or 0) / 1000,
                 "name": instruction.get("street_name", "") or "",
                 "instruction": instruction.get("text", "") or "",
+                "exits": (instruction.get("motorway_junction") or instruction.get("exits")
+                    or instruction.get("exit_number") or instruction.get("exit") or "")
+                    if type_maneuvre == "off ramp" else "",
                 "maneuver": {
                     "type": type_maneuvre,
                     "modifier": modificateur,
                     "location": coordonnee,
-                    "exit": instruction.get("exit_number")
-                        or instruction.get("exit"),
+                    "exit": (instruction.get("exit_number") or instruction.get("exit"))
+                        if type_maneuvre in {"roundabout", "rotary"} else None,
                 },
             }
         )

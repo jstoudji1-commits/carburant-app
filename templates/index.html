@@ -3054,6 +3054,18 @@ body{
     border-left:13px solid white;
 }
 
+.navigation-exit-sign{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    color:white;
+    line-height:1.1;
+}
+.navigation-exit-sign span{font-size:9px;font-weight:800;}
+.navigation-exit-sign strong{font-size:26px;font-weight:900;}
+
 .navigation-roundabout-shape{
     position:relative;
     width:40px;
@@ -19310,17 +19322,18 @@ function formaterDistanceRestanteNavigation(distanceMetres) {
 }
 
 function sortieManeuvre(etape) {
-
     var maneuvre = etape && etape.maneuver ? etape.maneuver : {};
-    var sortie = maneuvre.exit || (etape && etape.exits) || "";
-    var numero = Number(sortie);
-
-    if (Number.isFinite(numero) && numero > 0) {
-        return String(Math.round(numero));
+    var rondPoint = ["roundabout", "rotary", "roundabout turn", "exit roundabout", "exit rotary"].includes(maneuvre.type);
+    var sortie = rondPoint ? maneuvre.exit : (etape && etape.exits) || maneuvre.exit;
+    if (sortie !== undefined && sortie !== null && String(sortie).trim()) {
+        return String(sortie).trim();
     }
-
-    return sortie ? String(sortie).trim() : "";
-
+    // Ne pas confondre une reference routiere (A7, D113) et un numero de sortie.
+    if (!rondPoint && ["off ramp", "fork"].includes(maneuvre.type)) {
+        var numero = String(etape.instruction || "").match(/\b(?:sortie|exit)\s+(?:(?:n[°ºo]|numéro|number)\s*)?(\d+(?:[.,]\d+)?[a-z]?)\b/i);
+        return numero ? numero[1] : "";
+    }
+    return "";
 }
 
 function typeIconeManeuvre(etape) {
@@ -19338,10 +19351,15 @@ function typeIconeManeuvre(etape) {
     if (
         type === "roundabout"
         || type === "rotary"
-        || texte.includes("rond-point")
-        || texte.includes("roundabout")
+        || type === "roundabout turn"
+        || type === "exit roundabout"
+        || type === "exit rotary"
     ) {
         return "roundabout";
+    }
+
+    if (type === "off ramp" || (type === "fork" && sortieManeuvre(etape))) {
+        return "exit";
     }
 
     if (modificateur === "uturn" || type.includes("uturn")) {
@@ -19375,6 +19393,7 @@ function typeIconeManeuvre(etape) {
 }
 
 function libelleIconeManeuvre(typeIcone, sortie) {
+    if (typeIcone === "exit") return sortie ? "Sortie " + sortie : "Sortie";
 
     if (typeIcone === "left" || typeIcone === "slight-left") {
         return "Tourner \u00e0 gauche";
@@ -19409,6 +19428,20 @@ function definirIconeGuidage(etape) {
     element.setAttribute("aria-label", libelleIconeManeuvre(typeIcone, sortie));
     element.innerHTML = "";
 
+    if (typeIcone === "exit") {
+        var panneau = document.createElement("span");
+        panneau.className = "navigation-exit-sign";
+        var label = document.createElement("span");
+        label.textContent = "SORTIE";
+        var numero = document.createElement("strong");
+        numero.textContent = sortie || (String(etape.maneuver.modifier || "").includes("left") ? "↖" : "↗");
+        if (sortie.length > 4) numero.style.fontSize = "16px";
+        panneau.appendChild(label);
+        panneau.appendChild(numero);
+        element.appendChild(panneau);
+        return;
+    }
+
     if (typeIcone === "roundabout") {
         var rond = document.createElement("span");
         rond.className = "navigation-roundabout-shape";
@@ -19441,12 +19474,12 @@ function texteManeuvre(etape) {
         : "";
     var modificateur = maneuvre.modifier || "straight";
     var type = maneuvre.type || "";
-    var sortie = etape.exits || maneuvre.exit || "";
+    var sortie = sortieManeuvre(etape);
 
     if (maneuvre.type === "arrive") {
         return "Vous \u00eates arriv\u00e9";
     }
-    if (type === "off ramp") {
+    if (type === "off ramp" || (type === "fork" && sortie)) {
         return "Prenez la sortie" + (sortie ? " " + sortie : "") + voie;
     }
     if (type === "on ramp") {
