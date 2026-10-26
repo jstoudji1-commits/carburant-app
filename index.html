@@ -8259,6 +8259,7 @@ function htmlAvantageCarburantTotal(avantage) {
 
     return ''
         + '<div class="avantage-total-ligne"'
+        + (carteTotalenergiesActive() ? '' : ' style="display:none"')
         + ' title="Avantage Carburant TotalEnergies : prix plafonné à 1,99 €/L"'
         + ' aria-label="Carte Club TotalEnergies, prix plafonné à 1,99 euro par litre">'
         + '<span class="avantage-total-carte" aria-hidden="true">'
@@ -9508,12 +9509,20 @@ function carburantEligibleAvantageTotalenergies(carburant) {
 
 function carteTotalenergiesActive() {
 
-    return localStorage.getItem(carteTotalenergiesCle) === "true";
+    return localStorage.getItem(carteTotalenergiesCle || "optiplein-carte-totalenergies") === "true";
 
+}
+
+function actualiserPastillesTotalenergies() {
+    var active = carteTotalenergiesActive();
+    document.querySelectorAll(".avantage-total-ligne").forEach(function(pastille) {
+        pastille.style.display = active ? "" : "none";
+    });
 }
 
 function actualiserControleCarteTotalenergies() {
 
+    actualiserPastillesTotalenergies();
     var conteneur = document.getElementById(
         "avantage-totalenergies-controle"
     );
@@ -9567,6 +9576,7 @@ window.modifierCarteTotalenergies = function() {
     var caseCarte = document.getElementById("carte-totalenergies-active");
     localStorage.setItem(carteTotalenergiesCle, String(Boolean(caseCarte && caseCarte.checked)));
     revisionOptionTotalenergies += 1;
+    actualiserPastillesTotalenergies();
     programmerSauvegardeCompte();
     dernierCalculPeriodiqueRentabilite = 0;
     actualiserEconomieDestinationTotalenergies();
@@ -15351,7 +15361,7 @@ function prixRentabiliteAvecCarteTotalenergies(
 
 function prixPublicStationRentabilite(station) {
 
-    var prixPublic = Number(station && station.prixPublic);
+    var prixPublic = Number(station && (station.prix_public ?? station.prixPublic));
 
     if (Number.isFinite(prixPublic) && prixPublic > 0) {
         return prixPublic;
