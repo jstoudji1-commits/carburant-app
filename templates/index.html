@@ -9697,38 +9697,63 @@ function actualiserControleCarteTotalenergies() {
 
 }
 
+var revisionOptionTotalenergies = 0;
+var traitementOptionTotalenergies = null;
+
+function actualiserEconomieDestinationTotalenergies() {
+    if (!navigationActive || trajetPrepare || !stationNavigationActive) return;
+    var reservoir = nombreVehiculeEnregistre("vehicule-reservoir");
+    var consommation = nombreVehiculeEnregistre("vehicule-conso");
+    if (!reservoir || !consommation || !Number.isFinite(latitudeUtilisateur)
+        || !Number.isFinite(longitudeUtilisateur)) return;
+    var jauge = Number((localStorage.getItem("vehicule-jauge") || "50").replace(",", "."));
+    var stations = stationsEconomie.slice();
+    if (!stations.some(function(s) { return memeStation(s, stationNavigationActive); })) {
+        stations.push(stationNavigationActive);
+    }
+    var calcul = calculerRentabiliteStations(stations, latitudeUtilisateur, longitudeUtilisateur,
+        reservoir, consommation, reservoir * (100 - Math.max(0, Math.min(100, jauge))) / 100);
+    var station = calcul.stationsCalculees.find(function(s) { return memeStation(s, stationNavigationActive); });
+    if (!station) {
+        economieEstimeeFigee = null;
+        actualiserEncadreDestinationNavigation();
+    }
+    if (station) {
+        economieEstimeeFigee = station.economieMonetaire;
+        derniereEconomieEstimee = station.economieMonetaire;
+        actualiserEncadreDestinationNavigation();
+    }
+}
+
 window.modifierCarteTotalenergies = function() {
-
     var caseCarte = document.getElementById("carte-totalenergies-active");
-    localStorage.setItem(
-        carteTotalenergiesCle,
-        String(Boolean(caseCarte && caseCarte.checked))
-    );
+    localStorage.setItem(carteTotalenergiesCle, String(Boolean(caseCarte && caseCarte.checked)));
+    revisionOptionTotalenergies += 1;
     programmerSauvegardeCompte();
-
-    var latitudeRecherche = Number.isFinite(latitudeUtilisateur)
-        ? latitudeUtilisateur
-        : latitudeDerniereRecherche;
-    var longitudeRecherche = Number.isFinite(longitudeUtilisateur)
-        ? longitudeUtilisateur
-        : longitudeDerniereRecherche;
-    var actualisationRentabilite = (
-        Number.isFinite(latitudeRecherche)
-        && Number.isFinite(longitudeRecherche)
-    )
-        ? actualiserStationsEconomieVehicule(
-            latitudeRecherche,
-            longitudeRecherche,
-            null
-        )
-        : Promise.resolve(false);
-
-    actualisationRentabilite.finally(function() {
-        dernierCalculPeriodiqueRentabilite = 0;
-        calculerMeilleureStation();
-        recalculerTrajetPrepareApresChangementAvantageTotalenergies();
-    });
-
+    dernierCalculPeriodiqueRentabilite = 0;
+    actualiserEconomieDestinationTotalenergies();
+    calculerMeilleureStation();
+    if (traitementOptionTotalenergies) return traitementOptionTotalenergies;
+    traitementOptionTotalenergies = (async function() {
+        var revision;
+        do {
+            revision = revisionOptionTotalenergies;
+            while (validationTrajetPrepareEnCours || recalculTrajetPrepareAvantageEnCours) {
+                await new Promise(function(resolve) { setTimeout(resolve, 100); });
+            }
+            await recalculerTrajetPrepareApresChangementAvantageTotalenergies();
+            var latitude = Number.isFinite(latitudeUtilisateur) ? latitudeUtilisateur : latitudeDerniereRecherche;
+            var longitude = Number.isFinite(longitudeUtilisateur) ? longitudeUtilisateur : longitudeDerniereRecherche;
+            if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+                await actualiserStationsEconomieVehicule(latitude, longitude, null);
+            }
+            actualiserEconomieDestinationTotalenergies();
+            calculerMeilleureStation();
+        } while (revision !== revisionOptionTotalenergies);
+    })().catch(function() {
+        afficherInfoItineraire("Recalcul TotalEnergies indisponible. Réessayez dans un instant.");
+    }).finally(function() { traitementOptionTotalenergies = null; });
+    return traitementOptionTotalenergies;
 };
 
 function masquerPubliciteVide() {
@@ -15706,22 +15731,12 @@ function calculerCoutOptimisationStation(options) {
         0,
         Number(options.distanceStationKm || 0)
     );
-    var distanceDetourKm = options.destinationCalcul
-        ? Math.max(
-            0,
-            distanceStationKm
-                + Number(options.distanceDestinationApresStation || 0)
-                - Number(options.distanceDirecteDestination || 0)
-        )
-        : distanceStationKm * 2;
-
-    distanceDetourKm += Math.max(0, Number(options.penaliteDemiTourKm || 0));
+    var distanceDetourKm = options.distanceDetourRoutierKm;
 
     var carburantDetourLitres = distanceDetourKm * consommation / 100;
     var coutCarburantAchete = quantiteAchetee * station.prix;
     var coutCarburantDetour = carburantDetourLitres * prixReference;
-    var tempsPerduMinutes =
-        distanceDetourKm / vitesseDetourRentabiliteKmH * 60;
+    var tempsPerduMinutes = options.dureeDetourRoutiereMinutes;
     var puissanceRechargeKw = vehiculeElectrique
         ? Math.max(3.7, Number(station.puissanceKw || station.puissance_kw || 0))
         : 0;
@@ -15805,6 +15820,58 @@ function ajouterExplicationRentabilite(
 
 }
 
+var cacheDistancesStations = new Map();
+var chargementDistancesStations = false;
+var referencePositionRoutiere = null;
+function distancesRoutieresRentabilite(stations, latitude, longitude, destination) {
+    var cap = typeof capNavigationFiable === "function" ? capNavigationFiable(5000) : NaN;
+    var contexte = {origine: {latitude:latitude, longitude:longitude},
+        destination: destination, cap_depart: Number.isFinite(cap) ? ((Math.round(cap) % 360) + 360) % 360 : null,
+        stations:stations.map(function(s) {return {latitude:Number(s.latitude),longitude:Number(s.longitude)};})};
+    // Stabiliser le point de calcul pendant la requete, puis renouveler au plus
+    // toutes les 15 secondes. Sans cela, un GPS en mouvement invalide chaque reponse.
+    var selection = JSON.stringify([contexte.destination, contexte.stations]);
+    if (!referencePositionRoutiere || referencePositionRoutiere.selection !== selection
+        || (referencePositionRoutiere.resultatDepuis && Date.now() - referencePositionRoutiere.resultatDepuis > 15000)) {
+        referencePositionRoutiere = {selection:selection, origine:contexte.origine,
+            cap:contexte.cap_depart, resultatDepuis:0};
+    }
+    contexte.origine = referencePositionRoutiere.origine;
+    contexte.cap_depart = referencePositionRoutiere.cap;
+    var cle = JSON.stringify(contexte);
+    var cache = cacheDistancesStations.get(cle);
+    if (cache && Date.now() - cache.date < (cache.erreur ? 30000 : 120000)) {
+        if (!referencePositionRoutiere.resultatDepuis) referencePositionRoutiere.resultatDepuis = Date.now();
+        return cache;
+    }
+    if (chargementDistancesStations) return {enAttente:true};
+    chargementDistancesStations = true;
+    (async function() {
+        var trajets = [];
+        for (var i=0; i<contexte.stations.length; i+=40) {
+            var reponse = await fetchAvecDelai("/api/distances-stations", {
+                method:"POST", headers:{"Content-Type":"application/json"},
+                body:JSON.stringify(Object.assign({}, contexte, {stations:contexte.stations.slice(i,i+40)}))
+            }, 45000);
+            if (!reponse.ok) throw new Error("Distances indisponibles");
+            var donnees = await reponse.json();
+            if (!Array.isArray(donnees.trajets) || donnees.trajets.length !== contexte.stations.slice(i,i+40).length) {
+                throw new Error("Distances incompletes");
+            }
+            trajets = trajets.concat(donnees.trajets);
+        }
+        cacheDistancesStations.set(cle, {date:Date.now(), trajets:trajets});
+    })().catch(function() {
+        cacheDistancesStations.set(cle, {date:Date.now(), erreur:true});
+    }).finally(function() {
+        chargementDistancesStations = false;
+        while(cacheDistancesStations.size>8) cacheDistancesStations.delete(cacheDistancesStations.keys().next().value);
+        actualiserEconomieDestinationTotalenergies();
+        calculerMeilleureStation();
+    });
+    return {enAttente:true};
+}
+
 function calculerRentabiliteStations(
     stationsDisponibles,
     latitudeCalcul,
@@ -15854,97 +15921,22 @@ function calculerRentabiliteStations(
             longitude: Number(destinationNavigation.longitude)
         }
         : null;
-    var distanceDirecteDestination = destinationCalcul
-        ? distanceDeplacementKm(
-            latitudeCalcul,
-            longitudeCalcul,
-            destinationCalcul.latitude,
-            destinationCalcul.longitude
-        )
-        : 0;
-    var routePourProgression = (
-        navigationActive
-        && routeNavigation
-        && routeNavigation.geometry
-        && Array.isArray(routeNavigation.geometry.coordinates)
-    )
-        ? routeNavigation.geometry.coordinates
-        : null;
-    var progressionUtilisateur = routePourProgression
-        ? positionStationSurRoute(
-            {
-                latitude: latitudeCalcul,
-                longitude: longitudeCalcul
-            },
-            routePourProgression
-        )
-        : null;
-    var stationsCalculees = stationsDisponibles.map(
-        function(station) {
-
-            var distance = distanceDeplacementKm(
-                latitudeCalcul,
-                longitudeCalcul,
-                station.latitude,
-                station.longitude
-            );
-            var carburantTrajet =
-                distance * 2 * consommation / 100;
-            var distanceDestinationApresStation = destinationCalcul
-                ? distanceDeplacementKm(
-                    station.latitude,
-                    station.longitude,
-                    destinationCalcul.latitude,
-                    destinationCalcul.longitude
-                )
-                : 0;
-            var carburantAvantStation = distance * consommation / 100;
-            var carburantApresStation = distanceDestinationApresStation
-                * consommation / 100;
-            var carburantTotalDestination =
-                carburantAvantStation + carburantApresStation;
-            var carburantRestantDestination = Math.max(
-                0,
-                niveauCarburantDepart
-                    + quantiteACompleter
-                    - carburantTotalDestination
-            );
-            var positionRouteStation = routePourProgression
-                ? positionStationSurRoute(
-                    station,
-                    routePourProgression
-                )
-                : null;
-            var stationDepasseeNavigation = Boolean(
-                navigationActive
-                && progressionUtilisateur
-                && positionRouteStation
-                && positionRouteStation.distanceRouteKm
-                    < progressionUtilisateur.distanceRouteKm - 0.4
-            );
-            var penaliteRetourSansItineraireKm =
-                stationDepasseeNavigation
-                    ? 0
-                    : calculerPenaliteRetourStationSansItineraire(
-                        latitudeCalcul,
-                        longitudeCalcul,
-                        station,
-                        distance
-                    );
-            var stationDepassee = stationDepasseeNavigation
-                || penaliteRetourSansItineraireKm > 0;
-            var penaliteDemiTourKm = stationDepasseeNavigation
-                ? Math.max(
-                    distance * 2,
-                    (
-                        progressionUtilisateur.distanceRouteKm
-                        - positionRouteStation.distanceRouteKm
-                    ) * 2
-                )
-                : penaliteRetourSansItineraireKm;
-            var coutDemiTour = penaliteDemiTourKm
-                * consommation / 100
-                * prixTrajetReference;
+    var routes = distancesRoutieresRentabilite(stationsDisponibles, latitudeCalcul, longitudeCalcul, destinationCalcul);
+    if (!routes.trajets) return {stationsCalculees:[], enAttente:Boolean(routes.enAttente), erreur:Boolean(routes.erreur)};
+    var stationsCalculees = stationsDisponibles.map(function(station, index) {
+            var trajetRoutier = routes.trajets[index];
+            if (!trajetRoutier || !Number.isFinite(trajetRoutier.aller_km)
+                || !Number.isFinite(trajetRoutier.suite_km) || !Number.isFinite(trajetRoutier.detour_km)
+                || !Number.isFinite(trajetRoutier.duree_detour_minutes)) return null;
+            var distance = trajetRoutier.aller_km;
+            var distanceDestinationApresStation = destinationCalcul ? trajetRoutier.suite_km : 0;
+            var carburantTrajet = (distance + trajetRoutier.suite_km) * consommation / 100;
+            var carburantTotalDestination = (distance + distanceDestinationApresStation) * consommation / 100;
+            var carburantRestantDestination = Math.max(0, niveauCarburantDepart + quantiteACompleter - carburantTotalDestination);
+            // Les acces et retours sont deja inclus dans les trajets routiers.
+            var stationDepassee = false;
+            var penaliteDemiTourKm = 0;
+            var coutDemiTour = 0;
             var optimisation = calculerCoutOptimisationStation({
                 station: station,
                 prixReference: prixTrajetReference,
@@ -15955,7 +15947,8 @@ function calculerRentabiliteStations(
                 destinationCalcul: destinationCalcul,
                 distanceDestinationApresStation:
                     distanceDestinationApresStation,
-                distanceDirecteDestination: distanceDirecteDestination,
+                distanceDetourRoutierKm: trajetRoutier.detour_km,
+                dureeDetourRoutiereMinutes: trajetRoutier.duree_detour_minutes,
                 penaliteDemiTourKm: penaliteDemiTourKm
             });
 
@@ -15993,7 +15986,7 @@ function calculerRentabiliteStations(
             });
 
         }
-    );
+    ).filter(Boolean);
 
     stationsCalculees.forEach(
         function(station) {
@@ -16343,95 +16336,61 @@ function afficherTrajetPrepareDansEncadre() {
 }
 
 async function recalculerTrajetPrepareApresChangementAvantageTotalenergies() {
-
-    if (
-        recalculTrajetPrepareAvantageEnCours
-        || validationTrajetPrepareEnCours
-        || !trajetPrepare
-        || !trajetPrepare.destination
-    ) {
-        return;
-    }
-
-    if (navigationActive) {
-        verifierRavitaillementPlusRentablePendantNavigation();
-        return;
-    }
-
-    if (
-        latitudeUtilisateur === null
-        || longitudeUtilisateur === null
-    ) {
-        return;
-    }
-
+    if (!trajetPrepare || !trajetPrepare.destination) return;
+    var trajet = trajetPrepare;
+    var navigationAuDepart = navigationActive;
+    var revision = revisionOptionTotalenergies;
+    var carteActive = carteTotalenergiesActive();
+    var origine = navigationAuDepart
+        ? {latitude: latitudeUtilisateur, longitude: longitudeUtilisateur}
+        : trajet.origine || {latitude: latitudeUtilisateur, longitude: longitudeUtilisateur};
+    if (!Number.isFinite(origine.latitude) || !Number.isFinite(origine.longitude)) return;
     recalculTrajetPrepareAvantageEnCours = true;
-
     var resultat = document.getElementById("trip-planner-result");
-    var panneau = document.getElementById("trip-planner");
-
-    if (resultat && panneau && !panneau.hidden) {
-        resultat.textContent =
-            "Recalcul avec votre option TotalEnergies...";
-    }
-
+    afficherInfoItineraire("Recalcul avec votre option TotalEnergies…");
     try {
-        var routeDirecte = trajetPrepare.routeDirecte;
-
-        if (
-            !routeDirecte
-            || !routeDirecte.geometry
-            || !Array.isArray(routeDirecte.geometry.coordinates)
-        ) {
-            routeDirecte = await calculerRouteAvecCoordonnees([
-                {
-                    latitude: latitudeUtilisateur,
-                    longitude: longitudeUtilisateur
-                },
-                trajetPrepare.destination
-            ]);
-        }
-
-        var stationsFrance = await chargerStationsTrajetFrance();
-        var jaugeTrajet = Number(trajetPrepare.jauge);
-        var ravitaillement = calculerArretsRavitaillementRoute(
-            routeDirecte,
-            Number.isFinite(jaugeTrajet) ? jaugeTrajet : null,
-            stationsFrance
-        );
-
-        trajetPrepare.arrets = ravitaillement.arrets;
-        trajetPrepare.routeDirecte = routeDirecte;
-        trajetPrepare.autonomieKm = ravitaillement.autonomieKm;
-        trajetPrepare.distanceTrajetKm = ravitaillement.distanceTrajetKm;
-        trajetPrepare.economieTotale = ravitaillement.economieTotale || 0;
-        trajetPrepare.carburant = carburantRentabiliteActuel();
-        trajetPrepare.carteTotalenergies = carteTotalenergiesActive();
-
-        var pointsApercu = pointsTrajetPrepareDepuisArrets();
-        var routeApercu = await calculerRouteAvecCoordonnees(pointsApercu);
-        trajetPrepare.route = routeApercu;
-
-        afficherMarqueursRavitaillement(trajetPrepare.arrets);
-        dessinerItineraire(routeApercu.geometry.coordinates, true);
+        var routeDirecte = navigationAuDepart || !trajet.routeDirecte
+            ? await calculerRouteAvecCoordonnees([origine, trajet.destination])
+            : trajet.routeDirecte;
+        var stations = await chargerStationsTrajetFrance();
+        if (revision !== revisionOptionTotalenergies) return;
+        var jauge = Number(navigationAuDepart && jaugeTrajetTemporaire !== null
+            ? jaugeTrajetTemporaire : trajet.jauge);
+        var calcul = calculerArretsRavitaillementRoute(routeDirecte,
+            Number.isFinite(jauge) ? jauge : null, stations);
+        var points = [origine].concat((calcul.arrets || []).map(function(arret) {
+            return {latitude: arret.station.latitude, longitude: arret.station.longitude};
+        }), [trajet.destination]);
+        var route = await calculerRouteAvecCoordonnees(points);
+        // Ne jamais publier un resultat calcule pour une ancienne option ou destination.
+        if (trajetPrepare !== trajet || navigationActive !== navigationAuDepart
+            || revision !== revisionOptionTotalenergies) return;
+        Object.assign(trajet, {arrets: calcul.arrets, routeDirecte: routeDirecte, route: route,
+            autonomieKm: calcul.autonomieKm, distanceTrajetKm: calcul.distanceTrajetKm,
+            economieTotale: calcul.economieTotale || 0, carburant: carburantRentabiliteActuel(),
+            carteTotalenergies: carteActive});
+        afficherMarqueursRavitaillement(trajet.arrets);
+        dessinerItineraire(route.geometry.coordinates, !navigationAuDepart);
         masquerStationsClassiquesSurCarte();
-
-        if (resultat) {
-            resultat.innerHTML = htmlArretsRavitaillement(ravitaillement);
-        }
-
+        if (resultat) resultat.innerHTML = htmlArretsRavitaillement(calcul);
         configurerBoutonsNavigationExterneTrajetPrepare();
-        afficherEtatPlanificateurCalcule(true);
-        afficherTrajetPrepareDansEncadre();
-    } catch (erreur) {
-        if (resultat && panneau && !panneau.hidden) {
-            resultat.textContent =
-                "Recalcul TotalEnergies impossible pour le moment.";
+        if (navigationAuDepart) {
+            routeNavigation = route;
+            coordonneesRouteNavigation = route.geometry.coordinates;
+            definirEtapesNavigationDepuisRoute(route);
+            economieEstimeeFigee = trajet.economieTotale;
+            actualiserEncadreDestinationNavigation();
+            actualiserGuidageNavigation();
+        } else {
+            afficherEtatPlanificateurCalcule(true);
+            afficherTrajetPrepareDansEncadre();
         }
+    } catch (erreur) {
+        afficherInfoItineraire("Recalcul TotalEnergies impossible pour le moment.");
+        if (resultat) resultat.textContent = "Recalcul TotalEnergies impossible pour le moment.";
     } finally {
         recalculTrajetPrepareAvantageEnCours = false;
     }
-
 }
 
 window.annulerPreparationTrajet = function() {
@@ -16620,8 +16579,17 @@ window.calculerMeilleureStation = function() {
     var stationsCalculees = resultatRentabilite.stationsCalculees;
 
     if (!stationsCalculees.length) {
+        titre.textContent = "Station la plus économique";
+        sousTitre.textContent = resultatRentabilite.enAttente
+            ? "Calcul des trajets routiers…"
+            : "Comparaison indisponible : aucun trajet routier vérifié. Réessayez dans un instant.";
+        // Le bouton Arreter doit rester accessible pendant un recalcul.
+        boutonItineraire.disabled = !navigationActive;
+        if (boutonWaze) boutonWaze.disabled = true;
+        if (boutonGoogleMaps) boutonGoogleMaps.disabled = true;
         return;
     }
+    boutonItineraire.disabled = false;
 
     var meilleureStation = choisirMeilleureStationRentabilite(
         stationsCalculees,

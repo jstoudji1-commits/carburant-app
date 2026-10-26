@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 import asyncio
+from road_costs import station_road_costs
 from admin_auth import AdminAuth, AuthError, client_identity
 import csv
 from contextlib import asynccontextmanager, suppress
@@ -8891,6 +8892,28 @@ def valider_retour_intersection(donnees, cap_depart):
                 or entrees[sortie] is not True):
             raise ValueError("Demi-tour sans intersection autorisee identifiee")
     return donnees
+
+
+class PointComparaisonRoutiere(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    latitude: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    longitude: float = Field(ge=-180, le=180, allow_inf_nan=False)
+
+
+class ComparaisonRoutiere(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    origine: PointComparaisonRoutiere
+    stations: list[PointComparaisonRoutiere] = Field(min_length=1, max_length=40)
+    destination: Optional[PointComparaisonRoutiere] = None
+    cap_depart: Optional[float] = Field(default=None, ge=0, lt=360, allow_inf_nan=False)
+
+
+@app.post("/api/distances-stations")
+def distances_stations(requete: ComparaisonRoutiere):
+    try:
+        return station_road_costs(requete.origine, requete.stations, requete.destination, requete.cap_depart)
+    except (http_requests.RequestException, ValueError, KeyError, IndexError, TypeError) as erreur:
+        raise HTTPException(status_code=503, detail="Distances routieres indisponibles.") from erreur
 
 
 @app.post("/api/itineraire")
