@@ -6,7 +6,7 @@ for(const file of ['index.html','templates/index.html']){
  vm.createContext(c);
  for(const [start,end] of [['function carteTotalenergiesActive()', 'function actualiserControleCarteTotalenergies()'],['function htmlAvantageCarburantTotal(', 'var logoStationPrixMinimum'],['function prixRentabiliteAvecCarteTotalenergies(', 'function formaterEurosRentabilite(']]) vm.runInContext(source.slice(source.indexOf(start),source.indexOf(end)),c);
  const advantage={prix_plafond:1.99};
- for(const publicPrice of [2.15,1.99,1.85]){
+ for(const publicPrice of [2.25,2.15,1.99,1.85]){
   let station={prix:publicPrice,avantageTotalenergies:advantage};
   for(const active of [true,false,true,false]){
    enabled=active;

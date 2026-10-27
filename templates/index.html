@@ -9706,6 +9706,7 @@ function actualiserControleCarteTotalenergies() {
 
 }
 
+var choixCarteTotalenergiesSession = null;
 var revisionOptionTotalenergies = 0;
 var traitementOptionTotalenergies = null;
 
@@ -9736,7 +9737,8 @@ function actualiserEconomieDestinationTotalenergies() {
 
 window.modifierCarteTotalenergies = function() {
     var caseCarte = document.getElementById("carte-totalenergies-active");
-    localStorage.setItem(carteTotalenergiesCle, String(Boolean(caseCarte && caseCarte.checked)));
+    choixCarteTotalenergiesSession = Boolean(caseCarte && caseCarte.checked);
+    localStorage.setItem(carteTotalenergiesCle, String(choixCarteTotalenergiesSession));
     revisionOptionTotalenergies += 1;
     actualiserPastillesTotalenergies();
     programmerSauvegardeCompte();
@@ -11191,10 +11193,10 @@ function appliquerDonneesCompte(donnees) {
     );
     localStorage.setItem(
         carteTotalenergiesCle,
-        String(Boolean(
-            donnees.preferences
-            && donnees.preferences.carte_totalenergies
-        ))
+        // Une reponse de sauvegarde ancienne ne doit pas annuler le choix local.
+        String(choixCarteTotalenergiesSession !== null
+            ? choixCarteTotalenergiesSession
+            : Boolean(donnees.preferences && donnees.preferences.carte_totalenergies))
     );
 
     if (donnees.vehicule_actif) {
@@ -11591,6 +11593,7 @@ window.restaurerPremiumIOS = async function(event) {
 };
 
 function effacerDonneesCompteLocales() {
+    choixCarteTotalenergiesSession = null;
 
     generationSessionCompte += 1;
     applicationDonneesCompteEnCours = true;
