@@ -24,11 +24,11 @@ supprimé. Le navigateur n'enregistre plus le mot de passe dans sessionStorage.
 Après mot de passe correct, une adresse inconnue doit confirmer un code envoyé
 à ADMIN_2FA_EMAIL (contact@optiplein.fr par défaut). Durée du code : 10 minutes,
 usage unique, 5 essais maximum. L'envoi et les connexions sont limités.
-Le choix « Reconnaître cette adresse IP » expire après 30 jours.
+Le choix « Reconnaître cet accès » expire après 30 jours. Si l’IP est non vérifiable, seul le navigateur ayant validé le code est reconnu par son cookie HttpOnly.
 La session expire après 8 heures et est liée à l'identité réseau. Cookie
 HttpOnly, SameSite=Strict, Secure en HTTPS/Render. Changer ADMIN_PASSWORD
 invalide les sessions, codes et reconnaissances précédents.
-Le bouton « Oublier les IP reconnues » ferme toutes les sessions et impose une
+Le bouton « Oublier les accès reconnus » ferme toutes les sessions et impose une
 nouvelle vérification. La déconnexion révoque la session courante.
 
 ## Render et proxys
@@ -37,8 +37,9 @@ proxy sont présents, seuls les proxys explicitement approuvés dans
 ADMIN_TRUSTED_PROXY_CIDRS (liste CIDR séparée par virgules) peuvent être traversés,
 de droite à gauche, pour obtenir l'adresse du client. N'ajouter que des plages
 confirmées par l'hébergement, jamais une liste supposée ou 0.0.0.0/0.
-En l'absence d'une identification fiable, l'accès reste possible par code à
-chaque connexion ; aucune adresse partagée du proxy n'est mémorisée.
+En l'absence d'une identification fiable, le code est demandé au premier accès,
+puis après 30 jours si la mémorisation est cochée. Un nouveau navigateur ou la
+suppression du cookie impose un nouveau code. Aucune IP de proxy n'est mémorisée.
 Cette configuration doit être vérifiée sur l'environnement Render avant de
 promettre la reconnaissance automatique des IP habituelles.
 
@@ -71,5 +72,8 @@ Les limites globales anti-abus restent également actives.
 Lorsque l'adresse publique n'est pas fiable, le code et la session sont liés à
 un identifiant navigateur aléatoire dans un cookie HttpOnly, plutôt qu'à une
 empreinte des proxys pouvant changer entre deux requêtes. Cela n'autorise jamais
-la mémorisation d'une IP non vérifiée. Le mot de passe et le code restent requis.
+la mémorisation d'une IP non vérifiée. Le mot de passe reste requis à chaque connexion. La validation du code peut
+être mémorisée pour 30 jours fixes, sans prolongation lors des reconnexions.
+Le cookie navigateur persiste 30 jours ; la session reste limitée à 8 heures.
+« Oublier les accès reconnus » révoque aussi les navigateurs reconnus.
 Pour une adresse fiable, le contrôle strict de l'IP reste inchangé.

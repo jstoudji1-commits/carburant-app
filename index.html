@@ -9509,6 +9509,7 @@ function carburantEligibleAvantageTotalenergies(carburant) {
 
 function carteTotalenergiesActive() {
 
+    if (typeof choixCarteTotalenergiesSession === "boolean") return choixCarteTotalenergiesSession;
     return localStorage.getItem(carteTotalenergiesCle || "optiplein-carte-totalenergies") === "true";
 
 }
@@ -11389,6 +11390,7 @@ window.restaurerPremiumIOS = async function(event) {
 
 function effacerDonneesCompteLocales() {
     choixCarteTotalenergiesSession = null;
+    derniereComparaisonRoutiere = null;
 
     generationSessionCompte += 1;
     applicationDonneesCompteEnCours = true;
@@ -15634,13 +15636,16 @@ function distancesRoutieresRentabilite(stations, latitude, longitude, destinatio
     return {enAttente:true};
 }
 
+var derniereComparaisonRoutiere = null;
+
 function calculerRentabiliteStations(
     stationsDisponibles,
     latitudeCalcul,
     longitudeCalcul,
     reservoir,
     consommation,
-    quantiteACompleter
+    quantiteACompleter,
+    trajetsVerifies
 ) {
 
     var carburantRentabilite = carburantRentabiliteActuel();
@@ -15683,8 +15688,28 @@ function calculerRentabiliteStations(
             longitude: Number(destinationNavigation.longitude)
         }
         : null;
-    var routes = distancesRoutieresRentabilite(stationsDisponibles, latitudeCalcul, longitudeCalcul, destinationCalcul);
-    if (!routes.trajets) return {stationsCalculees:[], enAttente:Boolean(routes.enAttente), erreur:Boolean(routes.erreur)};
+    var routes = trajetsVerifies || distancesRoutieresRentabilite(stationsDisponibles, latitudeCalcul, longitudeCalcul, destinationCalcul);
+    var contexteComparaison = JSON.stringify([carburantRentabilite, destinationCalcul]);
+    if (!routes.trajets) {
+        // Conserver les derniers trajets verifies, jamais une distance a vol d'oiseau.
+        // Les prix et l'option sont recalcules avec leur valeur actuelle.
+        if (derniereComparaisonRoutiere && derniereComparaisonRoutiere.contexte === contexteComparaison) {
+            var precedentes = derniereComparaisonRoutiere.stations.map(function(ancienne) {
+                return stationsDisponibles.find(function(actuelle) {
+                    return memeStation(actuelle, ancienne);
+                }) || ancienne;
+            });
+            var precedent = calculerRentabiliteStations(precedentes, latitudeCalcul, longitudeCalcul,
+                reservoir, consommation, quantiteACompleter, derniereComparaisonRoutiere.routes);
+            precedent.actualisationEnCours = Boolean(routes.enAttente);
+            precedent.actualisationEchouee = Boolean(routes.erreur);
+            return precedent;
+        }
+        return {stationsCalculees:[], enAttente:Boolean(routes.enAttente), erreur:Boolean(routes.erreur)};
+    }
+    if (!trajetsVerifies && routes.trajets.some(function(trajet) {return trajet !== null;})) {
+        derniereComparaisonRoutiere = {contexte:contexteComparaison, stations:stationsDisponibles, routes:routes};
+    }
     var stationsCalculees = stationsDisponibles.map(function(station, index) {
             var trajetRoutier = routes.trajets[index];
             if (!trajetRoutier || !Number.isFinite(trajetRoutier.aller_km)
@@ -16176,6 +16201,10 @@ function afficherCalculRentabiliteEnAttentePrix(titre, sousTitre, boutonItinerai
     var infoItineraire = document.getElementById("itineraire-info");
 
     calculRentabiliteBloquePrixAnciens = true;
+    if (derniereComparaisonRoutiere) {
+        programmerSynchronisationPrix(3000);
+        return;
+    }
     titre.textContent = "Calcul en cours";
     sousTitre.textContent =
         "Actualisation des prix en cours. La station la plus rentable "
@@ -16276,7 +16305,9 @@ window.calculerMeilleureStation = function() {
 
     var rentabiliteElectrique = modeElectriqueRentabiliteActif();
 
-    if (!rentabiliteElectrique && prixTropAnciensPourCalcul()) {
+    var prixEnActualisation = !rentabiliteElectrique && prixTropAnciensPourCalcul();
+    if (prixEnActualisation && derniereComparaisonRoutiere) programmerSynchronisationPrix(3000);
+    if (prixEnActualisation && !derniereComparaisonRoutiere) {
         afficherCalculRentabiliteEnAttentePrix(
             titre,
             sousTitre,
@@ -16481,6 +16512,15 @@ window.calculerMeilleureStation = function() {
         economie,
         libelleReferenceRentabilite
     );
+
+    if (prixEnActualisation || resultatRentabilite.actualisationEnCours || resultatRentabilite.actualisationEchouee) {
+        var statutCalcul = document.createElement("span");
+        statutCalcul.className = "optimization-explanation";
+        statutCalcul.textContent = (prixEnActualisation || resultatRentabilite.actualisationEnCours)
+            ? "Actualisation en cours · derniers trajets calculés conservés."
+            : "Actualisation indisponible · derniers trajets calculés conservés.";
+        sousTitre.appendChild(statutCalcul);
+    }
 
     var economiePasseSousUnEuro =
         economie < 1

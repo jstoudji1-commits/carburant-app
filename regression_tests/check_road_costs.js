@@ -2,7 +2,7 @@ const fs = require('fs'), vm = require('vm'), assert = require('assert/strict');
 (async () => {
 for (const file of ['index.html', 'templates/index.html']) {
   const source = fs.readFileSync(file, 'utf8');
-  const c = {stationElectrique:()=>false, modeElectriqueRentabiliteActif:()=>false,
+  const c = {memeStation:(a,b)=>a.id===b.id,stationElectrique:()=>false, modeElectriqueRentabiliteActif:()=>false,
     coutTempsRentabiliteEuroHeure:0, carburantRentabiliteActuel:()=> 'diesel',
     carteTotalenergiesActive:()=>false, prixPublicStationRentabilite:s=>s.prix,
     prixRentabiliteAvecCarteTotalenergies:s=>s.prix, comptePremiumActif:()=>false,
@@ -25,10 +25,10 @@ for (const file of ['index.html', 'templates/index.html']) {
   assert.equal(result[1].tempsPerduMinutes,7);
   assert.equal(result[1].distanceCalculee,2);
   c.cacheDistancesStations.clear(); c.fetchAvecDelai=async()=>({ok:false});
-  assert.equal(compare().enAttente,true);
+  assert.equal(compare().actualisationEnCours,true);
   for(let i=0;i<12;i++) await Promise.resolve();
-  assert.equal(compare().erreur,true);
-  assert.equal(compare().stationsCalculees.length,0);
+  assert.equal(compare().actualisationEchouee,true);
+  assert.equal(compare().stationsCalculees.length,2);
   console.log(file+': road-based ranking, asymmetric journeys, missing routes and failure verified');
 }
 })().catch(error=>{console.error(error);process.exitCode=1;});

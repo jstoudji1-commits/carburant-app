@@ -451,14 +451,14 @@
             </div>
             <form id="admin-code-zone" onsubmit="validerCodeAdmin(event)" hidden>
                 <label>Code reçu par e-mail<input id="admin-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
-                <label><input type="checkbox" id="admin-remember" checked> Reconnaître cette adresse IP pendant 30 jours</label>
+                <label><input type="checkbox" id="admin-remember" checked> Reconnaître cet accès pendant 30 jours (navigateur si IP non vérifiable)</label>
                 <button type="submit">Valider le code</button>
             </form>
             <p class="status" id="login-status" role="status"></p>
         </section>
 
         <section class="dashboard" id="dashboard" hidden>
-            <h1>Tableau de bord</h1><button type="button" class="ghost" onclick="oublierReseauxAdmin()">Oublier les IP reconnues et fermer les sessions</button>
+            <h1>Tableau de bord</h1><button type="button" class="ghost" onclick="oublierReseauxAdmin()">Oublier les accès reconnus et fermer les sessions</button>
             <p class="muted">
                 Gestion simple des comptes utilisateurs et des inscriptions
                 testeurs OptiPlein.

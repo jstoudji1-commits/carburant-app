@@ -126,10 +126,10 @@ class AdminAuthTests(unittest.TestCase):
         token=self.auth.verify(result['challenge'],self.codes[-1],
             'unverified:proxyB',True,browser)
         self.auth.validate(token,'unverified:proxyC',browser)
-        # Proxy fallback must never create an IP exemption from 2FA.
+        # Only this verified browser is remembered; never the shared proxy IP.
         result=self.auth.start('secret-password','unverified:proxyC',False,
             lambda code,ip:self.codes.append(code),browser)
-        self.assertTrue(result['requires_code'])
+        self.assertFalse(result['requires_code'])
 
     def test_browser_binding_cannot_be_omitted_or_replaced(self):
         result=self.auth.start('secret-password','unverified:proxyA',False,

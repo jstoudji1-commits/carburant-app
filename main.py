@@ -7711,7 +7711,7 @@ def connexion_admin_auth(donnees: AdminConnexion, request: Request, response: Re
         resultat = service_auth_admin().start(
             donnees.mot_de_passe, identite, fiable, envoyer_code_admin, browser
         )
-        response.set_cookie("optiplein_admin_browser", browser, max_age=8*3600,
+        response.set_cookie("optiplein_admin_browser", browser, max_age=30*86400,
             httponly=True, secure=bool(os.getenv("RENDER")) or APP_BASE_URL.startswith("https://")
             or request.url.scheme == "https", samesite="strict", path="/api/admin")
         token = resultat.pop("token", None)
@@ -7749,6 +7749,7 @@ def deconnexion_admin_auth(request: Request, response: Response):
 def oublier_reseaux_admin(request: Request, response: Response):
     verifier_admin(request)
     service_auth_admin().forget(request.cookies.get("optiplein_admin", ""))
+    response.delete_cookie("optiplein_admin_browser", path="/api/admin")
     response.delete_cookie("optiplein_admin", path="/api/admin")
     return {"ok": True}
 

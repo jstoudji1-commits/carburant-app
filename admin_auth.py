@@ -92,9 +92,13 @@ class AdminAuth:
         self.rate('global', 'login', 100, 600)
         error = None
         known_ip = False
+        known_browser = False
         with self.transaction() as db:
             known = self.read(db, 'trusted:' + self.digest(identity))
             known_ip = reliable and known.get('expires', 0) > self.now()
+            if browser and not reliable and identity.startswith('unverified:'):
+                remembered = self.read(db, 'trusted-browser:' + self.digest(browser))
+                known_browser = remembered.get('expires', 0) > self.now()
             key = 'backoff:' + self.digest(identity)
             state = self.read(db, key)
             remaining = math.ceil(state.get('until', 0) - self.now())
@@ -119,9 +123,9 @@ class AdminAuth:
             self.rate(identity, 'login', 10, 600)
         if error:
             raise error
-        if known_ip:
+        if known_ip or known_browser:
             with self.transaction() as db:
-                return {'token': self.session(db, identity), 'requires_code': False}
+                return {'token': self.session(db, identity, browser if known_browser else None), 'requires_code': False}
         self.rate('global', 'email', 10, 600)
         self.rate(identity, 'email', 3, 600)
         challenge = secrets.token_urlsafe(32)
@@ -158,6 +162,8 @@ class AdminAuth:
                     db.execute('DELETE FROM auth WHERE key=?', (key,))
                     if remember and data.get('reliable'):
                         self.write(db, 'trusted:' + self.digest(identity), {'expires': self.now()+30*86400})
+                    if remember and data.get('browser'):
+                        self.write(db, 'trusted-browser:' + data['browser'], {'expires': self.now()+30*86400})
                     db.execute('DELETE FROM auth WHERE key=?', ('backoff:' + data['identity'],))
                     token = self.session(db, identity, browser if data.get('browser') else None)
         if not token:
@@ -182,4 +188,4 @@ class AdminAuth:
 
     def forget(self, token):
         with self.transaction() as db:
-            db.execute("DELETE FROM auth WHERE key LIKE 'trusted:%' OR key LIKE 'challenge:%' OR key LIKE 'session:%'")
+            db.execute("DELETE FROM auth WHERE key LIKE 'trusted:%' OR key LIKE 'trusted-browser:%' OR key LIKE 'challenge:%' OR key LIKE 'session:%'")
