@@ -1,4 +1,5 @@
-﻿from fastapi import FastAPI, Request
+﻿from ads_tracking import mark_validation, read_receipt, receipt_cookie, KINDS, CONSENT_COOKIE
+from fastapi import FastAPI, Request
 from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
@@ -5755,9 +5756,9 @@ PAGES_EDITORIALES = {
             "itin\u00e9raire pour aider chaque conducteur \u00e0 prendre une d\u00e9cision "
             "simple : o\u00f9 faire le plein sans perdre son temps ni son argent."
         ),
-        "cta_label": "Créer mon compte testeur",
+        "cta_label": "Créer mon compte testeur Android",
         "cta_url": "/landing#devenir-testeur",
-        "secondary_cta_label": "Ouvrir l'application",
+        "secondary_cta_label": "Voir l'application",
         "secondary_cta_url": "/web",
         "highlights": [
             {
@@ -7149,6 +7150,7 @@ def renforcer_pages_pour_adsense():
                 "title": "Cookies publicitaires",
                 "paragraphs": [
                     "Lorsque Google AdSense est activé, Google peut utiliser des cookies pour diffuser, limiter ou mesurer les annonces. Ces traitements sont encadrés par les règles de Google et par les choix de consentement ou de personnalisation disponibles pour l'utilisateur selon son navigateur et sa région.",
+                    "Avec votre accord via le bouton Mesure publicitaire, Google Ads mesure les inscriptions de comptes et de testeurs après validation de leur e-mail. Les deux parcours utilisent la conversion Inscription. Le suivi ne transmet ni votre adresse e-mail ni le jeton de validation. Vous pouvez refuser ou retirer votre accord à tout moment. Le choix est conservé 180 jours ; les confirmations en attente expirent après 24 heures. La mesure est limitée au navigateur Web.",
                     "La publicité ne doit pas influencer le classement des stations, le calcul de rentabilité ou les ravitaillements proposés. Les annonces doivent rester identifiables et séparées de l'interface de décision afin de préserver la confiance de l'utilisateur.",
                 ],
             },
@@ -8537,6 +8539,19 @@ def inscrire_testeur(inscription: InscriptionTesteur, request: Request):
     }
 
 
+@app.get("/api/ads/conversions")
+def conversions_ads_validees(request: Request, response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    if request.cookies.get(CONSENT_COOKIE) != "granted":
+        return {"conversions": []}
+    conversions = []
+    for kind in KINDS:
+        receipt = read_receipt(request.cookies.get(receipt_cookie(kind), ""), secret_session_compte())
+        if receipt and receipt["kind"] == kind:
+            conversions.append(receipt)
+    return {"conversions": conversions}
+
+
 @app.get("/api/testeurs/validation-email")
 def valider_email_testeur(token: str, request: Request):
 
@@ -8588,10 +8603,10 @@ def valider_email_testeur(token: str, request: Request):
                 testeur.pop("bienvenue_email_error_at", None)
             enregistrer_testeurs_landing(donnees)
 
-        return RedirectResponse(
+        return mark_validation(RedirectResponse(
             url="/landing?testeur_valide=1#devenir-testeur",
             status_code=303,
-        )
+        ), request, "testeur", secret_session_compte())
 
     raise HTTPException(
         status_code=400,
@@ -9473,10 +9488,10 @@ def valider_email_compte(token: str, request: Request):
         synchroniser_meta_securite(utilisateur)
         enregistrer_comptes_utilisateurs(comptes)
 
-        return RedirectResponse(
+        return mark_validation(RedirectResponse(
             url="/web?email_verifie=1",
             status_code=303,
-        )
+        ), request, "compte", secret_session_compte())
 
     raise HTTPException(
         status_code=400,

@@ -60,10 +60,11 @@
         banniere.innerHTML = ''
             + '<img class="ios-download-banner-logo" src="/static/favicon.png" alt="">'
             + '<div class="ios-download-banner-copy">'
-            + '<p class="ios-download-banner-title">OptiPlein est sur iPhone</p>'
-            + '<p class="ios-download-banner-text">Installez l’app pour une expérience plus fluide.</p>'
+            + '<p class="ios-download-banner-label">APPLICATION IPHONE</p>'
+            + '<p class="ios-download-banner-title">Emportez OptiPlein avec vous</p>'
+            + '<p class="ios-download-banner-text">Téléchargez l’application depuis l’App Store.</p>'
             + '</div>'
-            + '<a class="ios-download-banner-action" href="' + APP_STORE_URL + '" rel="noopener">Télécharger</a>'
+            + '<a class="ios-download-banner-action" href="' + APP_STORE_URL + '" rel="noopener" aria-label="Télécharger OptiPlein sur l’App Store">Télécharger sur l’App Store <span aria-hidden="true">↗</span></a>'
             + '<button class="ios-download-banner-close" type="button" aria-label="Masquer la bannière">&times;</button>';
 
         banniere
