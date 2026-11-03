@@ -22,7 +22,46 @@
     </script>
     <style>
         html.plateforme-ios #premium-note { display: none !important; }
-    </style>
+    
+/* Progression compacte du calcul de rentabilité. */
+.economy-progress{
+    position:relative;
+    display:block;
+    width:min(100%, 240px);
+    height:22px;
+    margin:8px 0 4px;
+    overflow:hidden;
+    border:1px solid #bce5c7;
+    border-radius:999px;
+    background:#edf8f0;
+    box-sizing:border-box;
+    isolation:isolate;
+}
+.economy-progress-fill{
+    position:absolute;
+    inset:0 auto 0 0;
+    width:var(--economy-progress);
+    border-radius:inherit;
+    background:linear-gradient(90deg,#17b344,#078b35);
+    transition:width .3s ease;
+}
+.economy-progress-label{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#063d1a;
+    font-size:12px;
+    line-height:20px;
+    font-weight:800;
+    text-shadow:0 0 3px #fff,0 0 3px #fff;
+}
+@media (prefers-reduced-motion:reduce){
+    .economy-progress-fill{transition:none;}
+}
+
+</style>
     <meta name="robots" content="noindex, follow">
     <meta
         name="description"
@@ -16437,6 +16476,22 @@ window.annulerPreparationTrajet = function() {
 
 };
 
+function afficherProgressionRentabilite(pourcentage) {
+    var titre = document.getElementById("economy-title");
+    var sousTitre = document.getElementById("economy-subtitle");
+    if (!titre || !sousTitre) return;
+    var progression = Math.max(0, Math.min(100, Math.round(Number(pourcentage) || 0)));
+    titre.textContent = "Station la plus économique";
+    // Étapes réelles du cycle : GPS, stations/prix, puis trajets routiers.
+    sousTitre.innerHTML = '<span class="economy-progress" role="progressbar"'
+        + ' aria-label="Calcul de la station la plus rentable" aria-valuemin="0"'
+        + ' aria-valuemax="100" aria-valuenow="' + progression + '"'
+        + ' style="--economy-progress:' + progression + '%">'
+        + '<span class="economy-progress-fill" aria-hidden="true"></span>'
+        + '<span class="economy-progress-label" aria-hidden="true">'
+        + progression + ' %</span></span>';
+}
+
 function afficherCalculRentabiliteEnAttentePrix(titre, sousTitre, boutonItineraire) {
 
     var boutonWaze = document.getElementById("economy-waze-button");
@@ -16448,10 +16503,7 @@ function afficherCalculRentabiliteEnAttentePrix(titre, sousTitre, boutonItinerai
         programmerSynchronisationPrix(3000);
         return;
     }
-    titre.textContent = "Calcul en cours";
-    sousTitre.textContent =
-        "Actualisation des prix en cours. La station la plus rentable "
-        + "s'affichera d\u00e8s que les prix seront v\u00e9rifi\u00e9s.";
+    afficherProgressionRentabilite(50);
 
     if (boutonItineraire) {
         boutonItineraire.hidden = true;
@@ -16550,10 +16602,13 @@ window.calculerMeilleureStation = function() {
     if (!positionCalcul || positionCalcul.carburant !== carburantRentabiliteActuel()
         || positionCalcul.rayon !== rayonCalculEconomieKm
         || Date.now() - positionCalcul.date >= intervalleCalculRentabiliteActuel()) {
-        sousTitre.textContent = "Actualisation de votre position GPS…";
+        afficherProgressionRentabilite(10);
         actualiserRentabilitePeriodiquement(true);
         return;
     }
+
+    var latitudeCalcul = positionCalcul.latitude;
+    var longitudeCalcul = positionCalcul.longitude;
 
     var stationsDisponibles = stationsEconomie.filter(
         function(station) {
@@ -16599,15 +16654,18 @@ window.calculerMeilleureStation = function() {
 
     if (!stationsCalculees.length) {
         titre.textContent = "Station la plus économique";
-        sousTitre.textContent = resultatRentabilite.enAttente
-            ? "Calcul des trajets routiers…"
-            : "Comparaison indisponible : aucun trajet routier vérifié. Réessayez dans un instant.";
+        if (resultatRentabilite.enAttente) {
+            afficherProgressionRentabilite(70);
+        } else {
+            sousTitre.textContent = "Comparaison indisponible : aucun trajet routier vérifié. Réessayez dans un instant.";
+        }
         // Le bouton Arreter doit rester accessible pendant un recalcul.
         boutonItineraire.disabled = !navigationActive;
         if (boutonWaze) boutonWaze.disabled = true;
         if (boutonGoogleMaps) boutonGoogleMaps.disabled = true;
         return;
     }
+    afficherProgressionRentabilite(100);
     boutonItineraire.disabled = false;
 
     var meilleureStation = choisirMeilleureStationRentabilite(
@@ -17056,8 +17114,7 @@ async function actualiserRentabilitePeriodiquement(force) {
     dernierCalculPeriodiqueRentabilite = Date.now();
     positionCycleRentabilite = null;
     derniereComparaisonRoutiere = null;
-    var statutCycle = document.getElementById("economy-subtitle");
-    if (statutCycle) statutCycle.textContent = "Actualisation GPS et comparaison du top 10…";
+    afficherProgressionRentabilite(10);
     ["economy-route-button", "economy-waze-button", "economy-google-button"].forEach(function(id) {
         var bouton = document.getElementById(id);
         if (bouton) bouton.disabled = !(id === "economy-route-button" && navigationActive);
@@ -17074,6 +17131,7 @@ async function actualiserRentabilitePeriodiquement(force) {
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) throw new Error("Position invalide");
         var carburant = carburantRentabiliteActuel();
         var rayon = rayonCalculEconomieKm;
+        afficherProgressionRentabilite(35);
         var stationsChargees = await actualiserStationsEconomieVehicule(latitude, longitude, null);
         if (!stationsChargees || carburant !== carburantRentabiliteActuel() || rayon !== rayonCalculEconomieKm) {
             throw new Error("Stations indisponibles, nouvel essai au prochain cycle");
@@ -18874,8 +18932,6 @@ window.calculerTrajetPrepare = async function() {
         demarrerGeolocalisation();
         return;
     }
-    var latitudeCalcul = positionCalcul.latitude;
-    var longitudeCalcul = positionCalcul.longitude;
 
     if (!destinationChamp.value.trim()) {
         destinationChamp.focus();
