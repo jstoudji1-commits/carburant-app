@@ -52,5 +52,22 @@ for (const file of ['index.html', 'templates/index.html']) {
     assert.equal(context.comptePremiumActif(), true, 'Existing Premium plan remains active');
     connected = false;
     assert.equal(context.comptePremiumActif(), false, 'Logged-out account has no Premium');
+    const placesContext = vm.createContext({
+        comptePremiumActif: () => false,
+        alert: text => assert.match(text, /Premium/),
+        window: {},
+    });
+    for (const signature of [
+        'function ouvrirEditeurLieuTrajet(type) {',
+        'function enregistrerLieuTrajetDepuisDestination(type, destination, adresseSaisie) {',
+        'window.utiliserLieuTrajet = function(type) {',
+    ]) {
+        vm.runInContext(extract(signature, signature.startsWith('window.') ? '\n};' : '\n}'), placesContext);
+    }
+    for (const type of ['home', 'work']) {
+        assert.equal(placesContext.ouvrirEditeurLieuTrajet(type), false, 'Free accounts cannot edit saved places');
+        assert.equal(placesContext.enregistrerLieuTrajetDepuisDestination(type, {latitude: 43, longitude: 5}), false, 'Free accounts cannot save places');
+        assert.equal(placesContext.window.utiliserLieuTrajet(type), false, 'Free accounts cannot use either shortcut');
+    }
     console.log(`${file}: account access checks passed`);
 }

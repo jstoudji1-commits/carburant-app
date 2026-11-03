@@ -31,8 +31,9 @@ function remplirFicheAdmin(fiche) {
     const details=champFiche('details');details.replaceChildren();
     const referral=document.createElement('p');referral.textContent='Code de parrainage : '+(fiche.parrainage.code||'non attribué')
         +' · Parrain : '+(fiche.parrain||fiche.parrainage.parrain_email||'aucun')
-        +' · Mois de bonus cumulés : '+(fiche.parrainage.bonus_mois_total||0);details.append(referral);
-    details.append(tableauFiche('Comptes filleuls',fiche.filleuls_comptes,[['email','E-mail'],['plan','Formule'],['email_verified','E-mail validé'],['bonus_attribue','Bonus attribué'],['created_at','Inscription']]));
+        +' · Mois de bonus cumulés : '+(fiche.parrainage.bonus_mois_total||0)
+        +' · Mois offert reçu en tant que filleul : '+(fiche.parrainage.bonus_attribue_au_filleul?'Oui':'Non');details.append(referral);
+    details.append(tableauFiche('Comptes filleuls',fiche.filleuls_comptes,[['email','E-mail'],['plan','Formule'],['email_verified','E-mail validé'],['bonus_attribue','Bonus offert au parrain'],['bonus_attribue_au_filleul','Bonus offert au filleul'],['created_at','Inscription']]));
     details.append(tableauFiche('Historique des parrainages validés (adresses parfois masquées)',fiche.parrainage.filleuls||[],[['email','Filleul'],['statut','Statut'],['bonus_mois','Mois offerts'],['validated_at','Validation']]));
     details.append(tableauFiche('Parrainages en attente',fiche.parrainage.filleuls_en_attente||[],[['email','Filleul'],['statut','Statut'],['created_at','Inscription']]));
     details.append(tableauFiche('Historique des économies synchronisées',fiche.historique,[['date','Date'],['economie','Économie (€)'],['station','Station'],['vehicule','Véhicule'],['carburant','Carburant']]));

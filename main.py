@@ -1464,6 +1464,9 @@ def date_bonus_base_parrain(donnees):
 
 def attribuer_bonus_parrainage_premium(comptes, filleul_email, filleul_donnees):
 
+    filleul = comptes.get("users", {}).get(normaliser_email(filleul_email), {})
+    if not filleul.get("email_verified", False):
+        return None
     parrainage_filleul = dict(filleul_donnees.get("parrainage", {}) or {})
     if parrainage_filleul.get("bonus_attribue_au_parrain"):
         return None
@@ -1476,6 +1479,11 @@ def attribuer_bonus_parrainage_premium(comptes, filleul_email, filleul_donnees):
     if not parrain or normaliser_email(parrain_email) == normaliser_email(filleul_email):
         return None
 
+    identifiant_filleul = hashlib.sha256(normaliser_email(filleul_email).encode()).hexdigest()
+    if any(ligne.get("filleul_id") == identifiant_filleul
+           for ligne in parrain.get("data", {}).get("parrainage", {}).get("filleuls", [])
+           if isinstance(ligne, dict)):
+        return None
     maintenant = date_iso_maintenant()
     donnees_parrain = parrain.setdefault("data", {})
     parrainage_parrain = dict(donnees_parrain.get("parrainage", {}) or {})
@@ -1502,7 +1510,8 @@ def attribuer_bonus_parrainage_premium(comptes, filleul_email, filleul_donnees):
     filleuls.append(
         {
             "email": filleul_email,
-            "statut": "premium_valide",
+            "statut": "email_valide",
+            "filleul_id": identifiant_filleul,
             "bonus_mois": 1,
             "validated_at": maintenant,
         }
@@ -1523,15 +1532,20 @@ def attribuer_bonus_parrainage_premium(comptes, filleul_email, filleul_donnees):
     parrain["updated_at"] = maintenant
 
     parrainage_filleul["bonus_attribue_au_parrain"] = True
-    parrainage_filleul["premium_validated_at"] = maintenant
+    parrainage_filleul["bonus_attribue_au_filleul"] = True
+    parrainage_filleul["bonus_validated_at"] = maintenant
+    parrainage_filleul["bonus_until"] = mois_entre_dates(date_bonus_base_parrain(filleul_donnees), 1).isoformat()
+    parrainage_filleul["bonus_mois_total"] = int(parrainage_filleul.get("bonus_mois_total", 0) or 0) + 1
     filleul_donnees["parrainage"] = parrainage_compte_nettoye(
         parrainage_filleul,
         filleul_email,
     )
 
+    filleul_donnees["premium"] = premium_compte_nettoye(filleul_donnees)
     return {
         "parrain_email": parrain_email,
         "bonus_until": bonus_until.isoformat(),
+        "bonus_filleul_until": parrainage_filleul["bonus_until"],
     }
 
 
@@ -2719,6 +2733,7 @@ def parrainage_compte_nettoye(parrainage, email=""):
         filleuls.append(
             {
                 "email": masquer_email(filleul.get("email", "")),
+                "filleul_id": limiter_texte_compte(filleul.get("filleul_id", ""), 64),
                 "statut": limiter_texte_compte(
                     filleul.get("statut", "premium_valide"),
                     40,
@@ -2778,8 +2793,11 @@ def parrainage_compte_nettoye(parrainage, email=""):
         "bonus_attribue_au_parrain": bool(
             parrainage.get("bonus_attribue_au_parrain")
         ),
+        "bonus_attribue_au_filleul": bool(parrainage.get("bonus_attribue_au_filleul")),
+        "bonus_validated_at": limiter_texte_compte(parrainage.get("bonus_validated_at", ""), 80),
         "conditions": (
-            "1 filleul Premium validé = 1 mois Premium offert en réserve. "
+            "Après inscription avec un code parrain et validation de son e-mail, "
+            "le filleul et le parrain reçoivent chacun 1 mois Premium offert. "
             "Aucune limite de filleuls. Le bonus est appliqué une seule fois "
             "par filleul, hors auto-parrainage et comptes frauduleux."
         ),
@@ -7940,6 +7958,7 @@ def fiche_utilisateur_admin(email, comptes):
             filleuls.append({"email": adresse, "created_at": autre.get("created_at", ""),
                 "email_verified": bool(autre.get("email_verified")),
                 "bonus_attribue": bool(relation.get("bonus_attribue_au_parrain")),
+                "bonus_attribue_au_filleul": bool(relation.get("bonus_attribue_au_filleul")),
                 "plan": (autre.get("data", {}) or {}).get("plan", "free")})
         if parrainage.get("parrain_code") and relation.get("code") == parrainage["parrain_code"]:
             parrain = adresse
@@ -7953,7 +7972,7 @@ def fiche_utilisateur_admin(email, comptes):
         "plateforme_derniere_connexion": donnees.get("plateforme_derniere_connexion", ""),
         "parrainage": selection(parrainage, ("code", "parrain_code", "parrain_email",
             "bonus_until", "bonus_mois_total", "filleuls", "filleuls_en_attente",
-            "bonus_attribue_au_parrain")),
+            "bonus_attribue_au_parrain", "bonus_attribue_au_filleul")),
         "parrain": parrain, "filleuls_comptes": filleuls,
         "statistiques": statistiques_compte(historique), "historique": historique,
         "vehicules": [selection(v, ("id", "nom", "profil", "motorisation", "reservoir", "conso", "jauge"))
@@ -9454,8 +9473,16 @@ def connecter_compte(identifiants: CompteIdentifiants, request: Request):
     }
 
 
+validation_parrainage_lock = threading.Lock()
+
+
 @app.get("/api/compte/validation-email")
 def valider_email_compte(token: str, request: Request):
+    with validation_parrainage_lock:
+        return valider_email_compte_verrouille(token, request)
+
+
+def valider_email_compte_verrouille(token: str, request: Request):
 
     empreinte = hashlib.sha256(
         token.encode("utf-8")
@@ -9486,6 +9513,7 @@ def valider_email_compte(token: str, request: Request):
         utilisateur.pop("email_verification_expires_at", None)
         utilisateur["updated_at"] = date_iso_maintenant()
         synchroniser_meta_securite(utilisateur)
+        attribuer_bonus_parrainage_premium(comptes, email, utilisateur.setdefault("data", {}))
         enregistrer_comptes_utilisateurs(comptes)
 
         return mark_validation(RedirectResponse(
@@ -9841,11 +9869,7 @@ def activer_premium_apple(
         **transaction_verifiee,
         "verified_at": maintenant,
     }
-    bonus_parrainage = attribuer_bonus_parrainage_premium(
-        comptes,
-        email,
-        donnees,
-    )
+    bonus_parrainage = None  # Le parrainage est attribue a la validation de l'e-mail.
     donnees["premium"] = premium_compte_nettoye(donnees)
     utilisateur["updated_at"] = maintenant
     enregistrer_comptes_utilisateurs(comptes)

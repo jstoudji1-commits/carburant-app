@@ -4677,10 +4677,10 @@ body{
                             Parrainez vos proches, gagnez du Premium
                         </p>
                         <p class="referral-copy">
-                            Chaque filleul qui valide un abonnement Premium avec
-                            Apple ajoute automatiquement 1 mois Premium en
-                            r&eacute;serve sur votre compte. Il n'y a pas de
-                            limite de filleuls.
+                            Invitez un proche avec votre code. Dès qu'il crée son
+                            compte et valide son e-mail, vous recevez chacun
+                            1 mois de Premium offert. Vos mois sont cumulables,
+                            sans limite de filleuls.
                         </p>
                         <div class="referral-code-box">
                             <span>
@@ -4727,11 +4727,11 @@ body{
 
                     <div class="premium-panel-card">
                         <p class="premium-panel-title">
-                            Filleuls Premium valid&eacute;s
+                            Filleuls inscrits et valid&eacute;s
                         </p>
                         <ul class="referral-list" id="referral-list"></ul>
                         <p class="premium-empty" id="referral-empty">
-                            Aucun filleul Premium valid&eacute; pour le moment.
+                            Aucun filleul valid&eacute; pour le moment.
                         </p>
                     </div>
 
@@ -4740,15 +4740,12 @@ body{
                             Conditions du parrainage
                         </p>
                         <p class="referral-terms">
-                            Le bonus est accord&eacute; uniquement apr&egrave;s
-                            validation effective du Premium du filleul par Apple.
-                            La cr&eacute;ation d'un compte seule ne suffit pas.
-                            Le bonus est de 1 mois Premium par filleul valid&eacute;,
-                            sans limite de filleuls. Un filleul ne peut d&eacute;clencher
-                            qu'un seul bonus, l'auto-parrainage est interdit, et
-                            OptiPlein peut refuser ou retirer un bonus en cas de
-                            fraude, d'abus, de remboursement ou d'annulation de
-                            transaction.
+                            Un mois Premium est offert au parrain et au filleul après
+                            inscription avec le code parrain et validation de l'e-mail
+                            du filleul, sans achat requis. Le mois s'ajoute aux droits
+                            Premium existants. Un seul bonus par filleul ;
+                            l'auto-parrainage et les comptes frauduleux sont exclus.
+                            Aucun abonnement payant n'est créé par ce bonus.
                         </p>
                     </div>
                 </section>
@@ -9962,10 +9959,10 @@ function actualiserParrainageCompte() {
     filleuls.slice(0, 30).forEach(function(filleul) {
         var item = document.createElement("li");
         var nom = document.createElement("strong");
-        nom.textContent = filleul.email || "Filleul Premium";
+        nom.textContent = filleul.email || "Filleul";
 
         var statut = document.createElement("span");
-        statut.textContent = "Premium valid\u00e9"
+        statut.textContent = (filleul.statut === "email_valide" ? "E-mail validé" : "Premium validé")
             + (
                 filleul.validated_at
                     ? " le " + formatterDateCourteOptiPlein(filleul.validated_at)
@@ -10057,7 +10054,7 @@ function lienParrainageCompte(code) {
 function messageParrainageCompte(code) {
 
     return "Mon code parrain OptiPlein : " + code
-        + ". Active Premium avec l'app iOS et je gagne 1 mois offert : "
+        + ". Inscris-toi avec mon code et valide ton e-mail : nous recevons chacun 1 mois Premium offert ! "
         + lienParrainageCompte(code);
 
 }
@@ -10341,6 +10338,11 @@ function masquerSuggestionsLieuTrajet() {
 
 function enregistrerLieuTrajetDepuisDestination(type, destination, adresseSaisie) {
 
+    if (!comptePremiumActif()) {
+        alert("Maison et Travail sont inclus avec OptiPlein Premium.");
+        return false;
+    }
+
     var libelle = libelleTypeLieuTrajet(type);
 
     if (
@@ -10450,6 +10452,11 @@ function demanderSuggestionsLieuTrajet() {
 
 function ouvrirEditeurLieuTrajet(type) {
 
+    if (!comptePremiumActif()) {
+        alert("Maison et Travail sont inclus avec OptiPlein Premium.");
+        return false;
+    }
+
     var editeur = obtenirEditeurLieuTrajet();
     var libelle = libelleTypeLieuTrajet(type);
     var lieux = lireLieuxTrajet();
@@ -10490,6 +10497,11 @@ function ouvrirEditeurLieuTrajet(type) {
 }
 
 async function validerEditionLieuTrajet() {
+
+    if (!comptePremiumActif()) {
+        alert("Maison et Travail sont inclus avec OptiPlein Premium.");
+        return false;
+    }
 
     var champ = document.getElementById("trip-place-editor-input");
     var statut = document.getElementById("trip-place-editor-status");
@@ -10576,12 +10588,17 @@ function actualiserLieuxTrajet() {
             "no-trip-button",
             !comptePremiumActif()
         );
-        raccourcis.hidden = false;
+        raccourcis.hidden = !comptePremiumActif();
     }
 
 }
 
 window.utiliserLieuTrajet = function(type) {
+
+    if (!comptePremiumActif()) {
+        alert("Maison et Travail sont inclus avec OptiPlein Premium.");
+        return false;
+    }
 
     var bouton = document.getElementById(
         type === "work" ? "trip-work-button" : "trip-home-button"
@@ -11631,7 +11648,7 @@ function ouvrirCreationCompteDepuisLanding() {
             actualiserInterfaceCompte();
             definirStatutCompte(
                 codeParrainParametre
-                    ? "Cr\u00e9ez votre compte avec ce code parrain, puis activez Premium avec Apple si vous le souhaitez."
+                    ? "Cr\u00e9ez votre compte avec ce code parrain et validez votre e-mail : vous recevrez chacun 1 mois Premium offert."
                     : "Cr\u00e9ez votre mot de passe pour activer votre compte OptiPlein.",
                 "success"
             );
@@ -12677,8 +12694,8 @@ function suivrePositionGpsSurCarte(
         ? conteneur.clientHeight
         : window.innerHeight;
     var decalageVertical = navigationActive
-        ? Math.round(hauteurCarte * 0.29)
-        : Math.round(hauteurCarte * 0.14);
+        ? Math.round(hauteurCarte * 0.34)
+        : Math.round(hauteurCarte * 0.20);
     var dureeSuivi = navigationActive
         ? vitesseUtilisateurMps >= 19
             ? 1250
@@ -16515,12 +16532,10 @@ window.calculerMeilleureStation = function() {
         libelleReferenceRentabilite
     );
 
-    if (prixEnActualisation || resultatRentabilite.actualisationEnCours || resultatRentabilite.actualisationEchouee) {
+    if (!prixEnActualisation && !resultatRentabilite.actualisationEnCours && resultatRentabilite.actualisationEchouee) {
         var statutCalcul = document.createElement("span");
         statutCalcul.className = "optimization-explanation";
-        statutCalcul.textContent = (prixEnActualisation || resultatRentabilite.actualisationEnCours)
-            ? "Actualisation en cours · derniers trajets calculés conservés."
-            : "Actualisation indisponible · derniers trajets calculés conservés.";
+        statutCalcul.textContent = "Actualisation indisponible · derniers trajets calculés conservés.";
         sousTitre.appendChild(statutCalcul);
     }
 
