@@ -15,14 +15,12 @@ for(const file of ['index.html','templates/index.html']){
  Object.assign(c,{stationElectrique:()=>false,modeElectriqueRentabiliteActif:()=>false,coutTempsRentabiliteEuroHeure:0,carburantRentabiliteActuel:()=> 'gazole',comptePremiumActif:()=>false,destinationNavigation:null,distancesRoutieresRentabilite:()=>({trajets:[{aller_km:1,suite_km:2,detour_km:3,duree_detour_minutes:5}]})});
  c.appliquerDonneesCompte({preferences:{carte_totalenergies:true}});
  assert.equal(c.carteTotalenergiesActive(),true);
- // iPhone closed before the delayed save: restore the unsaved OFF choice.
- values.set('optiplein-totalenergies-en-attente','false');
- vm.runInContext(s.slice(s.indexOf('var choixTotalenergiesEnAttente ='),s.indexOf('var revisionOptionTotalenergies =')),c);
+ // The only stored choice survives restart and stale server preferences.
+ c.localStorage.setItem(c.carteTotalenergiesCle,'false');
  c.appliquerDonneesCompte({preferences:{carte_totalenergies:true}});
- assert.equal(c.carteTotalenergiesActive(),false,'Unsaved OFF survives app restart and stale server preference');
+ assert.equal(c.carteTotalenergiesActive(),false);
  let station={id:'total',prix:2.25,avantageTotalenergies:{prix_plafond:1.99}};
  for(const enabled of [true,false,true,false]){
-  c.choixCarteTotalenergiesSession=enabled;
   c.localStorage.setItem(c.carteTotalenergiesCle,String(enabled));
   // An older server response arrives after the user's click.
   c.appliquerDonneesCompte({preferences:{carte_totalenergies:!enabled}});
@@ -30,6 +28,7 @@ for(const file of ['index.html','templates/index.html']){
   station=c.calculerRentabiliteStations([station],43,5,50,6,40).stationsCalculees[0];
   assert.equal(station.prix,enabled?1.99:2.25);
   assert.equal(station.prixPublic,2.25);
+  assert.equal(c.derniereComparaisonRoutiere.stations[0].prix,2.25,'Route cache never retains discounted prices');
   assert.equal(station.coutCarburantAchete,enabled?79.6:90);
   assert.equal(station.avantageTotalenergiesApplique,enabled);
  }
@@ -46,12 +45,11 @@ for(const file of ['index.html','templates/index.html']){
   proposerStationPlusRentablePendantNavigation(){},ajouterExplicationRentabilite(){},economiePrecedentePourSeuil:null,declencherRecalculSousSeuil(){},actualiserNavigationPremium(){},programmerSynchronisationPrix(){},memeStation:(a,b)=>a.id===b.id,
   enregistrerEconomiePremium(){},tracerItineraire:(lat,lon,flag,station)=>{c.stationTracee=station;}});
  vm.runInContext(s.slice(s.indexOf('function choisirMeilleureStationRentabilite('),s.indexOf('window.enregistrerVehicule =')),c);
- c.choixCarteTotalenergiesSession=true;c.calculerMeilleureStation();
+ c.localStorage.setItem(c.carteTotalenergiesCle,'true');c.calculerMeilleureStation();
  assert.match(elements['economy-subtitle'].textContent,/1,990/);
  c.distancesRoutieresRentabilite=()=>({enAttente:true});
- c.choixCarteTotalenergiesSession=false;
- // Deliberately keep stale storage enabled: the latest explicit choice wins.
- c.localStorage.setItem(c.carteTotalenergiesCle,'true');
+ c.localStorage.setItem(c.carteTotalenergiesCle,'false');
+ // Storage holds only the explicit choice, never the calculated price.
  c.calculerMeilleureStation();
  assert.match(elements['economy-title'].textContent,/Total/);
  assert.match(elements['economy-subtitle'].textContent,/2,250/);
@@ -63,7 +61,7 @@ for(const file of ['index.html','templates/index.html']){
  c.distancesRoutieresRentabilite=()=>({erreur:true});c.calculerMeilleureStation();
  assert.match(elements['economy-subtitle'].textContent,/2,250/);
  assert.equal(elements['economy-route-button'].disabled,false);
- c.choixCarteTotalenergiesSession=true;c.calculerMeilleureStation();
+ c.localStorage.setItem(c.carteTotalenergiesCle,'true');c.calculerMeilleureStation();
  assert.match(elements['economy-subtitle'].textContent,/1,990/);
 
  console.log(file+': reponse compte obsolete ignoree; classement et achat 2.25 / 1.99 verifies');

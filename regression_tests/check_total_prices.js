@@ -6,6 +6,13 @@ for(const file of ['index.html','templates/index.html']){
  vm.createContext(c);
  for(const [start,end] of [['function carteTotalenergiesActive()', 'function actualiserControleCarteTotalenergies()'],['function htmlAvantageCarburantTotal(', 'var logoStationPrixMinimum'],['function prixRentabiliteAvecCarteTotalenergies(', 'function formaterEurosRentabilite(']]) vm.runInContext(source.slice(source.indexOf(start),source.indexOf(end)),c);
  const advantage={prix_plafond:1.99};
+ const sourceStation={prix:2.25,avantageTotalenergies:advantage};
+ const before=JSON.stringify(sourceStation);
+ c.appliquerAvantageTotalenergiesStationsTrajet([sourceStation],true,'gazole');
+ assert.equal(JSON.stringify(sourceStation),before,'Public source remains unchanged');
+ assert.equal(c.prixRentabiliteAvecCarteTotalenergies(sourceStation,'false','gazole'),2.25,'Only boolean true activates the cap');
+ assert.equal(c.prixRentabiliteAvecCarteTotalenergies({prix:2.25},true,'gazole'),2.25,'Nonparticipating stations keep public price');
+
  for(const publicPrice of [2.25,2.15,1.99,1.85]){
   let station={prix:publicPrice,avantageTotalenergies:advantage};
   for(const active of [true,false,true,false]){

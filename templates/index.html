@@ -9671,7 +9671,6 @@ function carburantEligibleAvantageTotalenergies(carburant) {
 
 function carteTotalenergiesActive() {
 
-    if (typeof choixCarteTotalenergiesSession === "boolean") return choixCarteTotalenergiesSession;
     return localStorage.getItem(carteTotalenergiesCle || "optiplein-carte-totalenergies") === "true";
 
 }
@@ -9707,9 +9706,8 @@ function actualiserControleCarteTotalenergies() {
 
 }
 
-var choixTotalenergiesEnAttente = localStorage.getItem("optiplein-totalenergies-en-attente");
-var choixCarteTotalenergiesSession = choixTotalenergiesEnAttente === "true"
-    ? true : choixTotalenergiesEnAttente === "false" ? false : null;
+// Seul le choix utilisateur est conserve, jamais un prix Total calcule.
+localStorage.removeItem("optiplein-totalenergies-en-attente");
 var revisionOptionTotalenergies = 0;
 var traitementOptionTotalenergies = null;
 
@@ -9740,9 +9738,7 @@ function actualiserEconomieDestinationTotalenergies() {
 
 window.modifierCarteTotalenergies = function() {
     var caseCarte = document.getElementById("carte-totalenergies-active");
-    choixCarteTotalenergiesSession = Boolean(caseCarte && caseCarte.checked);
-    localStorage.setItem(carteTotalenergiesCle, String(choixCarteTotalenergiesSession));
-    localStorage.setItem("optiplein-totalenergies-en-attente", String(choixCarteTotalenergiesSession));
+    localStorage.setItem(carteTotalenergiesCle, String(Boolean(caseCarte && caseCarte.checked)));
     revisionOptionTotalenergies += 1;
     actualiserPastillesTotalenergies();
     programmerSauvegardeCompte();
@@ -11215,13 +11211,11 @@ function appliquerDonneesCompte(donnees) {
         planCompteCle,
         donnees.plan === "premium" ? "premium" : "free"
     );
-    localStorage.setItem(
-        carteTotalenergiesCle,
-        // Une reponse de sauvegarde ancienne ne doit pas annuler le choix local.
-        String(choixCarteTotalenergiesSession !== null
-            ? choixCarteTotalenergiesSession
-            : Boolean(donnees.preferences && donnees.preferences.carte_totalenergies))
-    );
+    // Une preference deja choisie sur cet appareil reste prioritaire.
+    if (localStorage.getItem(carteTotalenergiesCle) === null) {
+        localStorage.setItem(carteTotalenergiesCle,
+            String(Boolean(donnees.preferences && donnees.preferences.carte_totalenergies)));
+    }
 
     if (donnees.vehicule_actif) {
         localStorage.setItem(
@@ -11618,7 +11612,6 @@ window.restaurerPremiumIOS = async function(event) {
 
 function effacerDonneesCompteLocales() {
     localStorage.removeItem("optiplein-totalenergies-en-attente");
-    choixCarteTotalenergiesSession = null;
     derniereComparaisonRoutiere = null;
 
     generationSessionCompte += 1;
@@ -11712,12 +11705,6 @@ async function sauvegarderCompteMaintenant() {
     );
 
     if (resultat && resultat.donnees) {
-        var choixConfirme = resultat.donnees.preferences
-            && resultat.donnees.preferences.carte_totalenergies;
-        if (typeof choixConfirme === "boolean"
-            && String(choixConfirme) === localStorage.getItem("optiplein-totalenergies-en-attente")) {
-            localStorage.removeItem("optiplein-totalenergies-en-attente");
-        }
         appliquerDonneesCompte(resultat.donnees);
     }
 
@@ -11768,9 +11755,6 @@ async function restaurerSessionCompte() {
             localStorage.setItem(compteEmailCle, resultat.email);
         }
         appliquerDonneesCompte(resultat.donnees || {});
-        if (localStorage.getItem("optiplein-totalenergies-en-attente") !== null) {
-            programmerSauvegardeCompte();
-        }
         await chargerProfilCompteDepuisServeur().catch(function() {});
         window.clearTimeout(restaurationSessionCompteTimer);
         restaurationSessionCompteTimer = null;
@@ -15632,10 +15616,12 @@ function prixRentabiliteAvecCarteTotalenergies(
 
     var prixPublic = prixPublicStationRentabilite(station);
     var avantage = station && station.avantageTotalenergies;
-    var plafond = Number(avantage && avantage.prix_plafond);
+    var plafond = 1.99;
 
     if (
-        !carteActive
+        carteActive !== true
+        || !avantage
+        || Number(avantage.prix_plafond) !== 1.99
         || !carburantEligibleAvantageTotalenergies(carburant)
         || !Number.isFinite(prixPublic)
         || !Number.isFinite(plafond)
@@ -15992,7 +15978,13 @@ function calculerRentabiliteStations(
         return {stationsCalculees:[], enAttente:Boolean(routes.enAttente), erreur:Boolean(routes.erreur)};
     }
     if (!trajetsVerifies && routes.trajets.some(function(trajet) {return trajet !== null;})) {
-        derniereComparaisonRoutiere = {contexte:contexteComparaison, stations:stationsDisponibles, routes:routes};
+        derniereComparaisonRoutiere = {contexte:contexteComparaison,
+            stations:stationsDisponibles.map(function(station) {
+                return Object.assign({}, station, {
+                    prix: prixPublicStationRentabilite(station),
+                    avantageTotalenergiesApplique: false
+                });
+            }), routes:routes};
     }
     var stationsCalculees = stationsDisponibles.map(function(station, index) {
             var trajetRoutier = routes.trajets[index];
