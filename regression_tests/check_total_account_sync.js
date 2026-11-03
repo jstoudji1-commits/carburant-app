@@ -15,6 +15,11 @@ for(const file of ['index.html','templates/index.html']){
  Object.assign(c,{stationElectrique:()=>false,modeElectriqueRentabiliteActif:()=>false,coutTempsRentabiliteEuroHeure:0,carburantRentabiliteActuel:()=> 'gazole',comptePremiumActif:()=>false,destinationNavigation:null,distancesRoutieresRentabilite:()=>({trajets:[{aller_km:1,suite_km:2,detour_km:3,duree_detour_minutes:5}]})});
  c.appliquerDonneesCompte({preferences:{carte_totalenergies:true}});
  assert.equal(c.carteTotalenergiesActive(),true);
+ // iPhone closed before the delayed save: restore the unsaved OFF choice.
+ values.set('optiplein-totalenergies-en-attente','false');
+ vm.runInContext(s.slice(s.indexOf('var choixTotalenergiesEnAttente ='),s.indexOf('var revisionOptionTotalenergies =')),c);
+ c.appliquerDonneesCompte({preferences:{carte_totalenergies:true}});
+ assert.equal(c.carteTotalenergiesActive(),false,'Unsaved OFF survives app restart and stale server preference');
  let station={id:'total',prix:2.25,avantageTotalenergies:{prix_plafond:1.99}};
  for(const enabled of [true,false,true,false]){
   c.choixCarteTotalenergiesSession=enabled;

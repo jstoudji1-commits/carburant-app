@@ -4545,6 +4545,32 @@ body{
                     id="premium-page-account"
                     hidden
                 >
+        <div
+            class="premium-panel-card avantage-totalenergies-controle"
+            id="avantage-totalenergies-controle"
+            aria-label="Avantage Carburant TotalEnergies"
+            hidden
+        >
+            <label
+                class="avantage-totalenergies-option"
+                for="carte-totalenergies-active"
+                title="Applique le plafond de 1,99 €/L aux stations participantes"
+            >
+                <input
+                    type="checkbox"
+                    id="carte-totalenergies-active"
+                    onchange="modifierCarteTotalenergies()"
+                >
+                <span class="avantage-totalenergies-texte">
+                    <strong>Avantage TotalEnergies</strong>
+                    <small>Activée : plafond de 1,99 €/L dans les stations participantes. Désactivée : prix public utilisé dans les calculs.</small>
+                </span>
+                <span
+                    class="avantage-totalenergies-interrupteur"
+                    aria-hidden="true"
+                ></span>
+            </label>
+        </div>
                     <div class="premium-panel-card account-compact-card">
                         <button
                             type="button"
@@ -5462,32 +5488,7 @@ body{
         </div>
         {% endif %}
 
-        <div
-            class="filtres-bornes-electriques avantage-totalenergies-controle"
-            id="avantage-totalenergies-controle"
-            aria-label="Avantage Carburant TotalEnergies"
-            hidden
-        >
-            <label
-                class="avantage-totalenergies-option"
-                for="carte-totalenergies-active"
-                title="Applique le plafond de 1,99 €/L aux stations participantes"
-            >
-                <input
-                    type="checkbox"
-                    id="carte-totalenergies-active"
-                    onchange="modifierCarteTotalenergies()"
-                >
-                <span class="avantage-totalenergies-texte">
-                    <strong>Avantage TotalEnergies</strong>
-                    <small>Plafond 1,99 € dans les stations participantes</small>
-                </span>
-                <span
-                    class="avantage-totalenergies-interrupteur"
-                    aria-hidden="true"
-                ></span>
-            </label>
-        </div>
+
 
         <div
             class="opti-savings-banner"
@@ -9544,7 +9545,9 @@ function actualiserControleCarteTotalenergies() {
 
 }
 
-var choixCarteTotalenergiesSession = null;
+var choixTotalenergiesEnAttente = localStorage.getItem("optiplein-totalenergies-en-attente");
+var choixCarteTotalenergiesSession = choixTotalenergiesEnAttente === "true"
+    ? true : choixTotalenergiesEnAttente === "false" ? false : null;
 var revisionOptionTotalenergies = 0;
 var traitementOptionTotalenergies = null;
 
@@ -9577,6 +9580,7 @@ window.modifierCarteTotalenergies = function() {
     var caseCarte = document.getElementById("carte-totalenergies-active");
     choixCarteTotalenergiesSession = Boolean(caseCarte && caseCarte.checked);
     localStorage.setItem(carteTotalenergiesCle, String(choixCarteTotalenergiesSession));
+    localStorage.setItem("optiplein-totalenergies-en-attente", String(choixCarteTotalenergiesSession));
     revisionOptionTotalenergies += 1;
     actualiserPastillesTotalenergies();
     programmerSauvegardeCompte();
@@ -11408,6 +11412,7 @@ window.restaurerPremiumIOS = async function(event) {
 };
 
 function effacerDonneesCompteLocales() {
+    localStorage.removeItem("optiplein-totalenergies-en-attente");
     choixCarteTotalenergiesSession = null;
     derniereComparaisonRoutiere = null;
 
@@ -11502,6 +11507,12 @@ async function sauvegarderCompteMaintenant() {
     );
 
     if (resultat && resultat.donnees) {
+        var choixConfirme = resultat.donnees.preferences
+            && resultat.donnees.preferences.carte_totalenergies;
+        if (typeof choixConfirme === "boolean"
+            && String(choixConfirme) === localStorage.getItem("optiplein-totalenergies-en-attente")) {
+            localStorage.removeItem("optiplein-totalenergies-en-attente");
+        }
         appliquerDonneesCompte(resultat.donnees);
     }
 
@@ -11552,6 +11563,9 @@ async function restaurerSessionCompte() {
             localStorage.setItem(compteEmailCle, resultat.email);
         }
         appliquerDonneesCompte(resultat.donnees || {});
+        if (localStorage.getItem("optiplein-totalenergies-en-attente") !== null) {
+            programmerSauvegardeCompte();
+        }
         await chargerProfilCompteDepuisServeur().catch(function() {});
         window.clearTimeout(restaurationSessionCompteTimer);
         restaurationSessionCompteTimer = null;
