@@ -1759,6 +1759,35 @@ body{
     font-weight:800;
 }
 
+.station-confidence{
+    display:flex;
+    align-items:flex-start;
+    gap:6px;
+    margin:-2px 0 5px;
+    color:#526170;
+    font-size:11px;
+    line-height:1.25;
+}
+
+.station-confidence strong{
+    display:inline-flex;
+    align-items:center;
+    min-height:18px;
+    padding:2px 7px;
+    border-radius:999px;
+    background:#edf7ef;
+    color:#128236;
+    font-size:11px;
+    font-weight:900;
+    white-space:nowrap;
+}
+
+.station-confidence.score-1 strong,
+.station-confidence.score-2 strong{
+    background:#fff4e6;
+    color:#a45300;
+}
+
 .station-popup-favori{
     display:flex;
     align-items:center;
@@ -3916,6 +3945,19 @@ body{
     font-weight:800;
 }
 
+.economy-confidence{
+    display:block;
+    margin-top:5px;
+    color:#526170;
+    font-size:13px;
+    font-weight:700;
+}
+
+.economy-confidence strong{
+    color:#128236;
+    font-weight:900;
+}
+
 .optimization-explanation{
     display:block;
     margin-top:5px;
@@ -5093,6 +5135,22 @@ body{
                             Pr&eacute;parez des alertes par carburant, station ou zone.
                             Elles sont sauvegard&eacute;es avec votre compte.
                         </p>
+                        <div class="referral-actions">
+                            <button
+                                type="button"
+                                class="premium-option-button"
+                                onclick="ajouterAlerteIntelligente('rentabilite')"
+                            >
+                                Alerte station rentable
+                            </button>
+                            <button
+                                type="button"
+                                class="premium-option-button"
+                                onclick="ajouterAlerteIntelligente('domicile-travail')"
+                            >
+                                Alerte domicile-travail
+                            </button>
+                        </div>
                         <div
                             class="premium-history-list"
                             id="premium-alerts-list"
@@ -5509,6 +5567,13 @@ body{
                                 class="trip-favorites"
                                 hidden
                             ></div>
+                            <button
+                                type="button"
+                                class="premium-option-button"
+                                onclick="analyserTrajetDomicileTravail()"
+                            >
+                                Analyser domicile-travail
+                            </button>
                         </div>
 
                         <div class="trip-planner-gauge">
@@ -5713,6 +5778,10 @@ body{
             class="problem-form"
             onsubmit="envoyerSignalement(event)"
         >
+            <input id="problem-station-id" name="station_id" type="hidden">
+            <input id="problem-carburant" name="carburant" type="hidden">
+            <input id="problem-prix-affiche" name="prix_affiche" type="hidden">
+
             <div class="problem-field">
                 <label for="problem-category">Type de probl&egrave;me</label>
                 <select id="problem-category" name="categorie" required>
@@ -6260,6 +6329,25 @@ window.ouvrirSignalement = function(station) {
     document.getElementById("problem-category").focus();
 
 };
+
+function htmlConfiancePrixStation(station) {
+
+    var confiance = station && station.confiancePrix;
+
+    if (!confiance || !confiance.label) {
+        return "";
+    }
+
+    var score = Number(confiance.score || 0);
+    return ''
+        + '<p class="station-confidence score-' + score + '">'
+        + '<strong>' + echapperHtml(confiance.label) + '</strong>'
+        + '<span>'
+        + echapperHtml(confiance.detail || confiance.source || "")
+        + '</span>'
+        + '</p>';
+
+}
 
 window.fermerSignalement = function() {
 
@@ -7132,15 +7220,25 @@ function pointsTrajetPrepareNavigationExterne() {
     if (
         !trajetPrepare
         || !trajetPrepare.destination
-        || latitudeUtilisateur === null
-        || longitudeUtilisateur === null
+        || (
+            !trajetPrepare.origine
+            && (
+                latitudeUtilisateur === null
+                || longitudeUtilisateur === null
+            )
+        )
     ) {
         return [];
     }
 
-    return [{
+    var origine = trajetPrepare.origine || {
         latitude: latitudeUtilisateur,
         longitude: longitudeUtilisateur
+    };
+
+    return [{
+        latitude: Number(origine.latitude),
+        longitude: Number(origine.longitude)
     }].concat(
         (trajetPrepare.arrets || []).map(function(arret) {
             return {
@@ -8443,7 +8541,10 @@ var stationFavori{{ loop.index }} = {
     cp: {{ station.cp|tojson }},
     ville: {{ station.ville|tojson }},
     latitude: {{ station.latitude|tojson }},
-    longitude: {{ station.longitude|tojson }}
+    longitude: {{ station.longitude|tojson }},
+    carburant: {{ carburant|upper|tojson }},
+    prix: {{ station.carburant_selectionne|tojson }},
+    confiancePrix: {{ station.get("confiance_prix")|tojson }}
 };
 
 var stationPartage{{ loop.index }} = {
@@ -8483,7 +8584,8 @@ stationsEconomie.push({
     latitude: Number({{ station.latitude|tojson }}),
     longitude: Number({{ station.longitude|tojson }}),
     prix: Number({{ station.carburant_selectionne|tojson }}),
-    distance: {% if station.distance %}Number({{ station.distance|tojson }}){% else %}null{% endif %}
+    distance: {% if station.distance %}Number({{ station.distance|tojson }}){% else %}null{% endif %},
+    confiancePrix: {{ station.get("confiance_prix")|tojson }}
 });
 
 var prixIcon = L.divIcon({
@@ -8613,6 +8715,8 @@ var marker = L.marker(
             <span class="station-update-age">${texteAgeMiseAJour()}</span>
         </p>
 
+        ${htmlConfiancePrixStation(stationFavori{{ loop.index }})}
+
         ${htmlTendanceDemainPremium(tendanceDemainStation{{ loop.index }})}
 
         {% if station.distance %}
@@ -8654,6 +8758,14 @@ var marker = L.marker(
                 hidden
             >
                 Google Maps
+            </button>
+
+            <button
+                type="button"
+                class="popup-action share"
+                onclick="ouvrirSignalement(stationFavori{{ loop.index }})"
+            >
+                Signaler
             </button>
 
         </div>
@@ -8988,6 +9100,10 @@ function normaliserStationCarte(station) {
             station.tarif_contribution_statut
             || station.tarifContributionStatut
             || "",
+        confiancePrix:
+            station.confiance_prix
+            || station.confiancePrix
+            || null,
         avantageTotalenergies:
             station.avantage_totalenergies
             || station.avantageTotalenergies
@@ -9117,6 +9233,7 @@ function creerMarqueurStationDynamique(stationBrute) {
         + texteAgeMiseAJour()
         + '</span>'
         + '</p>'
+        + htmlConfiancePrixStation(station)
         + htmlTendanceDemainPremium(tendanceDemain)
         + htmlDetailsBorneIrve(station)
         + distanceHtml
@@ -10841,6 +10958,49 @@ window.utiliserLieuTrajet = function(type) {
         longitude: Number(lieu.longitude),
         libelle: lieu.libelle || libelleTypeLieuTrajet(type)
     });
+
+};
+
+window.analyserTrajetDomicileTravail = function() {
+
+    if (!comptePremiumActif()) {
+        alert("La préparation d'un trajet est incluse avec OptiPlein Premium.");
+        return;
+    }
+
+    var lieux = lireLieuxTrajet();
+    var domicile = lieux.home;
+    var travail = lieux.work;
+
+    if (
+        !domicile
+        || !travail
+        || !Number.isFinite(Number(domicile.latitude))
+        || !Number.isFinite(Number(domicile.longitude))
+        || !Number.isFinite(Number(travail.latitude))
+        || !Number.isFinite(Number(travail.longitude))
+    ) {
+        alert("Enregistrez d'abord votre domicile et votre travail.");
+        return;
+    }
+
+    origineTrajetSelectionnee = {
+        latitude: Number(domicile.latitude),
+        longitude: Number(domicile.longitude),
+        libelle: domicile.libelle || "Domicile"
+    };
+    ouvrirPlanificateurTrajet({conserverOrigine: true});
+    selectionnerDestinationTrajet({
+        latitude: Number(travail.latitude),
+        longitude: Number(travail.longitude),
+        libelle: travail.libelle || "Travail"
+    });
+
+    var resultat = document.getElementById("trip-planner-result");
+    if (resultat) {
+        resultat.textContent =
+            "Analyse domicile-travail prête : lancez le calcul pour trouver les stations réellement rentables sur ce trajet.";
+    }
 
 };
 
@@ -14838,11 +14998,17 @@ function actualiserAlertesPrixPremium() {
         var principal = document.createElement("div");
         principal.className = "premium-history-main";
         var titre = document.createElement("span");
-        titre.textContent = [
-            String(alerte.carburant || alerte.energie || "carburant").toUpperCase(),
-            alerte.seuil ? "sous " + alerte.seuil + " \u20ac" : "",
-            alerte.zone || ""
-        ].filter(Boolean).join(" · ");
+        if (alerte.mode === "rentabilite") {
+            titre.textContent = "Station rentable autour de moi";
+        } else if (alerte.mode === "domicile-travail") {
+            titre.textContent = "Trajet domicile-travail rentable";
+        } else {
+            titre.textContent = [
+                String(alerte.carburant || alerte.energie || "carburant").toUpperCase(),
+                alerte.seuil ? "sous " + alerte.seuil + " \u20ac" : "",
+                alerte.zone || ""
+            ].filter(Boolean).join(" · ");
+        }
         var etat = document.createElement("span");
         etat.className = "premium-history-saving";
         etat.textContent = alerte.active === false ? "Pause" : "Active";
@@ -14897,6 +15063,46 @@ function actualiserStatistiquesPremium() {
     });
 
 }
+
+window.ajouterAlerteIntelligente = function(mode) {
+
+    if (!comptePremiumActif()) {
+        alert("Les alertes intelligentes sont incluses avec OptiPlein Premium.");
+        return;
+    }
+
+    var alertes = lireAlertesPrix();
+    var existe = alertes.some(function(alerte) {
+        return alerte.mode === mode && alerte.active !== false;
+    });
+
+    if (existe) {
+        definirStatutCompte("Cette alerte intelligente est déjà active.", "success");
+        return;
+    }
+
+    var libelle = mode === "domicile-travail"
+        ? "Trajet domicile-travail"
+        : "Autour de moi";
+
+    alertes.unshift({
+        id: "alerte-smart-" + mode + "-" + Date.now().toString(36),
+        mode: mode,
+        carburant: carburantSelectionne,
+        energie: carburantSelectionne,
+        seuil: "",
+        condition: "rentabilite",
+        zone: libelle,
+        active: true,
+        created_at: new Date().toISOString()
+    });
+
+    localStorage.setItem(alertesPrixCle, JSON.stringify(alertes.slice(0, 100)));
+    programmerSauvegardeCompte();
+    actualiserAlertesPrixPremium();
+    definirStatutCompte("Alerte intelligente activée.", "success");
+
+};
 
 window.ajouterAlertePrixPremium = function() {
 
@@ -16622,6 +16828,7 @@ window.calculerMeilleureStation = function() {
         actualiserRentabilitePeriodiquement(true);
         return;
     }
+
     var latitudeCalcul = positionCalcul.latitude;
     var longitudeCalcul = positionCalcul.longitude;
 
@@ -16802,6 +17009,23 @@ window.calculerMeilleureStation = function() {
         economie,
         libelleReferenceRentabilite
     );
+
+    if (
+        meilleureStation.confiancePrix
+        && meilleureStation.confiancePrix.label
+    ) {
+        var confiancePrix = document.createElement("span");
+        confiancePrix.className = "economy-confidence";
+        confiancePrix.innerHTML = "Confiance prix : <strong>"
+            + echapperHtml(meilleureStation.confiancePrix.label)
+            + "</strong>"
+            + (
+                meilleureStation.confiancePrix.signalements_ouverts
+                    ? " · signalement ouvert"
+                    : ""
+            );
+        sousTitre.appendChild(confiancePrix);
+    }
 
     if (!prixEnActualisation && !resultatRentabilite.actualisationEnCours && resultatRentabilite.actualisationEchouee) {
         var statutCalcul = document.createElement("span");
@@ -18451,6 +18675,7 @@ window.actualiserJaugeTrajet = actualiserJaugeTrajet;
 
 var suggestionsDestinationTrajet = [];
 var destinationTrajetSelectionnee = null;
+var origineTrajetSelectionnee = null;
 var minuteurSuggestionsDestinationTrajet = null;
 var suggestionsTrajetInitialisees = false;
 
@@ -18710,7 +18935,7 @@ function pointsTrajetPrepareDepuisArrets() {
 
 }
 
-window.ouvrirPlanificateurTrajet = function() {
+window.ouvrirPlanificateurTrajet = function(options) {
 
     if (!comptePremiumActif()) {
         alert("La pr\u00e9paration d'un trajet est incluse avec OptiPlein Premium.");
@@ -18723,6 +18948,10 @@ window.ouvrirPlanificateurTrajet = function() {
 
     if (!panneau) {
         return;
+    }
+
+    if (!options || !options.conserverOrigine) {
+        origineTrajetSelectionnee = null;
     }
 
     if (jauge) {
@@ -18916,7 +19145,13 @@ window.calculerTrajetPrepare = async function() {
         return;
     }
 
-    if (latitudeUtilisateur === null || longitudeUtilisateur === null) {
+    var origineCalcul = origineTrajetSelectionnee
+        && Number.isFinite(Number(origineTrajetSelectionnee.latitude))
+        && Number.isFinite(Number(origineTrajetSelectionnee.longitude))
+            ? origineTrajetSelectionnee
+            : null;
+
+    if (!origineCalcul && (latitudeUtilisateur === null || longitudeUtilisateur === null)) {
         resultat.textContent = "Position GPS en attente pour calculer le trajet.";
         demarrerGeolocalisation();
         return;
@@ -18936,8 +19171,12 @@ window.calculerTrajetPrepare = async function() {
         );
         var routeDirecte = await calculerRouteAvecCoordonnees([
             {
-                latitude: latitudeUtilisateur,
-                longitude: longitudeUtilisateur
+                latitude: origineCalcul
+                    ? Number(origineCalcul.latitude)
+                    : latitudeUtilisateur,
+                longitude: origineCalcul
+                    ? Number(origineCalcul.longitude)
+                    : longitudeUtilisateur
             },
             destination
         ]);
@@ -18952,6 +19191,7 @@ window.calculerTrajetPrepare = async function() {
         );
         trajetPrepare = {
             destination: destination,
+            origine: origineCalcul,
             jauge: jaugeTrajet,
             arrets: ravitaillement.arrets,
             route: routeDirecte,
