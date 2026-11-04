@@ -61,6 +61,60 @@
     .economy-progress-fill{transition:none;}
 }
 
+
+/* Total cumulé dans l'en-tête, sans augmenter sa hauteur. */
+.topbar.has-savings{align-items:flex-start;}
+.topbar.has-savings > .top-actions{min-height:72px;}
+.topbar .header-savings{
+    position:absolute;
+    bottom:7px;
+    left:14px;
+    right:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    height:26px;
+    margin:0;
+    padding:0;
+    border:0;
+    border-radius:0;
+    background:none;
+    box-shadow:none;
+    white-space:nowrap;
+    font-size:clamp(11px, 3.2vw, 14px);
+    line-height:1;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+}
+.topbar .header-savings[hidden]{display:none;}
+.header-savings-info{
+    display:inline-flex;
+    flex:0 0 26px;
+    width:26px;
+    height:26px;
+    padding:0;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #b5dfbf;
+    border-radius:50%;
+    background:#edf8f0;
+    color:#087c2c;
+    font-family:Georgia,serif;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    touch-action:manipulation;
+}
+.header-savings-info:focus-visible{outline:2px solid #087c2c;outline-offset:2px;}
+.savings-info-dialog{max-width:360px;line-height:1.5;}
+@media(max-width:900px){
+    .topbar.has-savings > .top-actions{min-height:54px;}
+}
+@media(max-width:420px){
+    .topbar.has-savings > .top-actions{min-height:48px;}
+}
+
 </style>
     <meta name="robots" content="noindex, follow">
     <meta
@@ -4325,6 +4379,8 @@ body{
         class="logo"
     >
 
+    <div class="opti-savings-banner header-savings" id="opti-savings-banner" hidden></div>
+
     <div class="top-actions">
         <button
             type="button"
@@ -5128,6 +5184,19 @@ body{
     </div>
 </header>
 
+<div id="savings-info-modal" class="problem-modal" role="dialog" aria-modal="true"
+    aria-labelledby="savings-info-title" aria-describedby="savings-info-description"
+    onclick="if(event.target === this) fermerInfoEconomiesCumulees()"
+    onkeydown="gererClavierInfoEconomies(event)" hidden>
+    <section class="problem-dialog savings-info-dialog">
+        <button type="button" class="problem-close" id="savings-info-close"
+            aria-label="Fermer l’explication des économies" onclick="fermerInfoEconomiesCumulees()">&times;</button>
+        <h2 id="savings-info-title">Vos économies cumulées</h2>
+        <p id="savings-info-description">Ce montant est le total des économies estimées à partir de vos trajets enregistrés dans OptiPlein. Il dépend des prix, des distances et des informations du véhicule utilisés lors de ces trajets.</p>
+    </section>
+</div>
+
+
 <div class="app-layout">
     <aside class="sidebar">
         <section class="stat-card">
@@ -5135,7 +5204,7 @@ body{
             <div class="stat-price-layout">
                 <div class="stat-price-meta">
                     <div class="stat-icon" id="stat-carburant">
-                        {% if carburant == "electrique" %}IRVE{% else %}{{ carburant|upper }}{% endif %}
+                        <span class="fuel-dot{% if carburant == 'sp95' %} sp95{% elif carburant == 'e10' %} blue{% elif carburant == 'gazole' %} dark{% elif carburant == 'e85' %} e85{% elif carburant == 'gplc' %} gpl{% elif carburant == 'electrique' %} electric{% endif %}" aria-label="{{ carburant }}">{% if carburant == 'sp98' %}98{% elif carburant == 'sp95' %}95{% elif carburant == 'gazole' %}GO{% elif carburant == 'gplc' %}GPL{% elif carburant != 'electrique' %}{{ carburant|upper }}{% endif %}</span>
                     </div>
                 </div>
                 <div class="stat-price-detail">
@@ -5594,11 +5663,7 @@ body{
 
 
 
-        <div
-            class="opti-savings-banner"
-            id="opti-savings-banner"
-            hidden
-        ></div>
+
 
         <div id="bottom-card" class="bottom-card">
             <div id="bottom-card-icon" class="bottom-icon">Eco</div>
@@ -6677,6 +6742,7 @@ window.partagerPrixStation = async function(event, station) {
         event.stopPropagation();
     }
 
+    if (!station) return;
     var prixNombre = Number(station.prix);
     var prixPartage = prixNombre === 0 || prixNombre === 9.999
         ? "indisponible"
@@ -6748,8 +6814,16 @@ window.partagerPrixStation = async function(event, station) {
         zoneCopie.style.opacity = "0";
         document.body.appendChild(zoneCopie);
         zoneCopie.select();
-        document.execCommand("copy");
-        zoneCopie.remove();
+        zoneCopie.focus();
+        zoneCopie.setSelectionRange(0, zoneCopie.value.length);
+        var copieReussie = false;
+        try { copieReussie = document.execCommand("copy"); }
+        catch (erreurCopie) { copieReussie = false; }
+        finally { zoneCopie.remove(); }
+        if (!copieReussie) {
+            window.prompt("Copiez ce lien pour partager la station :", contenu);
+            return;
+        }
     }
 
     var bouton = event && event.currentTarget;
@@ -8473,6 +8547,8 @@ var stationFavori{{ loop.index }} = {
 };
 
 var stationPartage{{ loop.index }} = {
+    id: {{ station.id|tojson }},
+    enseigne: {{ station.enseigne|default("")|tojson }},
     carburant: {{ carburant|upper|tojson }},
     prix: {{ station.carburant_selectionne|tojson }},
     adresse: {{ station.adresse|tojson }},
@@ -8897,7 +8973,7 @@ function htmlDetailsBorneIrve(station) {
     }
     var contributionHtml = '<button type="button" class="tarif-contribution-link"'
         + ' onclick="ouvrirContributionTarif(stationsCarteParId['
-        + JSON.stringify(station.id)
+        + echapperHtml(JSON.stringify(String(station.id)))
         + '])">Déclarer ou corriger ce tarif</button>';
 
     return ''
@@ -9120,12 +9196,12 @@ function creerMarqueurStationDynamique(stationBrute) {
         + ' data-station-id="' + echapperHtml(station.id) + '"'
         + ' aria-label="Ajouter aux favoris" title="Ajouter aux favoris"'
         + ' onclick="changerFavori(stationsCarteParId['
-        + JSON.stringify(station.id)
+        + echapperHtml(JSON.stringify(String(station.id)))
         + '])">\u2606</button>'
         + '<button type="button" class="station-popup-icon-button"'
         + ' aria-label="Partager" title="Partager"'
         + ' onclick="partagerPrixStation(event, stationsCarteParId['
-        + JSON.stringify(station.id)
+        + echapperHtml(JSON.stringify(String(station.id)))
         + '])"><svg viewBox="0 0 24 24" aria-hidden="true">'
         + '<circle cx="18" cy="5" r="2.5"></circle>'
         + '<circle cx="6" cy="12" r="2.5"></circle>'
@@ -9180,7 +9256,7 @@ function creerMarqueurStationDynamique(stationBrute) {
         + ')" hidden>Google Maps</button>'
         + '<button type="button" class="popup-action share"'
         + ' onclick="ouvrirSignalement(stationsCarteParId['
-        + JSON.stringify(station.id)
+        + echapperHtml(JSON.stringify(String(station.id)))
         + '])">Signaler</button>'
         + '</div>'
         + '</div>';
@@ -9235,9 +9311,12 @@ function actualiserPrixMinimumAutour(stations) {
         return;
     }
 
-    carburant.textContent = modeElectriqueActif()
-        ? "IRVE"
-        : String(carburantSelectionne || "").toUpperCase();
+    var choix = document.getElementById("carburant-" + (carburantSelectionne === "gplc" ? "gpl" : carburantSelectionne));
+    var bulle = choix && choix.nextElementSibling && choix.nextElementSibling.querySelector(".fuel-dot");
+    if (bulle) {
+        carburant.replaceChildren(bulle.cloneNode(true));
+        carburant.setAttribute("aria-label", choix.nextElementSibling.textContent.trim());
+    }
 
     var stationsAvecPrix = stations.map(normaliserStationCarte)
         .filter(function(station) {
@@ -10397,10 +10476,46 @@ function formaterMontantEconomiesOptiPlein(valeur) {
 
 }
 
+function ouvrirInfoEconomiesCumulees(event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    var fenetre = document.getElementById("savings-info-modal");
+    var bouton = document.getElementById("savings-info-button");
+    if (!fenetre) return;
+    fenetre.hidden = false;
+    if (bouton) bouton.setAttribute("aria-expanded", "true");
+    var fermer = document.getElementById("savings-info-close");
+    if (fermer) fermer.focus();
+}
+
+function fermerInfoEconomiesCumulees() {
+    var fenetre = document.getElementById("savings-info-modal");
+    if (fenetre) fenetre.hidden = true;
+    var bouton = document.getElementById("savings-info-button");
+    if (bouton) { bouton.setAttribute("aria-expanded", "false"); bouton.focus(); }
+}
+
+function gererClavierInfoEconomies(event) {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        fermerInfoEconomiesCumulees();
+    } else if (event.key === "Tab") {
+        // La fenêtre contient un seul contrôle interactif.
+        event.preventDefault();
+        document.getElementById("savings-info-close").focus();
+    }
+}
+
 function actualiserBanniereEconomiesOptiPlein() {
 
     var stats = statistiquesEconomiesLocales();
     var total = Number(stats.economies_total || 0);
+    var visible = compteUtilisateurConnecte() && total > 0;
+    var entete = document.querySelector(".topbar");
+    if (entete) entete.classList.toggle("has-savings", visible);
+    if (!visible) {
+        var fenetre = document.getElementById("savings-info-modal");
+        if (fenetre) fenetre.hidden = true;
+    }
     var elements = [
         document.getElementById("opti-savings-banner"),
         document.getElementById("opti-savings-summary")
@@ -10411,13 +10526,22 @@ function actualiserBanniereEconomiesOptiPlein() {
             return;
         }
 
-        if (!compteUtilisateurConnecte() || total <= 0) {
+        if (!visible) {
             element.hidden = true;
             element.innerHTML = "";
             return;
         }
 
         element.hidden = false;
+        if (element.id === "opti-savings-banner") {
+            element.innerHTML = '<span>Économies :</span><strong>'
+                + formaterMontantEconomiesOptiPlein(total)
+                + '</strong><button type="button" class="header-savings-info" id="savings-info-button"'
+                + ' aria-label="Comprendre le total de mes économies" aria-haspopup="dialog"'
+                + ' aria-controls="savings-info-modal" aria-expanded="false"'
+                + ' onclick="ouvrirInfoEconomiesCumulees(event)">i</button>';
+            return;
+        }
         element.innerHTML = "Gr\u00e2ce \u00e0 OptiPlein, vous avez d\u00e9j\u00e0 \u00e9conomis\u00e9 "
             + "<strong>"
             + formaterMontantEconomiesOptiPlein(total)
@@ -11975,7 +12099,7 @@ function stationEstFavorite(stationId) {
     return lireFavoris().some(
         function(favori) {
 
-            return favori.id === stationId;
+            return String(favori.id) === String(stationId);
 
         }
     );
@@ -11987,7 +12111,7 @@ function retirerFavori(stationId) {
     var favoris = lireFavoris().filter(
         function(favori) {
 
-            return favori.id !== stationId;
+            return String(favori.id) !== String(stationId);
 
         }
     );
@@ -11998,12 +12122,14 @@ function retirerFavori(stationId) {
 }
 
 function changerFavori(station) {
+    if (!station || station.id === undefined || station.id === null) return;
+    station = Object.assign({}, station, {id: String(station.id)});
 
     var favoris = lireFavoris();
     var indexFavori = favoris.findIndex(
         function(favori) {
 
-            return favori.id === station.id;
+            return String(favori.id) === String(station.id);
 
         }
     );
@@ -12052,7 +12178,7 @@ function actualiserBoutonsFavoris() {
             var actif = favoris.some(
                 function(favori) {
 
-                    return favori.id === bouton.dataset.stationId;
+                    return String(favori.id) === bouton.dataset.stationId;
 
                 }
             );
@@ -13582,6 +13708,14 @@ async function actualiserStationsSelonPosition(force) {
 }
 
 function recentrerSurUtilisateur() {
+    gpsPermissionRefusee = false;
+    demarrerGeolocalisation();
+    if (!Number.isFinite(latitudeUtilisateur) || !Number.isFinite(longitudeUtilisateur)) {
+        obtenirPositionGpsActuelle().then(traiterPositionGps).catch(function(erreur) {
+            if (erreur.code === 1) gpsPermissionRefusee = true;
+        });
+        return;
+    }
 
     if (
         latitudeUtilisateur === null
@@ -13737,6 +13871,71 @@ map.on(
     }
 );
 
+var dernierePositionGpsRecue = 0;
+var gpsPermissionRefusee = false;
+var minuteurRepriseGps = null;
+
+function afficherPositionGpsMinimale(position) {
+    var coordonnees = [position.coords.latitude, position.coords.longitude];
+    if (!marqueurUtilisateur) {
+        marqueurUtilisateur = L.marker(coordonnees, {
+            icon: L.divIcon({html:'<div class="gps-position-arrow"><span></span></div>',
+                className:'gps-user-marker', iconSize:[46,46], iconAnchor:[23,23]})
+        }).addTo(map).bindPopup("Vous êtes ici");
+    } else {
+        marqueurUtilisateur.setLatLng(coordonnees);
+    }
+    if (premierCentrageUtilisateur) {
+        premierCentrageUtilisateur = false;
+        map.setView(coordonnees, Math.max(15, map.getZoom()));
+    }
+}
+
+async function obtenirPositionGpsActuelle() {
+    if (!navigator.geolocation) throw new Error("GPS indisponible");
+    function demander(hautePrecision) {
+        return new Promise(function(resolve, reject) {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: hautePrecision, maximumAge: 0, timeout: hautePrecision ? 10000 : 7000
+            });
+        });
+    }
+    try { return await demander(true); }
+    catch (erreur) {
+        if (erreur && erreur.code === 1) throw erreur;
+        return demander(false);
+    }
+}
+
+function programmerRepriseGps() {
+    if (minuteurRepriseGps !== null || gpsPermissionRefusee) return;
+    minuteurRepriseGps = window.setTimeout(function() {
+        minuteurRepriseGps = null;
+        if (document.visibilityState === "hidden" || gpsPermissionRefusee) return;
+        if (suiviGeolocalisationId !== null) navigator.geolocation.clearWatch(suiviGeolocalisationId);
+        suiviGeolocalisationId = null;
+        demarrerGeolocalisation();
+    }, 2500);
+}
+
+function verifierSuiviGps() {
+    if (document.visibilityState === "hidden" || !navigator.geolocation || gpsPermissionRefusee) return;
+    if (suiviGeolocalisationId === null || Date.now() - dernierePositionGpsRecue > 30000) {
+        // Limiter les relances même lorsqu'aucune position ne peut être obtenue.
+        dernierePositionGpsRecue = Date.now();
+        programmerRepriseGps();
+    }
+}
+
+window.setInterval(verifierSuiviGps, 10000);
+window.addEventListener("pageshow", function() { verifierSuiviGps(); });
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "visible") {
+        gpsPermissionRefusee = false;
+        verifierSuiviGps();
+    }
+});
+
 function geolocalisationAccepteeSurAppareil() {
 
     return localStorage.getItem(accordGeolocalisationCle) === "1";
@@ -13766,6 +13965,7 @@ async function demarrerGeolocalisationAuChargement() {
                 });
 
             if (permissionGeolocalisation.state === "denied") {
+                gererErreurGps({code:1});
                 return;
             }
 
@@ -13790,19 +13990,15 @@ async function demarrerGeolocalisationAuChargement() {
 
 }
 
-function demarrerGeolocalisation() {
+function traiterPositionGps(position) {
+    if (!position || !position.coords || !Number.isFinite(position.coords.latitude)
+        || !Number.isFinite(position.coords.longitude)) return;
+    dernierePositionGpsRecue = Date.now();
+    gpsPermissionRefusee = false;
 
-    if (suiviGeolocalisationId !== null) {
 
-        return;
-
-    }
-
-    suiviGeolocalisationId =
-        navigator.geolocation.watchPosition(
-
-        function(position) {
-
+            afficherPositionGpsMinimale(position);
+            try {
             memoriserAccordGeolocalisation();
 
             var latitudePrecedente = latitudeUtilisateur;
@@ -14046,24 +14242,36 @@ function demarrerGeolocalisation() {
 
             }
 
-        },
 
-        function(error) {
+            } catch (erreur) {
+                // Le marqueur GPS reste visible même si un calcul annexe échoue.
+                console.warn("Traitement GPS secondaire indisponible", erreur);
+            }
 
-            console.log(
-                "GPS refus\u00e9 ou indisponible"
-            );
+}
 
-        },
+function gererErreurGps(error) {
+            if (suiviGeolocalisationId !== null) navigator.geolocation.clearWatch(suiviGeolocalisationId);
+            suiviGeolocalisationId = null;
+            gpsPermissionRefusee = Boolean(error && (error.code === 1 || error.name === "SecurityError"));
+            if (!gpsPermissionRefusee) programmerRepriseGps();
+            else {
+                var statutGps = document.getElementById("position");
+                if (statutGps) statutGps.textContent = "Autorisez la localisation dans les réglages du navigateur ou de l’application, puis touchez le bouton de recentrage.";
+            }
 
-        {
-            enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 5000
-        }
+}
 
-    );
-
+function demarrerGeolocalisation() {
+    if (!navigator.geolocation || gpsPermissionRefusee || suiviGeolocalisationId !== null) return;
+    try {
+        suiviGeolocalisationId = navigator.geolocation.watchPosition(
+            traiterPositionGps, gererErreurGps,
+            {enableHighAccuracy: true, maximumAge: 0, timeout: 12000}
+        );
+    } catch (erreur) {
+        gererErreurGps(erreur);
+    }
 }
 
 // Lancement automatique au chargement
@@ -16581,13 +16789,13 @@ window.calculerMeilleureStation = function() {
         "economy-google-button"
     );
 
-    if (
-        !reservoir
-        || !consommation
-        || !titre
-        || !sousTitre
-        || !boutonItineraire
-    ) {
+    if (!titre || !sousTitre || !boutonItineraire) return;
+    if (!(reservoir > 0) || !(consommation > 0)) {
+        titre.textContent = "Station la plus économique";
+        sousTitre.textContent = "Renseignez votre véhicule pour calculer vos économies. Les prix des stations restent consultables sur la carte.";
+        boutonItineraire.disabled = true;
+        if (boutonWaze) boutonWaze.disabled = true;
+        if (boutonGoogleMaps) boutonGoogleMaps.disabled = true;
         return;
     }
 
@@ -16791,11 +16999,6 @@ window.calculerMeilleureStation = function() {
     economieMiseEnAvant.appendChild(economieLibelle);
     economieMiseEnAvant.appendChild(economieMontant);
     sousTitre.appendChild(economieMiseEnAvant);
-    sousTitre.appendChild(
-        document.createTextNode(
-            libelleReferenceRentabilite
-        )
-    );
     ajouterExplicationRentabilite(
         sousTitre,
         meilleureStation,
@@ -17123,6 +17326,12 @@ var cycleRentabiliteEnCours = false;
 async function actualiserRentabilitePeriodiquement(force) {
     if (document.visibilityState === "hidden" || cycleRentabiliteEnCours) return;
     if (force !== true && Date.now() - dernierCalculPeriodiqueRentabilite < intervalleCalculRentabiliteActuel()) return;
+    if (!(nombreVehiculeEnregistre("vehicule-reservoir") > 0)
+        || !(nombreVehiculeEnregistre("vehicule-conso") > 0)) {
+        dernierCalculPeriodiqueRentabilite = Date.now();
+        calculerMeilleureStation();
+        return;
+    }
     cycleRentabiliteEnCours = true;
     dernierCalculPeriodiqueRentabilite = Date.now();
     positionCycleRentabilite = null;
@@ -17134,11 +17343,8 @@ async function actualiserRentabilitePeriodiquement(force) {
     });
     try {
         if (!navigator.geolocation) throw new Error("GPS indisponible");
-        var position = await new Promise(function(resolve, reject) {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-                enableHighAccuracy: true, maximumAge: 0, timeout: 10000
-            });
-        });
+        var position = await obtenirPositionGpsActuelle();
+        traiterPositionGps(position);
         var latitude = position.coords.latitude;
         var longitude = position.coords.longitude;
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) throw new Error("Position invalide");
