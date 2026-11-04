@@ -16057,8 +16057,14 @@ function calculerRentabiliteStations(
         }
     ).filter(Boolean);
 
+    var coutReference = stationsCalculees.length
+        ? stationsCalculees.reduce(function(total, station) { return total + station.coutTotal; }, 0)
+            / stationsCalculees.length
+        : 0;
     stationsCalculees.forEach(
         function(station) {
+            station.economieMonetaire = coutReference - station.coutTotal;
+            if (Math.abs(station.economieMonetaire) < 0.0000001) station.economieMonetaire = 0;
             station.economieComparee = station.economieMonetaire;
             station.stationReferenceRentable = null;
 
@@ -16067,9 +16073,10 @@ function calculerRentabiliteStations(
 
     return {
         stationsCalculees: stationsCalculees,
-        coutReference: quantiteACompleter * prixTrajetReference,
-        libelleReference:
-            " par rapport au prix moyen du top 10 local"
+        coutReference: coutReference,
+        libelleReference: stationsCalculees.length > 1
+            ? " par rapport au coût moyen du top 10 accessible, trajets inclus"
+            : " · seule station accessible avec un trajet vérifié : économie non comparable"
     };
 
 }
@@ -16476,7 +16483,10 @@ window.annulerPreparationTrajet = function() {
 
 };
 
+var premierResultatRentabiliteAffiche = false;
+
 function afficherProgressionRentabilite(pourcentage) {
+    if (premierResultatRentabiliteAffiche) return;
     var titre = document.getElementById("economy-title");
     var sousTitre = document.getElementById("economy-subtitle");
     if (!titre || !sousTitre) return;
@@ -16499,7 +16509,7 @@ function afficherCalculRentabiliteEnAttentePrix(titre, sousTitre, boutonItinerai
     var infoItineraire = document.getElementById("itineraire-info");
 
     calculRentabiliteBloquePrixAnciens = true;
-    if (derniereComparaisonRoutiere) {
+    if (premierResultatRentabiliteAffiche || derniereComparaisonRoutiere) {
         programmerSynchronisationPrix(3000);
         return;
     }
@@ -16629,6 +16639,7 @@ window.calculerMeilleureStation = function() {
     );
 
     if (!stationsDisponibles.length) {
+        if (premierResultatRentabiliteAffiche) return;
         titre.textContent = "Aucune station compatible dans ce rayon";
         sousTitre.textContent = "Choisissez un rayon plus large.";
         boutonItineraire.disabled = true;
@@ -16653,6 +16664,7 @@ window.calculerMeilleureStation = function() {
     var stationsCalculees = resultatRentabilite.stationsCalculees;
 
     if (!stationsCalculees.length) {
+        if (premierResultatRentabiliteAffiche) return;
         titre.textContent = "Station la plus économique";
         if (resultatRentabilite.enAttente) {
             afficherProgressionRentabilite(70);
@@ -16666,6 +16678,7 @@ window.calculerMeilleureStation = function() {
         return;
     }
     afficherProgressionRentabilite(100);
+    premierResultatRentabiliteAffiche = true;
     boutonItineraire.disabled = false;
 
     var meilleureStation = choisirMeilleureStationRentabilite(
@@ -17117,7 +17130,7 @@ async function actualiserRentabilitePeriodiquement(force) {
     afficherProgressionRentabilite(10);
     ["economy-route-button", "economy-waze-button", "economy-google-button"].forEach(function(id) {
         var bouton = document.getElementById(id);
-        if (bouton) bouton.disabled = !(id === "economy-route-button" && navigationActive);
+        if (bouton && !premierResultatRentabiliteAffiche) bouton.disabled = !(id === "economy-route-button" && navigationActive);
     });
     try {
         if (!navigator.geolocation) throw new Error("GPS indisponible");
@@ -17140,13 +17153,14 @@ async function actualiserRentabilitePeriodiquement(force) {
         positionCycleRentabilite = {latitude: latitude, longitude: longitude, date: Date.now(), carburant: carburant, rayon: rayon};
         calculerMeilleureStation();
     } catch (erreur) {
+        if (premierResultatRentabiliteAffiche) return;
         var titre = document.getElementById("economy-title");
         var sousTitre = document.getElementById("economy-subtitle");
         if (titre) titre.textContent = "Comparaison indisponible";
         if (sousTitre) sousTitre.textContent = "Position GPS actuelle et trajets routiers requis. " + erreur.message;
         ["economy-route-button", "economy-waze-button", "economy-google-button"].forEach(function(id) {
             var bouton = document.getElementById(id);
-            if (bouton) bouton.disabled = !(id === "economy-route-button" && navigationActive);
+            if (bouton && !premierResultatRentabiliteAffiche) bouton.disabled = !(id === "economy-route-button" && navigationActive);
         });
     } finally {
         cycleRentabiliteEnCours = false;
