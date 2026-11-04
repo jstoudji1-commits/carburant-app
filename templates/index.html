@@ -8825,12 +8825,11 @@ function modeElectriqueActif() {
 }
 
 function carburantRentabiliteActuel() {
-
+    // Le carburant affiche sur la carte est aussi celui de tous les calculs.
+    var selection = String(carburantSelectionne || "").toLowerCase();
+    if (["gazole", "e10", "sp95", "sp98", "e85", "gplc", "electrique"].includes(selection)) return selection;
     var vehicule = vehiculeActif();
-    return vehicule
-        ? carburantPourVehicule(vehicule)
-        : String(carburantSelectionne || "").toLowerCase();
-
+    return vehicule ? carburantPourVehicule(vehicule) : selection;
 }
 
 function modeElectriqueRentabiliteActif() {
@@ -9312,9 +9311,11 @@ function actualiserPrixMinimumAutour(stations) {
         carburant.setAttribute("aria-label", choix.nextElementSibling.textContent.trim());
     }
 
-    var stationsAvecPrix = stations.map(normaliserStationCarte)
-        .filter(function(station) {
-            return prixStationDisponible(station.prix);
+    var stationsAvecPrix = appliquerAvantageTotalenergiesStationsTrajet(
+        stations.map(normaliserStationCarte), carteTotalenergiesActive(), carburantRentabiliteActuel()
+    ).filter(function(station) {
+            return String(station.carburant || "").toLowerCase() === carburantRentabiliteActuel()
+                && prixStationDisponible(station.prix);
         })
         .sort(function(stationA, stationB) {
             return stationA.prix - stationB.prix;
@@ -9356,6 +9357,7 @@ function actualiserPrixMinimumAutour(stations) {
         + (stationMinimum.ville
             ? ' &middot; ' + echapperHtml(stationMinimum.ville)
             : '')
+        + (stationMinimum.avantageTotalenergiesApplique ? '<small>Plafond carte TotalEnergies appliqué</small>' : '')
         + '</span></button>';
 
 }
@@ -9802,7 +9804,7 @@ function actualiserControleCarteTotalenergies() {
     );
     var caseCarte = document.getElementById("carte-totalenergies-active");
     var vehicule = vehiculeActif();
-    var carburant = vehicule ? carburantPourVehicule(vehicule) : "";
+    var carburant = carburantRentabiliteActuel();
     var afficher = Boolean(
         vehicule
         && carburantEligibleAvantageTotalenergies(carburant)
@@ -9852,6 +9854,7 @@ window.modifierCarteTotalenergies = function() {
     var caseCarte = document.getElementById("carte-totalenergies-active");
     localStorage.setItem(carteTotalenergiesCle, String(Boolean(caseCarte && caseCarte.checked)));
     revisionOptionTotalenergies += 1;
+    actualiserPrixMinimumAutour(stationsEconomie);
     actualiserPastillesTotalenergies();
     programmerSauvegardeCompte();
     dernierCalculPeriodiqueRentabilite = 0;
@@ -13501,9 +13504,11 @@ function definirStationsEconomie(stations) {
     stationsEconomie = stations.map(normaliserStationCarte)
         .filter(function(station) {
             return Number.isFinite(station.latitude)
-                && Number.isFinite(station.longitude);
+                && Number.isFinite(station.longitude)
+                && String(station.carburant || "").toLowerCase() === carburantRentabiliteActuel();
         });
 
+    actualiserPrixMinimumAutour(stationsEconomie);
 }
 
 async function actualiserStationsEconomieVehicule(
@@ -13513,6 +13518,7 @@ async function actualiserStationsEconomieVehicule(
 ) {
 
     var carburantRentabilite = carburantRentabiliteActuel();
+    var rayonRequete = rayonCalculEconomieKm;
 
     if (
         carburantRentabilite
@@ -13554,9 +13560,14 @@ async function actualiserStationsEconomieVehicule(
             return false;
         }
 
-        definirStationsEconomie(donnees.stations.map(function(station) {
+        if (carburantRentabilite !== carburantRentabiliteActuel() || rayonRequete !== rayonCalculEconomieKm) return false;
+        var stationsValides = donnees.stations.filter(function(station) {
+            return !station.carburant || String(station.carburant).toLowerCase() === carburantRentabilite;
+        }).map(function(station) {
             return Object.assign({}, station, {carburant: carburantRentabilite});
-        }));
+        });
+        remplacerStationsSurCarte(stationsValides);
+        definirStationsEconomie(stationsValides);
         return true;
     })().catch(function() {
         return false;
@@ -13569,6 +13580,8 @@ async function actualiserStationsEconomieVehicule(
 }
 
 async function actualiserStationsSelonPosition(force) {
+    var carburantRequete = carburantSelectionne;
+    var rayonRequete = rayonCalculEconomieKm;
 
     if (actualisationStationsEnCours) {
 
@@ -13671,6 +13684,7 @@ async function actualiserStationsSelonPosition(force) {
         if (!Array.isArray(donnees.stations)) {
             return false;
         }
+        if (carburantRequete !== carburantSelectionne || rayonRequete !== rayonCalculEconomieKm) return false;
 
         latitudeDerniereRecherche = latitudeRecherche;
         longitudeDerniereRecherche = longitudeRecherche;
@@ -16156,7 +16170,9 @@ function calculerRentabiliteStations(
 
     var carburantRentabilite = carburantRentabiliteActuel();
     var carteActive = carteTotalenergiesActive();
-    stationsDisponibles = stationsDisponibles.map(function(station) {
+    stationsDisponibles = stationsDisponibles.filter(function(station) {
+        return !station.carburant || String(station.carburant).toLowerCase() === carburantRentabilite;
+    }).map(function(station) {
         var prixPublic = prixPublicStationRentabilite(station);
         var prixEffectif = prixRentabiliteAvecCarteTotalenergies(
             station,
@@ -16974,6 +16990,7 @@ window.calculerMeilleureStation = function() {
         + villeStationEconomique;
     sousTitre.textContent =
         meilleureStation.adresse
+        + " \u00b7 " + carburantRentabiliteActuel().toUpperCase()
         + " \u00b7 "
         + prixFormate
         + (
