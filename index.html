@@ -1259,6 +1259,12 @@ body{
     border-radius:5px;
 }
 
+.stat-station-min small{
+    display:block;
+    margin-top:4px;
+    line-height:1.3;
+}
+
 .stat-station-min strong{
     font-weight:800;
 }
@@ -4319,12 +4325,6 @@ body{
 }
 
 
-.header-brand{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;height:100%;flex:0 1 44%;}
-.topbar.has-savings{align-items:center;}
-.topbar.has-savings .header-brand .logo{height:calc(100% - 28px);max-width:100%;object-position:left center;}
-.topbar .header-brand .header-savings{position:static;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:2px 5px;height:auto;min-height:24px;font-size:clamp(9px,2.3vw,12px);white-space:normal;}
-.header-brand .header-savings strong{font-size:inherit;}
-.header-brand .header-savings-info{width:20px;height:20px;flex-basis:20px;font-size:12px;}
 body.gps-fullscreen{overflow:hidden;}
 body.gps-fullscreen .topbar,body.gps-fullscreen .ad-banner{display:none!important;}
 body.gps-fullscreen .map-stage{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:1800;background:#eef3ef;--map-tools-top:calc(env(safe-area-inset-top) + 110px);}
@@ -4335,16 +4335,31 @@ body.gps-fullscreen .maplibregl-ctrl-bottom-right{bottom:29dvh;}
 .bottom-actions:has(.route-countdown){grid-template-columns:minmax(0,1fr) auto;align-items:center;}
 .bottom-actions:has(.route-countdown)>:not(#economy-route-button):not(.route-countdown){grid-column:1 / -1;}
 
-.topbar .header-brand{width:min(280px,34vw);max-width:34vw;flex:0 0 34vw;}
-.topbar .header-brand .header-savings{display:grid;grid-template-columns:auto auto;justify-content:start;column-gap:5px;row-gap:0;line-height:1.1;}
-.topbar .header-brand .header-savings[hidden]{display:none;}
-.header-brand .header-savings>span{grid-column:1 / -1;font-size:9px;}
-.header-brand .header-savings>strong{font-size:12px;}
 body.gps-fullscreen #bottom-card{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:10px;}
 body.gps-fullscreen #bottom-card .bottom-title{font-size:16px;margin:0;}
 body.gps-fullscreen #bottom-card .bottom-subtitle{font-size:12px;margin:3px 0;}
 body.gps-fullscreen #bottom-card .bottom-icon,body.gps-fullscreen #bottom-card .economy-reservoir-gauge,body.gps-fullscreen #bottom-card .premium-route-actions{display:none!important;}
 .route-countdown{display:inline-block;margin-left:8px;font-variant-numeric:tabular-nums;font-weight:800;}
+
+/* Une seule ligne pour le cumul, le montant et son aide. */
+.topbar{height:88px;padding:8px 20px;align-items:flex-start;}
+.header-brand{display:flex;align-items:center;min-width:0;height:48px;flex:0 1 34%;}
+.topbar.has-savings{align-items:flex-start;}
+.topbar.has-savings > .top-actions{min-height:0;height:48px;align-items:center;}
+.topbar .header-brand .logo{height:48px;max-width:100%;object-position:left center;}
+.topbar .header-brand .header-savings{position:absolute;left:20px;right:20px;bottom:6px;display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-start;gap:6px;height:18px;min-height:0;margin:0;padding:0;font-size:12px;line-height:18px;white-space:nowrap;}
+.topbar .header-brand .header-savings[hidden]{display:none;}
+.topbar .header-savings>span,.topbar .header-savings>strong{font-size:inherit;line-height:inherit;font-weight:700;}
+.topbar .header-brand .header-savings-info{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;flex:0 0 18px;margin:0;padding:0;font-family:inherit;font-size:12px;font-weight:700;line-height:1;}
+.app-layout{top:88px;}
+@media(max-width:900px){
+    .topbar{height:72px;padding:5px 10px;}
+    .topbar .header-brand,.topbar.has-savings > .top-actions{height:42px;}
+    .topbar .header-brand .logo{height:40px;}
+    .topbar .header-brand .header-savings{left:10px;right:10px;bottom:4px;}
+    .app-layout{top:auto;padding-top:72px;}
+    .app-main-nav{top:80px;}
+}
 </style>
 
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
@@ -11610,6 +11625,7 @@ window.restaurerPremiumIOS = async function(event) {
 };
 
 function effacerDonneesCompteLocales() {
+    stationRentableSuivie = null;
     localStorage.removeItem("optiplein-totalenergies-en-attente");
     derniereComparaisonRoutiere = null;
 
@@ -16241,7 +16257,6 @@ function ajouterEconomieNavigationFigee(sousTitre) {
     if (
         !sousTitre
         || !Number.isFinite(economieEstimeeFigee)
-        || economieEstimeeFigee <= 0
     ) {
         return;
     }
@@ -16250,10 +16265,10 @@ function ajouterEconomieNavigationFigee(sousTitre) {
     ligne.className = "navigation-saving";
 
     var texte = document.createElement("span");
-    texte.textContent = "\u00c9conomie estim\u00e9e : ";
+    texte.textContent = economieEstimeeFigee < 0 ? "Surcoût estimé : " : "\u00c9conomie estim\u00e9e : ";
 
     var montant = document.createElement("span");
-    montant.textContent = economieEstimeeFigee.toLocaleString(
+    montant.textContent = Math.abs(economieEstimeeFigee).toLocaleString(
         "fr-FR",
         {
             minimumFractionDigits: 2,
@@ -16310,8 +16325,8 @@ window.afficherInfoEconomieEstimee = function(event) {
             + '<p class="estimated-saving-info-title" id="estimated-saving-info-title">'
             + '\u00c9conomie estim\u00e9e</p>'
             + '<p class="estimated-saving-info-copy">'
-            + 'Le montant est une estimation fig\u00e9e au d\u00e9marrage de '
-            + 'l&rsquo;itin\u00e9raire. Il peut varier selon la circulation, le '
+            + 'Vers une station, cette estimation évolue avec votre position GPS. '
+            + 'Il peut varier selon la circulation, le '
             + 'd\u00e9tour r\u00e9el, votre conduite, la consommation du v\u00e9hicule, '
             + 'le volume achet\u00e9, le prix affich\u00e9 en station et les '
             + 'conditions d&rsquo;acc\u00e8s.</p>'
@@ -16792,8 +16807,10 @@ window.calculerMeilleureStation = function() {
                 ? "plafond carte TotalEnergies appliqué \u00b7 "
                 : ""
         )
-        + distanceFormatee
-        + " km \u00b7 ";
+        ;
+    var distanceVivante = document.createElement("span");
+    distanceVivante.textContent = distanceFormatee + " km \u00b7 ";
+    sousTitre.appendChild(distanceVivante);
     var economieMiseEnAvant = document.createElement("span");
     economieMiseEnAvant.className = "economy-saving";
     var economieLibelle = document.createElement("span");
@@ -16806,6 +16823,15 @@ window.calculerMeilleureStation = function() {
     economieMiseEnAvant.appendChild(economieLibelle);
     economieMiseEnAvant.appendChild(economieMontant);
     sousTitre.appendChild(economieMiseEnAvant);
+    var referenceSuivie = stationsCalculees.find(function(station) {
+        return stationReferenceRentable && station.id === stationReferenceRentable.id;
+    });
+    stationRentableSuivie = referenceSuivie ? {
+        station:meilleureStation,reference:referenceSuivie,carburant:carburantRentabiliteActuel(),
+        reservoir:reservoir,consommation:consommation,quantite:quantiteACompleter,
+        distance:distanceVivante,libelle:economieLibelle,montant:economieMontant,ligne:economieMiseEnAvant,
+        conteneur:sousTitre,texteReference:libelleReferenceRentabilite
+    } : null;
     ajouterExplicationRentabilite(
         sousTitre,
         meilleureStation,
@@ -16834,7 +16860,7 @@ window.calculerMeilleureStation = function() {
                 meilleureStation.longitude,
                 false,
                 meilleureStation,
-                economie
+                meilleureStation.economieMonetaire
             );
         };
     }
@@ -17153,7 +17179,68 @@ async function actualiserRentabilitePeriodiquement(force) {
     }
 }
 
+var stationRentableSuivie = null;
+var suiviRentabiliteGpsEnCours = false;
+var dernierSuiviRentabiliteGps = 0;
+async function actualiserStationRentableDepuisGps() {
+    var suivi = stationRentableSuivie;
+    if (!suivi || trajetPrepare || !Number.isFinite(latitudeUtilisateur) || !Number.isFinite(longitudeUtilisateur)) return;
+    if (navigationActive && (!stationNavigationActive || !memeStation(stationNavigationActive, suivi.station))) return;
+    if (suiviRentabiliteGpsEnCours || Date.now() - dernierSuiviRentabiliteGps < 3000) return;
+    var latitude = latitudeUtilisateur, longitude = longitudeUtilisateur;
+    var carburant = carburantRentabiliteActuel(), carte = carteTotalenergiesActive();
+    if (suivi.carburant !== carburant) return;
+    suiviRentabiliteGpsEnCours = true;
+    dernierSuiviRentabiliteGps = Date.now();
+    try {
+        var stations = [suivi.station, suivi.reference];
+        var reponse = await fetchAvecDelai("/api/distances-stations", {
+            method:"POST", headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({origine:{latitude:latitude,longitude:longitude},
+                cap_depart: typeof capNavigationFiable === "function" && Number.isFinite(capNavigationFiable(5000)) ? capNavigationFiable(5000) : null,
+                stations:stations.map(function(s) {return {latitude:s.latitude,longitude:s.longitude};})})
+        }, 12000);
+        if (!reponse.ok) return;
+        var donnees = await reponse.json();
+        if (stationRentableSuivie !== suivi || carte !== carteTotalenergiesActive()
+            || carburant !== carburantRentabiliteActuel() || trajetPrepare) return;
+        if (navigationActive && (!stationNavigationActive || !memeStation(stationNavigationActive, suivi.station))) return;
+        if (!Array.isArray(donnees.trajets) || donnees.trajets.length !== 2) return;
+        if (donnees.trajets.some(function(t) { return !t || ![t.aller_km,t.suite_km,t.detour_km,t.duree_detour_minutes].every(function(v) {return Number.isFinite(v) && v >= 0;}); })) return;
+        var calculs = stations.map(function(station, index) {
+            var prix = prixRentabiliteAvecCarteTotalenergies(station, carte, carburant);
+            return calculerCoutOptimisationStation({station:Object.assign({},station,{prix:prix}),
+                prixReference:prix,reservoir:suivi.reservoir,consommation:suivi.consommation,
+                quantiteACompleter:suivi.quantite,distanceStationKm:donnees.trajets[index].aller_km,
+                distanceDetourRoutierKm:donnees.trajets[index].detour_km,
+                dureeDetourRoutiereMinutes:donnees.trajets[index].duree_detour_minutes});
+        });
+        var economie = calculs[1].coutTotal - calculs[0].coutTotal;
+        if (Math.abs(economie) < 0.0000001) economie = 0;
+        Object.assign(suivi.station,calculs[0],{distanceCalculee:donnees.trajets[0].aller_km,economieMonetaire:economie});
+        distanceStationRentableAffichee = suivi.station.distanceCalculee;
+        economieRentableAffichee = derniereEconomieEstimee = economie;
+        if (navigationActive) {
+            economieEstimeeFigee = economie;
+            actualiserEncadreDestinationNavigation();
+        } else if (!routeNavigation) {
+            suivi.distance.textContent = suivi.station.distanceCalculee.toLocaleString("fr-FR",{minimumFractionDigits:1,maximumFractionDigits:1}) + " km · ";
+            suivi.libelle.textContent = economie < 0 ? "Surcoût estimé " : "Économie nette estimée ";
+            suivi.montant.textContent = Math.abs(economie).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}) + " €";
+            suivi.ligne.classList.toggle("is-negative", economie < 0);
+            var explication = suivi.conteneur.querySelector(".optimization-explanation");
+            if (explication) explication.remove();
+            ajouterExplicationRentabilite(suivi.conteneur,suivi.station,economie,suivi.texteReference);
+        }
+    } catch (erreur) {
+        // Conserver les derniers chiffres verifies si le reseau est indisponible.
+    } finally {
+        suiviRentabiliteGpsEnCours = false;
+    }
+}
+
 function actualiserRentabiliteDepuisGps() {
+    actualiserStationRentableDepuisGps();
     // Une seule cadence par abonnement, indépendante de la vitesse et du GPS.
     actualiserRentabilitePeriodiquement();
 }
