@@ -4318,6 +4318,33 @@ body{
     }
 }
 
+
+.header-brand{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;height:100%;flex:0 1 44%;}
+.topbar.has-savings{align-items:center;}
+.topbar.has-savings .header-brand .logo{height:calc(100% - 28px);max-width:100%;object-position:left center;}
+.topbar .header-brand .header-savings{position:static;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:2px 5px;height:auto;min-height:24px;font-size:clamp(9px,2.3vw,12px);white-space:normal;}
+.header-brand .header-savings strong{font-size:inherit;}
+.header-brand .header-savings-info{width:20px;height:20px;flex-basis:20px;font-size:12px;}
+body.gps-fullscreen{overflow:hidden;}
+body.gps-fullscreen .topbar,body.gps-fullscreen .ad-banner{display:none!important;}
+body.gps-fullscreen .map-stage{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:1800;background:#eef3ef;--map-tools-top:calc(env(safe-area-inset-top) + 110px);}
+body.gps-fullscreen .navigation-panel{top:calc(env(safe-area-inset-top) + 12px);}
+body.gps-fullscreen .trip-map-tools,body.gps-fullscreen #trip-quick-places,body.gps-fullscreen #trip-planner-toggle{display:none!important;}
+body.gps-fullscreen #bottom-card{position:fixed!important;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 8px);z-index:1801;max-height:27dvh;overflow:auto;margin:0!important;}
+body.gps-fullscreen .maplibregl-ctrl-bottom-right{bottom:29dvh;}
+.bottom-actions:has(.route-countdown){grid-template-columns:minmax(0,1fr) auto;align-items:center;}
+.bottom-actions:has(.route-countdown)>:not(#economy-route-button):not(.route-countdown){grid-column:1 / -1;}
+
+.topbar .header-brand{width:min(280px,34vw);max-width:34vw;flex:0 0 34vw;}
+.topbar .header-brand .header-savings{display:grid;grid-template-columns:auto auto;justify-content:start;column-gap:5px;row-gap:0;line-height:1.1;}
+.topbar .header-brand .header-savings[hidden]{display:none;}
+.header-brand .header-savings>span{grid-column:1 / -1;font-size:9px;}
+.header-brand .header-savings>strong{font-size:12px;}
+body.gps-fullscreen #bottom-card{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:10px;}
+body.gps-fullscreen #bottom-card .bottom-title{font-size:16px;margin:0;}
+body.gps-fullscreen #bottom-card .bottom-subtitle{font-size:12px;margin:3px 0;}
+body.gps-fullscreen #bottom-card .bottom-icon,body.gps-fullscreen #bottom-card .economy-reservoir-gauge,body.gps-fullscreen #bottom-card .premium-route-actions{display:none!important;}
+.route-countdown{display:inline-block;margin-left:8px;font-variant-numeric:tabular-nums;font-weight:800;}
 </style>
 
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
@@ -4331,6 +4358,7 @@ body{
 <body>
 
 <header class="topbar">
+    <div class="header-brand">
     <img
         src="/static/logo.png"
         alt="OptiPlein"
@@ -4338,6 +4366,7 @@ body{
     >
 
     <div class="opti-savings-banner header-savings" id="opti-savings-banner" hidden></div>
+    </div>
 
     <div class="top-actions">
         <button
@@ -6029,30 +6058,7 @@ function actualiserCompteurMiseAJour() {
 }
 
 function rechargerAvecPositionActuelle() {
-
-    if (rechargementPrixEnCours) {
-        return;
-    }
-
-    rechargementPrixEnCours = true;
-
-    var url = new URL(window.location.href);
-    if (
-        latitudeUtilisateur !== null
-        && longitudeUtilisateur !== null
-    ) {
-        url.searchParams.set("latitude", latitudeUtilisateur);
-        url.searchParams.set("longitude", longitudeUtilisateur);
-    }
-    url.searchParams.set("carburant", {{ carburant|tojson }});
-    url.searchParams.set("rayon", String(rayonCalculEconomieKm || 25));
-
-    sessionStorage.setItem(
-        "optiplein-cap-carte",
-        String(capCarte)
-    );
-    window.location.replace(url.toString());
-
+    programmerSynchronisationPrix(5000);
 }
 
 async function synchroniserDateMiseAJour() {
@@ -6069,10 +6075,6 @@ async function synchroniserDateMiseAJour() {
 
         var donnees = await reponse.json();
         if (donnees.update_pending) {
-            afficherInfoItineraire(
-                "Mise \u00e0 jour des prix en cours...",
-                12000
-            );
             programmerSynchronisationPrix(5000);
         }
 
@@ -6088,10 +6090,6 @@ async function synchroniserDateMiseAJour() {
                 versionServeur
                 && versionServeur !== versionDonneesChargees
             ) {
-                afficherInfoItineraire(
-                    "Nouveaux prix disponibles, actualisation...",
-                    12000
-                );
                 var actualisationOk =
                     await actualiserStationsSelonPosition(true);
 
@@ -6099,17 +6097,11 @@ async function synchroniserDateMiseAJour() {
                     dateDonneesChargees = isoServeur;
                     versionDonneesChargees = versionServeur;
                     rafraichissementPrixDiffere = false;
-                    afficherInfoItineraire(
-                        "Prix actualis\u00e9s.",
-                        4500
-                    );
                 } else if (!navigationActive && !trajetPrepare) {
                     rechargerAvecPositionActuelle();
                 } else {
-                    dateDonneesChargees = isoServeur;
-                    versionDonneesChargees = versionServeur;
                     rafraichissementPrixDiffere = true;
-                    afficherInfoItineraire("", 0);
+                    programmerSynchronisationPrix(5000);
                 }
             }
 
@@ -7194,6 +7186,7 @@ function configurerBoutonsNavigationExterneTrajetPrepare() {
 }
 
 function actualiserNavigationPremium() {
+    if (navigationActive) afficherModeGpsPleinEcran(true);
 
     var premium = comptePremiumActif();
 
@@ -10417,7 +10410,7 @@ function actualiserBanniereEconomiesOptiPlein() {
 
         element.hidden = false;
         if (element.id === "opti-savings-banner") {
-            element.innerHTML = '<span>Économies :</span><strong>'
+            element.innerHTML = '<span>Cumul des économies</span><strong>'
                 + formaterMontantEconomiesOptiPlein(total)
                 + '</strong><button type="button" class="header-savings-info" id="savings-info-button"'
                 + ' aria-label="Comprendre le total de mes économies" aria-haspopup="dialog"'
@@ -15871,7 +15864,7 @@ function ajouterExplicationRentabilite(
                 ? " au plafond Avantage TotalEnergies de 1,99 €/L"
                 : ""
         )
-        + ", trajet aller "
+        + ", trajet aller-retour "
         + formaterKmRentabilite(station.distanceDetourKm)
         + " = "
         + formaterEurosRentabilite(station.coutCarburantDetour)
@@ -15969,24 +15962,29 @@ function calculerRentabiliteStations(
         });
     });
 
-    // Le top 10 utilise exactement le prix affiché, avantage carte compris.
+    // Référence indépendante des remises : le prix public minimum du rayon.
+    var prixPublics = stationsDisponibles.map(function(station) { return station.prixPublic; })
+        .filter(function(prix) { return Number.isFinite(prix) && prix > 0 && prix !== 9.999; });
+    var prixTrajetReference = prixPublics.length ? Math.min.apply(null, prixPublics) : 0;
+    // Toutes les stations compatibles sont comparees avec leur trajet reel.
     stationsDisponibles = stationsDisponibles.filter(function(station) {
         return Number.isFinite(station.prix) && station.prix > 0 && station.prix !== 9.999;
-    }).sort(function(a, b) { return a.prix - b.prix || String(a.id).localeCompare(String(b.id)); }).slice(0, 10);
-    var prixTrajetReference = stationsDisponibles.reduce(
-        function(total, station) {
-            return total + station.prix;
-        },
-        0
-    ) / stationsDisponibles.length;
+    });
     var niveauCarburantDepart = Math.max(
         0,
         Math.min(reservoir, reservoir - quantiteACompleter)
     );
     var destinationCalcul = null; // Comparaison locale depuis la position GPS du cycle.
     var routes = trajetsVerifies || distancesRoutieresRentabilite(stationsDisponibles, latitudeCalcul, longitudeCalcul, destinationCalcul);
-    var contexteComparaison = JSON.stringify([carburantRentabilite, destinationCalcul]);
+    var contexteComparaison = JSON.stringify([carburantRentabilite, latitudeCalcul, longitudeCalcul, destinationCalcul, stationsDisponibles.map(function(station) { return [station.id, station.latitude, station.longitude]; })]);
     if (!routes.trajets) {
+        if (derniereComparaisonRoutiere && derniereComparaisonRoutiere.contexte === contexteComparaison) {
+            var precedent = calculerRentabiliteStations(stationsDisponibles, latitudeCalcul, longitudeCalcul,
+                reservoir, consommation, quantiteACompleter, derniereComparaisonRoutiere.routes);
+            precedent.actualisationEnCours = Boolean(routes.enAttente);
+            precedent.actualisationEchouee = Boolean(routes.erreur);
+            return precedent;
+        }
         return {stationsCalculees:[], enAttente:Boolean(routes.enAttente), erreur:Boolean(routes.erreur)};
     }
     if (!trajetsVerifies && routes.trajets.some(function(trajet) {return trajet !== null;})) {
@@ -16004,6 +16002,7 @@ function calculerRentabiliteStations(
                 || !Number.isFinite(trajetRoutier.suite_km) || !Number.isFinite(trajetRoutier.detour_km)
                 || !Number.isFinite(trajetRoutier.duree_detour_minutes)) return null;
             var distance = trajetRoutier.aller_km;
+            if (distance > rayonCalculEconomieKm) return null;
             if (comptePremiumActif() && distance * consommation / 100 > niveauCarburantDepart) return null;
             var distanceDestinationApresStation = destinationCalcul ? trajetRoutier.suite_km : 0;
             var carburantTrajet = (distance + trajetRoutier.suite_km) * consommation / 100;
@@ -16023,7 +16022,7 @@ function calculerRentabiliteStations(
                 destinationCalcul: destinationCalcul,
                 distanceDestinationApresStation:
                     distanceDestinationApresStation,
-                distanceDetourRoutierKm: trajetRoutier.aller_km,
+                distanceDetourRoutierKm: trajetRoutier.detour_km,
                 dureeDetourRoutiereMinutes: trajetRoutier.duree_detour_minutes,
                 penaliteDemiTourKm: penaliteDemiTourKm
             });
@@ -16059,26 +16058,24 @@ function calculerRentabiliteStations(
         }
     ).filter(Boolean);
 
-    var coutReference = stationsCalculees.length
-        ? stationsCalculees.reduce(function(total, station) { return total + station.coutTotal; }, 0)
-            / stationsCalculees.length
-        : 0;
-    stationsCalculees.forEach(
-        function(station) {
-            station.economieMonetaire = coutReference - station.coutTotal;
-            if (Math.abs(station.economieMonetaire) < 0.0000001) station.economieMonetaire = 0;
-            station.economieComparee = station.economieMonetaire;
-            station.stationReferenceRentable = null;
-
-        }
-    );
-
+    // Reference concrete : station accessible la plus proche, aller-retour inclus.
+    var reference = stationsCalculees.reduce(function(proche, station) {
+        return !proche || station.distanceCalculee < proche.distanceCalculee ? station : proche;
+    }, null);
+    var coutReference = reference ? reference.coutTotal : 0;
+    stationsCalculees.forEach(function(station) {
+        station.prixReferencePublic = reference ? reference.prixPublic : 0;
+        station.economieBrute = reference ? quantiteACompleter * (reference.prix - station.prix) : 0;
+        station.economieMonetaire = coutReference - station.coutTotal;
+        if (Math.abs(station.economieMonetaire) < 0.0000001) station.economieMonetaire = 0;
+        station.economieComparee = station.economieMonetaire;
+        station.stationReferenceRentable = reference ? {id:reference.id, enseigne:reference.enseigne, ville:reference.ville, prix:reference.prix, coutTotal:reference.coutTotal} : null;
+    });
     return {
         stationsCalculees: stationsCalculees,
         coutReference: coutReference,
-        libelleReference: stationsCalculees.length > 1
-            ? " par rapport au coût moyen du top 10 accessible, trajets inclus"
-            : " · seule station accessible avec un trajet vérifié : économie non comparable"
+        prixReferencePublic: reference ? reference.prixPublic : 0,
+        libelleReference: " par rapport à la station accessible la plus proche, trajets aller-retour inclus"
     };
 
 }
@@ -16799,12 +16796,6 @@ window.calculerMeilleureStation = function() {
         libelleReferenceRentabilite
     );
 
-    if (!prixEnActualisation && !resultatRentabilite.actualisationEnCours && resultatRentabilite.actualisationEchouee) {
-        var statutCalcul = document.createElement("span");
-        statutCalcul.className = "optimization-explanation";
-        statutCalcul.textContent = "Actualisation indisponible · derniers trajets calculés conservés.";
-        sousTitre.appendChild(statutCalcul);
-    }
 
     var economiePasseSousUnEuro =
         economie < 1
@@ -16821,10 +16812,6 @@ window.calculerMeilleureStation = function() {
     if (!routeNavigation && !navigationActive) {
         boutonItineraire.textContent = "Itin\u00e9raire";
         boutonItineraire.onclick = function() {
-            enregistrerEconomiePremium(
-                meilleureStation,
-                economie
-            );
             tracerItineraire(
                 meilleureStation.latitude,
                 meilleureStation.longitude,
@@ -19818,7 +19805,56 @@ function verifierEcartItineraire() {
 
 }
 
+var minuteurConfirmationItineraire = null;
+var expirationConfirmationItineraire = 0;
+var generationItineraire = 0;
+var defilementAvantGps = 0;
+function afficherModeGpsPleinEcran(actif) {
+    var dejaActif = document.body.classList.contains("gps-fullscreen");
+    if (actif && !dejaActif) defilementAvantGps = window.scrollY;
+    document.body.classList.toggle("gps-fullscreen", actif);
+    window.requestAnimationFrame(function() {
+        if (map && map._map && map._map.resize) map._map.resize();
+        if (!actif && dejaActif) window.scrollTo(0, defilementAvantGps);
+    });
+}
+function annulerChronoConfirmationItineraire() {
+    window.clearInterval(minuteurConfirmationItineraire);
+    minuteurConfirmationItineraire = null;
+    expirationConfirmationItineraire = 0;
+    var compteur = document.getElementById("route-start-countdown");
+    if (compteur) compteur.remove();
+}
+function actualiserChronoConfirmationItineraire() {
+    if (!expirationConfirmationItineraire) return;
+    var secondes = Math.max(0, Math.ceil((expirationConfirmationItineraire - Date.now()) / 1000));
+    if (!secondes) { arreterNavigation(); return; }
+    var bouton = document.getElementById("economy-route-button");
+    if (!bouton) return;
+    var compteur = document.getElementById("route-start-countdown");
+    if (!compteur) {
+        compteur = document.createElement("span");
+        compteur.id = "route-start-countdown";
+        compteur.className = "route-countdown";
+        bouton.insertAdjacentElement("afterend", compteur);
+    }
+    compteur.textContent = secondes + " s";
+    compteur.setAttribute("aria-label", "Annulation automatique dans " + secondes + " secondes");
+}
+function commencerChronoConfirmationItineraire() {
+    annulerChronoConfirmationItineraire();
+    expirationConfirmationItineraire = Date.now() + 20000;
+    actualiserChronoConfirmationItineraire();
+    minuteurConfirmationItineraire = window.setInterval(actualiserChronoConfirmationItineraire, 250);
+}
+document.addEventListener("visibilitychange", actualiserChronoConfirmationItineraire);
+
 window.demarrerNavigation = async function() {
+    if (expirationConfirmationItineraire && Date.now() >= expirationConfirmationItineraire) {
+        arreterNavigation();
+        return;
+    }
+    annulerChronoConfirmationItineraire();
 
     if (!routeNavigation && !destinationNavigation) {
         return;
@@ -19839,6 +19875,9 @@ window.demarrerNavigation = async function() {
     economieEstimeeFigee = Number.isFinite(derniereEconomieEstimee)
         ? derniereEconomieEstimee
         : null;
+    if (stationNavigationActive && Number.isFinite(economieEstimeeFigee)) {
+        enregistrerEconomiePremium(stationNavigationActive, economieEstimeeFigee);
+    }
     navigationActive = true;
     actualiserNavigationPremium();
     suiviCarteActif = true;
@@ -19872,6 +19911,8 @@ window.demarrerNavigation = async function() {
         }
     }
 
+    if (!navigationActive) return;
+
     if (bouton) {
         bouton.disabled = false;
         bouton.textContent = "Arr\u00eater";
@@ -19885,6 +19926,9 @@ window.demarrerNavigation = async function() {
 };
 
 window.arreterNavigation = function() {
+    generationItineraire += 1;
+    annulerChronoConfirmationItineraire();
+    afficherModeGpsPleinEcran(false);
 
     navigationActive = false;
     actualiserNavigationPremium();
@@ -19971,7 +20015,12 @@ async function tracerItineraire(
         routeNavigation = null;
         etapesNavigation = [];
         indexEtapeNavigation = 0;
+        if (stationCible) {
+            afficherModeGpsPleinEcran(true);
+            commencerChronoConfirmationItineraire();
+        }
     }
+    var generationRequeteItineraire = ++generationItineraire;
 
     var boutonItineraire = document.getElementById(
         "economy-route-button"
@@ -20004,6 +20053,8 @@ async function tracerItineraire(
             "auto",
             retourIntersection
         );
+        actualiserChronoConfirmationItineraire();
+        if (generationRequeteItineraire !== generationItineraire) return;
         var route = normaliserRouteItineraire(data);
 
         if (!route) {
@@ -20013,6 +20064,8 @@ async function tracerItineraire(
                 "openstreetmap",
                 retourIntersection
             );
+            actualiserChronoConfirmationItineraire();
+            if (generationRequeteItineraire !== generationItineraire) return;
             route = normaliserRouteItineraire(data);
         }
 
@@ -20084,6 +20137,11 @@ async function tracerItineraire(
         map.closePopup();
 
     } catch (erreur) {
+        if (generationRequeteItineraire !== generationItineraire) return;
+        if (!maintenirNavigation) {
+            annulerChronoConfirmationItineraire();
+            afficherModeGpsPleinEcran(false);
+        }
 
         if (retourIntersection) {
             // Ne pas reutiliser les anciennes consignes apres une sortie de route.

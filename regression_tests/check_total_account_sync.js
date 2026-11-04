@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
 for(const file of ['index.html','templates/index.html']){
  const s=fs.readFileSync(file,'utf8'),values=new Map();
- const c={localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)},choixCarteTotalenergiesSession:null,derniereComparaisonRoutiere:null,carburantEligibleAvantageTotalenergies:()=>true,normaliserRayonStationsKm:x=>x};
+ const c={rayonCalculEconomieKm:25,localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)},choixCarteTotalenergiesSession:null,derniereComparaisonRoutiere:null,carburantEligibleAvantageTotalenergies:()=>true,normaliserRayonStationsKm:x=>x};
  const apply=s.slice(s.indexOf('function appliquerDonneesCompte('),s.indexOf('function actualiserInterfaceCompte('));
  for(const match of apply.matchAll(/\b\w+Cle\b/g)) c[match[0]]=match[0];
  for(const name of ['chargerVehicule','actualiserBoutonsFavoris','actualiserLieuxTrajet','actualiserRayonPremium','actualiserPlanCompte','actualiserParrainageCompte','actualiserBadgeCompte','remplirFormulaireMonCompte','actualiserAlertesPrixPremium','actualiserStatistiquesPremium','actualiserBanniereEconomiesOptiPlein','calculerMeilleureStation'])c[name]=()=>{};
@@ -40,7 +40,7 @@ for(const file of ['index.html','templates/index.html']){
  Object.assign(c,{document:{getElementById:id=>elements[id],createElement:element,createTextNode:text=>({textContent:text})},
   nombreVehiculeEnregistre:key=>key==='vehicule-reservoir'?50:6,
   afficherDestinationNavigationDansEncadre:()=>false,definirModeDestinationEncadre(){},afficherProchainRavitaillementTrajet:()=>false,afficherTrajetPrepareDansEncadre:()=>false,
-  prixTropAnciensPourCalcul:()=>false,latitudeUtilisateur:43,longitudeUtilisateur:5,stationsEconomie:[{id:'total',enseigne:'Total',adresse:'Test',latitude:43,longitude:5,prix:2.25,avantageTotalenergies:{prix_plafond:1.99}}],
+  positionCycleRentabilite:{latitude:43,longitude:5,carburant:'gazole',rayon:25,date:Date.now()},intervalleCalculRentabiliteActuel:()=>30000,premierResultatRentabiliteAffiche:false,afficherProgressionRentabilite(){},prixTropAnciensPourCalcul:()=>false,latitudeUtilisateur:43,longitudeUtilisateur:5,stationsEconomie:[{carburant:'gazole',id:'total',enseigne:'Total',adresse:'Test',latitude:43,longitude:5,prix:2.25,avantageTotalenergies:{prix_plafond:1.99}}],
   distanceDeplacementKm:()=>1,rayonCalculEconomieKm:25,navigationActive:false,routeNavigation:null,
   proposerStationPlusRentablePendantNavigation(){},ajouterExplicationRentabilite(){},economiePrecedentePourSeuil:null,declencherRecalculSousSeuil(){},actualiserNavigationPremium(){},programmerSynchronisationPrix(){},memeStation:(a,b)=>a.id===b.id,
   enregistrerEconomiePremium(){},tracerItineraire:(lat,lon,flag,station)=>{c.stationTracee=station;}});

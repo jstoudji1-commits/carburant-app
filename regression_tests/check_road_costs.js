@@ -2,7 +2,7 @@ const fs = require('fs'), vm = require('vm'), assert = require('assert/strict');
 (async () => {
 for (const file of ['index.html', 'templates/index.html']) {
   const source = fs.readFileSync(file, 'utf8');
-  const c = {memeStation:(a,b)=>a.id===b.id,stationElectrique:()=>false, modeElectriqueRentabiliteActif:()=>false,
+  const c = {rayonCalculEconomieKm:25,intervalleCalculRentabiliteActuel:()=>30000,memeStation:(a,b)=>a.id===b.id,stationElectrique:()=>false, modeElectriqueRentabiliteActif:()=>false,
     coutTempsRentabiliteEuroHeure:0, carburantRentabiliteActuel:()=> 'diesel',
     carteTotalenergiesActive:()=>false, prixPublicStationRentabilite:s=>s.prix,
     prixRentabiliteAvecCarteTotalenergies:s=>s.prix, comptePremiumActif:()=>false,
@@ -29,6 +29,16 @@ for (const file of ['index.html', 'templates/index.html']) {
   for(let i=0;i<12;i++) await Promise.resolve();
   assert.equal(compare().actualisationEchouee,true);
   assert.equal(compare().stationsCalculees.length,2);
+  const candidates=Array.from({length:12},(_,i)=>({id:String(i),prix:i===11?1.79:1.70,latitude:43,longitude:5}));
+  const journeys=candidates.map((_,i)=>({aller_km:i===11?0.5:20,suite_km:i===11?0.5:20,detour_km:i===11?1:40,duree_detour_minutes:i===11?2:40}));
+  const all=c.calculerRentabiliteStations(candidates,43,5,50,6,40,{trajets:journeys}).stationsCalculees;
+  assert.equal(all.length,12,'No price-only top-10 exclusion');
+  const best=all.reduce((a,b)=>a.coutTotal<b.coutTotal?a:b);
+  assert.equal(best.id,'11','Nearby higher pump price can be the cheapest complete trip');
+  assert.equal(best.economieMonetaire,0,'Closest station as winner does not invent savings');
+  journeys[0].aller_km=26;
+  const inRadius=c.calculerRentabiliteStations(candidates,43,5,50,6,40,{trajets:journeys}).stationsCalculees;
+  assert.equal(inRadius.length,11,'Road distance determines eligibility');
   console.log(file+': road-based ranking, asymmetric journeys, missing routes and failure verified');
 }
 })().catch(error=>{console.error(error);process.exitCode=1;});
