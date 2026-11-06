@@ -2,6 +2,8 @@
 (function () {
     'use strict';
     if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) return;
+    if (window.optipleinGoogleAdsInitialized) return;
+    window.optipleinGoogleAdsInitialized = true;
     var tagId = 'AW-18540838649';
     var destination = tagId + '/bgDvCM746KsdEPn9-ohF';
     var cookieName = 'optiplein_ads_consent';
@@ -12,7 +14,8 @@
         return match ? match.split('=')[1] : '';
     }
     window.dataLayer = window.dataLayer || [];
-    function tag() {window.dataLayer.push(arguments);}
+    window.gtag = window.gtag || function () {window.dataLayer.push(arguments);};
+    function tag() {window.gtag.apply(window, arguments);}
     tag('consent', 'default', {ad_storage:'denied', ad_user_data:'denied', ad_personalization:'denied', analytics_storage:'denied'});
     function cleanUrl(value) {
         try {

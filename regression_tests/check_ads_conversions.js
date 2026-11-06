@@ -14,6 +14,9 @@ function page(choice, storage=new Map(), native=false){
 (async()=>{
  for(const choice of ['', 'denied']){const p=page(choice);assert.equal(p.scripts.length,0);assert.equal(p.calls(),0);assert.equal(p.events().length,0);}
  const p=page('');p.buttons[1].onclick();assert.equal(p.scripts.length,1);assert.match(p.scripts[0].src,/AW-18540838649/);
+ assert.equal(typeof p.c.gtag,'function');
+ const bodyCount=p.body.length;vm.runInContext(source,p.c);assert.equal(p.body.length,bodyCount);assert.equal(p.scripts.length,1);
+ assert.equal(p.c.dataLayer.filter(x=>x[0]==='config' && x[1]==='AW-18540838649').length,1);
  await p.scripts[0].onload();assert.equal(p.events().length,2);
  for(const e of p.events()){assert.equal(e[2].send_to,'AW-18540838649/bgDvCM746KsdEPn9-ohF');e[2].event_callback();}
  const config=p.c.dataLayer.find(x=>x[0]==='config')[2];assert(!config.page_location.includes('secret'));assert(!config.page_referrer.includes('secret'));assert(config.page_location.includes('gclid=click'));
