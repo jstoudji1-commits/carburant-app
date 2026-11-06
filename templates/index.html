@@ -3953,16 +3953,18 @@ body{
 
 .economy-confidence{
     display:block;
-    margin-top:5px;
+    height:18px;
+    min-height:18px;
+    margin:5px 0 0;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    line-height:18px;
     color:#526170;
     font-size:13px;
     font-weight:700;
 }
-
-.economy-confidence strong{
-    color:#128236;
-    font-weight:900;
-}
+.economy-confidence strong{color:#128236;font-weight:900;}
 
 .optimization-explanation{
     display:block;
@@ -5728,6 +5730,7 @@ body.gps-fullscreen #bottom-card .bottom-icon,body.gps-fullscreen #bottom-card .
                     Renseignez les caract&eacute;ristiques de votre v&eacute;hicule pour
                     obtenir l'itin&eacute;raire et la station la plus rentable autour de vous.
                 </p>
+                <p id="economy-confidence" class="economy-confidence" aria-live="polite" aria-atomic="true">Confiance prix : <strong>En attente</strong><span class="economy-confidence-report"></span></p>
                 <p
                     id="itineraire-info"
                     class="route-info"
@@ -16025,6 +16028,44 @@ function formaterEurosRentabilite(valeur) {
 
 }
 
+var cacheConfiancePrixAffichee = new Map();
+
+function actualiserConfiancePrixAffichee(station, conserverValeur) {
+    var cle = station ? JSON.stringify([String(station.id || ""),
+        station.id ? "" : [station.latitude, station.longitude],
+        String(station.carburant || carburantRentabiliteActuel()).toLowerCase()]) : null;
+    var confiance = station && (station.confiancePrix || station.confiance_prix);
+    if (cle && confiance && confiance.label
+        && (!conserverValeur || !cacheConfiancePrixAffichee.has(cle))) {
+        cacheConfiancePrixAffichee.set(cle, Object.assign({}, confiance));
+        while (cacheConfiancePrixAffichee.size > 64) {
+            cacheConfiancePrixAffichee.delete(cacheConfiancePrixAffichee.keys().next().value);
+        }
+    }
+    var derniereValeur = cle ? cacheConfiancePrixAffichee.get(cle) : null;
+    var ligne = document.getElementById("economy-confidence");
+    if (!ligne) return;
+    var valeur = ligne.querySelector("strong");
+    var signalement = ligne.querySelector(".economy-confidence-report");
+    if (!valeur) {
+        ligne.textContent = "Confiance prix : ";
+        valeur = document.createElement("strong");
+        ligne.appendChild(valeur);
+    }
+    if (!signalement) {
+        signalement = document.createElement("span");
+        signalement.className = "economy-confidence-report";
+        ligne.appendChild(signalement);
+    }
+    var libelle = derniereValeur ? derniereValeur.label : "Indisponible";
+    var mention = derniereValeur && derniereValeur.signalements_ouverts ? " · signalement ouvert" : "";
+    if (valeur.textContent !== libelle) valeur.textContent = libelle;
+    if (signalement.textContent !== mention) signalement.textContent = mention;
+    ligne.setAttribute("title", "Confiance prix : " + libelle + mention
+        + (derniereValeur && derniereValeur.detail ? " — " + derniereValeur.detail : ""));
+    ligne.hidden = false;
+}
+
 function formaterLitresRentabilite(valeur) {
 
     return Number(valeur || 0).toLocaleString(
@@ -16170,7 +16211,7 @@ function ajouterExplicationRentabilite(
                 ? " au plafond Avantage TotalEnergies de 1,99 €/L"
                 : ""
         )
-        + ", trajet aller-retour "
+        + ", trajet aller "
         + formaterKmRentabilite(station.distanceDetourKm)
         + " = "
         + formaterEurosRentabilite(station.coutCarburantDetour)
@@ -16205,6 +16246,7 @@ async function chargerDistancesComparaison(stations, latitude, longitude, destin
     var prochainLot = 0;
     var erreurLot = null;
     var contexte = {origine:{latitude:latitude, longitude:longitude}, destination:destination,
+        aller_simple: destination == null,
         cap_depart:Number.isFinite(cap) ? ((Math.round(cap) % 360) + 360) % 360 : null};
     // Deux lots au maximum en parallèle ; leur ordre est conservé dans le résultat.
     async function chargerLots() {
@@ -16283,7 +16325,7 @@ function libelleReferencePrixRayon(reference) {
         + (reference.nombre > 1 ? "s" : "") + " du rayon ("
         + reference.moyenne.toLocaleString("fr-FR", {minimumFractionDigits:3, maximumFractionDigits:3})
         + (modeElectriqueRentabiliteActif() ? " €/kWh" : " €/L")
-        + "), trajet aller-retour déduit";
+        + "), trajet aller déduit";
 }
 
 function calculerRentabiliteStations(
@@ -16350,17 +16392,13 @@ function calculerRentabiliteStations(
     }
     var stationsCalculees = stationsDisponibles.map(function(station, index) {
             var trajetRoutier = routes.trajets[index];
-            if (!trajetRoutier || !Number.isFinite(trajetRoutier.aller_km)
-                || !Number.isFinite(trajetRoutier.suite_km) || !Number.isFinite(trajetRoutier.detour_km)
-                || !Number.isFinite(trajetRoutier.duree_detour_minutes)) return null;
+            if (!trajetRoutier || ![trajetRoutier.aller_km, trajetRoutier.duree_detour_minutes]
+                .every(function(valeur) { return Number.isFinite(valeur) && valeur >= 0; })) return null;
             var distance = trajetRoutier.aller_km;
             if (distance > rayonStationsCompteActuel()) return null;
             if (comptePremiumActif() && distance * consommation / 100 > niveauCarburantDepart) return null;
-            var distanceDestinationApresStation = destinationCalcul ? trajetRoutier.suite_km : 0;
-            var carburantTrajet = (distance + trajetRoutier.suite_km) * consommation / 100;
-            var carburantTotalDestination = (distance + distanceDestinationApresStation) * consommation / 100;
-            var carburantRestantDestination = Math.max(0, niveauCarburantDepart + quantiteACompleter - carburantTotalDestination);
-            // Les acces et retours sont deja inclus dans les trajets routiers.
+            var carburantTrajet = distance * consommation / 100;
+            var carburantRestantDestination = Math.max(0, niveauCarburantDepart + quantiteACompleter - carburantTrajet);
             var stationDepassee = false;
             var penaliteDemiTourKm = 0;
             var coutDemiTour = 0;
@@ -16371,10 +16409,7 @@ function calculerRentabiliteStations(
                 consommation: consommation,
                 quantiteACompleter: quantiteACompleter,
                 distanceStationKm: distance,
-                destinationCalcul: destinationCalcul,
-                distanceDestinationApresStation:
-                    distanceDestinationApresStation,
-                distanceDetourRoutierKm: trajetRoutier.detour_km,
+                distanceDetourRoutierKm: distance,
                 dureeDetourRoutiereMinutes: trajetRoutier.duree_detour_minutes,
                 penaliteDemiTourKm: penaliteDemiTourKm
             });
@@ -16382,7 +16417,7 @@ function calculerRentabiliteStations(
             return Object.assign({}, station, {
                 distanceCalculee: distance,
                 carburantTrajet: carburantTrajet,
-                carburantTotalDestination: carburantTotalDestination,
+                carburantTotalDestination: carburantTrajet,
                 carburantRestantDestination: carburantRestantDestination,
                 valeurCarburantRestantDestination:
                     carburantRestantDestination * prixTrajetReference,
@@ -16672,6 +16707,7 @@ function afficherDestinationNavigationDansEncadre(
         return false;
     }
 
+    actualiserConfiancePrixAffichee(stationNavigationActive, true);
     definirModeDestinationEncadre(true);
     titre.textContent = "Destination";
     sousTitre.textContent = libelleDestinationNavigation();
@@ -17019,7 +17055,10 @@ window.calculerMeilleureStation = function() {
         var destinationComparee = stationsCalculees.find(function(station) {
             return memeStation(station, stationNavigationActive);
         });
-        if (destinationComparee) economieEstimeeFigee = destinationComparee.economieMonetaire;
+        if (destinationComparee) {
+            economieEstimeeFigee = destinationComparee.economieMonetaire;
+            actualiserConfiancePrixAffichee(destinationComparee);
+        }
     }
     afficherProgressionRentabilite(100);
     premierResultatRentabiliteAffiche = true;
@@ -17166,23 +17205,7 @@ window.calculerMeilleureStation = function() {
         libelleReferenceRentabilite
     );
 
-    if (
-        meilleureStation.confiancePrix
-        && meilleureStation.confiancePrix.label
-    ) {
-        var confiancePrix = document.createElement("span");
-        confiancePrix.className = "economy-confidence";
-        confiancePrix.innerHTML = "Confiance prix : <strong>"
-            + echapperHtml(meilleureStation.confiancePrix.label)
-            + "</strong>"
-            + (
-                meilleureStation.confiancePrix.signalements_ouverts
-                    ? " · signalement ouvert"
-                    : ""
-            );
-        sousTitre.appendChild(confiancePrix);
-    }
-
+    actualiserConfiancePrixAffichee(meilleureStation);
 
     var economiePasseSousUnEuro =
         economie < 1
@@ -17535,7 +17558,7 @@ async function actualiserRentabilitePeriodiquement(force) {
             return;
         }
         if (stations.length && !routes.trajets.some(function(trajet) {
-            return trajet && [trajet.aller_km, trajet.suite_km, trajet.detour_km, trajet.duree_detour_minutes]
+            return trajet && [trajet.aller_km, trajet.duree_detour_minutes]
                 .every(function(valeur) { return Number.isFinite(valeur) && valeur >= 0; });
         })) {
             throw new Error("Aucun trajet routier vérifié");
@@ -17649,17 +17672,23 @@ async function actualiserStationRentableDepuisGps() {
                 suivi = courant;
                 if (suivi.positionAppliquee && suivi.positionAppliquee.date > position.date) continue;
                 var trajet = donnees[0].trajets[0];
-                if (!trajet || ![trajet.aller_km, trajet.suite_km, trajet.detour_km, trajet.duree_detour_minutes]
+                if (!trajet || ![trajet.aller_km, trajet.duree_detour_minutes]
                     .every(function(valeur) { return Number.isFinite(valeur) && valeur >= 0; })) continue;
                 var reference = referencePrixMoyenRayon(donnees[1]);
                 if (!reference.nombre) continue;
                 var prixCourant = donnees[1].find(function(station) { return memeStation(station, suivi.station); });
+                if (prixCourant) {
+                    actualiserConfiancePrixAffichee(prixCourant);
+                    if (prixCourant.confiancePrix || prixCourant.confiance_prix) {
+                        suivi.station.confiancePrix = prixCourant.confiancePrix || prixCourant.confiance_prix;
+                    }
+                }
                 var prix = prixRentabiliteAvecCarteTotalenergies(prixCourant || suivi.station,
                     carteTotalenergiesActive(), suivi.carburant);
                 var optimisation = calculerCoutOptimisationStation({station:Object.assign({},suivi.station,{prix:prix}),
                     prixReference:prix, reservoir:suivi.reservoir, consommation:suivi.consommation,
                     quantiteACompleter:suivi.quantite, distanceStationKm:trajet.aller_km,
-                    distanceDetourRoutierKm:trajet.detour_km, dureeDetourRoutiereMinutes:trajet.duree_detour_minutes});
+                    distanceDetourRoutierKm:trajet.aller_km, dureeDetourRoutiereMinutes:trajet.duree_detour_minutes});
                 var economieBrute = suivi.quantite * (reference.moyenne - prix);
                 var economie = economieBrute - optimisation.coutCarburantDetour;
                 Object.assign(suivi.station, optimisation, {prix:prix,
