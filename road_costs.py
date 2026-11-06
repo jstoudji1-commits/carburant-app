@@ -3,7 +3,7 @@ import math
 import requests
 
 
-def station_road_costs(origin, stations, destination=None, heading=None):
+def station_road_costs(origin, stations, destination=None, heading=None, *, aller_simple=False):
     points = [origin] + stations + ([destination] if destination else [])
     target = len(points) - 1 if destination else 0
     coords = ';'.join(f'{p.longitude},{p.latitude}' for p in points)
@@ -20,15 +20,18 @@ def station_road_costs(origin, stations, destination=None, heading=None):
         return data
     indices = ';'.join(str(i) for i in range(1,len(stations)+1))
     outward = table('0', indices + (';' + str(target) if destination else ''))
-    onward = table(indices, str(target))
+    # Le classement local demande uniquement le trajet pour rejoindre la station.
+    onward = None if aller_simple and destination is None else table(indices, str(target))
     def valid(value):
         return isinstance(value, (int,float)) and not isinstance(value,bool) and math.isfinite(value) and value >= 0
     direct = outward['distances'][0][-1] if destination else 0
     direct_time = outward['durations'][0][-1] if destination else 0
     results=[]
     for i in range(len(stations)):
-        a,b=outward['distances'][0][i],onward['distances'][i][0]
-        ta,tb=outward['durations'][0][i],onward['durations'][i][0]
+        a = outward['distances'][0][i]
+        ta = outward['durations'][0][i]
+        b = onward['distances'][i][0] if onward is not None else 0
+        tb = onward['durations'][i][0] if onward is not None else 0
         if not all(valid(x) for x in (a,b,ta,tb,direct,direct_time)):
             results.append(None)
         else:
