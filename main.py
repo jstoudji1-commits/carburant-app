@@ -8941,12 +8941,16 @@ class ComparaisonRoutiere(BaseModel):
     stations: list[PointComparaisonRoutiere] = Field(min_length=1, max_length=40)
     destination: Optional[PointComparaisonRoutiere] = None
     cap_depart: Optional[float] = Field(default=None, ge=0, lt=360, allow_inf_nan=False)
+    aller_simple: bool = False
 
 
 @app.post("/api/distances-stations")
 def distances_stations(requete: ComparaisonRoutiere):
     try:
-        return station_road_costs(requete.origine, requete.stations, requete.destination, requete.cap_depart)
+        return station_road_costs(
+            requete.origine, requete.stations, requete.destination, requete.cap_depart,
+            aller_simple=requete.aller_simple,
+        )
     except (http_requests.RequestException, ValueError, KeyError, IndexError, TypeError) as erreur:
         raise HTTPException(status_code=503, detail="Distances routieres indisponibles.") from erreur
 
